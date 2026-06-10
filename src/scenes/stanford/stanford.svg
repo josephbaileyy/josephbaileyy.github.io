@@ -1,0 +1,135 @@
+<svg viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, Menlo, monospace">
+  <defs>
+    <linearGradient id="st-sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0e1238"/>
+      <stop offset="70%" stop-color="#2a2356"/>
+      <stop offset="100%" stop-color="#4d3670"/>
+    </linearGradient>
+    <radialGradient id="st-window" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd479" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#ffd479" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- sky -->
+  <rect width="1600" height="1000" fill="url(#st-sky)"/>
+  <g fill="#eef2ff">
+    <circle cx="140" cy="120" r="1.8" opacity="0.8"/><circle cx="320" cy="80" r="1.4" opacity="0.6"/>
+    <circle cx="520" cy="150" r="1.6" opacity="0.7"/><circle cx="700" cy="60" r="1.5" opacity="0.6"/>
+    <circle cx="940" cy="130" r="1.8" opacity="0.8"/><circle cx="1120" cy="70" r="1.4" opacity="0.6"/>
+    <circle cx="1480" cy="240" r="1.6" opacity="0.7"/><circle cx="1540" cy="90" r="1.5" opacity="0.6"/>
+    <circle cx="240" cy="260" r="1.4" opacity="0.5"/><circle cx="1250" cy="180" r="1.5" opacity="0.6"/>
+  </g>
+  <!-- crescent moon -->
+  <g transform="translate(1380 140)">
+    <circle r="34" fill="#eef2ff"/>
+    <circle cx="14" cy="-8" r="30" fill="#0e1238"/>
+  </g>
+
+  <!-- foothills -->
+  <path d="M 0 660 Q 200 600 420 640 Q 640 680 860 630 Q 1080 590 1300 640 Q 1450 670 1600 640 L 1600 1000 L 0 1000 Z" fill="#141233"/>
+  <rect y="700" width="1600" height="300" fill="#1a1535"/>
+
+  <!-- ======== Main Quad ======== -->
+  <g>
+    <polygon points="130,520 770,520 740,470 160,470" fill="#7e1414"/>
+    <rect x="150" y="520" width="600" height="150" fill="#8f7f63"/>
+    <!-- arcade arches -->
+    <g fill="#3a2f24">
+      <path d="M 180 670 L 180 590 A 30 34 0 0 1 240 590 L 240 670 Z"/>
+      <path d="M 260 670 L 260 590 A 30 34 0 0 1 320 590 L 320 670 Z"/>
+      <path d="M 340 670 L 340 590 A 30 34 0 0 1 400 590 L 400 670 Z"/>
+      <path d="M 500 670 L 500 590 A 30 34 0 0 1 560 590 L 560 670 Z"/>
+      <path d="M 580 670 L 580 590 A 30 34 0 0 1 640 590 L 640 670 Z"/>
+      <path d="M 660 670 L 660 590 A 30 34 0 0 1 720 590 L 720 670 Z"/>
+    </g>
+    <!-- memorial church gable -->
+    <polygon points="400,520 450,440 500,520" fill="#9c8c6e"/>
+    <polygon points="396,524 450,436 504,524 504,536 396,536" fill="#7e1414"/>
+    <rect x="400" y="536" width="100" height="134" fill="#9c8c6e"/>
+    <circle cx="450" cy="500" r="22" fill="#f6b756" opacity="0.95"/>
+    <circle cx="450" cy="500" r="22" fill="none" stroke="#5d4a32" stroke-width="3"/>
+    <path d="M 450 478 L 450 522 M 428 500 L 472 500 M 435 485 L 465 515 M 465 485 L 435 515" stroke="#5d4a32" stroke-width="2.5"/>
+    <path d="M 430 670 L 430 600 A 20 24 0 0 1 470 600 L 470 670 Z" fill="#2b2117"/>
+  </g>
+
+  <!-- ======== Hoover Tower ======== -->
+  <g>
+    <rect x="820" y="300" width="80" height="370" fill="#9c8c6e"/>
+    <rect x="814" y="640" width="92" height="30" fill="#8a7a5e"/>
+    <g fill="#574c39">
+      <rect x="838" y="380" width="10" height="40"/><rect x="872" y="380" width="10" height="40"/>
+      <rect x="838" y="450" width="10" height="40"/><rect x="872" y="450" width="10" height="40"/>
+      <rect x="838" y="520" width="10" height="40"/><rect x="872" y="520" width="10" height="40"/>
+    </g>
+    <circle cx="860" cy="338" r="17" fill="#fff6dd"/>
+    <path d="M 860 338 L 860 327 M 860 338 L 868 342" stroke="#3a2f24" stroke-width="2.5"/>
+    <circle cx="860" cy="338" r="17" fill="none" stroke="#574c39" stroke-width="3"/>
+    <rect x="812" y="284" width="96" height="18" fill="#8a7a5e"/>
+    <polygon points="812,284 860,228 908,284" fill="#7e1414"/>
+    <circle cx="860" cy="224" r="5" fill="#f6b756"/>
+    <text x="860" y="708" text-anchor="middle" font-size="15" fill="#9aa3c7" opacity="0.7">hoover tower</text>
+  </g>
+
+  <!-- ======== dorm with one lit window ======== -->
+  <g>
+    <polygon points="1030,460 1410,460 1390,420 1050,420" fill="#7e1414"/>
+    <rect x="1040" y="460" width="340" height="210" fill="#6e6250"/>
+    <g fill="#2c2750">
+      <rect x="1070" y="490" width="56" height="40"/>
+      <rect x="1250" y="490" width="56" height="40"/>
+      <rect x="1070" y="580" width="56" height="40"/>
+      <rect x="1162" y="580" width="56" height="40"/>
+      <rect x="1250" y="580" width="56" height="40"/>
+      <rect x="1324" y="490" width="40" height="40"/>
+      <rect x="1324" y="580" width="40" height="40"/>
+    </g>
+    <!-- my window: lit, and the gateway to the room scene -->
+    <rect id="anchor-room" x="1146" y="502.5" width="88" height="55"/>
+    <circle cx="1190" cy="530" r="78" fill="url(#st-window)"/>
+    <rect x="1146" y="502.5" width="88" height="55" fill="#ffd479"/>
+    <rect x="1146" y="502.5" width="88" height="55" fill="none" stroke="#3a2f24" stroke-width="4"/>
+    <path d="M 1190 502.5 L 1190 557.5 M 1146 530 L 1234 530" stroke="#3a2f24" stroke-width="3"/>
+    <text x="1190" y="650" text-anchor="middle" font-size="15" fill="#ffd479" opacity="0.9">my room — the light's on</text>
+    <g id="hotspot-room">
+      <title>Zoom in to my room</title>
+      <rect x="1126" y="486" width="128" height="88" fill="transparent"/>
+    </g>
+  </g>
+
+  <!-- ======== palm trees ======== -->
+  <g stroke-linecap="round">
+    <g transform="translate(180 740)">
+      <path d="M 0 0 Q 6 -50 -4 -100" stroke="#2b2147" stroke-width="11" fill="none"/>
+      <g stroke="#1f5a45" stroke-width="7" fill="none">
+        <path d="M -4 -100 Q -40 -116 -64 -100"/><path d="M -4 -100 Q -36 -132 -10 -142"/>
+        <path d="M -4 -100 Q 8 -140 36 -136"/><path d="M -4 -100 Q 32 -118 56 -102"/>
+      </g>
+    </g>
+    <g transform="translate(640 760)">
+      <path d="M 0 0 Q -6 -54 4 -108" stroke="#2b2147" stroke-width="12" fill="none"/>
+      <g stroke="#1f5a45" stroke-width="7" fill="none">
+        <path d="M 4 -108 Q -34 -124 -58 -108"/><path d="M 4 -108 Q -28 -140 -2 -150"/>
+        <path d="M 4 -108 Q 16 -148 44 -144"/><path d="M 4 -108 Q 40 -126 64 -110"/>
+      </g>
+    </g>
+    <g transform="translate(980 750)">
+      <path d="M 0 0 Q 8 -46 -2 -94" stroke="#2b2147" stroke-width="10" fill="none"/>
+      <g stroke="#1f5a45" stroke-width="6" fill="none">
+        <path d="M -2 -94 Q -34 -108 -56 -94"/><path d="M -2 -94 Q -28 -122 -4 -132"/>
+        <path d="M -2 -94 Q 10 -130 34 -126"/><path d="M -2 -94 Q 30 -110 52 -96"/>
+      </g>
+    </g>
+    <g transform="translate(1460 770)">
+      <path d="M 0 0 Q -8 -52 2 -104" stroke="#2b2147" stroke-width="12" fill="none"/>
+      <g stroke="#1f5a45" stroke-width="7" fill="none">
+        <path d="M 2 -104 Q -36 -120 -60 -104"/><path d="M 2 -104 Q -30 -136 -4 -146"/>
+        <path d="M 2 -104 Q 14 -144 42 -140"/><path d="M 2 -104 Q 38 -122 62 -106"/>
+      </g>
+    </g>
+  </g>
+
+  <!-- path -->
+  <path d="M 0 920 Q 400 880 800 900 Q 1200 920 1600 890 L 1600 1000 L 0 1000 Z" fill="#241d44"/>
+  <text x="80" y="970" font-size="16" fill="#9aa3c7" opacity="0.6" letter-spacing="3">STANFORD UNIVERSITY</text>
+</svg>

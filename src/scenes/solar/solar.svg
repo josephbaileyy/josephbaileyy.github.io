@@ -1,0 +1,77 @@
+<svg viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, Menlo, monospace">
+  <defs>
+    <radialGradient id="s-sun" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fff8e0"/>
+      <stop offset="55%" stop-color="#ffd479"/>
+      <stop offset="100%" stop-color="#f6862c"/>
+    </radialGradient>
+    <radialGradient id="s-corona" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffd479" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#ffd479" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- orbits -->
+  <g fill="none" stroke="#4636a0" stroke-width="1.5" opacity="0.5">
+    <circle cx="800" cy="500" r="150"/>
+    <circle cx="800" cy="500" r="210"/>
+    <circle cx="800" cy="500" r="270"/>
+    <circle cx="800" cy="500" r="330"/>
+    <circle cx="800" cy="500" r="420"/>
+    <circle cx="800" cy="500" r="510"/>
+    <circle cx="800" cy="500" r="610"/>
+    <circle cx="800" cy="500" r="700"/>
+  </g>
+
+  <!-- the Sun -->
+  <circle cx="800" cy="500" r="170" fill="url(#s-corona)"/>
+  <circle cx="800" cy="500" r="85" fill="url(#s-sun)"/>
+  <circle cx="800" cy="500" r="100" fill="none" stroke="#ffd479" stroke-width="2" opacity="0.35"/>
+
+  <!-- planets -->
+  <g>
+    <circle cx="659" cy="449" r="6" fill="#b9a87f"/>
+    <text x="659" y="429" text-anchor="middle" font-size="13" fill="#9aa3c7" opacity="0.55">mercury</text>
+
+    <circle cx="982" cy="395" r="10" fill="#e8c27a"/>
+    <text x="982" y="372" text-anchor="middle" font-size="13" fill="#9aa3c7" opacity="0.55">venus</text>
+
+    <circle cx="547" cy="712" r="8" fill="#d1603f"/>
+    <text x="547" y="740" text-anchor="middle" font-size="13" fill="#9aa3c7" opacity="0.55">mars</text>
+
+    <g transform="translate(656 105)">
+      <circle r="38" fill="#d8a268"/>
+      <path d="M -36 -10 Q 0 -18 36 -10" stroke="#b97a45" stroke-width="6" fill="none" opacity="0.8"/>
+      <path d="M -37 6 Q 0 0 37 6" stroke="#e8c9a0" stroke-width="5" fill="none" opacity="0.8"/>
+      <circle cx="12" cy="14" r="6" fill="#c46a4a" opacity="0.9"/>
+      <text y="62" text-anchor="middle" font-size="13" fill="#9aa3c7" opacity="0.55">jupiter</text>
+    </g>
+
+    <g transform="translate(1055 942) rotate(-18)">
+      <ellipse rx="52" ry="12" fill="none" stroke="#cdbd96" stroke-width="5" opacity="0.85"/>
+      <circle r="26" fill="#e3cf9d"/>
+      <text y="-40" text-anchor="middle" font-size="13" fill="#9aa3c7" opacity="0.55" transform="rotate(18)">saturn</text>
+    </g>
+
+    <circle cx="1267" cy="108" r="15" fill="#9fd8e8"/>
+    <text x="1267" y="80" text-anchor="middle" font-size="13" fill="#9aa3c7" opacity="0.55">uranus</text>
+
+    <circle cx="124" cy="681" r="14" fill="#5a78e6"/>
+    <text x="124" y="650" text-anchor="middle" font-size="13" fill="#9aa3c7" opacity="0.55">neptune</text>
+  </g>
+
+  <!-- ======== Earth: gateway scene ======== -->
+  <rect id="anchor-earth" x="1015" y="465.625" width="110" height="68.75"/>
+  <g transform="translate(1070 500)">
+    <circle r="20" fill="#2f7fd1"/>
+    <path d="M -10 -12 Q -2 -16 4 -10 Q 10 -5 4 -1 Q -4 2 -9 -3 Z" fill="#3e8f5a"/>
+    <path d="M 2 6 Q 8 4 11 9 Q 8 14 2 12 Z" fill="#3e8f5a"/>
+    <circle r="22.5" fill="none" stroke="#7fd4ff" stroke-width="1.5" opacity="0.6"/>
+    <circle cx="32" cy="-14" r="4" fill="#cdd4f0"/>
+    <text y="46" text-anchor="middle" font-size="14" fill="#7fd4ff" opacity="0.9">earth — home, click to land</text>
+    <g id="hotspot-earth">
+      <title>Zoom in to Earth</title>
+      <circle r="55" fill="transparent"/>
+    </g>
+  </g>
+</svg>

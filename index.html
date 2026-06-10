@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Joseph Bailey — a zoomable universe</title>
+    <meta
+      name="description"
+      content="Joseph Bailey is a physics student at Stanford University. Zoom from the galaxy down to his desk — research on AM CVn binaries, projects, resume, and more."
+    />
+    <meta property="og:title" content="Joseph Bailey — a zoomable universe" />
+    <meta
+      property="og:description"
+      content="Zoom from the galaxy to my desk: physics, AM CVn research, projects, and resume."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://josephbaileyy.github.io/" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='16' r='7' fill='%23eef2ff'/%3E%3Ccircle cx='24' cy='13' r='4' fill='%23ffd479'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <a class="skip-link" href="/about.html">Skip the universe — plain version of this site</a>
+
+    <header class="sr-only">
+      <h1>Joseph Bailey</h1>
+      <p>
+        I'm a physics student at Stanford University. This site is an interactive zoom from the
+        galaxy — past an AM Canum Venaticorum binary I research — into the solar system, down to
+        Earth, Stanford, my room, and finally my computer screen, where you can find my resume,
+        CV, and projects. Prefer a normal webpage? Visit the
+        <a href="/about.html">plain version</a>.
+      </p>
+    </header>
+
+    <noscript>
+      <div class="noscript-note">
+        This experience needs JavaScript. The good news: there's a
+        <a href="/about.html">plain version with everything on it</a>.
+      </div>
+    </noscript>
+
+    <canvas id="starfield" aria-hidden="true"></canvas>
+    <div id="stage" aria-label="Zoomable universe"></div>
+    <div id="hud"></div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

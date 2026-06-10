@@ -1,0 +1,454 @@
+:root {
+  --space-0: #070a1c;
+  --space-1: #0b1026;
+  --space-2: #131a3a;
+  --violet-1: #2a2356;
+  --violet-2: #4636a0;
+  --gold: #ffd479;
+  --gold-deep: #f6b756;
+  --cyan: #7fd4ff;
+  --ink: #eef2ff;
+  --ink-dim: #9aa3c7;
+  --cardinal: #8c1515;
+  --font-ui: "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: radial-gradient(120% 90% at 50% 40%, var(--space-2) 0%, var(--space-1) 55%, var(--space-0) 100%);
+  color: var(--ink);
+  font-family: var(--font-ui);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 16px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--ink);
+  color: var(--space-1);
+  border-radius: 8px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 16px;
+}
+
+.noscript-note {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  font-size: 18px;
+  padding: 24px;
+  z-index: 99;
+}
+
+.noscript-note a {
+  color: var(--cyan);
+}
+
+#starfield {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+#stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+}
+
+.scene-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1600px;
+  height: 1000px;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.scene-layer.active {
+  will-change: transform, opacity;
+}
+
+.scene-layer svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.hotspot {
+  pointer-events: auto;
+  cursor: pointer;
+  outline: none;
+}
+
+.hotspot:hover,
+.hotspot:focus-visible {
+  filter: drop-shadow(0 0 6px var(--gold)) drop-shadow(0 0 14px rgba(255, 212, 121, 0.6));
+}
+
+/* ---------- HUD ---------- */
+
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-name {
+  position: absolute;
+  left: 22px;
+  bottom: 18px;
+  line-height: 1.25;
+}
+
+.hud-name strong {
+  font-size: 17px;
+  letter-spacing: 0.04em;
+}
+
+.hud-name span {
+  display: block;
+  font-size: 12px;
+  color: var(--ink-dim);
+  font-family: var(--font-mono);
+}
+
+.hud-plain {
+  position: absolute;
+  top: 16px;
+  right: 20px;
+  pointer-events: auto;
+  color: var(--ink-dim);
+  font-size: 13px;
+  font-family: var(--font-mono);
+  text-decoration: none;
+  border: 1px solid rgba(154, 163, 199, 0.35);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(11, 16, 38, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.hud-plain:hover,
+.hud-plain:focus-visible {
+  color: var(--ink);
+  border-color: var(--ink-dim);
+}
+
+.hud-dots {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  pointer-events: auto;
+}
+
+.hud-dot {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink-dim);
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.hud-dot.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(255, 212, 121, 0.7);
+}
+
+.hud-dot::after {
+  content: attr(data-label);
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--ink);
+  background: rgba(11, 16, 38, 0.85);
+  padding: 3px 9px;
+  border-radius: 6px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.12s ease;
+}
+
+.hud-dot:hover::after,
+.hud-dot:focus-visible::after {
+  opacity: 1;
+}
+
+.hud-zoom {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.hud-zoom button {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid rgba(154, 163, 199, 0.35);
+  background: rgba(11, 16, 38, 0.55);
+  color: var(--ink);
+  font-size: 20px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+.hud-zoom button:hover {
+  border-color: var(--ink-dim);
+}
+
+.hud-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  transform: translateX(-50%);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  white-space: nowrap;
+  color: var(--ink-dim);
+  background: rgba(11, 16, 38, 0.55);
+  padding: 7px 14px;
+  border-radius: 999px;
+  transition: opacity 0.6s ease;
+}
+
+@media (max-width: 760px) {
+  .hud-hint {
+    bottom: 84px;
+    font-size: 12px;
+  }
+}
+
+.hud-hint.hidden {
+  opacity: 0;
+}
+
+/* ---------- Panels ---------- */
+
+dialog.panel {
+  border: 1px solid rgba(127, 212, 255, 0.25);
+  border-radius: 14px;
+  background: linear-gradient(160deg, #151b3d 0%, #0d1130 100%);
+  color: var(--ink);
+  max-width: 560px;
+  width: calc(100vw - 48px);
+  padding: 0;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+}
+
+dialog.panel::backdrop {
+  background: rgba(4, 6, 16, 0.65);
+  backdrop-filter: blur(3px);
+}
+
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 22px 0;
+}
+
+.panel-head h2 {
+  margin: 0;
+  font-size: 21px;
+  letter-spacing: 0.02em;
+}
+
+.panel-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.panel-close {
+  border: none;
+  background: transparent;
+  color: var(--ink-dim);
+  font-size: 22px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 8px;
+}
+
+.panel-close:hover {
+  color: var(--ink);
+}
+
+.panel-body {
+  padding: 12px 22px 22px;
+  font-size: 15px;
+  line-height: 1.65;
+  color: #cdd4f0;
+}
+
+.panel-body a {
+  color: var(--cyan);
+}
+
+.panel-body .todo {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--gold);
+  background: rgba(255, 212, 121, 0.08);
+  border: 1px dashed rgba(255, 212, 121, 0.4);
+  border-radius: 8px;
+  padding: 8px 12px;
+  display: block;
+  margin-top: 12px;
+}
+
+.panel-body ul {
+  padding-left: 20px;
+}
+
+/* ---------- Screen UI (the computer at depth 5) ---------- */
+
+.screen-ui {
+  position: fixed;
+  z-index: 5;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  font-family: var(--font-mono);
+}
+
+.screen-ui.visible {
+  display: block;
+  opacity: 1;
+}
+
+.screen-window {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: rgba(13, 17, 48, 0.92);
+  border: 1px solid rgba(127, 212, 255, 0.3);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 12px 50px rgba(0, 0, 0, 0.5);
+}
+
+.screen-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  background: rgba(127, 212, 255, 0.08);
+  border-bottom: 1px solid rgba(127, 212, 255, 0.18);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+.screen-titlebar i {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.screen-links {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+  padding: 16px;
+  align-content: center;
+  overflow-y: auto;
+}
+
+.screen-links a,
+.screen-links button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(154, 163, 199, 0.25);
+  background: rgba(42, 35, 86, 0.45);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  text-align: center;
+}
+
+.screen-links a:hover,
+.screen-links a:focus-visible,
+.screen-links button:hover,
+.screen-links button:focus-visible {
+  border-color: var(--cyan);
+  background: rgba(70, 54, 160, 0.45);
+}
+
+.screen-links .icon {
+  font-size: 26px;
+  font-family: var(--font-ui);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-link,
+  .hud-hint,
+  .screen-ui {
+    transition: none;
+  }
+}
