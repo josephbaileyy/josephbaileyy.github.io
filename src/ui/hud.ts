@@ -1,11 +1,14 @@
-import type { SceneDef } from '../engine/types';
-
 export class Hud {
   private dots: HTMLButtonElement[] = [];
   private live: HTMLDivElement;
   private hint: HTMLDivElement;
 
-  constructor(root: HTMLElement, scenes: SceneDef[], onNavigate: (index: number) => void, onZoomStep: (dir: 1 | -1) => void) {
+  constructor(
+    root: HTMLElement,
+    scenes: ReadonlyArray<{ label: string }>,
+    onNavigate: (index: number) => void,
+    onZoomStep: (dir: 1 | -1) => void,
+  ) {
     const name = document.createElement('div');
     name.className = 'hud-name';
     name.innerHTML = `<strong>Joseph Bailey</strong><span>physics @ stanford</span>`;

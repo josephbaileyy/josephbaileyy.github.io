@@ -1,27 +1,55 @@
 import './styles/main.css';
 import { Camera } from './engine/camera';
 import { attachInput } from './engine/input';
-import { Stage } from './engine/stage';
-import type { Size } from './engine/types';
-import { CHAIN } from './scenes/registry';
+import { Renderer3D, webgl2Available } from './engine/renderer';
+import { scaleExponent } from './engine/rig';
+import { World, type SceneSource } from './engine/world';
+import type { SceneInstance } from './engine/types3d';
+import { CHAIN3D } from './scenes/registry';
 import { Hud } from './ui/hud';
 import { PanelHost } from './ui/panel';
-import { ScreenUi } from './ui/screen-ui';
-import { Starfield } from './ui/starfield';
+import { ScaleRibbon } from './ui/scale-ribbon';
 import { Router } from './router';
 
-const SCREEN_INDEX = CHAIN.length - 1;
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const now = () => performance.now() / 1000;
 
-const stageEl = document.getElementById('stage')!;
+const canvas = document.getElementById('universe') as HTMLCanvasElement;
 const hudEl = document.getElementById('hud')!;
-const canvas = document.getElementById('starfield') as HTMLCanvasElement;
 
-const vp: Size = { w: window.innerWidth, h: window.innerHeight };
-const camera = new Camera(CHAIN.length, reduced);
+// --- WebGL2 gate: this is a WebGL universe; everyone else gets the plain site ---
+if (!webgl2Available()) {
+  const note = document.createElement('div');
+  note.className = 'webgl-fallback';
+  note.innerHTML = `
+    <p>This site is a 3D universe and needs WebGL.</p>
+    <p><a href="/about.html">Visit the plain version instead →</a></p>`;
+  document.body.appendChild(note);
+  canvas.remove();
+  throw new Error('WebGL2 unavailable');
+}
+
+const vp = { w: window.innerWidth, h: window.innerHeight };
+const camera = new Camera(CHAIN3D.length, reduced);
 const panel = new PanelHost();
-const starfield = new Starfield(canvas);
+const renderer = new Renderer3D(canvas);
+renderer.resize(vp.w, vp.h);
+
+/** Milestone source: synchronous placeholder factories (async loader lands later). */
+class SyncSource implements SceneSource {
+  private cache = new Map<number, SceneInstance>();
+  get(i: number): SceneInstance | null {
+    let inst = this.cache.get(i);
+    if (!inst) {
+      inst = CHAIN3D[i].create({});
+      this.cache.set(i, inst);
+    }
+    return inst;
+  }
+  request(): void {}
+}
+
+const world = new World(CHAIN3D, new SyncSource());
 
 let pendingPanel: { scene: number; id: string } | null = null;
 
@@ -30,20 +58,9 @@ const openPanel = (id: string, sceneIndex: number) => {
   router.push(sceneIndex, id);
 };
 
-const stage = new Stage(stageEl, CHAIN, (sceneIndex, hotspot) => {
-  hud.hideHint();
-  if (hotspot.action.type === 'panel') {
-    openPanel(hotspot.action.panelId, sceneIndex);
-  } else {
-    camera.tweenTo(sceneIndex + (hotspot.action.dir === 'in' ? 1 : -1), now());
-  }
-});
-
-const screenUi = new ScreenUi(CHAIN[SCREEN_INDEX].svg, (id) => openPanel(id, SCREEN_INDEX));
-
 const hud = new Hud(
   hudEl,
-  CHAIN,
+  CHAIN3D,
   (index) => {
     hud.hideHint();
     const dist = Math.abs(index - camera.depth);
@@ -54,8 +71,9 @@ const hud = new Hud(
     camera.tweenTo(Math.round(camera.depth) + dir, now(), 0.9);
   },
 );
+const ribbon = new ScaleRibbon(hudEl);
 
-const router = new Router(CHAIN, (state) => {
+const router = new Router(CHAIN3D, (state) => {
   panel.close();
   pendingPanel = state.panel ? { scene: state.scene, id: state.panel } : null;
   const dist = Math.abs(state.scene - camera.depth);
@@ -66,7 +84,7 @@ panel.onClose = () => {
   router.replace(Math.round(camera.depth));
 };
 
-attachInput(stageEl, camera, {
+attachInput(canvas, camera, {
   reducedMotion: reduced,
   isModalOpen: () => panel.isOpen,
   onFirstInteraction: () => hud.hideHint(),
@@ -75,8 +93,7 @@ attachInput(stageEl, camera, {
 window.addEventListener('resize', () => {
   vp.w = window.innerWidth;
   vp.h = window.innerHeight;
-  starfield.resize();
-  if (screenUi.visible) screenUi.show(vp);
+  renderer.resize(vp.w, vp.h);
 });
 
 // --- arrival: deep links start one scene above the target and glide in ---
@@ -89,6 +106,16 @@ if (initial) {
   }
 }
 
+function exposureAt(depth: number): number {
+  const n = CHAIN3D.length;
+  const d = Math.min(Math.max(depth, 0), n - 1);
+  const i = Math.min(Math.floor(d), n - 2);
+  const t = d - i;
+  const a = CHAIN3D[i].exposure ?? 1;
+  const b = CHAIN3D[i + 1].exposure ?? 1;
+  return a + (b - a) * t;
+}
+
 // --- main loop ---
 let lastSettled: number | null = -1;
 let lastTime = now();
@@ -99,24 +126,25 @@ function frame(): void {
   lastTime = t;
 
   camera.update(dt, t);
-  stage.render(camera.depth, vp);
-  starfield.render(camera.depth, t);
+
+  world.update(camera.depth, vp, dt, t, reduced);
+  renderer.setExposure(exposureAt(camera.depth));
+  renderer.render(world.root, world.camera);
+
   hud.setActive(Math.round(camera.depth));
+  const idx = Math.round(Math.min(Math.max(camera.depth, 0), CHAIN3D.length - 1));
+  ribbon.update(scaleExponent(camera.depth, CHAIN3D), camera.depth, CHAIN3D[idx].label);
 
   const settled = camera.settledIndex;
   if (settled !== lastSettled) {
     lastSettled = settled;
     if (settled !== null) {
-      hud.announce(CHAIN[settled].label);
+      hud.announce(CHAIN3D[settled].label);
       if (!panel.isOpen) router.replace(settled);
-      if (settled === SCREEN_INDEX) screenUi.show(vp);
-      else screenUi.hide();
       if (pendingPanel && pendingPanel.scene === settled) {
         openPanel(pendingPanel.id, settled);
         pendingPanel = null;
       }
-    } else {
-      screenUi.hide();
     }
   }
 

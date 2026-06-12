@@ -1,5 +1,3 @@
-import type { SceneDef } from './engine/types';
-
 export interface RouteState {
   scene: number;
   panel?: string;
@@ -10,7 +8,7 @@ export class Router {
   private lastWritten = '';
 
   constructor(
-    scenes: SceneDef[],
+    scenes: ReadonlyArray<{ id: string }>,
     private onNavigate: (state: RouteState) => void,
   ) {
     this.names = scenes.map((s) => s.id);
