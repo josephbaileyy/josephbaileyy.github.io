@@ -8,6 +8,8 @@ export interface InputOptions {
   reducedMotion: boolean;
   isModalOpen: () => boolean;
   onFirstInteraction?: () => void;
+  /** mutable target written with normalized mouse position for camera parallax */
+  parallaxTarget?: { x: number; y: number };
 }
 
 export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptions): void {
@@ -45,6 +47,15 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
     },
     { passive: false },
   );
+
+  // --- Mouse parallax (mouse only; no gyro on touch) ---
+  if (opts.parallaxTarget && !opts.reducedMotion) {
+    window.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'mouse') return;
+      opts.parallaxTarget!.x = (e.clientX / window.innerWidth) * 2 - 1;
+      opts.parallaxTarget!.y = (e.clientY / window.innerHeight) * 2 - 1;
+    });
+  }
 
   // --- Touch pinch via pointer events ---
   const pointers = new Map<number, { x: number; y: number }>();

@@ -1,8 +1,12 @@
 import './styles/main.css';
+import { Quaternion, Vector3 } from 'three';
 import { Camera } from './engine/camera';
 import { attachInput } from './engine/input';
+import { QualityMonitor } from './engine/quality';
 import { Renderer3D, webgl2Available } from './engine/renderer';
+import { FxPipeline } from './engine/renderer-fx';
 import { scaleExponent } from './engine/rig';
+import { fxAt, JumpController } from './engine/transitions';
 import { World, type SceneSource } from './engine/world';
 import type { SceneInstance } from './engine/types3d';
 import { CHAIN3D } from './scenes/registry';
@@ -35,7 +39,7 @@ const panel = new PanelHost();
 const renderer = new Renderer3D(canvas);
 renderer.resize(vp.w, vp.h);
 
-/** Milestone source: synchronous placeholder factories (async loader lands later). */
+/** Synchronous placeholder factories (async loader lands with real scenes). */
 class SyncSource implements SceneSource {
   private cache = new Map<number, SceneInstance>();
   get(i: number): SceneInstance | null {
@@ -50,6 +54,10 @@ class SyncSource implements SceneSource {
 }
 
 const world = new World(CHAIN3D, new SyncSource());
+const fx = new FxPipeline(renderer, world.root, world.camera);
+fx.setSize(vp.w, vp.h);
+const quality = new QualityMonitor();
+const jump = new JumpController(camera, reduced);
 
 let pendingPanel: { scene: number; id: string } | null = null;
 
@@ -63,8 +71,7 @@ const hud = new Hud(
   CHAIN3D,
   (index) => {
     hud.hideHint();
-    const dist = Math.abs(index - camera.depth);
-    camera.tweenTo(index, now(), 0.7 + 0.4 * dist);
+    jump.go(index, now());
   },
   (dir) => {
     hud.hideHint();
@@ -76,25 +83,42 @@ const ribbon = new ScaleRibbon(hudEl);
 const router = new Router(CHAIN3D, (state) => {
   panel.close();
   pendingPanel = state.panel ? { scene: state.scene, id: state.panel } : null;
-  const dist = Math.abs(state.scene - camera.depth);
-  if (dist > 1e-6) camera.tweenTo(state.scene, now(), 0.7 + 0.4 * dist);
+  if (Math.abs(state.scene - camera.depth) > 1e-6) jump.go(state.scene, now());
 });
 
 panel.onClose = () => {
   router.replace(Math.round(camera.depth));
 };
 
+const parallaxTarget = { x: 0, y: 0 };
+const parallax = { x: 0, y: 0 };
+const PARALLAX_MAX = (1.6 * Math.PI) / 180;
+const qParallax = new Quaternion();
+const vAxisX = new Vector3(1, 0, 0);
+const vAxisY = new Vector3(0, 1, 0);
+
 attachInput(canvas, camera, {
   reducedMotion: reduced,
   isModalOpen: () => panel.isOpen,
   onFirstInteraction: () => hud.hideHint(),
+  parallaxTarget,
 });
 
 window.addEventListener('resize', () => {
   vp.w = window.innerWidth;
   vp.h = window.innerHeight;
   renderer.resize(vp.w, vp.h);
+  fx.setSize(vp.w, vp.h);
 });
+
+function applyQuality(): void {
+  const tier = quality.tier;
+  world.setQuality(tier);
+  const dpr = window.devicePixelRatio || 1;
+  renderer.setPixelRatio(tier === 'high' ? Math.min(dpr, 2) : tier === 'med' ? Math.min(dpr, 1.5) : 1);
+  renderer.resize(vp.w, vp.h);
+  fx.setSize(vp.w, vp.h);
+}
 
 // --- arrival: deep links start one scene above the target and glide in ---
 const initial = router.parse();
@@ -125,11 +149,33 @@ function frame(): void {
   const dt = Math.min(t - lastTime, 0.05);
   lastTime = t;
 
+  jump.update(t);
   camera.update(dt, t);
-
   world.update(camera.depth, vp, dt, t, reduced);
+
+  // parallax: damped head-sway, fading out while moving fast and at the screen
+  if (!reduced) {
+    const speed = Math.min(1, Math.abs(camera.vel) * 2 + (camera.isTweening ? 1 : 0));
+    const dockFade = Math.min(1, Math.max(0, (4.6 - camera.depth) / 0.4));
+    const amp = PARALLAX_MAX * (1 - speed) * dockFade;
+    const k = Math.min(1, dt * 6);
+    parallax.x += (parallaxTarget.x - parallax.x) * k;
+    parallax.y += (parallaxTarget.y - parallax.y) * k;
+    qParallax.setFromAxisAngle(vAxisY, -parallax.x * amp);
+    world.camera.quaternion.multiply(qParallax);
+    qParallax.setFromAxisAngle(vAxisX, -parallax.y * amp);
+    world.camera.quaternion.multiply(qParallax);
+  }
+
   renderer.setExposure(exposureAt(camera.depth));
-  renderer.render(world.root, world.camera);
+  if (quality.update(dt, t)) applyQuality();
+
+  if (quality.tier === 'low') {
+    renderer.render(world.root, world.camera);
+  } else {
+    fx.apply(fxAt(camera.depth, CHAIN3D, jump.streak(t)));
+    fx.render(dt);
+  }
 
   hud.setActive(Math.round(camera.depth));
   const idx = Math.round(Math.min(Math.max(camera.depth, 0), CHAIN3D.length - 1));
