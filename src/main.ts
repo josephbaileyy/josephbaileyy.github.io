@@ -57,6 +57,9 @@ let pendingPanel: { scene: number; id: string } | null = null;
 const openPanel = (id: string, sceneIndex: number) => {
   panel.open(id);
   router.push(sceneIndex, id);
+  if (id === 'am-cvn') {
+    import('./ui/chirp').then(({ playChirp }) => playChirp());
+  }
 };
 
 const hud = new Hud(

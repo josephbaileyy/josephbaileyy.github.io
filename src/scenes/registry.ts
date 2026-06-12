@@ -1,5 +1,8 @@
 import { Quaternion, Vector3 } from 'three';
 import type { SceneDef3D } from '../engine/types3d';
+import { createEarth, loadEarth } from './earth';
+import { createGalaxy } from './galaxy';
+import { createSolar, loadSolar } from './solar';
 import { placeholderCreate } from './placeholder';
 import {
   daysSinceJ2000,
@@ -46,7 +49,7 @@ const defs: SceneDef3D[] = [
     anchor: { position: [24, 0.5, -10], scale: 8 / 60 },
     exposure: 1.1,
     effects: { bloom: true },
-    create: null as never,
+    create: createGalaxy,
   },
   {
     id: 'solar',
@@ -59,7 +62,8 @@ const defs: SceneDef3D[] = [
     anchor: { position: [EARTH_NOW.x, EARTH_NOW.y, EARTH_NOW.z], scale: 0.06 },
     exposure: 1.0,
     effects: { bloom: true },
-    create: null as never,
+    load: loadSolar,
+    create: createSolar,
   },
   {
     id: 'earth',
@@ -79,7 +83,8 @@ const defs: SceneDef3D[] = [
     },
     exposure: 1.1,
     effects: { bloom: true },
-    create: null as never,
+    load: loadEarth,
+    create: createEarth,
   },
   {
     id: 'stanford',
