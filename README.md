@@ -1,63 +1,75 @@
-# josephbaileyy.github.io — a zoomable universe
+# josephbaileyy.github.io — a zoomable universe, in 3D
 
-A personal site that zooms from the Milky Way down to my desk, Powers-of-Ten style:
+A personal site that dives from the Milky Way down to my desk, Powers-of-Ten style:
 
 ```
 galaxy → solar system → Earth → Stanford → my room → my computer screen
 ```
 
-Built with Vite + TypeScript + SVG. No frameworks, zero runtime dependencies.
+Three.js + TypeScript + Vite. Two runtime dependencies (`three`, `postprocessing`).
 
 ## Run it
 
 ```bash
 npm install
 npm run dev      # local dev server
-npm test         # zoom-math invariant tests
+npm test         # rig-math invariant tests (seam theorem etc.)
 npm run build    # production build to dist/
 ```
 
 ## How it works
 
-The whole camera is one number: `depth ∈ [0, 5]`. `floor(depth)` is the current
-scene, `frac(depth)` is the transition into the next. At most two scenes render
-at once; each one's CSS transform is recomputed fresh from `depth` every frame,
-so per-scene scale stays bounded and there is no floating-point blowup, ever.
-Each scene declares a 16:10 "child anchor" rect — at transition end the child
-scene fits that rect exactly, so handoffs are seamless by construction.
-The math lives in [src/engine/transforms.ts](src/engine/transforms.ts).
+The camera is one number: `depth ∈ [0, 5]`. The scene at `floor(depth)` is
+mounted at the world origin; the next scene nests inside it at that scene's
+**anchor** (position + 1/K scale, K ≈ 13–28). The camera flies a rail from the
+scene's rest pose into the anchor with geometric distance interpolation, and
+crossing an integer boundary just re-evaluates everything in the child's
+coordinates — a pure function of depth, no accumulated transforms, so floats
+stay healthy across 21 orders of magnitude. Most hops are genuine flight (you
+really fly to Earth); the galaxy→solar scale cheat is covered by the galaxy
+fading itself out, and Stanford→room flies through the lit dorm window.
+The math lives in [src/engine/rig.ts](src/engine/rig.ts), with the seam
+theorem tested in [tests/rig.test.ts](tests/rig.test.ts).
+
+Nice touches: Earth's terminator and city lights are computed from the actual
+UTC time; the solar system shows the planets at their real positions today;
+the background stars are the real naked-eye catalog (HYG, packed to 30 KB by
+[scripts/pack-stars.mjs](scripts/pack-stars.mjs)) so the constellations are
+correct; the AM CVn binary's accretion stream is animated and its info panel
+plays a synthesized gravitational-wave chirp with the real
+f ∝ (1−t/tc)^(−3/8) law; the monitor at depth 5 runs a little draggable-window
+OS with a working toy terminal.
 
 ## Editing content (do these!)
 
-Placeholders are marked `TODO(joseph)` in the code and rendered as dashed gold
-boxes on the site:
+Placeholders are marked `TODO(joseph)`:
 
-- **Resume** — replace `public/resume.pdf` with your real resume.
-- **Email + GitHub links** — `src/ui/screen-ui.ts` and `about.html`
-  (`hello@example.com` is a placeholder).
-- **AM CVn project details** — `src/content/panels.ts`.
-- **Bio / projects / interests** — `about.html`.
+- **Resume** — replace `public/resume.pdf`.
+- **AM CVn project details** — `src/content/panels.ts` (used by the panel AND
+  the terminal's `cat amcvn.txt`).
+- **Bio / projects / interests** — `about.html` (the plain, no-JS version).
+- **Terminal flavor** — `src/ui/fake-os/terminal.ts`.
 
-## Adding a scene or hotspot
+## Adding a scene
 
-A scene = one SVG + one entry in [src/scenes/registry.ts](src/scenes/registry.ts).
-
-- Author SVGs at **1600×1000**. Edit in Figma/Inkscape or by hand.
-- The parent scene needs a `<rect id="anchor-…">` with a **16:10 aspect ratio**
-  marking where the child scene emerges. Smaller rect = stronger zoom
-  (ratio K = 1600 / rect width; keep K between ~10 and ~20).
-- Whatever sits at the *center* of the anchor should visually match what sits
-  at the *center* of the child scene (the galaxy's anchor star becomes the
-  solar system's sun) — that's what sells the transition.
-- Hotspots are shapes with an `id`, registered in the manifest as either
-  `{ type: 'zoom', dir: 'in' }` or `{ type: 'panel', panelId: '…' }`.
-  Panel content lives in `src/content/panels.ts`.
+A scene = one module in `src/scenes/` exporting `create(assets)` (and an async
+`load()` if it needs textures) + an entry in
+[src/scenes/registry.ts](src/scenes/registry.ts) with a `restPose` (focus,
+camera direction, 16:10 frame width, fov) and an `anchor` for where the next
+scene nests. Keep `K = parentFrame / (childFrame × anchor.scale)` between ~10
+and ~30, and make whatever the parent draws at the anchor match the child's
+appearance at swap scale (the parent's stand-in goes in `childProxy`).
 
 ## Deploying
 
-Pushing to `main` triggers `.github/workflows/deploy.yml`, which builds and
-publishes to GitHub Pages. One-time setup in the repo:
-**Settings → Pages → Source: "GitHub Actions"**.
+Push to `main` → `.github/workflows/deploy.yml` builds and publishes to GitHub
+Pages. One-time setup: **Settings → Pages → Source: "GitHub Actions"**.
 
-URLs are shareable deep links: `/#/stanford`, `/#/galaxy/am-cvn`, etc.
-`/about.html` is the plain, no-JS version of the site.
+Deep links: `/#/stanford`, `/#/galaxy/am-cvn`, etc. `/about.html` is the
+plain fallback (also shown to no-WebGL visitors).
+
+## Credits
+
+Milky Way panorama © ESO/S. Brunier (CC BY 4.0) · planet textures ©
+Solar System Scope (CC BY 4.0) · star catalog: HYG Database (CC BY-SA 4.0) ·
+Earth day/night imagery: NASA.

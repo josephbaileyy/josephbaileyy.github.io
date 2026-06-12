@@ -151,7 +151,8 @@ export function createRoom(_assets: SceneAssets): SceneInstance {
     new BoxGeometry(1.62, 1.06, 0.1),
     new MeshStandardMaterial({ color: 0x15132e, roughness: 0.5 }),
   );
-  bezel.position.set(1.5, 2.6, -5.55);
+  // front face sits behind the nested screen scene's plane (z=-5.5) — no z-fight
+  bezel.position.set(1.5, 2.6, -5.59);
   bezel.castShadow = true;
   group.add(bezel);
   const wallpaperMat = new ShaderMaterial({
