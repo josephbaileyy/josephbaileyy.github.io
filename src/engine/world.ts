@@ -26,7 +26,7 @@ export class World {
     private defs: SceneDef3D[],
     private source: SceneSource,
   ) {
-    this.camera = new PerspectiveCamera(50, 1, 0.001, 5000);
+    this.camera = new PerspectiveCamera(50, 1, 0.02, 3000);
   }
 
   setQuality(q: QualityTier): void {

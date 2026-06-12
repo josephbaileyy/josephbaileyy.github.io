@@ -79,6 +79,16 @@ const ribbon = new ScaleRibbon(hudEl);
 const SCREEN_INDEX = CHAIN3D.length - 1;
 const a11yLayer = document.getElementById('a11y-layer')!;
 const screenUi = new ScreenUi((id) => openPanel(id, SCREEN_INDEX));
+let osBuilt = false;
+const ensureFakeOs = () => {
+  if (osBuilt) return Promise.resolve();
+  return import('./ui/fake-os/os').then(({ buildFakeOs }) => {
+    if (!osBuilt) {
+      screenUi.setContent(buildFakeOs());
+      osBuilt = true;
+    }
+  });
+};
 
 const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => {
   hud.hideHint();
@@ -111,8 +121,10 @@ function projectUiMountRect(uiMount: Object3D): { x: number; y: number; w: numbe
 function syncScreenUi(settled: number | null): void {
   const uiMount = settled === SCREEN_INDEX ? world.baseInstance()?.uiMount : undefined;
   if (uiMount) {
-    world.camera.updateMatrixWorld();
-    screenUi.show(projectUiMountRect(uiMount), vp);
+    void ensureFakeOs().then(() => {
+      world.camera.updateMatrixWorld();
+      screenUi.show(projectUiMountRect(uiMount), vp);
+    });
   } else {
     screenUi.hide();
   }

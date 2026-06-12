@@ -2,8 +2,10 @@ import { Quaternion, Vector3 } from 'three';
 import type { SceneDef3D } from '../engine/types3d';
 import { createEarth, loadEarth } from './earth';
 import { createGalaxy } from './galaxy';
+import { createRoom } from './room';
+import { createScreen } from './screen';
 import { createSolar, loadSolar } from './solar';
-import { placeholderCreate } from './placeholder';
+import { createStanford } from './stanford';
 import {
   daysSinceJ2000,
   latLonToVec3,
@@ -90,16 +92,16 @@ const defs: SceneDef3D[] = [
     id: 'stanford',
     label: 'Stanford University',
     frameWidthMeters: 316,
-    restPose: { focus: [0, 1.5, 0], dir: [0.55, 0.5, 1], frameWidth: 50, fov: 35 },
+    restPose: { focus: [0, 1.5, 0], dir: [0.55, 0.5, 1], frameWidth: 46, fov: 35 },
     // room frame 18 × 0.1222 = 2.2 apparent units (the lit window) → K ≈ 22.7
     anchor: {
       position: [WINDOW_POS.x, WINDOW_POS.y, WINDOW_POS.z],
       quaternion: quat(WINDOW_QUAT),
       scale: 2.2 / 18,
     },
-    exposure: 0.9,
+    exposure: 1.15,
     effects: { tiltShift: true },
-    create: null as never,
+    create: createStanford,
   },
   {
     id: 'room',
@@ -109,9 +111,9 @@ const defs: SceneDef3D[] = [
     hopIn: { kind: 'wipe', occluderName: 'window-glass' },
     // screen frame 16 × 0.0875 = 1.4 apparent units (monitor width) → K ≈ 12.9
     anchor: { position: [1.5, 2.6, -5.5], scale: 1.4 / 16 },
-    exposure: 0.95,
+    exposure: 1.15,
     effects: { tiltShift: true },
-    create: null as never,
+    create: createRoom,
   },
   {
     id: 'screen',
@@ -120,14 +122,8 @@ const defs: SceneDef3D[] = [
     restPose: { focus: [0, 0, 0], dir: [0, 0, 1], frameWidth: 16, fov: 45 },
     exposure: 1.0,
     effects: {},
-    create: null as never,
+    create: createScreen,
   },
 ];
-
-// Placeholder factories until real scenes land (replaced scene-by-scene).
-const PLACEHOLDER_COLORS = [0x8f7fff, 0xffd479, 0x4f9fff, 0xb8835a, 0xff8f6b, 0x7fd4ff];
-defs.forEach((def, i) => {
-  if ((def.create as unknown) === null) def.create = placeholderCreate(def, PLACEHOLDER_COLORS[i]);
-});
 
 export const CHAIN3D: SceneDef3D[] = defs;

@@ -506,6 +506,168 @@ dialog.panel::backdrop {
   font-family: var(--font-ui);
 }
 
+/* ---------- Fake OS (the computer at depth 5) ---------- */
+
+.fake-os {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-mono);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.os-menubar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--ink-dim);
+  background: rgba(17, 16, 42, 0.85);
+  border-bottom: 1px solid rgba(127, 212, 255, 0.15);
+}
+
+.os-desktop {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+
+.os-window {
+  position: absolute;
+  background: rgba(13, 17, 48, 0.94);
+  border: 1px solid rgba(127, 212, 255, 0.3);
+  border-radius: 10px;
+  box-shadow: 0 14px 44px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  max-width: 92%;
+}
+
+.os-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 11px;
+  font-size: 12px;
+  color: var(--ink-dim);
+  background: rgba(127, 212, 255, 0.08);
+  border-bottom: 1px solid rgba(127, 212, 255, 0.16);
+  cursor: grab;
+  user-select: none;
+}
+
+.os-titlebar:active {
+  cursor: grabbing;
+}
+
+.os-close {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: none;
+  background: #b83a3a;
+  cursor: pointer;
+  padding: 0;
+}
+
+.os-close:hover {
+  background: #e25555;
+}
+
+.os-doc {
+  max-height: 300px;
+  overflow-y: auto;
+  font-size: 13px;
+}
+
+.os-terminal {
+  display: flex;
+  flex-direction: column;
+  height: 280px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #cdd4f0;
+  cursor: text;
+}
+
+.os-term-scrollback {
+  flex: 1;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.os-term-dim {
+  color: var(--ink-dim);
+}
+
+.os-term-cmd {
+  color: var(--gold);
+}
+
+.os-term-input {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.os-prompt {
+  color: var(--cyan);
+  white-space: nowrap;
+}
+
+.os-term-input input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.os-dock {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 10px;
+  background: rgba(27, 23, 64, 0.8);
+  border-top: 1px solid rgba(127, 212, 255, 0.14);
+}
+
+.os-dock-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 9px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--ink-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.os-dock-item:hover,
+.os-dock-item:focus-visible {
+  transform: translateY(-4px) scale(1.08);
+  background: rgba(70, 54, 160, 0.4);
+  color: var(--ink);
+}
+
+.os-dock-icon {
+  font-size: 21px;
+  font-family: var(--font-ui);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .skip-link,
   .hud-hint,
