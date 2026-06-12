@@ -105,10 +105,24 @@ export function placeholderCreate(def: SceneDef3D, colorHex: number) {
       });
     }
 
+    // the screen scene exposes a monitor-face plane for the DOM overlay
+    let uiMount;
+    if (def.id === 'screen') {
+      uiMount = new Mesh(
+        new BoxGeometry(W * 0.62, (W * 0.62) / 1.6, 0.01),
+        new MeshBasicMaterial({ color: 0x10142e }),
+      );
+      uiMount.position.set(...def.restPose.focus);
+      uiMount.userData.w = W * 0.62;
+      uiMount.userData.h = (W * 0.62) / 1.6;
+      group.add(uiMount);
+    }
+
     return {
       group,
       hotspots,
       childProxy,
+      uiMount,
       update(ctx) {
         frame.rotation.z = Math.sin(ctx.time * 0.3) * 0.01;
       },

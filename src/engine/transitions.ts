@@ -2,17 +2,18 @@ import type { Camera } from './camera';
 import type { FxState } from './renderer-fx';
 import type { SceneDef3D } from './types3d';
 
-function gaussian(x: number, sigma: number): number {
-  return Math.exp(-(x * x) / (2 * sigma * sigma));
-}
-
 /**
- * Per-frame effect levels derived purely from depth (plus the jump overlay):
- * - bloom/tilt follow the scenes' effect flags, lerped across hops
- * - 'flare' hops get a white-out gaussian centered exactly on the boundary,
- *   wide streaks leading in/out — symmetric in both travel directions
+ * Per-frame effect levels: bloom/tilt follow the scenes' effect flags, lerped
+ * across hops; streaks and flare come from the jump controller (time-based,
+ * so they always decay — a pure function of depth would stay lit when the
+ * camera settles on a boundary).
  */
-export function fxAt(depth: number, defs: SceneDef3D[], jumpStreak: number): FxState {
+export function fxAt(
+  depth: number,
+  defs: SceneDef3D[],
+  jumpStreak: number,
+  jumpFlare: number,
+): FxState {
   const n = defs.length;
   const d = Math.min(Math.max(depth, 0), n - 1);
   const i = Math.min(Math.floor(d), n - 2);
@@ -24,17 +25,7 @@ export function fxAt(depth: number, defs: SceneDef3D[], jumpStreak: number): FxS
   const tilt =
     flag(defs[i], 'tiltShift') + (flag(defs[i + 1], 'tiltShift') - flag(defs[i], 'tiltShift')) * t;
 
-  let flare = 0;
-  let streak = jumpStreak;
-  for (let j = 1; j < n; j++) {
-    if (defs[j].hopIn?.kind === 'flare') {
-      const x = d - j; // 0 exactly at the boundary
-      flare = Math.max(flare, gaussian(x, 0.055));
-      streak = Math.max(streak, gaussian(x, 0.22) * 0.8);
-    }
-  }
-
-  return { bloom, streak, flare, tilt };
+  return { bloom, streak: jumpStreak, flare: jumpFlare, tilt };
 }
 
 const RAMP = 0.35; // s of streak ramp before the teleport
@@ -61,6 +52,12 @@ export class JumpController {
       return k * k;
     }
     return 0;
+  }
+
+  /** Brief white flash that covers the teleport instant, decaying in time. */
+  flare(now: number): number {
+    if (this.phase !== 'dive') return 0;
+    return Math.exp(-(now - this.start) / 0.1) * 0.85;
   }
 
   go(target: number, now: number): void {

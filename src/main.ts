@@ -1,11 +1,12 @@
 import './styles/main.css';
-import { Quaternion, Vector3 } from 'three';
+import { Object3D, Quaternion, Vector3 } from 'three';
 import { Camera } from './engine/camera';
+import { HotspotManager } from './engine/hotspots';
 import { attachInput } from './engine/input';
 import { QualityMonitor } from './engine/quality';
 import { Renderer3D, webgl2Available } from './engine/renderer';
 import { FxPipeline } from './engine/renderer-fx';
-import { scaleExponent } from './engine/rig';
+import { projectToPx, scaleExponent } from './engine/rig';
 import { fxAt, JumpController } from './engine/transitions';
 import { World, type SceneSource } from './engine/world';
 import type { SceneInstance } from './engine/types3d';
@@ -13,6 +14,7 @@ import { CHAIN3D } from './scenes/registry';
 import { Hud } from './ui/hud';
 import { PanelHost } from './ui/panel';
 import { ScaleRibbon } from './ui/scale-ribbon';
+import { ScreenUi } from './ui/screen-ui';
 import { Router } from './router';
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -80,6 +82,48 @@ const hud = new Hud(
 );
 const ribbon = new ScaleRibbon(hudEl);
 
+const SCREEN_INDEX = CHAIN3D.length - 1;
+const a11yLayer = document.getElementById('a11y-layer')!;
+const screenUi = new ScreenUi((id) => openPanel(id, SCREEN_INDEX));
+
+const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => {
+  hud.hideHint();
+  if (h.action.type === 'panel') {
+    openPanel(h.action.panelId, world.baseIndex());
+  } else {
+    camera.tweenTo(world.baseIndex() + (h.action.dir === 'in' ? 1 : -1), now());
+  }
+});
+
+function projectUiMountRect(uiMount: Object3D): { x: number; y: number; w: number; h: number } {
+  uiMount.updateWorldMatrix(true, false);
+  const w: number = uiMount.userData.w;
+  const h: number = uiMount.userData.h;
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
+  for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    const corner = new Vector3((sx * w) / 2, (sy * h) / 2, 0).applyMatrix4(uiMount.matrixWorld);
+    const px = projectToPx(corner, world.camera, vp);
+    minX = Math.min(minX, px.x);
+    minY = Math.min(minY, px.y);
+    maxX = Math.max(maxX, px.x);
+    maxY = Math.max(maxY, px.y);
+  }
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+function syncScreenUi(settled: number | null): void {
+  const uiMount = settled === SCREEN_INDEX ? world.baseInstance()?.uiMount : undefined;
+  if (uiMount) {
+    world.camera.updateMatrixWorld();
+    screenUi.show(projectUiMountRect(uiMount), vp);
+  } else {
+    screenUi.hide();
+  }
+}
+
 const router = new Router(CHAIN3D, (state) => {
   panel.close();
   pendingPanel = state.panel ? { scene: state.scene, id: state.panel } : null;
@@ -109,6 +153,8 @@ window.addEventListener('resize', () => {
   vp.h = window.innerHeight;
   renderer.resize(vp.w, vp.h);
   fx.setSize(vp.w, vp.h);
+  hotspots.rebuildProxies();
+  if (screenUi.visible) syncScreenUi(camera.settledIndex);
 });
 
 function applyQuality(): void {
@@ -173,7 +219,7 @@ function frame(): void {
   if (quality.tier === 'low') {
     renderer.render(world.root, world.camera);
   } else {
-    fx.apply(fxAt(camera.depth, CHAIN3D, jump.streak(t)));
+    fx.apply(fxAt(camera.depth, CHAIN3D, jump.streak(t), jump.flare(t)));
     fx.render(dt);
   }
 
@@ -181,9 +227,13 @@ function frame(): void {
   const idx = Math.round(Math.min(Math.max(camera.depth, 0), CHAIN3D.length - 1));
   ribbon.update(scaleExponent(camera.depth, CHAIN3D), camera.depth, CHAIN3D[idx].label);
 
+  hotspots.update();
+
   const settled = camera.settledIndex;
   if (settled !== lastSettled) {
     lastSettled = settled;
+    hotspots.setActive(settled !== null ? world.baseInstance() : null);
+    syncScreenUi(settled);
     if (settled !== null) {
       hud.announce(CHAIN3D[settled].label);
       if (!panel.isOpen) router.replace(settled);

@@ -176,6 +176,22 @@ export function nextMountPlan(prev: MountPlan | null, depth: number, n: number):
   return { base, child };
 }
 
+/** Project a world-space point to viewport pixels (z>1 means behind camera). */
+export function projectToPx(
+  point: Vector3,
+  camera: { matrixWorldInverse: Matrix4; projectionMatrix: Matrix4 },
+  vp: Viewport,
+  out = new Vector3(),
+): Vector3 {
+  out
+    .copy(point)
+    .applyMatrix4(camera.matrixWorldInverse)
+    .applyMatrix4(camera.projectionMatrix);
+  out.x = ((out.x + 1) / 2) * vp.w;
+  out.y = ((1 - out.y) / 2) * vp.h;
+  return out;
+}
+
 /** Scale-ribbon exponent: piecewise log-lerp of authored frame widths. */
 export function scaleExponent(depth: number, defs: SceneDef3D[]): number {
   const n = defs.length;

@@ -54,8 +54,9 @@ const defs: SceneDef3D[] = [
     frameWidthMeters: 1e13,
     restPose: { focus: [0, 0, 0], dir: [0, 0.6, 1], frameWidth: 60, fov: 50 },
     // earth frame 36 × 0.06 = 2.16 apparent (globe ∅20 × 0.06 = 1.2 = drawn Earth ∅) → K ≈ 28
+    // (the galaxy→solar scale cheat is hidden scene-side: the galaxy fades
+    // itself out via localT as the camera dives into the anchor star)
     anchor: { position: [EARTH_NOW.x, EARTH_NOW.y, EARTH_NOW.z], scale: 0.06 },
-    hopIn: { kind: 'flare' },
     exposure: 1.0,
     effects: { bloom: true },
     create: null as never,
