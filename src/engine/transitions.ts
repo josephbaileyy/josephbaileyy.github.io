@@ -75,8 +75,10 @@ export class JumpController {
     this.target = target;
   }
 
-  update(now: number): void {
+  update(now: number, ready?: (target: number) => boolean): void {
     if (this.phase === 'ramp' && now - this.start >= RAMP) {
+      // hold at full streak until the destination scenes are loaded
+      if (ready && !ready(this.target)) return;
       const from = this.camera.depth;
       const approach = this.target > from ? this.target - 0.7 : Math.min(this.target + 0.7, this.camera.max);
       this.camera.depth = Math.max(0, Math.min(approach, this.camera.max));

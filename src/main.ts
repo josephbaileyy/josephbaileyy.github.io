@@ -8,10 +8,11 @@ import { Renderer3D, webgl2Available } from './engine/renderer';
 import { FxPipeline } from './engine/renderer-fx';
 import { projectToPx, scaleExponent } from './engine/rig';
 import { fxAt, JumpController } from './engine/transitions';
-import { World, type SceneSource } from './engine/world';
-import type { SceneInstance } from './engine/types3d';
+import { World } from './engine/world';
+import { SceneLoader } from './engine/loader';
 import { CHAIN3D } from './scenes/registry';
 import { Hud } from './ui/hud';
+import { LoadingOverlay } from './ui/loading';
 import { PanelHost } from './ui/panel';
 import { ScaleRibbon } from './ui/scale-ribbon';
 import { ScreenUi } from './ui/screen-ui';
@@ -41,21 +42,11 @@ const panel = new PanelHost();
 const renderer = new Renderer3D(canvas);
 renderer.resize(vp.w, vp.h);
 
-/** Synchronous placeholder factories (async loader lands with real scenes). */
-class SyncSource implements SceneSource {
-  private cache = new Map<number, SceneInstance>();
-  get(i: number): SceneInstance | null {
-    let inst = this.cache.get(i);
-    if (!inst) {
-      inst = CHAIN3D[i].create({});
-      this.cache.set(i, inst);
-    }
-    return inst;
-  }
-  request(): void {}
-}
-
-const world = new World(CHAIN3D, new SyncSource());
+const loading = new LoadingOverlay();
+const loader = new SceneLoader(CHAIN3D, (_i, p) => {
+  if (loading.visible) loading.progress(p);
+});
+const world = new World(CHAIN3D, loader);
 const fx = new FxPipeline(renderer, world.root, world.camera);
 fx.setSize(vp.w, vp.h);
 const quality = new QualityMonitor();
@@ -175,6 +166,8 @@ if (initial) {
     camera.tweenTo(initial.scene, now() + 0.4, 1.6);
   }
 }
+loader.request(Math.floor(camera.depth));
+loader.request(Math.floor(camera.depth) + 1);
 
 function exposureAt(depth: number): number {
   const n = CHAIN3D.length;
@@ -195,8 +188,21 @@ function frame(): void {
   const dt = Math.min(t - lastTime, 0.05);
   lastTime = t;
 
-  jump.update(t);
+  jump.update(t, (target) => {
+    loader.request(target);
+    if (target > 0) loader.request(target - 1);
+    return loader.isReady(target) && (target === 0 || loader.isReady(target - 1));
+  });
   camera.update(dt, t);
+
+  // stall the dive just before an unloaded child (loader catches up quickly)
+  const maxD = world.maxTravelDepth(camera.depth);
+  if (camera.depth > maxD) {
+    camera.depth = maxD;
+    camera.vel = Math.min(camera.vel, 0);
+  }
+
+  if (loading.visible && world.isReady(camera.depth)) loading.hide();
   world.update(camera.depth, vp, dt, t, reduced);
 
   // parallax: damped head-sway, fading out while moving fast and at the screen
@@ -241,6 +247,13 @@ function frame(): void {
         openPanel(pendingPanel.id, settled);
         pendingPanel = null;
       }
+      loader.prune(settled);
+      const prefetch = () => {
+        loader.request(settled + 1);
+        loader.request(settled - 1);
+      };
+      if ('requestIdleCallback' in window) requestIdleCallback(prefetch);
+      else setTimeout(prefetch, 250);
     }
   }
 

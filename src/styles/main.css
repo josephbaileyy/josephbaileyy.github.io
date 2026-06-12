@@ -119,6 +119,45 @@ body {
   color: var(--cyan);
 }
 
+.loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-content: center;
+  gap: 18px;
+  background: radial-gradient(120% 90% at 50% 40%, var(--space-2) 0%, var(--space-1) 55%, var(--space-0) 100%);
+  transition: opacity 0.5s ease;
+}
+
+.loading-overlay.done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-text {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--ink-dim);
+  text-align: center;
+}
+
+.loading-bar {
+  width: 220px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(154, 163, 199, 0.2);
+  overflow: hidden;
+}
+
+.loading-bar i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--gold);
+  transition: width 0.3s ease;
+}
+
 .scale-ribbon {
   position: absolute;
   left: 50%;
