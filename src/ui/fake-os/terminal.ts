@@ -1,18 +1,23 @@
 import { PANELS } from '../../content/panels';
 
-const stripHtml = (html: string): string =>
-  html
-    .replace(/<li>/g, ' · ')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&mdash;/g, '—')
-    .replace(/&ndash;/g, '–')
-    .replace(/&amp;/g, '&')
-    .replace(/\n\s+/g, '\n')
-    .trim();
+// Render the panel HTML to plain text: turn list items into bullets, then let
+// the browser strip tags and decode every entity (&mdash;, &gamma;, …) via
+// textContent. Finally collapse indentation and blank lines.
+const stripHtml = (html: string): string => {
+  const el = document.createElement('div');
+  el.innerHTML = html.replace(/<li>/g, '\n· ').replace(/<\/li>/g, '\n');
+  return (el.textContent ?? '')
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join('\n');
+};
 
 const FILES: Record<string, () => string> = {
   'about.txt': () =>
-    "joseph bailey — physics @ stanford.\ninterested in compact objects, ultracompact binaries,\nand anything that orbits anything else.\n\n(full story: type 'open about')",
+    "joseph bailey — coterm b.s. physics + m.s. cs (ai) @ stanford.\nmachine learning for fundamental physics: making AI a calibrated,\ntrustworthy instrument for science. also a 400m hurdler and pianist.\n\n(full story: type 'open about')",
+  'research.txt': () => stripHtml(PANELS['research'].html),
+  'projects.txt': () => stripHtml(PANELS['projects'].html),
   'amcvn.txt': () => stripHtml(PANELS['am-cvn'].html),
   'resume.pdf': () => "binary file — try 'open resume'",
 };
@@ -45,12 +50,12 @@ export function buildTerminal(): HTMLElement {
 
   const COMMANDS: Record<string, (args: string[]) => string | null> = {
     help: () =>
-      'commands: whoami · ls · cat <file> · open <resume|github|about> · neofetch · echo · date · clear · help',
-    whoami: () => 'joseph — physics @ stanford',
+      'commands: whoami · ls · cat <file> · open <resume|github|linkedin|about> · neofetch · echo · date · clear · help',
+    whoami: () => 'joseph — coterm physics + cs (ai) @ stanford · ml for fundamental physics',
     ls: (args) =>
       args[0] === 'projects' || args[0] === 'projects/'
-        ? 'am-cvn-binaries/   this-website/   your-next-project/'
-        : 'resume.pdf   about.txt   amcvn.txt   projects/',
+        ? 'neutrino-unfolding/   splora/   lord/   soccer-gnn/   eth-wallet/   this-website/'
+        : 'resume.pdf   about.txt   research.txt   projects.txt   amcvn.txt   projects/',
     cat: (args) => {
       if (!args[0]) return 'usage: cat <file>';
       const f = FILES[args[0]];
@@ -64,11 +69,14 @@ export function buildTerminal(): HTMLElement {
         case 'github':
           window.open('https://github.com/josephbaileyy', '_blank', 'noopener');
           return 'opening github…';
+        case 'linkedin':
+          window.open('https://linkedin.com/in/baileyjosephr', '_blank', 'noopener');
+          return 'opening linkedin…';
         case 'about':
           window.location.href = '/about.html';
           return 'navigating…';
         default:
-          return 'usage: open <resume|github|about>';
+          return 'usage: open <resume|github|linkedin|about>';
       }
     },
     echo: (args) => args.join(' '),

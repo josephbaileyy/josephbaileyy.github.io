@@ -350,14 +350,14 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
   group.add(binary.group);
   const binaryLabel = makeLabel([
     ['AM CVn', '#7fd4ff', 34],
-    ['my research — click', '#9aa3c7', 22],
+    ['observational project — click', '#9aa3c7', 22],
   ]);
   binaryLabel.position.copy(binary.group.position).add(new Vector3(0, -4.2, 0));
   group.add(binaryLabel);
 
-  // ---- pulsar (decor) ----
+  // ---- pulsar → particle & neutrino physics research ----
   const pulsar = new Group();
-  pulsar.position.set(-45, 9, -25);
+  pulsar.position.set(-16, 16, -5);
   const pulsarStar = new Mesh(new SphereGeometry(0.25, 12, 8), new MeshBasicMaterial({ color: 0x9fd4ff }));
   pulsar.add(pulsarStar);
   const beamTex = canvasTexture(32, 128, (ctx) => {
@@ -374,10 +374,16 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
   );
   pulsar.add(beams);
   group.add(pulsar);
+  const pulsarLabel = makeLabel([
+    ['particle & neutrino physics', '#9fd4ff', 28],
+    ['my research — click', '#9aa3c7', 22],
+  ]);
+  pulsarLabel.position.copy(pulsar.position).add(new Vector3(0, -3.4, 0));
+  group.add(pulsarLabel);
 
-  // ---- black hole (decor) ----
+  // ---- black hole → ML, systems & security projects ----
   const bh = new Group();
-  bh.position.set(38, -7, -18);
+  bh.position.set(10, -17, 3);
   bh.add(new Mesh(new SphereGeometry(0.5, 24, 16), new MeshBasicMaterial({ color: 0x000000 })));
   const bhDisk = new Mesh(
     new PlaneGeometry(3.2, 3.2),
@@ -407,6 +413,12 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
   bhDisk.rotation.x = -Math.PI / 2 + 0.35;
   bh.add(bhDisk);
   group.add(bh);
+  const bhLabel = makeLabel([
+    ['ML, systems & security', '#ffb784', 28],
+    ['projects — click', '#9aa3c7', 22],
+  ]);
+  bhLabel.position.copy(bh.position).add(new Vector3(0, -3.2, 0));
+  group.add(bhLabel);
 
   // ---- the Sun: gateway anchor ----
   const sunPos = new Vector3(24, 0.5, -10);
@@ -460,15 +472,38 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
   const sunHit = new Mesh(new SphereGeometry(4, 8, 6), new MeshBasicMaterial({ visible: false }));
   sunHit.position.copy(sunPos);
   group.add(sunHit);
+  const pulsarHit = new Mesh(new SphereGeometry(4, 8, 6), new MeshBasicMaterial({ visible: false }));
+  pulsarHit.position.copy(pulsar.position);
+  group.add(pulsarHit);
+  const bhHit = new Mesh(new SphereGeometry(4, 8, 6), new MeshBasicMaterial({ visible: false }));
+  bhHit.position.copy(bh.position);
+  group.add(bhHit);
 
   const hotspots: Hotspot3D[] = [
     {
       object: binaryHit,
-      label: 'AM CVn binary — my research project',
+      label: 'AM CVn — observational photometry project',
       action: { type: 'panel', panelId: 'am-cvn' },
       setHover(on) {
         binaryLabel.material.opacity = on ? 1 : 0.9;
         binary.glint.scale.setScalar(on ? 3.4 : 2.6);
+      },
+    },
+    {
+      object: pulsarHit,
+      label: 'Particle & neutrino physics research',
+      action: { type: 'panel', panelId: 'research' },
+      setHover(on) {
+        pulsarLabel.material.opacity = on ? 1 : 0.9;
+        pulsarStar.scale.setScalar(on ? 1.6 : 1);
+      },
+    },
+    {
+      object: bhHit,
+      label: 'Machine learning, systems & security projects',
+      action: { type: 'panel', panelId: 'projects' },
+      setHover(on) {
+        bhLabel.material.opacity = on ? 1 : 0.9;
       },
     },
     {

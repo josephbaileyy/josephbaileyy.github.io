@@ -12,10 +12,11 @@ const LINKS = `
       <span>welcome.txt — joseph bailey</span>
     </div>
     <div class="screen-links">
-      <a href="/resume.pdf" target="_blank" rel="noopener"><span class="icon">📄</span>resume.pdf</a>
-      <a href="/about.html"><span class="icon">🧑‍🚀</span>about &amp; cv</a>
-      <button type="button" data-panel="projects"><span class="icon">🔭</span>projects</button>
+      <a href="/resume.pdf" target="_blank" rel="noopener"><span class="icon">📄</span>cv.pdf</a>
+      <a href="/about.html"><span class="icon">🧑‍🚀</span>about</a>
+      <button type="button" data-panel="projects"><span class="icon">🗂</span>projects</button>
       <a href="https://github.com/josephbaileyy" target="_blank" rel="noopener"><span class="icon">💻</span>github</a>
+      <a href="https://linkedin.com/in/baileyjosephr" target="_blank" rel="noopener"><span class="icon">🔗</span>linkedin</a>
       <a href="mailto:jrbailey555@gmail.com"><span class="icon">✉️</span>email</a>
     </div>
   </div>

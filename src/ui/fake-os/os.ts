@@ -34,20 +34,21 @@ export function buildFakeOs(): HTMLElement {
 
   const openTerminal = () =>
     wm.open({ id: 'terminal', title: 'terminal — zsh', body: buildTerminal(), x: 8, y: 12, w: 460 });
-  const openAbout = () =>
-    wm.open({ id: 'about', title: 'amcvn.md — my research', body: panelBody('am-cvn'), x: 30, y: 8, w: 400 });
+  const openResearch = () =>
+    wm.open({ id: 'research', title: 'research.md — physics', body: panelBody('research'), x: 30, y: 8, w: 410 });
   const openProjects = () =>
-    wm.open({ id: 'projects', title: 'projects/', body: panelBody('projects'), x: 22, y: 30, w: 380 });
+    wm.open({ id: 'projects', title: 'projects/', body: panelBody('projects'), x: 22, y: 30, w: 390 });
 
   const dock = document.createElement('div');
   dock.className = 'os-dock';
   const items: Array<[string, string, (() => void) | string]> = [
     ['🖥', 'terminal', openTerminal],
-    ['🔭', 'research', openAbout],
+    ['🔬', 'research', openResearch],
     ['🗂', 'projects', openProjects],
-    ['📄', 'resume.pdf', '/resume.pdf'],
-    ['🧑‍🚀', 'about & cv', '/about.html'],
+    ['📄', 'cv.pdf', '/resume.pdf'],
+    ['🧑‍🚀', 'about', '/about.html'],
     ['💻', 'github', 'https://github.com/josephbaileyy'],
+    ['🔗', 'linkedin', 'https://linkedin.com/in/baileyjosephr'],
     ['✉️', 'email', 'mailto:jrbailey555@gmail.com'],
   ];
   for (const [icon, label, action] of items) {
