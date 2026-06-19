@@ -33,13 +33,13 @@ export function buildFakeOs(): HTMLElement {
   const wm = new WindowManager(desktop);
 
   const openTerminal = () =>
-    wm.open({ id: 'terminal', title: 'terminal — zsh', body: buildTerminal(), x: 8, y: 12, w: 460 });
+    wm.open({ id: 'terminal', title: 'terminal — zsh', body: buildTerminal(), x: 8, y: 12, w: 460, h: 320 });
   const openResearch = () =>
-    wm.open({ id: 'research', title: 'research.md — physics', body: panelBody('research'), x: 30, y: 8, w: 410 });
+    wm.open({ id: 'research', title: 'research.md — physics', body: panelBody('research'), x: 30, y: 8, w: 410, h: 350 });
   const openProjects = () =>
-    wm.open({ id: 'projects', title: 'projects/', body: panelBody('projects'), x: 22, y: 30, w: 390 });
+    wm.open({ id: 'projects', title: 'projects/', body: panelBody('projects'), x: 22, y: 30, w: 390, h: 340 });
   const openProfile = () =>
-    wm.open({ id: 'profile', title: 'about.md — joseph', body: panelBody('profile'), x: 16, y: 8, w: 440 });
+    wm.open({ id: 'profile', title: 'about.md — joseph', body: panelBody('profile'), x: 16, y: 8, w: 440, h: 350 });
 
   const dock = document.createElement('div');
   dock.className = 'os-dock';

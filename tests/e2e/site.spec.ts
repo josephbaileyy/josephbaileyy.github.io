@@ -129,3 +129,16 @@ test('Earth offers explicit exploration without replacing universe navigation', 
   await expect(page.getByRole('button', { name: 'explore Earth' })).toBeVisible();
   await expect(page).toHaveURL(/#\/earth$/);
 });
+
+test('BaileyOS windows resize with accessible controls', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name === 'mobile', 'mobile windows intentionally use the full available width');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  await expect(page.getByLabel('terminal input')).toBeVisible();
+  const window = page.locator('.os-window').filter({ has: page.getByLabel('terminal input') });
+  const before = await window.evaluate((node) => node.getBoundingClientRect().width);
+  const handle = page.getByRole('separator', { name: 'Resize terminal — zsh' });
+  await handle.press('ArrowRight');
+  const after = await window.evaluate((node) => node.getBoundingClientRect().width);
+  expect(after).toBeGreaterThan(before);
+});

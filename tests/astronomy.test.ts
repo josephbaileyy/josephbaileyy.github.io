@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { SimulationClock } from '../src/astronomy/clock';
 import { EphemerisProvider, EPHEMERIS_BODIES, unixMsToJdTdb } from '../src/astronomy/ephemeris';
 import { AU_KM, EARTH_RADIUS_AU, PLANETS, planetRadius, SUN_RADIUS_AU } from '../src/scenes/lib/astro';
+import { osculatingOrbitPoints } from '../src/astronomy/orbit';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -60,6 +61,28 @@ describe('JPL ephemeris interpolation', () => {
     expect(position.y).toBeCloseTo(-0.0137054500, 7);
     expect(position.z).toBeCloseTo(0.4092170140, 7);
   });
+
+  it('keeps the displayed chunk accurate while the next time range buffers', async () => {
+    const layouts = Object.fromEntries(EPHEMERIS_BODIES.map((body) => [body, { offset: 0, count: 2, stepDays: 1 }]));
+    const first = new Float64Array([0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]);
+    const second = new Float64Array([10, 0, 0, 1, 0, 0, 11, 0, 0, 1, 0, 0]);
+    let releaseSecond!: (value: { ok: boolean; arrayBuffer: () => Promise<ArrayBuffer> }) => void;
+    const delayed = new Promise<{ ok: boolean; arrayBuffer: () => Promise<ArrayBuffer> }>((resolve) => { releaseSecond = resolve; });
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ version: 1, source: 'test', chunks: [
+        { startYear: 1970, endYear: 1974, startJd: 0, startUnixMs: Date.UTC(1970, 0, 1), file: '/first.bin', bodies: layouts },
+        { startYear: 1975, endYear: 1979, startJd: 0, startUnixMs: Date.UTC(1975, 0, 1), file: '/second.bin', bodies: layouts },
+      ] }) })
+      .mockResolvedValueOnce({ ok: true, arrayBuffer: async () => first.buffer })
+      .mockReturnValueOnce(delayed));
+    const provider = new EphemerisProvider();
+    await provider.loadFor(Date.UTC(1970, 0, 1));
+    const buffering = provider.loadFor(Date.UTC(1975, 0, 1));
+    expect(provider.state('earth', Date.UTC(1970, 0, 1)).accurate).toBe(true);
+    releaseSecond({ ok: true, arrayBuffer: async () => second.buffer });
+    await buffering;
+    expect(provider.state('earth', Date.UTC(1975, 0, 1)).position.x).toBeCloseTo(10, 8);
+  });
 });
 
 describe('physical scale', () => {
@@ -67,5 +90,17 @@ describe('physical scale', () => {
     expect(planetRadius(AU_KM)).toBe(1);
     expect(planetRadius(PLANETS[2].radiusKm)).toBeCloseTo(EARTH_RADIUS_AU, 12);
     expect(SUN_RADIUS_AU / EARTH_RADIUS_AU).toBeGreaterThan(100);
+  });
+
+  it('builds an osculating guide through the supplied orbital state', () => {
+    const mu = 0.0002959122082855911;
+    const eccentricity = 0.1;
+    const periapsis = 1 - eccentricity;
+    const speed = Math.sqrt(mu * (1 + eccentricity) / periapsis);
+    const points = osculatingOrbitPoints(new Vector3(periapsis, 0, 0), new Vector3(0, 0, -speed));
+    expect(points).not.toBeNull();
+    expect(points![0]).toBeCloseTo(periapsis, 6);
+    expect(points![1]).toBeCloseTo(0, 6);
+    expect(points![2]).toBeCloseTo(0, 6);
   });
 });

@@ -58,7 +58,9 @@ export class SolarOverlay {
     if (!active) return;
     const utcMs = simulationClock.utcMs;
     this.date.value = isoDate(utcMs);
-    this.status.textContent = this.provider.status === 'ready' ? 'JPL DE440 · UTC' : 'approximate fallback';
+    this.status.textContent = this.provider.status === 'ready'
+      ? 'JPL DE440 · UTC'
+      : this.provider.status === 'loading' ? 'buffering JPL trajectory…' : 'approximate fallback';
     camera.updateMatrixWorld();
     const placements: Array<{ el: HTMLButtonElement; x: number; y: number }> = [];
     for (const [name, object] of this.bodies) {

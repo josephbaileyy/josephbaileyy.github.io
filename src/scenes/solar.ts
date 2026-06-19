@@ -26,6 +26,7 @@ import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
 import type { AnchorSpec } from '../engine/types3d';
 import { ephemeris, EPHEMERIS_BODIES, type EphemerisBody } from '../astronomy/ephemeris';
 import { simulationClock } from '../astronomy/clock';
+import { osculatingOrbitPoints } from '../astronomy/orbit';
 import { SolarOverlay } from '../ui/solar-overlay';
 import { canvasTexture, loadStars, loadTexture, type StarData } from './lib/assets';
 import {
@@ -146,21 +147,16 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   group.add(new PointLight(0xffffff, 3.2, 0, 0));
   group.add(new AmbientLight(0x16182e, 0.6));
 
-  // ---- orbit rings ----
+  // Orbit guides are recomputed from each JPL position/velocity state, so the
+  // displayed body always lies on its current osculating ellipse.
+  const orbitLines = new Map<EphemerisBody, LineLoop>();
   for (const p of PLANETS) {
-    const r = orbitDistance(p.a);
-    const segs = 96;
-    const positions = new Float32Array(segs * 3);
-    for (let i = 0; i < segs; i++) {
-      const a = (i / segs) * Math.PI * 2;
-      positions[i * 3] = r * Math.cos(a);
-      positions[i * 3 + 2] = r * Math.sin(a);
-    }
-    const geo = new BufferGeometry();
-    geo.setAttribute('position', new BufferAttribute(positions, 3));
-    group.add(
-      new LineLoop(geo, new LineBasicMaterial({ color: 0x5a4ec2, transparent: true, opacity: 0.42 })),
+    const line = new LineLoop(
+      new BufferGeometry(),
+      new LineBasicMaterial({ color: 0x5a4ec2, transparent: true, opacity: 0.42 }),
     );
+    group.add(line);
+    orbitLines.set(p.name as EphemerisBody, line);
   }
 
   // ---- planets ----
@@ -259,6 +255,12 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   const overlay = new SolarOverlay(trackedObjects, ephemeris);
   const earthPosition = new Vector3();
   const velocity = new Vector3();
+  const velocities = new Map<EphemerisBody, Vector3>(EPHEMERIS_BODIES.map((name) => [name, new Vector3()]));
+  let displayUtcMs = simulationClock.utcMs;
+  let orbitEpochMs = -Infinity;
+  let orbitUpdateTime = -Infinity;
+  let requestedYear = new Date(displayUtcMs).getUTCFullYear();
+  let prefetchedYear = Number.NaN;
 
   return {
     group,
@@ -267,12 +269,35 @@ export function createSolar(assets: SceneAssets): SceneInstance {
     childAnchor,
     update(ctx) {
       sunMat.uniforms.uTime.value = ctx.time;
-      if (!ephemeris.hasDate(ctx.utcMs) && ephemeris.status !== 'loading') void ephemeris.loadFor(ctx.utcMs);
+      const targetYear = new Date(ctx.utcMs).getUTCFullYear();
+      if (ephemeris.isLoaded(ctx.utcMs)) displayUtcMs = ctx.utcMs;
+      else if (targetYear !== requestedYear) {
+        requestedYear = targetYear;
+        void ephemeris.loadFor(ctx.utcMs);
+      }
+      const direction = Math.sign(simulationClock.speed);
+      if (direction !== 0 && Math.abs(simulationClock.speed) >= 86400) {
+        const prefetchTime = ctx.utcMs + direction * 2 * 365.25 * 86400000;
+        const year = new Date(prefetchTime).getUTCFullYear();
+        if (year !== prefetchedYear && !ephemeris.isLoaded(prefetchTime)) {
+          prefetchedYear = year;
+          void ephemeris.loadFor(prefetchTime);
+        }
+      }
       for (const name of EPHEMERIS_BODIES) {
         const object = trackedObjects.get(name)!;
-        ephemeris.state(name, ctx.utcMs, object.position, velocity);
+        ephemeris.state(name, displayUtcMs, object.position, velocity);
+        velocities.get(name)!.copy(velocity);
         const entry = planetMeshes.get(name);
         if (entry && !ctx.reducedMotion) entry.mesh.rotation.y += ctx.dt * entry.spin;
+      }
+      if (Math.abs(displayUtcMs - orbitEpochMs) >= 30 * 86400000 && ctx.time - orbitUpdateTime >= 0.25) {
+        orbitEpochMs = displayUtcMs;
+        orbitUpdateTime = ctx.time;
+        for (const p of PLANETS) {
+          const name = p.name as EphemerisBody;
+          updateOsculatingOrbit(orbitLines.get(name)!, trackedObjects.get(name)!.position, velocities.get(name)!);
+        }
       }
       earthPosition.copy(earthEntry.pivot.position);
       childAnchor.position[0] = earthPosition.x;
@@ -293,4 +318,11 @@ export function createSolar(assets: SceneAssets): SceneInstance {
       });
     },
   };
+}
+
+function updateOsculatingOrbit(line: LineLoop, position: Vector3, velocity: Vector3): void {
+  const points = osculatingOrbitPoints(position, velocity);
+  if (!points) return;
+  line.geometry.setAttribute('position', new BufferAttribute(points, 3));
+  line.geometry.computeBoundingSphere();
 }
