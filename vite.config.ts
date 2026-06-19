@@ -12,6 +12,12 @@ export default defineConfig({
         main: 'index.html',
         about: 'about.html',
       },
+      output: {
+        manualChunks(id) {
+          if (id.includes('/node_modules/postprocessing/')) return 'postfx';
+          if (id.includes('/node_modules/three/')) return 'three';
+        },
+      },
     },
   },
 });

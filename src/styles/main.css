@@ -135,6 +135,22 @@ body {
   pointer-events: none;
 }
 
+.loading-overlay.failed {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.loading-retry {
+  justify-self: center;
+  border: 1px solid rgba(127, 212, 255, 0.5);
+  border-radius: 999px;
+  padding: 9px 18px;
+  background: rgba(42, 35, 86, 0.8);
+  color: var(--ink);
+  font: 600 13px var(--font-mono);
+  cursor: pointer;
+}
+
 .loading-text {
   font-family: var(--font-mono);
   font-size: 14px;
@@ -309,6 +325,14 @@ body {
   border-color: var(--ink-dim);
 }
 
+.hud-zoom button:focus-visible,
+.loading-retry:focus-visible,
+.panel-close:focus-visible,
+.os-close:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
 .hud-hint {
   position: absolute;
   left: 50%;
@@ -335,6 +359,14 @@ body {
   opacity: 0;
 }
 
+#hud[data-mode='computer'] .hud-name,
+#hud[data-mode='computer'] .hud-dots,
+#hud[data-mode='computer'] .hud-hint,
+#hud[data-mode='computer'] .scale-ribbon {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* ---------- Panels ---------- */
 
 dialog.panel {
@@ -346,6 +378,8 @@ dialog.panel {
   width: calc(100vw - 48px);
   padding: 0;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.6);
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
 }
 
 dialog.panel::backdrop {
@@ -416,6 +450,46 @@ dialog.panel::backdrop {
 
 .panel-body ul {
   padding-left: 20px;
+}
+
+.panel-list {
+  list-style: none;
+  padding: 0 !important;
+  margin: 0;
+}
+
+.panel-list > li {
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(154, 163, 199, 0.16);
+}
+
+.panel-list > li:last-child {
+  border-bottom: 0;
+}
+
+.panel-list p {
+  margin: 5px 0 0;
+}
+
+.panel-meta {
+  display: block;
+  margin-top: 6px;
+  color: var(--ink-dim);
+  font: 11px/1.5 var(--font-mono);
+}
+
+.panel-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 22px;
+}
+
+.panel-links a {
+  border: 1px solid rgba(127, 212, 255, 0.3);
+  border-radius: 999px;
+  padding: 6px 11px;
+  text-decoration: none;
 }
 
 /* ---------- Screen UI (the computer at depth 5) ---------- */
@@ -564,8 +638,8 @@ dialog.panel::backdrop {
 }
 
 .os-close {
-  width: 11px;
-  height: 11px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   border: none;
   background: #b83a3a;
@@ -639,6 +713,10 @@ dialog.panel::backdrop {
   border-top: 1px solid rgba(127, 212, 255, 0.14);
 }
 
+body[data-hud-mode='computer'] .os-dock {
+  margin-right: 60px;
+}
+
 .os-dock-item {
   display: flex;
   flex-direction: column;
@@ -673,5 +751,101 @@ dialog.panel::backdrop {
   .hud-hint,
   .screen-ui {
     transition: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .hud-name {
+    left: 18px;
+    bottom: 14px;
+  }
+
+  .hud-dots {
+    right: 18px;
+    gap: 12px;
+  }
+
+  .hud-dot {
+    width: 14px;
+    height: 14px;
+  }
+
+  #hud[data-mode='computer'] .hud-zoom {
+    right: 10px;
+    bottom: 10px;
+  }
+
+  #hud[data-mode='computer'] .hud-zoom button {
+    width: 42px;
+    height: 42px;
+    background: rgba(11, 16, 38, 0.9);
+  }
+
+  .os-menubar {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  .os-desktop {
+    padding: 10px;
+  }
+
+  .os-window {
+    left: 10px !important;
+    top: 10px !important;
+    width: calc(100% - 20px) !important;
+    max-width: none;
+    max-height: calc(100% - 20px);
+  }
+
+  .os-titlebar {
+    cursor: default;
+    min-height: 38px;
+  }
+
+  .os-terminal {
+    height: min(310px, 48vh);
+    font-size: 12px;
+  }
+
+  .os-doc {
+    max-height: min(420px, 58vh);
+  }
+
+  .os-dock {
+    justify-content: flex-start;
+    gap: 2px;
+    overflow-x: auto;
+    padding: 7px 58px 7px 8px;
+    scrollbar-width: none;
+  }
+
+  .os-dock::-webkit-scrollbar {
+    display: none;
+  }
+
+  .os-dock-item {
+    flex: 0 0 58px;
+    min-height: 52px;
+    padding: 4px 5px;
+  }
+
+  .os-dock-icon {
+    font-size: 19px;
+  }
+
+  dialog.panel {
+    width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+
+  .panel-head {
+    align-items: flex-start;
+    padding: 16px 16px 0;
+  }
+
+  .panel-body {
+    padding: 10px 16px 18px;
+    font-size: 14px;
   }
 }

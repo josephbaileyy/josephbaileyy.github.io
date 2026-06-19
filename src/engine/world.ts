@@ -66,7 +66,7 @@ export class World {
     const n = this.defs.length;
     const plan = nextMountPlan(this.plan, depth, n);
 
-    if (plan !== this.plan) {
+    if (plan !== this.plan || !this.isPlanMounted(plan)) {
       this.applyPlan(plan);
       this.plan = plan;
     }
@@ -131,5 +131,13 @@ export class World {
         if (child.childProxy) child.childProxy.visible = true;
       }
     }
+  }
+
+  private isPlanMounted(plan: MountPlan): boolean {
+    const base = this.source.get(plan.base);
+    if (!base || base.group.parent !== this.root) return false;
+    if (plan.child === null) return true;
+    const child = this.source.get(plan.child);
+    return Boolean(child && child.group.parent === this.root);
   }
 }

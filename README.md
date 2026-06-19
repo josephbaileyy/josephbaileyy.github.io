@@ -15,6 +15,7 @@ npm install
 npm run dev      # local dev server
 npm test         # rig-math invariant tests (seam theorem etc.)
 npm run build    # production build to dist/
+npm run test:e2e # desktop + mobile browser smoke tests (after a build)
 ```
 
 ## How it works
@@ -28,6 +29,8 @@ coordinates — a pure function of depth, no accumulated transforms, so floats
 stay healthy across 21 orders of magnitude. Most hops are genuine flight (you
 really fly to Earth); the galaxy→solar scale cheat is covered by the galaxy
 fading itself out, and Stanford→room flies through the lit dorm window.
+Scene code and textures load on demand, with the current scene's neighbours
+prefetched for smooth travel and a retryable error state if a scene fails.
 The math lives in [src/engine/rig.ts](src/engine/rig.ts), with the seam
 theorem tested in [tests/rig.test.ts](tests/rig.test.ts).
 
@@ -40,15 +43,14 @@ plays a synthesized gravitational-wave chirp with the real
 f ∝ (1−t/tc)^(−3/8) law; the monitor at depth 5 runs a little draggable-window
 OS with a working toy terminal.
 
-## Editing content (do these!)
+## Editing content
 
-Placeholders are marked `TODO(joseph)`:
-
+- **Portfolio content** — edit `src/content/portfolio.json`. Panels, BaileyOS,
+  terminal files, and the plain page all consume this source.
+- **Plain page** — `npm run generate:about` regenerates `about.html`; dev and
+  production builds run this automatically.
 - **Resume** — replace `public/resume.pdf`.
-- **AM CVn project details** — `src/content/panels.ts` (used by the panel AND
-  the terminal's `cat amcvn.txt`).
-- **Bio / projects / interests** — `about.html` (the plain, no-JS version).
-- **Terminal flavor** — `src/ui/fake-os/terminal.ts`.
+- **Terminal behavior** — `src/ui/fake-os/terminal.ts`.
 
 ## Adding a scene
 

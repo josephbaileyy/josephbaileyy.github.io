@@ -43,14 +43,27 @@ const renderer = new Renderer3D(canvas);
 renderer.resize(vp.w, vp.h);
 
 const loading = new LoadingOverlay();
-const loader = new SceneLoader(CHAIN3D, (_i, p) => {
-  if (loading.visible) loading.progress(p);
-});
+const loader = new SceneLoader(
+  CHAIN3D,
+  (_i, p) => {
+    if (loading.visible) loading.progress(p);
+  },
+  (index, status) => {
+    if (status === 'failed' && Math.abs(index - camera.depth) <= 1) {
+      loading.fail(CHAIN3D[index].label, () => loader.retry(index));
+    }
+    if (status === 'ready' && loading.visible && world?.isReady(camera.depth)) loading.hide();
+  },
+);
 const world = new World(CHAIN3D, loader);
 const fx = new FxPipeline(renderer, world.root, world.camera);
 fx.setSize(vp.w, vp.h);
 const quality = new QualityMonitor();
 const jump = new JumpController(camera, reduced);
+const requestDestination = (index: number): void => {
+  loader.request(index);
+  loader.request(index - 1);
+};
 
 let pendingPanel: { scene: number; id: string } | null = null;
 
@@ -67,6 +80,7 @@ const hud = new Hud(
   CHAIN3D,
   (index) => {
     hud.hideHint();
+    requestDestination(index);
     jump.go(index, now());
   },
   (dir) => {
@@ -121,11 +135,14 @@ function projectUiMountRect(uiMount: Object3D): { x: number; y: number; w: numbe
 function syncScreenUi(settled: number | null): void {
   const uiMount = settled === SCREEN_INDEX ? world.baseInstance()?.uiMount : undefined;
   if (uiMount) {
+    hud.setMode('computer');
     void ensureFakeOs().then(() => {
+      if (camera.settledIndex !== SCREEN_INDEX) return;
       world.camera.updateMatrixWorld();
       screenUi.show(projectUiMountRect(uiMount), vp);
     });
   } else {
+    hud.setMode('travel');
     screenUi.hide();
   }
 }
@@ -133,7 +150,10 @@ function syncScreenUi(settled: number | null): void {
 const router = new Router(CHAIN3D, (state) => {
   panel.close();
   pendingPanel = state.panel ? { scene: state.scene, id: state.panel } : null;
-  if (Math.abs(state.scene - camera.depth) > 1e-6) jump.go(state.scene, now());
+  if (Math.abs(state.scene - camera.depth) > 1e-6) {
+    requestDestination(state.scene);
+    jump.go(state.scene, now());
+  }
 });
 
 panel.onClose = () => {
@@ -181,6 +201,8 @@ if (initial) {
     camera.tweenTo(initial.scene, now() + 0.4, 1.6);
   }
 }
+// Warm only the active scene pair. Every settled scene prefetches its direct
+// neighbours; the world remounts a plan as soon as a delayed instance arrives.
 loader.request(Math.floor(camera.depth));
 loader.request(Math.floor(camera.depth) + 1);
 
@@ -196,6 +218,7 @@ function exposureAt(depth: number): number {
 
 // --- main loop ---
 let lastSettled: number | null = -1;
+let lastBaseInstance: ReturnType<World['baseInstance']> = null;
 let lastTime = now();
 
 function frame(): void {
@@ -210,12 +233,10 @@ function frame(): void {
   });
   camera.update(dt, t);
 
-  // stall the dive just before an unloaded child (loader catches up quickly)
+  // Hold a dive just short of an unloaded child. Keep momentum so motion
+  // resumes as soon as the adjacent-scene prefetch completes.
   const maxD = world.maxTravelDepth(camera.depth);
-  if (camera.depth > maxD) {
-    camera.depth = maxD;
-    camera.vel = Math.min(camera.vel, 0);
-  }
+  if (camera.depth > maxD) camera.depth = maxD;
 
   if (loading.visible && world.isReady(camera.depth)) loading.hide();
   world.update(camera.depth, vp, dt, t, reduced);
@@ -251,9 +272,11 @@ function frame(): void {
   hotspots.update();
 
   const settled = camera.settledIndex;
-  if (settled !== lastSettled) {
+  const baseInstance = settled !== null ? world.baseInstance() : null;
+  if (settled !== lastSettled || baseInstance !== lastBaseInstance) {
     lastSettled = settled;
-    hotspots.setActive(settled !== null ? world.baseInstance() : null);
+    lastBaseInstance = baseInstance;
+    hotspots.setActive(baseInstance);
     syncScreenUi(settled);
     if (settled !== null) {
       hud.announce(CHAIN3D[settled].label);
@@ -262,13 +285,9 @@ function frame(): void {
         openPanel(pendingPanel.id, settled);
         pendingPanel = null;
       }
+      loader.request(settled - 1);
+      loader.request(settled + 1);
       loader.prune(settled);
-      const prefetch = () => {
-        loader.request(settled + 1);
-        loader.request(settled - 1);
-      };
-      if ('requestIdleCallback' in window) requestIdleCallback(prefetch);
-      else setTimeout(prefetch, 250);
     }
   }
 

@@ -71,6 +71,11 @@ export interface SceneInstance {
 
 export type SceneAssets = Record<string, unknown>;
 
+export interface SceneModule {
+  load?(onProgress?: (p: number) => void): Promise<SceneAssets>;
+  create(assets: SceneAssets): SceneInstance;
+}
+
 export interface SceneDef3D {
   id: SceneId;
   label: string;
@@ -83,7 +88,6 @@ export interface SceneDef3D {
   /** tone-mapping exposure when settled here (lerped across hops) */
   exposure?: number;
   effects?: { bloom?: boolean; tiltShift?: boolean };
-  /** optional async asset load; result is passed to create() */
-  load?(onProgress?: (p: number) => void): Promise<SceneAssets>;
-  create(assets: SceneAssets): SceneInstance;
+  /** Lazy code boundary for the scene and its optional asset loader. */
+  importScene(): Promise<SceneModule>;
 }

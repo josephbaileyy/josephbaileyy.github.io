@@ -1,0 +1,107 @@
+{
+  "profile": {
+    "name": "Joseph Bailey",
+    "tagline": "coterm b.s. physics + m.s. cs (ai) @ stanford · ml for fundamental physics",
+    "summary": "I'm a coterminal B.S. Physics and M.S. Computer Science (AI track) student at Stanford, graduating June 2027. I work on machine learning for fundamental physics—making AI a rigorous, calibrated instrument for science, with honest uncertainties. I'm drawn to compact objects, statistical inference, and secure systems. Off the clock I run the 400-meter hurdles for Stanford Track & Field and play jazz and classical piano.",
+    "location": "Stanford, CA",
+    "graduation": "June 2027"
+  },
+  "links": [
+    { "label": "CV (PDF)", "href": "/resume.pdf", "kind": "primary" },
+    { "label": "GitHub", "href": "https://github.com/josephbaileyy" },
+    { "label": "LinkedIn", "href": "https://linkedin.com/in/baileyjosephr" },
+    { "label": "Email", "href": "mailto:jrbailey555@gmail.com" },
+    { "label": "Stanford", "href": "mailto:josephrb@stanford.edu" }
+  ],
+  "research": [
+    {
+      "title": "Neutrino cross-section unfolding with machine learning",
+      "description": "Implementing and evaluating OmniFold, an unbinned ML unfolding framework, on MINERvA neutrino-scattering data. I benchmark it against iterative Bayesian unfolding through closure tests, generator stress tests, bootstrap resampling, and bias–variance analysis, asking whether high-dimensional unbinned unfolding can reduce structural model bias in the few-GeV regime.",
+      "meta": "Prof. Benjamin Nachman, Stanford Physics · 2026–present · 2026 Stanford Major Grant"
+    },
+    {
+      "title": "Collider machine learning — SLAC",
+      "description": "On a four-person team proposing a γγ collider, using Delphes, ROOT, and Unix HPC to simulate and analyze terabytes of collider data and applying ML to study pileup effects on di-Higgs detection.",
+      "meta": "SLAC National Accelerator Laboratory · 2024–present"
+    },
+    {
+      "title": "Gaussian-process bump hunting — Jefferson Lab",
+      "description": "Used Gaussian-process regression to search for excesses from the hypothetical X17 particle in collider data and presented the work at the APS Far West Section meeting at UC Santa Cruz.",
+      "meta": "Jefferson Lab · 2025"
+    },
+    {
+      "title": "AM CVn time-series photometry",
+      "description": "Reduced 140 V-band CCD images and performed AAVSO differential photometry on 138 retained exposures, recovering variability consistent with the known 1051-second positive-superhump family.",
+      "meta": "PHYSICS 100: Observational Astrophysics · Spring 2026"
+    },
+    {
+      "title": "Interferometry and suspension systems — Caltech LIGO Lab",
+      "description": "Supported simulation, testing, and preparation of suspension elements, and conducted laser-beam interferometry experiments with Python analysis.",
+      "meta": "Caltech LIGO Lab · 2023"
+    }
+  ],
+  "projects": [
+    {
+      "title": "This website",
+      "description": "A Powers-of-Ten-style zoom from the Milky Way to my desk, built with TypeScript and Three.js with a real star catalog, live Earth terminator, and animated AM CVn binary.",
+      "href": "https://github.com/josephbaileyy/josephbaileyy.github.io",
+      "linkLabel": "Source"
+    },
+    {
+      "title": "MINERvA-OmniFold",
+      "description": "An implementation and evaluation pipeline for unbinned machine-learning unfolding of neutrino cross-sections.",
+      "href": "https://github.com/josephbaileyy/MINERvA-OmniFold",
+      "linkLabel": "GitHub"
+    },
+    {
+      "title": "SPLoRA — parameter-efficient GPT-2",
+      "description": "LoRA fine-tuning of GPT-2 for paraphrase detection and Shakespearean sonnet generation: 0.888 development accuracy while training about 1% of parameters, with 41.94 chrF.",
+      "href": "https://github.com/josephbaileyy/splora",
+      "linkLabel": "GitHub"
+    },
+    {
+      "title": "LoRD — video person re-identification",
+      "description": "Video person re-identification with DINOv2/v3 vision backbones, LoRA adaptation, BNNeck, and temporal attention, evaluated on the MARS benchmark.",
+      "href": "https://github.com/anandkrishnan27/lord",
+      "linkLabel": "GitHub"
+    },
+    {
+      "title": "Soccer action prediction with graph neural networks",
+      "description": "Modeled soccer possessions as heterogeneous graphs using GraphSAGE and a Relational Graph Transformer with PyG and RelBench to predict the best next action.",
+      "href": "https://github.com/josephbaileyy/cs-224w-project",
+      "linkLabel": "GitHub"
+    },
+    {
+      "title": "Systems and security",
+      "description": "Built a Solidity and Foundry 2-of-3 multisig Ethereum wallet, an end-to-end encrypted chat client implementing the Double Ratchet, and Pintos OS enhancements spanning scheduling, system calls, and virtual memory."
+    }
+  ],
+  "education": [
+    {
+      "title": "Stanford University — B.S. Physics & M.S. Computer Science (AI)",
+      "description": "Coterminal degree, expected June 2027. Selected coursework: Quantum Mechanics I–II, General Relativity, Stellar & Galactic Astrophysics, Observational Astrophysics, Machine Learning, NLP with Deep Learning, Machine Learning with Graphs, Deep Learning for Computer Vision, Operating Systems, Cryptography, and Theory of Computation.",
+      "meta": "Stanford, CA · expected 2027"
+    }
+  ],
+  "honors": [
+    "2026 Stanford Major Grant (neutrino unfolding research)",
+    "National Merit Finalist",
+    "ACS U.S. National Chemistry Olympiad National Finalist",
+    "Stanford Track & Field Heart and Hustle Award, 2025"
+  ],
+  "beyond": [
+    "NCAA Division I track & field — 400-meter hurdles for Stanford",
+    "Jazz (alto sax, flute, clarinet) and classical piano — MTAC Level 10",
+    "Incoming Product Management Intern, WisdomTree Digital Movement (digital assets), Summer 2026",
+    "Interested in scientific ML, compact-object astrophysics, secure systems, and digital assets"
+  ],
+  "amCvn": {
+    "title": "AM CVn — time-series photometry",
+    "kicker": "observational astrophysics · physics 100",
+    "paragraphs": [
+      "AM Canum Venaticorum is an ultracompact binary: a white dwarf accreting helium-rich material from a degenerate companion in an orbit of just 5–65 minutes. Systems like it are among the strongest known sources of millihertz gravitational waves—verification binaries the LISA mission is guaranteed to detect.",
+      "For Physics 100: Introduction to Observational Astrophysics (Spring 2026), I ran physically motivated time-series photometry on AM CVn. I reduced 140 V-band CCD images with bias, dark, and star-masked flat-field calibration, then performed AAVSO-sequence differential photometry on the 138 retained exposures.",
+      "The light curve recovered variability consistent with the known 1051-second positive-superhump or harmonic family, and I assessed whether the 111-minute observing baseline could meaningfully refine published period constraints."
+    ]
+  }
+}

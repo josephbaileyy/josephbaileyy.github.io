@@ -50,6 +50,7 @@ export class WindowManager {
     let drag: { px: number; py: number; left: number; top: number } | null = null;
     bar.addEventListener('pointerdown', (e) => {
       if (e.target === close) return;
+      if (e.pointerType === 'touch' || window.matchMedia('(max-width: 760px)').matches) return;
       drag = { px: e.clientX, py: e.clientY, left: win.offsetLeft, top: win.offsetTop };
       bar.setPointerCapture(e.pointerId);
     });

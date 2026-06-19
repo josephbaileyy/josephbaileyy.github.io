@@ -1,8 +1,13 @@
 import type { Camera } from './camera';
 
-const WHEEL_GAIN = 0.0011; // depth-velocity per wheel pixel
+const WHEEL_GAIN = 0.013; // depth-velocity impulse per wheel pixel
 const PINCH_GAIN = 0.55; // depth per doubling of finger spread
 const LINE_HEIGHT = 16; // px per wheel line (deltaMode 1)
+
+// Surfaces inside the fake-OS that own their own scroll — wheel over these
+// must NOT zoom the camera (and must keep native scrolling).
+const SCROLLABLE = '.os-term-scrollback, .os-doc';
+const INTERACTIVE = 'input, textarea, select, button, a, [contenteditable="true"]';
 
 export interface InputOptions {
   reducedMotion: boolean;
@@ -25,10 +30,17 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
   // Reduced motion: accumulate wheel and step whole scenes instantly.
   let reducedAcc = 0;
 
-  stage.addEventListener(
+  // Bound to window (not the canvas) so wheel zooms even when a DOM overlay
+  // like the fake-OS sits on top of the canvas.
+  window.addEventListener(
     'wheel',
     (e) => {
       if (opts.isModalOpen()) return;
+      if (e.ctrlKey || e.metaKey) return;
+      // let scrollable OS surfaces (terminal, doc windows) scroll natively
+      const tgt = e.target;
+      if (!(tgt instanceof Element) || !tgt.closest('#universe, .screen-ui')) return;
+      if (tgt.closest(SCROLLABLE) || tgt.closest(INTERACTIVE) || tgt.closest('dialog')) return;
       e.preventDefault();
       markInteracted();
       const px = e.deltaMode === 1 ? e.deltaY * LINE_HEIGHT : e.deltaY;
@@ -40,10 +52,8 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
         }
         return;
       }
-      // Scroll up / pinch-out = zoom deeper. ctrlKey wheels are trackpad
-      // pinches in Chrome/Firefox — same axis, finer deltas, higher gain.
-      const gain = e.ctrlKey ? WHEEL_GAIN * 3 : WHEEL_GAIN;
-      camera.nudge(-px * gain * 60, now());
+      // Scroll up = zoom deeper. Modifier-assisted wheel remains browser zoom.
+      camera.nudge(-px * WHEEL_GAIN, now());
     },
     { passive: false },
   );
@@ -66,12 +76,15 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
     return Math.hypot(p1.x - p2.x, p1.y - p2.y);
   };
 
-  stage.addEventListener('pointerdown', (e) => {
+  window.addEventListener('pointerdown', (e) => {
+    const target = e.target;
+    if (!(target instanceof Element) || !target.closest('#universe, .screen-ui')) return;
+    if (target.closest(SCROLLABLE) || target.closest(INTERACTIVE) || target.closest('dialog')) return;
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.size === 2) lastSpread = spread();
   });
 
-  stage.addEventListener('pointermove', (e) => {
+  window.addEventListener('pointermove', (e) => {
     if (!pointers.has(e.pointerId)) return;
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.size === 2 && !opts.isModalOpen()) {
@@ -88,25 +101,12 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
     pointers.delete(e.pointerId);
     lastSpread = 0;
   };
-  stage.addEventListener('pointerup', releasePointer);
-  stage.addEventListener('pointercancel', releasePointer);
+  window.addEventListener('pointerup', releasePointer);
+  window.addEventListener('pointercancel', releasePointer);
 
   // --- Safari trackpad pinch (proprietary gesture events) ---
-  let gestureScale = 1;
-  stage.addEventListener('gesturestart' as keyof HTMLElementEventMap, (e) => {
-    e.preventDefault();
-    gestureScale = 1;
-  });
-  stage.addEventListener('gesturechange' as keyof HTMLElementEventMap, (e) => {
-    e.preventDefault();
-    if (opts.isModalOpen()) return;
-    const scale = (e as unknown as { scale: number }).scale;
-    if (scale > 0 && gestureScale > 0) {
-      markInteracted();
-      camera.dragBy(Math.log2(scale / gestureScale) * PINCH_GAIN, now());
-    }
-    gestureScale = scale;
-  });
+  // Native trackpad gestures remain browser zoom for accessibility. Touch
+  // pinching on the canvas is handled by pointer events above.
 
   // --- Double-click zooms one scene deeper (map idiom) ---
   stage.addEventListener('dblclick', (e) => {
@@ -120,7 +120,7 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
   window.addEventListener('keydown', (e) => {
     if (opts.isModalOpen()) return;
     const target = e.target as HTMLElement | null;
-    if (target && /^(input|textarea|select)$/i.test(target.tagName)) return;
+    if (target?.closest(INTERACTIVE)) return;
     const step = (dir: 1 | -1) => {
       e.preventDefault();
       markInteracted();

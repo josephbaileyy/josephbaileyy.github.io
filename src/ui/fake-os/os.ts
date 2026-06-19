@@ -38,6 +38,8 @@ export function buildFakeOs(): HTMLElement {
     wm.open({ id: 'research', title: 'research.md — physics', body: panelBody('research'), x: 30, y: 8, w: 410 });
   const openProjects = () =>
     wm.open({ id: 'projects', title: 'projects/', body: panelBody('projects'), x: 22, y: 30, w: 390 });
+  const openProfile = () =>
+    wm.open({ id: 'profile', title: 'about.md — joseph', body: panelBody('profile'), x: 16, y: 8, w: 440 });
 
   const dock = document.createElement('div');
   dock.className = 'os-dock';
@@ -46,7 +48,7 @@ export function buildFakeOs(): HTMLElement {
     ['🔬', 'research', openResearch],
     ['🗂', 'projects', openProjects],
     ['📄', 'cv.pdf', '/resume.pdf'],
-    ['🧑‍🚀', 'about', '/about.html'],
+    ['🧑‍🚀', 'about', openProfile],
     ['💻', 'github', 'https://github.com/josephbaileyy'],
     ['🔗', 'linkedin', 'https://linkedin.com/in/baileyjosephr'],
     ['✉️', 'email', 'mailto:jrbailey555@gmail.com'],

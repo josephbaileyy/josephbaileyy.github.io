@@ -4,7 +4,7 @@ export class Hud {
   private hint: HTMLDivElement;
 
   constructor(
-    root: HTMLElement,
+    private root: HTMLElement,
     scenes: ReadonlyArray<{ label: string }>,
     onNavigate: (index: number) => void,
     onZoomStep: (dir: 1 | -1) => void,
@@ -49,7 +49,7 @@ export class Hud {
 
     this.hint = document.createElement('div');
     this.hint.className = 'hud-hint';
-    this.hint.textContent = 'scroll to travel · click glowing things';
+    this.hint.textContent = 'scroll, pinch, or use arrows · select glowing objects';
     root.appendChild(this.hint);
 
     this.live = document.createElement('div');
@@ -59,7 +59,17 @@ export class Hud {
   }
 
   setActive(index: number): void {
-    this.dots.forEach((d, i) => d.classList.toggle('active', i === index));
+    this.dots.forEach((d, i) => {
+      const active = i === index;
+      d.classList.toggle('active', active);
+      if (active) d.setAttribute('aria-current', 'step');
+      else d.removeAttribute('aria-current');
+    });
+  }
+
+  setMode(mode: 'travel' | 'computer'): void {
+    this.root.dataset.mode = mode;
+    document.body.dataset.hudMode = mode;
   }
 
   announce(label: string): void {

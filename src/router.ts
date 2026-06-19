@@ -3,6 +3,19 @@ export interface RouteState {
   panel?: string;
 }
 
+export function parseRoute(hash: string, names: string[]): RouteState | null {
+  const match = hash.match(/^#\/([a-z-]+)(?:\/([a-z0-9-]+))?$/);
+  if (!match) return null;
+  const scene = names.indexOf(match[1]);
+  if (scene === -1) return null;
+  return { scene, panel: match[2] };
+}
+
+export function formatRoute(scene: number, names: string[], panel?: string): string {
+  if (!names[scene]) throw new RangeError(`Unknown scene index: ${scene}`);
+  return `#/${names[scene]}${panel ? `/${panel}` : ''}`;
+}
+
 export class Router {
   private names: string[];
   private lastWritten = '';
@@ -21,16 +34,12 @@ export class Router {
   }
 
   parse(hash: string = location.hash): RouteState | null {
-    const m = hash.match(/^#\/([a-z-]+)(?:\/([a-z0-9-]+))?$/);
-    if (!m) return null;
-    const scene = this.names.indexOf(m[1]);
-    if (scene === -1) return null;
-    return { scene, panel: m[2] };
+    return parseRoute(hash, this.names);
   }
 
   /** Quiet update while scrubbing — no history entry, no hashchange loop. */
   replace(scene: number, panel?: string): void {
-    const hash = `#/${this.names[scene]}${panel ? `/${panel}` : ''}`;
+    const hash = formatRoute(scene, this.names, panel);
     if (location.hash === hash) return;
     this.lastWritten = hash;
     history.replaceState(null, '', hash);
@@ -38,7 +47,7 @@ export class Router {
 
   /** History entry (panel opens) so the Back button behaves. */
   push(scene: number, panel?: string): void {
-    const hash = `#/${this.names[scene]}${panel ? `/${panel}` : ''}`;
+    const hash = formatRoute(scene, this.names, panel);
     if (location.hash === hash) return;
     this.lastWritten = hash;
     location.hash = hash;

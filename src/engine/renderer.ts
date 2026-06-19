@@ -1,6 +1,6 @@
 import {
   ACESFilmicToneMapping,
-  PCFSoftShadowMap,
+  PCFShadowMap,
   PerspectiveCamera,
   Scene,
   SRGBColorSpace,
@@ -36,7 +36,7 @@ export class Renderer3D {
     this.gl.toneMapping = ACESFilmicToneMapping;
     this.gl.toneMappingExposure = 1;
     this.gl.shadowMap.enabled = true;
-    this.gl.shadowMap.type = PCFSoftShadowMap;
+    this.gl.shadowMap.type = PCFShadowMap;
     this.dpr = Math.min(window.devicePixelRatio || 1, 2);
     this.gl.setPixelRatio(this.dpr);
   }

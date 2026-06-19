@@ -1,11 +1,5 @@
 import { Quaternion, Vector3 } from 'three';
-import type { SceneDef3D } from '../engine/types3d';
-import { createEarth, loadEarth } from './earth';
-import { createGalaxy } from './galaxy';
-import { createRoom } from './room';
-import { createScreen } from './screen';
-import { createSolar, loadSolar } from './solar';
-import { createStanford } from './stanford';
+import type { SceneDef3D, SceneModule } from '../engine/types3d';
 import {
   daysSinceJ2000,
   latLonToVec3,
@@ -41,6 +35,18 @@ const WINDOW_POS = new Vector3(9, 3.0, -7);
 const WINDOW_NORMAL = new Vector3(0.48, 0, 0.87).normalize();
 const WINDOW_QUAT = new Quaternion().setFromUnitVectors(Z, WINDOW_NORMAL);
 
+const lazyScene = <T>(
+  importer: () => Promise<T>,
+  createKey: keyof T,
+  loadKey?: keyof T,
+): SceneDef3D['importScene'] => async () => {
+  const mod = await importer();
+  return {
+    create: mod[createKey] as SceneModule['create'],
+    load: loadKey ? (mod[loadKey] as SceneModule['load']) : undefined,
+  };
+};
+
 const defs: SceneDef3D[] = [
   {
     id: 'galaxy',
@@ -51,7 +57,7 @@ const defs: SceneDef3D[] = [
     anchor: { position: [24, 0.5, -10], scale: 8 / 60 },
     exposure: 1.1,
     effects: { bloom: true },
-    create: createGalaxy,
+    importScene: lazyScene(() => import('./galaxy'), 'createGalaxy'),
   },
   {
     id: 'solar',
@@ -64,8 +70,7 @@ const defs: SceneDef3D[] = [
     anchor: { position: [EARTH_NOW.x, EARTH_NOW.y, EARTH_NOW.z], scale: 0.06 },
     exposure: 1.0,
     effects: { bloom: true },
-    load: loadSolar,
-    create: createSolar,
+    importScene: lazyScene(() => import('./solar'), 'createSolar', 'loadSolar'),
   },
   {
     id: 'earth',
@@ -85,8 +90,7 @@ const defs: SceneDef3D[] = [
     },
     exposure: 1.1,
     effects: { bloom: true },
-    load: loadEarth,
-    create: createEarth,
+    importScene: lazyScene(() => import('./earth'), 'createEarth', 'loadEarth'),
   },
   {
     id: 'stanford',
@@ -101,7 +105,7 @@ const defs: SceneDef3D[] = [
     },
     exposure: 1.15,
     effects: { tiltShift: true },
-    create: createStanford,
+    importScene: lazyScene(() => import('./stanford'), 'createStanford'),
   },
   {
     id: 'room',
@@ -113,7 +117,7 @@ const defs: SceneDef3D[] = [
     anchor: { position: [1.5, 2.6, -5.5], scale: 1.4 / 16 },
     exposure: 1.15,
     effects: { tiltShift: true },
-    create: createRoom,
+    importScene: lazyScene(() => import('./room'), 'createRoom'),
   },
   {
     id: 'screen',
@@ -122,7 +126,7 @@ const defs: SceneDef3D[] = [
     restPose: { focus: [0, 0, 0], dir: [0, 0, 1], frameWidth: 16, fov: 45 },
     exposure: 1.0,
     effects: {},
-    create: createScreen,
+    importScene: lazyScene(() => import('./screen'), 'createScreen'),
   },
 ];
 

@@ -9,6 +9,7 @@ export class LoadingOverlay {
   private el: HTMLDivElement;
   private text: HTMLDivElement;
   private bar: HTMLDivElement;
+  private retry: HTMLButtonElement;
   private phrase = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
 
@@ -21,7 +22,14 @@ export class LoadingOverlay {
     this.bar = document.createElement('div');
     this.bar.className = 'loading-bar';
     this.bar.innerHTML = '<i></i>';
-    this.el.append(this.text, this.bar);
+    this.retry = document.createElement('button');
+    this.retry.className = 'loading-retry';
+    this.retry.type = 'button';
+    this.retry.textContent = 'Try again';
+    this.retry.hidden = true;
+    this.el.setAttribute('role', 'status');
+    this.el.setAttribute('aria-live', 'polite');
+    this.el.append(this.text, this.bar, this.retry);
     document.body.appendChild(this.el);
     this.timer = setInterval(() => {
       this.phrase = (this.phrase + 1) % PHRASES.length;
@@ -30,17 +38,37 @@ export class LoadingOverlay {
   }
 
   progress(p: number): void {
+    this.show();
     (this.bar.firstElementChild as HTMLElement).style.width = `${Math.round(p * 100)}%`;
+  }
+
+  fail(sceneLabel: string, onRetry: () => void): void {
+    if (this.timer) clearInterval(this.timer);
+    this.timer = null;
+    this.show();
+    this.el.classList.add('failed');
+    this.text.textContent = `We couldn't load ${sceneLabel}. Check your connection and try again.`;
+    this.retry.hidden = false;
+    this.retry.onclick = () => {
+      this.retry.hidden = true;
+      this.el.classList.remove('failed');
+      this.text.textContent = 'Trying that scene again…';
+      onRetry();
+    };
+  }
+
+  show(): void {
+    this.el.classList.remove('done');
   }
 
   hide(): void {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
     this.el.classList.add('done');
-    setTimeout(() => this.el.remove(), 600);
+    this.retry.hidden = true;
   }
 
   get visible(): boolean {
-    return this.el.isConnected && !this.el.classList.contains('done');
+    return !this.el.classList.contains('done');
   }
 }
