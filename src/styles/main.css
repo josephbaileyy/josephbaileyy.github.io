@@ -183,7 +183,7 @@ body {
   height: 44px;
   padding: 0;
   border: 1px solid rgba(127, 212, 255, 0.8);
-  border-radius: 6px;
+  border-radius: 50%;
   background: rgba(5, 10, 28, 0.22);
   color: var(--ink);
   pointer-events: auto;

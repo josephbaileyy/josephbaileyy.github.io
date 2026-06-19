@@ -261,6 +261,7 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   let orbitUpdateTime = -Infinity;
   let requestedYear = new Date(displayUtcMs).getUTCFullYear();
   let prefetchedYear = Number.NaN;
+  let overlayActive = false;
 
   return {
     group,
@@ -304,9 +305,12 @@ export function createSolar(assets: SceneAssets): SceneInstance {
       childAnchor.position[1] = earthPosition.y;
       childAnchor.position[2] = earthPosition.z;
       earthSunDir.value.copy(earthPosition).multiplyScalar(-1).normalize();
-      overlay.update(ctx.camera, ctx.viewport, Math.abs(ctx.localT) < 0.02);
+      overlayActive = Math.abs(ctx.localT) < 0.02;
       if (ctx.reducedMotion) return;
       belt.rotation.y += ctx.dt * 0.008;
+    },
+    syncUi(camera, viewport) {
+      overlay.update(camera, viewport, overlayActive);
     },
     setQuality() {},
     dispose() {

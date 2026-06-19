@@ -272,7 +272,11 @@ function frame(): void {
   if (!reduced) {
     const speed = Math.min(1, Math.abs(camera.vel) * 2 + (camera.isTweening ? 1 : 0));
     const dockFade = Math.min(1, Math.max(0, (4.6 - camera.depth) / 0.4));
-    const amp = PARALLAX_MAX * (1 - speed) * dockFade;
+    // The solar scene has screen-space scientific markers. Decorative head
+    // sway there obscures orbital motion and can imply that bodies left their
+    // trajectories, so it fades fully out at the settled solar level.
+    const solarFade = Math.min(1, Math.abs(camera.depth - 1) / 0.2);
+    const amp = PARALLAX_MAX * (1 - speed) * dockFade * solarFade;
     const k = Math.min(1, dt * 6);
     parallax.x += (parallaxTarget.x - parallax.x) * k;
     parallax.y += (parallaxTarget.y - parallax.y) * k;
@@ -281,6 +285,9 @@ function frame(): void {
     qParallax.setFromAxisAngle(vAxisX, -parallax.y * amp);
     world.camera.quaternion.multiply(qParallax);
   }
+
+  world.camera.updateMatrixWorld();
+  world.baseInstance()?.syncUi?.(world.camera, vp);
 
   renderer.setExposure(exposureAt(camera.depth));
   if (quality.update(dt, t)) applyQuality();

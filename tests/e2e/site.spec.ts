@@ -103,6 +103,7 @@ test('true-scale solar system keeps every tracked body discoverable on mobile', 
   await expect(page.locator('.solar-overlay')).toHaveClass(/active/, { timeout: 20_000 });
   const reticles = page.locator('.planet-reticle:not([hidden])');
   await expect(reticles).toHaveCount(10);
+  await expect(reticles.first()).toHaveCSS('border-radius', '50%');
   const boxes = await reticles.evaluateAll((nodes) => nodes.map((node) => {
     const box = node.getBoundingClientRect();
     return { left: box.left, right: box.right, top: box.top, bottom: box.bottom };
@@ -121,6 +122,23 @@ test('true-scale solar system keeps every tracked body discoverable on mobile', 
     expect(label.left).toBeGreaterThanOrEqual(0);
     expect(label.right).toBeLessThanOrEqual(390);
   }
+});
+
+test('solar reticles stay registered to the rendered orbits during pointer movement', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name === 'mobile', 'desktop pointer-parallax regression');
+  await page.goto('/#/solar');
+  await expect(page.locator('.solar-overlay')).toHaveClass(/active/, { timeout: 20_000 });
+  const earth = page.locator('.planet-reticle[data-body="earth"]');
+  await expect(earth).toBeVisible();
+  await page.waitForTimeout(500);
+  const before = await earth.boundingBox();
+  await page.mouse.move(10, 10);
+  await page.waitForTimeout(250);
+  const after = await earth.boundingBox();
+  expect(before).not.toBeNull();
+  expect(after).not.toBeNull();
+  expect(Math.abs(after!.x - before!.x)).toBeLessThan(1);
+  expect(Math.abs(after!.y - before!.y)).toBeLessThan(1);
 });
 
 test('Earth offers explicit exploration without replacing universe navigation', async ({ page }) => {

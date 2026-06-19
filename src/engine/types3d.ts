@@ -72,6 +72,8 @@ export interface SceneInstance {
   /** Runtime anchor override for moving child targets such as Earth. */
   childAnchor?: AnchorSpec;
   update(ctx: FrameCtx): void;
+  /** Project DOM scene UI after the camera's final render transform is applied. */
+  syncUi?(camera: PerspectiveCamera, viewport: { w: number; h: number }): void;
   setQuality(q: QualityTier): void;
   dispose(): void;
 }
