@@ -117,7 +117,7 @@ const defs: SceneDef3D[] = [
     anchor: { position: [1.5, 2.6, -5.5], scale: 1.4 / 16 },
     exposure: 1.15,
     effects: { tiltShift: true },
-    importScene: lazyScene(() => import('./room'), 'createRoom'),
+    importScene: lazyScene(() => import('./room'), 'createRoom', 'loadRoom'),
   },
   {
     id: 'screen',
@@ -126,7 +126,7 @@ const defs: SceneDef3D[] = [
     restPose: { focus: [0, 0, 0], dir: [0, 0, 1], frameWidth: 16, fov: 45 },
     exposure: 1.0,
     effects: {},
-    importScene: lazyScene(() => import('./screen'), 'createScreen'),
+    importScene: lazyScene(() => import('./screen'), 'createScreen', 'loadScreen'),
   },
 ];
 

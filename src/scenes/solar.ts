@@ -30,7 +30,9 @@ import {
   PLANETS,
   planetPosition,
   planetRadius,
+  sunDirection,
 } from './lib/astro';
+import { earthGlobeMaterial } from './lib/earth-globe';
 import { makeSky } from './lib/sky';
 
 /** Earth year = 120 s of session time; Kepler scaling comes free. */
@@ -50,20 +52,21 @@ const TEXTURES: Record<string, string> = {
 export async function loadSolar(onProgress?: (p: number) => void): Promise<SceneAssets> {
   const names = Object.keys(TEXTURES);
   let done = 0;
-  const total = names.length + 4;
+  const total = names.length + 5;
   const tick = <T>(p: Promise<T>): Promise<T> =>
     p.then((v) => {
       onProgress?.(++done / total);
       return v;
     });
   const planetTex = await Promise.all(names.map((n) => tick(loadTexture(TEXTURES[n]))));
-  const [ring, moon, milkyway, stars] = await Promise.all([
+  const [ring, moon, milkyway, stars, earthNight] = await Promise.all([
     tick(loadTexture('/tex/saturn_ring.png')),
     tick(loadTexture('/tex/moon.jpg')),
     tick(loadTexture('/tex/milkyway.jpg')),
     tick(loadStars()),
+    tick(loadTexture('/tex/earth_night.jpg')),
   ]);
-  const assets: SceneAssets = { ring, moon, milkyway, stars };
+  const assets: SceneAssets = { ring, moon, milkyway, stars, earthNight };
   names.forEach((n, i) => (assets[`tex_${n}`] = planetTex[i]));
   return assets;
 }
@@ -94,6 +97,7 @@ function labelSprite(text: string, color = '#9aa3c7'): Sprite {
 
 export function createSolar(assets: SceneAssets): SceneInstance {
   const group = new Group();
+  const earthSunDir = new Uniform(new Vector3(1, 0, 0));
 
   // ---- the Sun: procedural granulation + corona + light ----
   const sunMat = new ShaderMaterial({
@@ -174,9 +178,9 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   const planetMeshes = new Map<string, { pivot: Group; mesh: Mesh; label: Sprite; spin: number }>();
   for (const p of PLANETS) {
     const radius = planetRadius(p.radius);
-    const mesh = new Mesh(
-      new SphereGeometry(radius, 40, 28),
-      new MeshStandardMaterial({
+    const material = p.name === 'earth'
+      ? earthGlobeMaterial(assets.tex_earth as Texture, assets.earthNight as Texture, earthSunDir)
+      : new MeshStandardMaterial({
         map: assets[`tex_${p.name}`] as Texture,
         roughness: 1,
         metalness: 0,
@@ -185,7 +189,10 @@ export function createSolar(assets: SceneAssets): SceneInstance {
         emissiveMap: assets[`tex_${p.name}`] as Texture,
         emissive: 0xffffff,
         emissiveIntensity: p.name === 'earth' ? 0.42 : 0.18,
-      }),
+      });
+    const mesh = new Mesh(
+      new SphereGeometry(radius, p.name === 'earth' ? 64 : 40, p.name === 'earth' ? 48 : 28),
+      material,
     );
     const pivot = new Group();
     pivot.add(mesh);
@@ -287,6 +294,7 @@ export function createSolar(assets: SceneAssets): SceneInstance {
     childProxy: earthEntry.pivot,
     update(ctx) {
       sunMat.uniforms.uTime.value = ctx.time;
+      sunDirection(Date.now(), earthSunDir.value);
       if (ctx.reducedMotion) return;
       simDays += ctx.dt * DAYS_PER_SECOND;
       for (const p of PLANETS) {

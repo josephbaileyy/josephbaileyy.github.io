@@ -142,13 +142,10 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   group.add(new HemisphereLight(0x5a6eb0, 0x1a1528, 2.2));
   const moon = new DirectionalLight(0xa8c4ff, 3.0);
   moon.position.set(18, 30, 12);
-  moon.castShadow = true;
-  moon.shadow.mapSize.set(2048, 2048);
-  moon.shadow.camera.left = -25;
-  moon.shadow.camera.right = 25;
-  moon.shadow.camera.top = 25;
-  moon.shadow.camera.bottom = -25;
-  moon.shadow.radius = 4;
+  // Real-time shadow maps become unstable while this entire diorama is
+  // nested, rotated, and scaled on Earth's surface. Directional shading keeps
+  // the miniature dimensional without the transition-time shadow crawl.
+  moon.castShadow = false;
   group.add(moon);
   const lamp1 = new PointLight(0xffb36b, 30, 14, 2);
   lamp1.position.set(-4, 2.6, 6);
@@ -339,13 +336,23 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   // ---- the dorm with the lit window (anchor at (9, 3.0, -7), normal (0.48,0,0.87)) ----
   const v = new Vector3(0.48, 0, 0.87).normalize();
   const dorm = new Group();
-  const dormBody = new Mesh(
-    new BoxGeometry(8, 6, 4),
-    new MeshStandardMaterial({ color: 0x6e6250, roughness: 1 }),
-  );
-  dormBody.castShadow = true;
-  dormBody.receiveShadow = true;
-  dorm.add(dormBody);
+  const dormWallMat = new MeshStandardMaterial({ color: 0x6e6250, roughness: 1 });
+  const addDormWall = (geometry: BoxGeometry, x: number, y: number, z: number): void => {
+    const wall = new Mesh(geometry, dormWallMat);
+    wall.position.set(x, y, z);
+    wall.castShadow = true;
+    wall.receiveShadow = true;
+    dorm.add(wall);
+  };
+  // A real opening at the anchor avoids flying through a solid box. The front
+  // facade is four slabs around a 2.5 × 1.7 window; sides and back remain solid.
+  addDormWall(new BoxGeometry(8, 6, 0.3), 0, 0, -1.85);
+  addDormWall(new BoxGeometry(0.3, 6, 4), -3.85, 0, 0);
+  addDormWall(new BoxGeometry(0.3, 6, 4), 3.85, 0, 0);
+  addDormWall(new BoxGeometry(2.75, 6, 0.3), -2.625, 0, 1.85);
+  addDormWall(new BoxGeometry(2.75, 6, 0.3), 2.625, 0, 1.85);
+  addDormWall(new BoxGeometry(2.5, 2.15, 0.3), 0, 1.925, 1.85);
+  addDormWall(new BoxGeometry(2.5, 2.15, 0.3), 0, -1.925, 1.85);
   const dormRoofShape = new Shape();
   dormRoofShape.moveTo(-4.3, 0);
   dormRoofShape.lineTo(4.3, 0);
@@ -382,12 +389,19 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   glass.position.copy(windowPos).addScaledVector(v, 0.02);
   glass.quaternion.setFromUnitVectors(new Vector3(0, 0, 1), v);
   group.add(glass);
-  const frame = new Mesh(
-    new PlaneGeometry(2.5, 1.7),
-    new MeshStandardMaterial({ color: DARKWOOD, roughness: 1 }),
-  );
-  frame.position.copy(windowPos).addScaledVector(v, -0.01);
+  const frame = new Group();
+  frame.position.copy(windowPos).addScaledVector(v, 0.015);
   frame.quaternion.copy(glass.quaternion);
+  const frameMat = new MeshStandardMaterial({ color: DARKWOOD, roughness: 1 });
+  const frameRail = (w: number, h: number, x: number, y: number): void => {
+    const rail = new Mesh(new PlaneGeometry(w, h), frameMat);
+    rail.position.set(x, y, 0);
+    frame.add(rail);
+  };
+  frameRail(0.15, 1.7, -1.175, 0);
+  frameRail(0.15, 1.7, 1.175, 0);
+  frameRail(2.2, 0.1625, 0, 0.76875);
+  frameRail(2.2, 0.1625, 0, -0.76875);
   group.add(frame);
   const winGlow = new PointLight(0xffc98a, 8, 8, 2);
   winGlow.position.copy(windowPos).addScaledVector(v, 0.5);
@@ -455,9 +469,7 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
         beaconLight.visible = ctx.time % 2 < 1.4;
       }
     },
-    setQuality(q) {
-      moon.castShadow = q !== 'low';
-    },
+    setQuality() {},
     dispose() {
       group.traverse((o) => {
         const m = o as Mesh;

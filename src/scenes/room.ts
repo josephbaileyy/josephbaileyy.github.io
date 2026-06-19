@@ -10,18 +10,25 @@ import {
   MeshStandardMaterial,
   PlaneGeometry,
   PointLight,
-  ShaderMaterial,
   Shape,
   ShapeGeometry,
   SphereGeometry,
   Sprite,
   SpriteMaterial,
-  Uniform,
+  Texture,
 } from 'three';
 import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
-import { canvasTexture } from './lib/assets';
+import { canvasTexture, loadTexture } from './lib/assets';
 
 const BOOK_COLORS = [0xb83a3a, 0x7fd4ff, 0xffd479, 0x56a06b, 0x5a78e6, 0xcdd4f0, 0x8c5e9e];
+
+export async function loadRoom(onProgress?: (p: number) => void): Promise<SceneAssets> {
+  const wallpaper = await loadTexture('/tex/baileyos-wallpaper.png');
+  wallpaper.repeat.set(1, 0.9375);
+  wallpaper.offset.y = 0.03125;
+  onProgress?.(1);
+  return { wallpaper };
+}
 
 function amcvnPoster(): ReturnType<typeof canvasTexture> {
   return canvasTexture(384, 512, (ctx) => {
@@ -98,7 +105,7 @@ function powersPoster(): ReturnType<typeof canvasTexture> {
   });
 }
 
-export function createRoom(_assets: SceneAssets): SceneInstance {
+export function createRoom(assets: SceneAssets): SceneInstance {
   const group = new Group();
 
   // ---- shell: floor + two walls (open dollhouse corner) ----
@@ -155,25 +162,7 @@ export function createRoom(_assets: SceneAssets): SceneInstance {
   bezel.position.set(1.5, 2.6, -5.59);
   bezel.castShadow = true;
   group.add(bezel);
-  const wallpaperMat = new ShaderMaterial({
-    uniforms: { uTime: new Uniform(0) },
-    vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
-    fragmentShader: /* glsl */ `
-      uniform float uTime;
-      varying vec2 vUv;
-      void main() {
-        vec3 base = mix(vec3(0.05, 0.07, 0.19), vec3(0.15, 0.11, 0.31), vUv.y);
-        float a1 = uTime * 0.78;
-        vec2 p1 = vec2(0.5 + 0.27 * cos(a1), 0.5 + 0.2 * sin(a1));
-        vec2 p2 = vec2(0.5 - 0.16 * cos(a1), 0.5 - 0.12 * sin(a1));
-        base += vec3(0.5, 0.83, 1.0) * 0.34 * exp(-22.0 * dot(vUv - p1, vUv - p1));
-        base += vec3(1.0, 0.83, 0.47) * 0.3 * exp(-30.0 * dot(vUv - p2, vUv - p2));
-        gl_FragColor = vec4(base, 1.0);
-        #include <tonemapping_fragment>
-        #include <colorspace_fragment>
-      }
-    `,
-  });
+  const wallpaperMat = new MeshBasicMaterial({ map: assets.wallpaper as Texture });
   const screenFace = new Mesh(new PlaneGeometry(1.4, 0.875), wallpaperMat);
   screenFace.position.set(1.5, 2.6, -5.49);
   group.add(screenFace);
@@ -210,8 +199,9 @@ export function createRoom(_assets: SceneAssets): SceneInstance {
   group.add(lampShade);
   const lampLight = new PointLight(0xffb36b, 40, 18, 2);
   lampLight.position.set(3.7, 3.4, -5.2);
-  lampLight.castShadow = true;
-  lampLight.shadow.mapSize.set(1024, 1024);
+  // Avoid a cross-scene shadow map while the room is nested in the Stanford
+  // window. The modeled lighting remains; only the unstable map is removed.
+  lampLight.castShadow = false;
   group.add(lampLight);
   const monitorGlow = new PointLight(0x9fc7ff, 8, 7, 2);
   monitorGlow.position.set(1.5, 2.7, -4.9);
@@ -396,7 +386,6 @@ export function createRoom(_assets: SceneAssets): SceneInstance {
     hotspots,
     childProxy: screenFace,
     update(ctx) {
-      wallpaperMat.uniforms.uTime.value = ctx.time;
       if (!ctx.reducedMotion) {
         lampLight.intensity = 26 * (1 + 0.03 * Math.sin(ctx.time * 9.1) * Math.sin(ctx.time * 3.7));
         bulbs.forEach((b, i) => {
@@ -406,15 +395,14 @@ export function createRoom(_assets: SceneAssets): SceneInstance {
         });
       }
     },
-    setQuality(q) {
-      lampLight.castShadow = q !== 'low';
-    },
+    setQuality() {},
     dispose() {
       group.traverse((o) => {
         const m = o as Mesh;
         m.geometry?.dispose?.();
         (m.material as MeshStandardMaterial | undefined)?.dispose?.();
       });
+      (assets.wallpaper as Texture).dispose();
     },
   };
 }
