@@ -67,6 +67,12 @@ describe('restCameraPose', () => {
       expect(Math.max(Math.abs(ndc.x), Math.abs(ndc.y))).toBeGreaterThanOrEqual(1 - 1e-6);
     }
   });
+
+  it('views the solar ecliptic from above instead of edge-on', () => {
+    const solar = CHAIN3D.find((def) => def.id === 'solar')!;
+    const [, elevation, depth] = solar.restPose.dir;
+    expect(elevation).toBeGreaterThan(Math.abs(depth));
+  });
 });
 
 describe('seam theorem', () => {

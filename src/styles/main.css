@@ -176,6 +176,9 @@ body {
 }
 
 .planet-reticle {
+  --label-shift-y: 0px;
+  --leader-length: 28px;
+  --leader-angle: 0rad;
   position: absolute;
   top: -22px;
   left: -22px;
@@ -192,9 +195,23 @@ body {
 }
 
 .planet-reticle[data-body="earth"] { border-color: var(--gold); cursor: pointer; }
-.planet-reticle i { position: absolute; inset: 19px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+.planet-reticle i { position: absolute; z-index: 1; inset: 19px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+.planet-reticle::after {
+  content: '';
+  position: absolute;
+  z-index: 0;
+  left: 22px;
+  top: 22px;
+  width: var(--leader-length);
+  height: 1px;
+  transform: rotate(var(--leader-angle));
+  transform-origin: 0 50%;
+  background: rgba(127, 212, 255, 0.55);
+  pointer-events: none;
+}
 .planet-reticle span {
   position: absolute;
+  z-index: 1;
   left: 50px;
   top: 12px;
   padding: 3px 6px;
@@ -202,6 +219,8 @@ body {
   background: rgba(5, 10, 28, 0.86);
   font: 11px var(--font-mono);
   white-space: nowrap;
+  transform: translateY(var(--label-shift-y));
+  transition: transform 0.12s linear;
 }
 .planet-reticle.left-label span { left: auto; right: 50px; }
 

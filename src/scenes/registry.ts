@@ -64,7 +64,10 @@ const defs: SceneDef3D[] = [
     id: 'solar',
     label: 'The Solar System',
     frameWidthMeters: 1e13,
-    restPose: { focus: [0, 0, 0], dir: [0, 0.6, 1], frameWidth: 64, fov: 50, fit: 'contain' },
+    // A high oblique orrery view keeps the physical X-Z ecliptic plane
+    // legible on screen: planets visibly travel around, rather than mostly
+    // up and down along edge-on orbit guides.
+    restPose: { focus: [0, 0, 0], dir: [0, 1, 0.42], frameWidth: 64, fov: 50, fit: 'contain' },
     // Literal Earth radius: the dynamic solar anchor updates this position
     // from the JPL ephemeris while preserving a seamless physical-size dive.
     anchor: { position: [EARTH_NOW.x, EARTH_NOW.y, EARTH_NOW.z], scale: EARTH_RADIUS_AU / GLOBE_R },

@@ -3,6 +3,18 @@ import { EPHEMERIS_MAX_MS, EPHEMERIS_MIN_MS, simulationClock } from '../astronom
 import type { EphemerisBody, EphemerisProvider } from '../astronomy/ephemeris';
 type TrackedBody = EphemerisBody | 'sun';
 
+interface ProjectedReticle {
+  el: HTMLButtonElement;
+  x: number;
+  y: number;
+  order: number;
+}
+
+interface ReticleLayout extends ProjectedReticle {
+  labelY: number;
+  labelLeft: boolean;
+}
+
 const SPEEDS = [
   ['real time', 1], ['1 day / sec', 86400], ['30 days / sec', 2592000], ['1 year / sec', 31557600],
 ] as const;
@@ -62,7 +74,8 @@ export class SolarOverlay {
       ? 'JPL DE440 · UTC'
       : this.provider.status === 'loading' ? 'buffering JPL trajectory…' : 'approximate fallback';
     camera.updateMatrixWorld();
-    const placements: Array<{ el: HTMLButtonElement; x: number; y: number }> = [];
+    const placements: ProjectedReticle[] = [];
+    let order = 0;
     for (const [name, object] of this.bodies) {
       object.getWorldPosition(this.world).project(camera);
       const el = this.reticles.get(name)!;
@@ -72,20 +85,67 @@ export class SolarOverlay {
         el,
         x: ((this.world.x + 1) / 2) * viewport.w,
         y: ((1 - this.world.y) / 2) * viewport.h,
+        order,
       });
+      order += 1;
     }
-    placements.sort((a, b) => a.y - b.y);
-    let previousY = 72;
-    for (const placement of placements) {
-      const y = Math.min(viewport.h - 72, Math.max(72, placement.y, previousY + 38));
-      previousY = y;
-      const x = Math.min(viewport.w - 70, Math.max(70, placement.x));
-      placement.el.classList.toggle('left-label', x > viewport.w - 150);
-      placement.el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+    for (const placement of layoutReticles(placements, viewport)) {
+      const shift = Math.round(placement.labelY - placement.y);
+      const dx = placement.labelLeft ? -28 : 28;
+      const leaderLength = Math.hypot(dx, shift);
+      const leaderAngle = Math.atan2(shift, dx);
+      placement.el.classList.toggle('left-label', placement.labelLeft);
+      placement.el.style.setProperty('--label-shift-y', `${shift}px`);
+      placement.el.style.setProperty('--leader-length', `${leaderLength.toFixed(1)}px`);
+      placement.el.style.setProperty('--leader-angle', `${leaderAngle.toFixed(4)}rad`);
+      // The reticle remains centered on the projected body. Decluttering is
+      // applied only to its label, never to the astronomical position.
+      placement.el.style.transform = `translate(${Math.round(placement.x)}px, ${Math.round(placement.y)}px)`;
     }
   }
 
   dispose(): void { this.root.remove(); }
+}
+
+export function layoutReticles<T extends ProjectedReticle>(
+  placements: T[],
+  viewport: { w: number; h: number },
+): Array<T & ReticleLayout> {
+  const edge = 24;
+  const minLabelY = viewport.w < 600 ? 112 : 88;
+  const maxLabelY = viewport.h - 40;
+  const gap = 26;
+  const laidOut = placements.map((placement) => {
+    const x = Math.min(viewport.w - edge, Math.max(edge, placement.x));
+    const y = Math.min(viewport.h - edge, Math.max(edge, placement.y));
+    return {
+      ...placement,
+      x,
+      y,
+      labelY: y,
+      labelLeft: x > viewport.w - 135 || (x >= 135 && placement.order % 2 === 1),
+    };
+  });
+
+  for (const labelLeft of [false, true]) {
+    const side = laidOut.filter((placement) => placement.labelLeft === labelLeft)
+      .sort((a, b) => a.y - b.y);
+    let cursor = minLabelY;
+    for (const placement of side) {
+      placement.labelY = Math.max(placement.y, cursor);
+      cursor = placement.labelY + gap;
+    }
+    const overflow = Math.max(0, cursor - gap - maxLabelY);
+    if (overflow > 0) {
+      for (const placement of side) placement.labelY -= overflow;
+      for (let i = side.length - 2; i >= 0; i--) {
+        side[i].labelY = Math.min(side[i].labelY, side[i + 1].labelY - gap);
+      }
+      const underflow = Math.max(0, minLabelY - (side[0]?.labelY ?? minLabelY));
+      for (const placement of side) placement.labelY += underflow;
+    }
+  }
+  return laidOut;
 }
 
 function button(label: string, action: () => void): HTMLButtonElement {
