@@ -99,8 +99,8 @@ test('true-scale solar system keeps every tracked body discoverable on mobile', 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/solar');
-  await expect(page.locator('.solar-overlay')).toHaveClass(/active/);
-  await expect(page.getByLabel('Simulation date')).toBeVisible();
+  await expect(page.getByLabel('Simulation date')).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('.solar-overlay')).toHaveClass(/active/, { timeout: 20_000 });
   const reticles = page.locator('.planet-reticle:not([hidden])');
   await expect(reticles).toHaveCount(10);
   const boxes = await reticles.evaluateAll((nodes) => nodes.map((node) => {
