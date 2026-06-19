@@ -1,9 +1,8 @@
 import { Vector3 } from 'three';
 
 /**
- * Circular, coplanar planet positions from J2000 mean longitudes — errors of
- * a few degrees, invisible at orrery scale, but the configuration matches the
- * real sky today.
+ * Physical constants plus a lightweight fallback orbit used only when the
+ * checked-in JPL ephemeris cannot be loaded.
  */
 export interface PlanetElements {
   name: string;
@@ -13,20 +12,24 @@ export interface PlanetElements {
   n: number;
   /** semi-major axis, AU */
   a: number;
-  /** radius, Earth radii */
-  radius: number;
+  /** mean equatorial radius, km */
+  radiusKm: number;
 }
 
 export const PLANETS: PlanetElements[] = [
-  { name: 'mercury', L0: 252.251, n: 4.09234, a: 0.387, radius: 0.383 },
-  { name: 'venus', L0: 181.98, n: 1.60213, a: 0.723, radius: 0.949 },
-  { name: 'earth', L0: 100.464, n: 0.98561, a: 1.0, radius: 1.0 },
-  { name: 'mars', L0: 355.453, n: 0.52403, a: 1.524, radius: 0.532 },
-  { name: 'jupiter', L0: 34.396, n: 0.08309, a: 5.203, radius: 11.21 },
-  { name: 'saturn', L0: 49.954, n: 0.03346, a: 9.537, radius: 9.45 },
-  { name: 'uranus', L0: 313.238, n: 0.01173, a: 19.191, radius: 4.01 },
-  { name: 'neptune', L0: 304.88, n: 0.00598, a: 30.069, radius: 3.88 },
+  { name: 'mercury', L0: 252.251, n: 4.09234, a: 0.387, radiusKm: 2439.7 },
+  { name: 'venus', L0: 181.98, n: 1.60213, a: 0.723, radiusKm: 6051.8 },
+  { name: 'earth', L0: 100.464, n: 0.98561, a: 1.0, radiusKm: 6378.137 },
+  { name: 'mars', L0: 355.453, n: 0.52403, a: 1.524, radiusKm: 3396.2 },
+  { name: 'jupiter', L0: 34.396, n: 0.08309, a: 5.203, radiusKm: 71492 },
+  { name: 'saturn', L0: 49.954, n: 0.03346, a: 9.537, radiusKm: 60268 },
+  { name: 'uranus', L0: 313.238, n: 0.01173, a: 19.191, radiusKm: 25559 },
+  { name: 'neptune', L0: 304.88, n: 0.00598, a: 30.069, radiusKm: 24764 },
 ];
+
+export const AU_KM = 149_597_870.7;
+export const SUN_RADIUS_AU = 695_700 / AU_KM;
+export const EARTH_RADIUS_AU = 6378.137 / AU_KM;
 
 const J2000_MS = 946727935816; // 2000-01-01T11:58:55.816Z (J2000.0 epoch)
 
@@ -34,14 +37,14 @@ export function daysSinceJ2000(nowMs: number = Date.now()): number {
   return (nowMs - J2000_MS) / 86400000;
 }
 
-/** Scene-space orbital distance: power-law compression keeps all 8 in frame. */
+/** Physical orbital distance in scene units, where one unit is one AU. */
 export function orbitDistance(aAU: number): number {
-  return 7.0 * Math.pow(aAU, 0.4);
+  return aAU;
 }
 
-/** Scene-space planet radius (compressed; Sun is 3.0 by convention). */
-export function planetRadius(earthRadii: number): number {
-  return Math.max(0.18, 0.6 * Math.sqrt(earthRadii));
+/** Physical planet radius in AU. */
+export function planetRadius(radiusKm: number): number {
+  return radiusKm / AU_KM;
 }
 
 /** Heliocentric position in scene units at `d` days since J2000 (y = 0 plane). */

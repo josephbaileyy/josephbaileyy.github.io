@@ -22,6 +22,8 @@ import { canvasTexture, loadStars, loadTexture, textSprite, type StarData } from
 import { latLonToVec3, STANFORD_LAT, STANFORD_LON, sunDirection } from './lib/astro';
 import { earthGlobeMaterial } from './lib/earth-globe';
 import { makeSky } from './lib/sky';
+import { ephemeris } from '../astronomy/ephemeris';
+import { daysSinceJ2000 } from './lib/astro';
 
 const R = 10;
 
@@ -202,6 +204,9 @@ export function createEarth(assets: SceneAssets): SceneInstance {
   group.add(sky);
 
   const sunDir = new Vector3();
+  const moonHelio = new Vector3();
+  const earthHelio = new Vector3();
+  const stateVelocity = new Vector3();
   let cloudSpin = 0;
 
   return {
@@ -209,15 +214,21 @@ export function createEarth(assets: SceneAssets): SceneInstance {
     hotspots,
     childProxy: beacon,
     update(ctx) {
-      sunDirection(Date.now(), sunDir);
+      sunDirection(ctx.utcMs, sunDir);
       uSunDir.value.copy(sunDir);
       sunLight.position.copy(sunDir).multiplyScalar(100);
       sunSprite.position.copy(sunDir).multiplyScalar(750);
 
+      if (!ephemeris.hasDate(ctx.utcMs) && ephemeris.status !== 'loading') void ephemeris.loadFor(ctx.utcMs);
+      ephemeris.state('moon', ctx.utcMs, moonHelio, stateVelocity);
+      ephemeris.state('earth', ctx.utcMs, earthHelio, stateVelocity);
+      moon.position.copy(moonHelio.sub(earthHelio).normalize().multiplyScalar(26));
+      const gmstDeg = (280.46061837 + 360.98564736629 * daysSinceJ2000(ctx.utcMs)) % 360;
+      sky.rotation.y = (-gmstDeg * Math.PI) / 180;
+
       if (!ctx.reducedMotion) {
         cloudSpin += ctx.dt * 0.004;
         cloudMesh.rotation.y = cloudSpin;
-        moonPivot.rotation.y = (ctx.time * 2 * Math.PI) / 90;
         const pulse = (ctx.time % 2.2) / 2.2;
         ring.scale.setScalar(1 + pulse * 5);
         (ring.material as MeshBasicMaterial).opacity = 0.85 * (1 - pulse);

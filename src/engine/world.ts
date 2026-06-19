@@ -1,5 +1,5 @@
-import { PerspectiveCamera, Scene } from 'three';
-import { anchorMatrix, cameraPose, nextMountPlan, type MountPlan, type Viewport } from './rig';
+import { PerspectiveCamera, Scene, Vector3 } from 'three';
+import { anchorMatrix, cameraPoseWithAnchors, nextMountPlan, type MountPlan, type Viewport } from './rig';
 import type { FrameCtx, QualityTier, SceneDef3D, SceneInstance } from './types3d';
 
 /**
@@ -62,7 +62,7 @@ export class World {
     return n - 1;
   }
 
-  update(depth: number, vp: Viewport, dt: number, time: number, reducedMotion: boolean): void {
+  update(depth: number, vp: Viewport, dt: number, time: number, reducedMotion: boolean, utcMs = Date.now()): void {
     const n = this.defs.length;
     const plan = nextMountPlan(this.plan, depth, n);
 
@@ -70,8 +70,9 @@ export class World {
       this.applyPlan(plan);
       this.plan = plan;
     }
+    this.syncChildAnchor(plan);
 
-    const rig = cameraPose(depth, this.defs, vp);
+    const rig = cameraPoseWithAnchors(depth, this.defs, vp, (index) => this.anchorFor(index));
     this.camera.position.copy(rig.pose.position);
     this.camera.quaternion.copy(rig.pose.quaternion);
     if (this.camera.fov !== rig.pose.fov) {
@@ -83,6 +84,18 @@ export class World {
       this.camera.aspect = aspect;
       this.camera.updateProjectionMatrix();
     }
+    const focus = this.anchorFor(rig.base)?.position;
+    if (focus) {
+      const distance = this.camera.position.distanceTo(new Vector3(...focus));
+      const near = Math.max(1e-8, Math.min(0.02, distance * 0.001));
+      if (Math.abs(this.camera.near - near) > near * 0.01) {
+        this.camera.near = near;
+        this.camera.updateProjectionMatrix();
+      }
+    } else if (this.camera.near !== 0.02) {
+      this.camera.near = 0.02;
+      this.camera.updateProjectionMatrix();
+    }
 
     const ctxBase: FrameCtx = {
       dt,
@@ -91,6 +104,8 @@ export class World {
       camera: this.camera,
       quality: this.quality,
       reducedMotion,
+      utcMs,
+      viewport: vp,
     };
     this.source.get(plan.base)?.update(ctxBase);
     if (plan.child !== null) {
@@ -121,7 +136,7 @@ export class World {
 
     if (plan.child !== null) {
       const child = this.source.get(plan.child);
-      const anchor = this.defs[plan.base].anchor;
+      const anchor = this.anchorFor(plan.base);
       if (child && anchor) {
         const m = anchorMatrix(anchor);
         m.decompose(child.group.position, child.group.quaternion, child.group.scale);
@@ -131,6 +146,18 @@ export class World {
         if (child.childProxy) child.childProxy.visible = true;
       }
     }
+  }
+
+  private syncChildAnchor(plan: MountPlan): void {
+    if (plan.child === null) return;
+    const child = this.source.get(plan.child);
+    const anchor = this.anchorFor(plan.base);
+    if (!child || !anchor) return;
+    anchorMatrix(anchor).decompose(child.group.position, child.group.quaternion, child.group.scale);
+  }
+
+  private anchorFor(index: number) {
+    return this.source.get(index)?.childAnchor ?? this.defs[index].anchor;
   }
 
   private isPlanMounted(plan: MountPlan): boolean {

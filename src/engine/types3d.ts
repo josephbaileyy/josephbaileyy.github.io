@@ -49,6 +49,9 @@ export interface FrameCtx {
   camera: PerspectiveCamera;
   quality: QualityTier;
   reducedMotion: boolean;
+  /** Selected astronomical time, independent of animation-frame time. */
+  utcMs: number;
+  viewport: { w: number; h: number };
 }
 
 export interface Hotspot3D {
@@ -66,6 +69,8 @@ export interface SceneInstance {
   uiMount?: Object3D;
   /** cheap stand-in for the child scene, hidden while the real child is mounted */
   childProxy?: Object3D;
+  /** Runtime anchor override for moving child targets such as Earth. */
+  childAnchor?: AnchorSpec;
   update(ctx: FrameCtx): void;
   setQuality(q: QualityTier): void;
   dispose(): void;

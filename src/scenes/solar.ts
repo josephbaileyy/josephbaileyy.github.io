@@ -23,20 +23,21 @@ import {
   Vector3,
 } from 'three';
 import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
-import { canvasTexture, loadStars, loadTexture, textSprite, type StarData } from './lib/assets';
+import type { AnchorSpec } from '../engine/types3d';
+import { ephemeris, EPHEMERIS_BODIES, type EphemerisBody } from '../astronomy/ephemeris';
+import { simulationClock } from '../astronomy/clock';
+import { SolarOverlay } from '../ui/solar-overlay';
+import { canvasTexture, loadStars, loadTexture, type StarData } from './lib/assets';
 import {
-  daysSinceJ2000,
+  AU_KM,
+  EARTH_RADIUS_AU,
   orbitDistance,
   PLANETS,
-  planetPosition,
   planetRadius,
-  sunDirection,
+  SUN_RADIUS_AU,
 } from './lib/astro';
 import { earthGlobeMaterial } from './lib/earth-globe';
 import { makeSky } from './lib/sky';
-
-/** Earth year = 120 s of session time; Kepler scaling comes free. */
-const DAYS_PER_SECOND = 365.25 / 120;
 
 const TEXTURES: Record<string, string> = {
   mercury: '/tex/mercury.jpg',
@@ -52,7 +53,7 @@ const TEXTURES: Record<string, string> = {
 export async function loadSolar(onProgress?: (p: number) => void): Promise<SceneAssets> {
   const names = Object.keys(TEXTURES);
   let done = 0;
-  const total = names.length + 5;
+  const total = names.length + 6;
   const tick = <T>(p: Promise<T>): Promise<T> =>
     p.then((v) => {
       onProgress?.(++done / total);
@@ -66,6 +67,7 @@ export async function loadSolar(onProgress?: (p: number) => void): Promise<Scene
     tick(loadStars()),
     tick(loadTexture('/tex/earth_night.jpg')),
   ]);
+  await tick(ephemeris.loadFor(simulationClock.utcMs));
   const assets: SceneAssets = { ring, moon, milkyway, stars, earthNight };
   names.forEach((n, i) => (assets[`tex_${n}`] = planetTex[i]));
   return assets;
@@ -81,11 +83,6 @@ function coronaTexture(): Texture {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, 256, 256);
   });
-}
-
-function labelSprite(text: string, color = '#9aa3c7'): Sprite {
-  const worldWidth = Math.min(8, Math.max(4.2, text.length * 0.2));
-  return textSprite([{ text, color, size: 28 }], { worldWidth, width: 480, opacity: 0.95 });
 }
 
 export function createSolar(assets: SceneAssets): SceneInstance {
@@ -139,12 +136,12 @@ export function createSolar(assets: SceneAssets): SceneInstance {
       }
     `,
   });
-  const sun = new Mesh(new SphereGeometry(3.0, 48, 32), sunMat);
+  const sun = new Mesh(new SphereGeometry(SUN_RADIUS_AU, 48, 32), sunMat);
   group.add(sun);
   const corona = new Sprite(
     new SpriteMaterial({ map: coronaTexture(), transparent: true, depthWrite: false, blending: AdditiveBlending }),
   );
-  corona.scale.setScalar(17);
+  corona.scale.setScalar(SUN_RADIUS_AU * 8);
   group.add(corona);
   group.add(new PointLight(0xffffff, 3.2, 0, 0));
   group.add(new AmbientLight(0x16182e, 0.6));
@@ -167,10 +164,11 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   }
 
   // ---- planets ----
-  const earthNow = planetPosition(PLANETS[2], daysSinceJ2000());
-  const planetMeshes = new Map<string, { pivot: Group; mesh: Mesh; label: Sprite; spin: number }>();
+  const planetMeshes = new Map<EphemerisBody, { pivot: Group; mesh: Mesh; spin: number }>();
+  const trackedObjects = new Map<EphemerisBody | 'sun', import('three').Object3D>();
+  trackedObjects.set('sun', sun);
   for (const p of PLANETS) {
-    const radius = planetRadius(p.radius);
+    const radius = planetRadius(p.radiusKm);
     const material = p.name === 'earth'
       ? earthGlobeMaterial(assets.tex_earth as Texture, assets.earthNight as Texture, earthSunDir)
       : new MeshStandardMaterial({
@@ -189,9 +187,6 @@ export function createSolar(assets: SceneAssets): SceneInstance {
     );
     const pivot = new Group();
     pivot.add(mesh);
-    const label = labelSprite(p.name);
-    label.position.y = radius + 0.9;
-    pivot.add(label);
 
     if (p.name === 'saturn') {
       const ringGeo = new RingGeometry(radius * 1.35, radius * 2.25, 96);
@@ -215,20 +210,19 @@ export function createSolar(assets: SceneAssets): SceneInstance {
       pivot.add(ringMesh);
     }
 
-    if (p.name === 'earth') {
-      pivot.position.copy(earthNow); // parked at its real position today
-      const moonMesh = new Mesh(
-        new SphereGeometry(0.16, 16, 12),
-        new MeshStandardMaterial({ map: assets.moon as Texture, roughness: 1 }),
-      );
-      moonMesh.position.set(1.3, 0.12, 0);
-      pivot.add(moonMesh);
-      label.material.color.set(0x7fd4ff);
-    }
-
     group.add(pivot);
-    planetMeshes.set(p.name, { pivot, mesh, label, spin: 0.05 + 0.4 / radius });
+    const name = p.name as EphemerisBody;
+    planetMeshes.set(name, { pivot, mesh, spin: 0.2 + 0.04 / Math.max(p.a, 0.3) });
+    trackedObjects.set(name, pivot);
   }
+
+  const moonPivot = new Group();
+  moonPivot.add(new Mesh(
+    new SphereGeometry(1737.4 / AU_KM, 24, 16),
+    new MeshStandardMaterial({ map: assets.moon as Texture, roughness: 1 }),
+  ));
+  group.add(moonPivot);
+  trackedObjects.set('moon', moonPivot);
 
   // ---- asteroid belt ----
   const beltCount = 2200;
@@ -260,46 +254,38 @@ export function createSolar(assets: SceneAssets): SceneInstance {
 
   // ---- Earth hotspot (the gateway) ----
   const earthEntry = planetMeshes.get('earth')!;
-  const hit = new Mesh(new SphereGeometry(1.7, 8, 6), new MeshBasicMaterial({ visible: false }));
-  hit.position.copy(earthNow);
-  group.add(hit);
-  const hint = labelSprite('← home, click to land', '#7fd4ff');
-  hint.position.copy(earthNow).add(new Vector3(0, -1.6, 0));
-  hint.material.opacity = 0.65;
-  group.add(hint);
-  const hotspots: Hotspot3D[] = [
-    {
-      object: hit,
-      label: 'Zoom in to Earth',
-      action: { type: 'zoom', dir: 'in' },
-      setHover(on) {
-        earthEntry.label.material.opacity = on ? 1 : 0.75;
-        hint.material.opacity = on ? 1 : 0.65;
-      },
-    },
-  ];
-
-  let simDays = daysSinceJ2000();
+  const hotspots: Hotspot3D[] = [];
+  const childAnchor: AnchorSpec = { position: [0, 0, 0], scale: EARTH_RADIUS_AU / 10 };
+  const overlay = new SolarOverlay(trackedObjects, ephemeris);
+  const earthPosition = new Vector3();
+  const velocity = new Vector3();
 
   return {
     group,
     hotspots,
     childProxy: earthEntry.pivot,
+    childAnchor,
     update(ctx) {
       sunMat.uniforms.uTime.value = ctx.time;
-      sunDirection(Date.now(), earthSunDir.value);
-      if (ctx.reducedMotion) return;
-      simDays += ctx.dt * DAYS_PER_SECOND;
-      for (const p of PLANETS) {
-        if (p.name === 'earth') continue; // the dive target stays put
-        const entry = planetMeshes.get(p.name)!;
-        planetPosition(p, simDays, entry.pivot.position);
-        entry.mesh.rotation.y += ctx.dt * entry.spin;
+      if (!ephemeris.hasDate(ctx.utcMs) && ephemeris.status !== 'loading') void ephemeris.loadFor(ctx.utcMs);
+      for (const name of EPHEMERIS_BODIES) {
+        const object = trackedObjects.get(name)!;
+        ephemeris.state(name, ctx.utcMs, object.position, velocity);
+        const entry = planetMeshes.get(name);
+        if (entry && !ctx.reducedMotion) entry.mesh.rotation.y += ctx.dt * entry.spin;
       }
+      earthPosition.copy(earthEntry.pivot.position);
+      childAnchor.position[0] = earthPosition.x;
+      childAnchor.position[1] = earthPosition.y;
+      childAnchor.position[2] = earthPosition.z;
+      earthSunDir.value.copy(earthPosition).multiplyScalar(-1).normalize();
+      overlay.update(ctx.camera, ctx.viewport, Math.abs(ctx.localT) < 0.02);
+      if (ctx.reducedMotion) return;
       belt.rotation.y += ctx.dt * 0.008;
     },
     setQuality() {},
     dispose() {
+      overlay.dispose();
       group.traverse((o) => {
         const m = o as Mesh;
         m.geometry?.dispose?.();

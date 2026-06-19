@@ -119,6 +119,150 @@ body {
   color: var(--cyan);
 }
 
+/* ---------- scientific scene overlays ---------- */
+
+.solar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.solar-overlay.active { opacity: 1; }
+
+.solar-controls {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px;
+  border: 1px solid rgba(127, 212, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(5, 10, 28, 0.82);
+  backdrop-filter: blur(10px);
+  pointer-events: auto;
+  font: 12px var(--font-mono);
+}
+
+.solar-controls button,
+.solar-controls select,
+.solar-controls input,
+.earth-explore-trigger,
+.earth-explorer-toolbar button {
+  min-height: 36px;
+  border: 1px solid rgba(154, 163, 199, 0.4);
+  border-radius: 8px;
+  background: rgba(42, 35, 86, 0.82);
+  color: var(--ink);
+  font: 12px var(--font-mono);
+  padding: 6px 10px;
+}
+
+.solar-status { color: var(--cyan); padding: 0 6px; white-space: nowrap; }
+
+.solar-controls button:focus-visible,
+.solar-controls select:focus-visible,
+.solar-controls input:focus-visible,
+.planet-reticle:focus-visible,
+.earth-explore-trigger:focus-visible,
+.earth-explorer-toolbar button:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+.planet-reticle {
+  position: absolute;
+  top: -22px;
+  left: -22px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid rgba(127, 212, 255, 0.8);
+  border-radius: 6px;
+  background: rgba(5, 10, 28, 0.22);
+  color: var(--ink);
+  pointer-events: auto;
+  cursor: default;
+}
+
+.planet-reticle[data-body="earth"] { border-color: var(--gold); cursor: pointer; }
+.planet-reticle i { position: absolute; inset: 19px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
+.planet-reticle span {
+  position: absolute;
+  left: 50px;
+  top: 12px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  background: rgba(5, 10, 28, 0.86);
+  font: 11px var(--font-mono);
+  white-space: nowrap;
+}
+.planet-reticle.left-label span { left: auto; right: 50px; }
+
+.earth-explore-trigger {
+  position: fixed;
+  z-index: 12;
+  left: 50%;
+  bottom: 92px;
+  transform: translateX(-50%);
+  pointer-events: auto;
+  border-color: rgba(127, 212, 255, 0.7);
+}
+
+.earth-explorer {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: none;
+  background: var(--space-0);
+}
+
+.earth-explorer.active { display: block; }
+.earth-explorer-canvas { position: absolute; inset: 0; }
+.earth-explorer-toolbar {
+  position: absolute;
+  z-index: 2;
+  left: 16px;
+  right: 16px;
+  top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: none;
+}
+.earth-explorer-toolbar > * { pointer-events: auto; }
+.earth-explorer-toolbar output {
+  margin-right: auto;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(5, 10, 28, 0.82);
+  color: var(--cyan);
+  font: 12px var(--font-mono);
+}
+.earth-explorer-error {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 420px;
+  text-align: center;
+  color: var(--ink);
+  font: 14px var(--font-mono);
+}
+
+@media (max-width: 600px) {
+  .solar-controls { top: 58px; width: calc(100% - 24px); overflow-x: auto; justify-content: flex-start; }
+  .solar-status { display: none; }
+  .planet-reticle span { font-size: 10px; }
+  .earth-explorer-toolbar { flex-wrap: wrap; }
+}
+
 .loading-overlay {
   position: fixed;
   inset: 0;

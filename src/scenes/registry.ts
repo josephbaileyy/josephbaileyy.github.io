@@ -7,6 +7,7 @@ import {
   planetPosition,
   STANFORD_LAT,
   STANFORD_LON,
+  EARTH_RADIUS_AU,
 } from './lib/astro';
 
 /**
@@ -63,11 +64,10 @@ const defs: SceneDef3D[] = [
     id: 'solar',
     label: 'The Solar System',
     frameWidthMeters: 1e13,
-    restPose: { focus: [0, 0, 0], dir: [0, 0.6, 1], frameWidth: 60, fov: 50 },
-    // earth frame 36 × 0.06 = 2.16 apparent (globe ∅20 × 0.06 = 1.2 = drawn Earth ∅) → K ≈ 28
-    // (the galaxy→solar scale cheat is hidden scene-side: the galaxy fades
-    // itself out via localT as the camera dives into the anchor star)
-    anchor: { position: [EARTH_NOW.x, EARTH_NOW.y, EARTH_NOW.z], scale: 0.06 },
+    restPose: { focus: [0, 0, 0], dir: [0, 0.6, 1], frameWidth: 64, fov: 50, fit: 'contain' },
+    // Literal Earth radius: the dynamic solar anchor updates this position
+    // from the JPL ephemeris while preserving a seamless physical-size dive.
+    anchor: { position: [EARTH_NOW.x, EARTH_NOW.y, EARTH_NOW.z], scale: EARTH_RADIUS_AU / GLOBE_R },
     exposure: 1.0,
     effects: { bloom: true },
     importScene: lazyScene(() => import('./solar'), 'createSolar', 'loadSolar'),

@@ -183,7 +183,8 @@ describe('anchor sanity (registry)', () => {
       const apparent = CHAIN3D[i + 1].restPose.frameWidth * def.anchor!.scale;
       const K = def.restPose.frameWidth / apparent;
       expect(K).toBeGreaterThan(8);
-      expect(K).toBeLessThan(32);
+      if (def.id === 'solar') expect(K).toBeGreaterThan(100_000); // literal Earth radius in AU
+      else expect(K).toBeLessThan(32);
     }
   });
 });

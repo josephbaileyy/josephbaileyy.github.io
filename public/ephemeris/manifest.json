@@ -1,0 +1,1140 @@
+{
+  "version": 1,
+  "source": "NASA/JPL DE440s SPICE, geometric heliocentric vectors, J2000 ecliptic, AU/day",
+  "chunks": [
+    {
+      "startYear": 1950,
+      "endYear": 1954,
+      "startJd": 2433282.500476666,
+      "startUnixMs": -631152000000,
+      "file": "/ephemeris/1950-1954.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 1955,
+      "endYear": 1959,
+      "startJd": 2435108.500476666,
+      "startUnixMs": -473385600000,
+      "file": "/ephemeris/1955-1959.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 1960,
+      "endYear": 1964,
+      "startJd": 2436934.500476666,
+      "startUnixMs": -315619200000,
+      "file": "/ephemeris/1960-1964.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10968,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21936,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32904,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43872,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54840,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65808,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76776,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87744,
+          "count": 7309,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 1965,
+      "endYear": 1969,
+      "startJd": 2438761.500476666,
+      "startUnixMs": -157766400000,
+      "file": "/ephemeris/1965-1969.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 1970,
+      "endYear": 1974,
+      "startJd": 2440587.500476666,
+      "startUnixMs": 0,
+      "file": "/ephemeris/1970-1974.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 1975,
+      "endYear": 1979,
+      "startJd": 2442413.5005345363,
+      "startUnixMs": 157766400000,
+      "file": "/ephemeris/1975-1979.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 1980,
+      "endYear": 1984,
+      "startJd": 2444239.5005924064,
+      "startUnixMs": 315532800000,
+      "file": "/ephemeris/1980-1984.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10968,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21936,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32904,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43872,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54840,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65808,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76776,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87744,
+          "count": 7309,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 1985,
+      "endYear": 1989,
+      "startJd": 2446066.500627129,
+      "startUnixMs": 473385600000,
+      "file": "/ephemeris/1985-1989.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 1990,
+      "endYear": 1994,
+      "startJd": 2447892.500661851,
+      "startUnixMs": 631152000000,
+      "file": "/ephemeris/1990-1994.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 1995,
+      "endYear": 1999,
+      "startJd": 2449718.5007081474,
+      "startUnixMs": 788918400000,
+      "file": "/ephemeris/1995-1999.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 2000,
+      "endYear": 2004,
+      "startJd": 2451544.5007428695,
+      "startUnixMs": 946684800000,
+      "file": "/ephemeris/2000-2004.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10968,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21936,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32904,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43872,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54840,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65808,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76776,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87744,
+          "count": 7309,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 2005,
+      "endYear": 2009,
+      "startJd": 2453371.5007428695,
+      "startUnixMs": 1104537600000,
+      "file": "/ephemeris/2005-2009.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 2010,
+      "endYear": 2014,
+      "startJd": 2455197.5007660175,
+      "startUnixMs": 1262304000000,
+      "file": "/ephemeris/2010-2014.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 2015,
+      "endYear": 2019,
+      "startJd": 2457023.5007775915,
+      "startUnixMs": 1420070400000,
+      "file": "/ephemeris/2015-2019.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 2020,
+      "endYear": 2024,
+      "startJd": 2458849.5008007395,
+      "startUnixMs": 1577836800000,
+      "file": "/ephemeris/2020-2024.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10968,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21936,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32904,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43872,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54840,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65808,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76776,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87744,
+          "count": 7309,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 2025,
+      "endYear": 2029,
+      "startJd": 2460676.50080074,
+      "startUnixMs": 1735689600000,
+      "file": "/ephemeris/2025-2029.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 2030,
+      "endYear": 2034,
+      "startJd": 2462502.50080074,
+      "startUnixMs": 1893456000000,
+      "file": "/ephemeris/2030-2034.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 2035,
+      "endYear": 2039,
+      "startJd": 2464328.5008007395,
+      "startUnixMs": 2051222400000,
+      "file": "/ephemeris/2035-2039.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 2040,
+      "endYear": 2044,
+      "startJd": 2466154.5008007395,
+      "startUnixMs": 2208988800000,
+      "file": "/ephemeris/2040-2044.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10968,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21936,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32904,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43872,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54840,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65808,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76776,
+          "count": 1828,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87744,
+          "count": 7309,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 2045,
+      "endYear": 2049,
+      "startJd": 2467981.50080074,
+      "startUnixMs": 2366841600000,
+      "file": "/ephemeris/2045-2049.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 10962,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 21924,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 32886,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 43848,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 54810,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 65772,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 76734,
+          "count": 1827,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 87696,
+          "count": 7305,
+          "stepDays": 0.25
+        }
+      }
+    },
+    {
+      "startYear": 2050,
+      "endYear": 2050,
+      "startJd": 2469807.5008007395,
+      "startUnixMs": 2524608000000,
+      "file": "/ephemeris/2050-2050.bin",
+      "bodies": {
+        "mercury": {
+          "offset": 0,
+          "count": 366,
+          "stepDays": 1.0
+        },
+        "venus": {
+          "offset": 2196,
+          "count": 366,
+          "stepDays": 1.0
+        },
+        "earth": {
+          "offset": 4392,
+          "count": 366,
+          "stepDays": 1.0
+        },
+        "mars": {
+          "offset": 6588,
+          "count": 366,
+          "stepDays": 1.0
+        },
+        "jupiter": {
+          "offset": 8784,
+          "count": 366,
+          "stepDays": 1.0
+        },
+        "saturn": {
+          "offset": 10980,
+          "count": 366,
+          "stepDays": 1.0
+        },
+        "uranus": {
+          "offset": 13176,
+          "count": 366,
+          "stepDays": 1.0
+        },
+        "neptune": {
+          "offset": 15372,
+          "count": 366,
+          "stepDays": 1.0
+        },
+        "moon": {
+          "offset": 17568,
+          "count": 1461,
+          "stepDays": 0.25
+        }
+      }
+    }
+  ]
+}

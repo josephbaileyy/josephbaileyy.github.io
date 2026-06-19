@@ -94,3 +94,38 @@ test('browser zoom gestures do not move the universe camera', async ({ page }) =
   await page.keyboard.up('Control');
   await expect(page).toHaveURL(/#\/galaxy$/);
 });
+
+test('true-scale solar system keeps every tracked body discoverable on mobile', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/solar');
+  await expect(page.locator('.solar-overlay')).toHaveClass(/active/);
+  await expect(page.getByLabel('Simulation date')).toBeVisible();
+  const reticles = page.locator('.planet-reticle:not([hidden])');
+  await expect(reticles).toHaveCount(10);
+  const boxes = await reticles.evaluateAll((nodes) => nodes.map((node) => {
+    const box = node.getBoundingClientRect();
+    return { left: box.left, right: box.right, top: box.top, bottom: box.bottom };
+  }));
+  for (const box of boxes) {
+    expect(box.left).toBeGreaterThanOrEqual(0);
+    expect(box.right).toBeLessThanOrEqual(390);
+    expect(box.top).toBeGreaterThanOrEqual(0);
+    expect(box.bottom).toBeLessThanOrEqual(844);
+  }
+  const labels = await page.locator('.planet-reticle:not([hidden]) span').evaluateAll((nodes) => nodes.map((node) => {
+    const box = node.getBoundingClientRect();
+    return { left: box.left, right: box.right };
+  }));
+  for (const label of labels) {
+    expect(label.left).toBeGreaterThanOrEqual(0);
+    expect(label.right).toBeLessThanOrEqual(390);
+  }
+});
+
+test('Earth offers explicit exploration without replacing universe navigation', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/earth');
+  await expect(page.getByRole('button', { name: 'explore Earth' })).toBeVisible();
+  await expect(page).toHaveURL(/#\/earth$/);
+});

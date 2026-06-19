@@ -123,6 +123,15 @@ export interface RigResult {
  * (= world space, since the base is mounted at identity).
  */
 export function cameraPose(depth: number, defs: SceneDef3D[], vp: Viewport): RigResult {
+  return cameraPoseWithAnchors(depth, defs, vp);
+}
+
+export function cameraPoseWithAnchors(
+  depth: number,
+  defs: SceneDef3D[],
+  vp: Viewport,
+  anchorAt?: (index: number) => AnchorSpec | undefined,
+): RigResult {
   const n = defs.length;
   const d = Math.min(Math.max(depth, 0), n - 1);
   let base = Math.floor(d);
@@ -132,7 +141,7 @@ export function cameraPose(depth: number, defs: SceneDef3D[], vp: Viewport): Rig
   const start = restCameraPose(defs[base], vp);
   if (t < 1e-9) return { pose: start, base, t: 0 };
 
-  const anchor = defs[base].anchor;
+  const anchor = anchorAt?.(base) ?? defs[base].anchor;
   if (!anchor) throw new Error(`scene ${defs[base].id} has no anchor but depth=${depth}`);
   const end = childRestInParent(anchor, defs[base + 1], vp);
 

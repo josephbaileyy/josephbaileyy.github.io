@@ -17,6 +17,7 @@ import { PanelHost } from './ui/panel';
 import { ScaleRibbon } from './ui/scale-ribbon';
 import { ScreenUi } from './ui/screen-ui';
 import { Router } from './router';
+import { simulationClock } from './astronomy/clock';
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const now = () => performance.now() / 1000;
@@ -66,6 +67,13 @@ const requestDestination = (index: number): void => {
   loader.request(index + 1);
 };
 
+window.addEventListener('universe:navigate', (event) => {
+  const index = (event as CustomEvent<number>).detail;
+  if (!Number.isInteger(index) || index < 0 || index >= CHAIN3D.length) return;
+  requestDestination(index);
+  jump.go(index, now());
+});
+
 let pendingPanel: { scene: number; id: string } | null = null;
 
 const openPanel = (id: string, sceneIndex: number) => {
@@ -97,6 +105,18 @@ const SCREEN_INDEX = CHAIN3D.length - 1;
 const a11yLayer = document.getElementById('a11y-layer')!;
 const screenUi = new ScreenUi((id) => openPanel(id, SCREEN_INDEX));
 let osBuilt = false;
+let earthExplorer: import('./ui/earth-explorer').EarthExplorer | null = null;
+let earthExplorerJob: Promise<void> | null = null;
+const syncEarthExplorer = (settled: number | null) => {
+  if (settled === 2) {
+    earthExplorerJob ??= import('./ui/earth-explorer').then(({ EarthExplorer }) => {
+      earthExplorer = new EarthExplorer();
+      earthExplorer.setAvailable(camera.settledIndex === 2);
+    });
+  } else {
+    earthExplorer?.setAvailable(false);
+  }
+};
 const ensureFakeOs = () => {
   if (osBuilt) return Promise.resolve();
   return import('./ui/fake-os/os').then(({ buildFakeOs }) => {
@@ -245,7 +265,8 @@ function frame(): void {
   if (camera.depth > maxD) camera.depth = maxD;
 
   if (loading.visible && world.isReady(camera.depth)) loading.hide();
-  world.update(camera.depth, vp, dt, t, reduced);
+  const utcMs = simulationClock.tick(dt);
+  world.update(camera.depth, vp, dt, t, reduced, utcMs);
 
   // parallax: damped head-sway, fading out while moving fast and at the screen
   if (!reduced) {
@@ -284,6 +305,7 @@ function frame(): void {
     lastBaseInstance = baseInstance;
     hotspots.setActive(baseInstance);
     syncScreenUi(settled);
+    syncEarthExplorer(settled);
     if (settled !== null) {
       hud.announce(CHAIN3D[settled].label);
       if (!panel.isOpen) router.replace(settled);
