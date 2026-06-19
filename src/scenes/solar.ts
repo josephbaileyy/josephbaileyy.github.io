@@ -23,7 +23,7 @@ import {
   Vector3,
 } from 'three';
 import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
-import { canvasTexture, loadStars, loadTexture, type StarData } from './lib/assets';
+import { canvasTexture, loadStars, loadTexture, textSprite, type StarData } from './lib/assets';
 import {
   daysSinceJ2000,
   orbitDistance,
@@ -84,15 +84,8 @@ function coronaTexture(): Texture {
 }
 
 function labelSprite(text: string, color = '#9aa3c7'): Sprite {
-  const tex = canvasTexture(256, 64, (ctx) => {
-    ctx.font = '500 30px ui-monospace, Menlo, monospace';
-    ctx.fillStyle = color;
-    ctx.textAlign = 'center';
-    ctx.fillText(text, 128, 42);
-  });
-  const s = new Sprite(new SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0.75 }));
-  s.scale.set(3.4, 0.85, 1);
-  return s;
+  const worldWidth = Math.min(8, Math.max(4.2, text.length * 0.2));
+  return textSprite([{ text, color, size: 28 }], { worldWidth, width: 480, opacity: 0.95 });
 }
 
 export function createSolar(assets: SceneAssets): SceneInstance {

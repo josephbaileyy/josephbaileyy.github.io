@@ -13,12 +13,10 @@ import {
   Shape,
   ShapeGeometry,
   SphereGeometry,
-  Sprite,
-  SpriteMaterial,
   Texture,
 } from 'three';
 import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
-import { canvasTexture, loadTexture } from './lib/assets';
+import { canvasTexture, loadTexture, textSprite } from './lib/assets';
 
 const BOOK_COLORS = [0xb83a3a, 0x7fd4ff, 0xffd479, 0x56a06b, 0x5a78e6, 0xcdd4f0, 0x8c5e9e];
 
@@ -359,14 +357,10 @@ export function createRoom(assets: SceneAssets): SceneInstance {
   const hit = new Mesh(new BoxGeometry(2.2, 1.7, 1.2), new MeshBasicMaterial({ visible: false }));
   hit.position.set(1.5, 2.6, -5.4);
   group.add(hit);
-  const hintTex = canvasTexture(320, 56, (ctx) => {
-    ctx.font = '500 26px ui-monospace, Menlo, monospace';
-    ctx.fillStyle = '#7fd4ff';
-    ctx.textAlign = 'center';
-    ctx.fillText('click the screen', 160, 38);
-  });
-  const hint = new Sprite(new SpriteMaterial({ map: hintTex, transparent: true, depthWrite: false, opacity: 0.85 }));
-  hint.scale.set(2.4, 0.42, 1);
+  const hint = textSprite(
+    [{ text: 'click the screen', color: '#7fd4ff', size: 25 }],
+    { worldWidth: 3.6, width: 440, opacity: 0.92 },
+  );
   hint.position.set(1.5, 1.55, -4.9);
   group.add(hint);
   const hotspots: Hotspot3D[] = [

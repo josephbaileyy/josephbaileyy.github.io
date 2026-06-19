@@ -18,7 +18,7 @@ import {
   Vector3,
 } from 'three';
 import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
-import { canvasTexture, loadStars, loadTexture, type StarData } from './lib/assets';
+import { canvasTexture, loadStars, loadTexture, textSprite, type StarData } from './lib/assets';
 import { latLonToVec3, STANFORD_LAT, STANFORD_LON, sunDirection } from './lib/astro';
 import { earthGlobeMaterial } from './lib/earth-globe';
 import { makeSky } from './lib/sky';
@@ -167,17 +167,13 @@ export function createEarth(assets: SceneAssets): SceneInstance {
   beacon.add(ring);
   group.add(beacon);
 
-  const labelTex = canvasTexture(512, 96, (ctx) => {
-    ctx.font = '500 36px ui-monospace, Menlo, monospace';
-    ctx.fillStyle = '#eef2ff';
-    ctx.textAlign = 'center';
-    ctx.fillText('stanford, california', 256, 40);
-    ctx.font = '26px ui-monospace, Menlo, monospace';
-    ctx.fillStyle = '#9aa3c7';
-    ctx.fillText('click to visit', 256, 78);
-  });
-  const label = new Sprite(new SpriteMaterial({ map: labelTex, transparent: true, depthWrite: false }));
-  label.scale.set(4.2, 0.8, 1);
+  const label = textSprite(
+    [
+      { text: 'stanford, california', color: '#f5f8ff', size: 34 },
+      { text: 'click to visit', color: '#9fddff', size: 25 },
+    ],
+    { worldWidth: 8, width: 640 },
+  );
   label.position.copy(beaconPos).addScaledVector(beaconNormal, 1.9);
   group.add(label);
 

@@ -10,8 +10,8 @@ export type HotspotAction =
 /**
  * The camera's settled framing for a scene, authored against a 16:10 reference
  * frame of width `frameWidth` (scene units) centered on `focus`. The actual
- * rest distance is derived per-frame from the live viewport (cover-fit), so
- * scenes must over-paint ~20% beyond the frame.
+ * rest distance is derived per-frame from the live viewport. Most scenes use
+ * cover-fit; wide layouts such as the galaxy can opt into contain-fit.
  */
 export interface RestPose {
   focus: [number, number, number];
@@ -20,6 +20,8 @@ export interface RestPose {
   frameWidth: number;
   /** vertical fov, degrees */
   fov: number;
+  /** `contain` keeps every authored hotspot visible on narrow screens. */
+  fit?: 'cover' | 'contain';
 }
 
 /** Where the child scene nests inside this one. scale = 1/K, K ≈ 12–25. */

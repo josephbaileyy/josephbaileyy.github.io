@@ -52,7 +52,7 @@ const defs: SceneDef3D[] = [
     id: 'galaxy',
     label: 'The Milky Way',
     frameWidthMeters: 1e21,
-    restPose: { focus: [0, 0, 0], dir: [0, 0.5, 1], frameWidth: 120, fov: 50 },
+    restPose: { focus: [0, 0, 0], dir: [0, 0.5, 1], frameWidth: 120, fov: 50, fit: 'contain' },
     // solar frame 60 × 0.1333 = 8 apparent units → K = 15
     anchor: { position: [24, 0.5, -10], scale: 8 / 60 },
     exposure: 1.1,

@@ -63,6 +63,7 @@ const jump = new JumpController(camera, reduced);
 const requestDestination = (index: number): void => {
   loader.request(index);
   loader.request(index - 1);
+  loader.request(index + 1);
 };
 
 let pendingPanel: { scene: number; id: string } | null = null;
@@ -85,7 +86,9 @@ const hud = new Hud(
   },
   (dir) => {
     hud.hideHint();
-    camera.tweenTo(Math.round(camera.depth) + dir, now(), 0.9);
+    const target = Math.round(camera.depth) + dir;
+    requestDestination(target);
+    camera.tweenTo(target, now(), 0.9);
   },
 );
 const ribbon = new ScaleRibbon(hudEl);
@@ -109,7 +112,9 @@ const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => 
   if (h.action.type === 'panel') {
     openPanel(h.action.panelId, world.baseIndex());
   } else {
-    camera.tweenTo(world.baseIndex() + (h.action.dir === 'in' ? 1 : -1), now());
+    const target = world.baseIndex() + (h.action.dir === 'in' ? 1 : -1);
+    requestDestination(target);
+    camera.tweenTo(target, now());
   }
 });
 
@@ -171,6 +176,7 @@ attachInput(canvas, camera, {
   reducedMotion: reduced,
   isModalOpen: () => panel.isOpen,
   onFirstInteraction: () => hud.hideHint(),
+  onSceneIntent: requestDestination,
   parallaxTarget,
 });
 
@@ -285,9 +291,10 @@ function frame(): void {
         openPanel(pendingPanel.id, settled);
         pendingPanel = null;
       }
-      loader.request(settled - 1);
-      loader.request(settled + 1);
-      loader.prune(settled);
+      for (let offset = -2; offset <= 2; offset++) loader.request(settled + offset);
+      // Two scenes of headroom keeps rapid wheel/touch travel from outrunning
+      // a dynamic import (most noticeably when returning to Stanford).
+      loader.prune(settled, 2);
     }
   }
 

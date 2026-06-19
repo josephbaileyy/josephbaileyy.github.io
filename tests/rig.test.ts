@@ -23,7 +23,7 @@ function projectToNDC(point: Vector3, pose: { position: Vector3; quaternion: Qua
 }
 
 describe('restCameraPose', () => {
-  it('frames the focus at NDC origin with cover-fit distance', () => {
+  it('frames the focus at NDC origin with the configured fit distance', () => {
     for (const def of CHAIN3D) {
       const pose = restCameraPose(def, VP);
       const ndc = projectToNDC(new Vector3(...def.restPose.focus), pose, VP);
@@ -34,7 +34,7 @@ describe('restCameraPose', () => {
     }
   });
 
-  it('cover-fits: the authored frame is never exceeded at any aspect', () => {
+  it('contain-fits the galaxy so every authored hotspot remains visible', () => {
     const def = CHAIN3D[0];
     for (const vp of [VP, { w: 2560, h: 1080 }, { w: 390, h: 844 }]) {
       const pose = restCameraPose(def, vp);
@@ -48,7 +48,22 @@ describe('restCameraPose', () => {
         .addScaledVector(right, W / 2)
         .addScaledVector(upv, W / 3.2);
       const ndc = projectToNDC(corner, pose, vp);
-      // cover-fit means the frame edge is AT or OUTSIDE the viewport edge
+      expect(Math.abs(ndc.x)).toBeLessThanOrEqual(1 + 1e-6);
+      expect(Math.abs(ndc.y)).toBeLessThanOrEqual(1 + 1e-6);
+    }
+  });
+
+  it('cover-fits the enclosed scenes', () => {
+    const def = CHAIN3D[1];
+    for (const vp of [{ w: 2560, h: 1080 }, { w: 390, h: 844 }]) {
+      const pose = restCameraPose(def, vp);
+      const W = def.restPose.frameWidth;
+      const right = new Vector3(1, 0, 0).applyQuaternion(pose.quaternion);
+      const upv = new Vector3(0, 1, 0).applyQuaternion(pose.quaternion);
+      const corner = new Vector3(...def.restPose.focus)
+        .addScaledVector(right, W / 2)
+        .addScaledVector(upv, W / 3.2);
+      const ndc = projectToNDC(corner, pose, vp);
       expect(Math.max(Math.abs(ndc.x), Math.abs(ndc.y))).toBeGreaterThanOrEqual(1 - 1e-6);
     }
   });

@@ -1,4 +1,12 @@
-import { SRGBColorSpace, Texture, TextureLoader } from 'three';
+import {
+  LinearFilter,
+  LinearMipmapLinearFilter,
+  Sprite,
+  SpriteMaterial,
+  SRGBColorSpace,
+  Texture,
+  TextureLoader,
+} from 'three';
 
 const loader = new TextureLoader();
 const cache = new Map<string, Promise<Texture>>();
@@ -86,13 +94,89 @@ export function canvasTexture(
   w: number,
   h: number,
   draw: (ctx: CanvasRenderingContext2D) => void,
+  pixelRatio = 1,
 ): Texture {
   const canvas = document.createElement('canvas');
-  canvas.width = w;
-  canvas.height = h;
-  draw(canvas.getContext('2d')!);
+  canvas.width = Math.ceil(w * pixelRatio);
+  canvas.height = Math.ceil(h * pixelRatio);
+  const ctx = canvas.getContext('2d')!;
+  ctx.scale(pixelRatio, pixelRatio);
+  draw(ctx);
   const tex = new Texture(canvas);
   tex.colorSpace = SRGBColorSpace;
   tex.needsUpdate = true;
   return tex;
+}
+
+export interface TextSpriteLine {
+  text: string;
+  color?: string;
+  size?: number;
+  weight?: number;
+}
+
+interface TextSpriteOptions {
+  worldWidth: number;
+  width?: number;
+  padding?: number;
+  gap?: number;
+  background?: string;
+  border?: string;
+  opacity?: number;
+}
+
+/** Crisp, padded world-space label that remains readable over luminous scenes. */
+export function textSprite(lines: TextSpriteLine[], options: TextSpriteOptions): Sprite {
+  const width = options.width ?? 640;
+  const padding = options.padding ?? 20;
+  const gap = options.gap ?? 8;
+  const heights = lines.map((line) => (line.size ?? 28) * 1.25);
+  const height = Math.ceil(padding * 2 + heights.reduce((sum, value) => sum + value, 0) + gap * (lines.length - 1));
+  const tex = canvasTexture(
+    width,
+    height,
+    (ctx) => {
+      const radius = 18;
+      ctx.beginPath();
+      ctx.roundRect(2, 2, width - 4, height - 4, radius);
+      ctx.fillStyle = options.background ?? 'rgba(5, 10, 28, 0.82)';
+      ctx.fill();
+      ctx.strokeStyle = options.border ?? 'rgba(142, 219, 255, 0.42)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      let y = padding;
+      lines.forEach((line, index) => {
+        const size = line.size ?? 28;
+        const lineHeight = heights[index];
+        y += lineHeight / 2;
+        ctx.font = `${line.weight ?? 600} ${size}px ui-monospace, SFMono-Regular, Menlo, monospace`;
+        ctx.fillStyle = line.color ?? '#d9f5ff';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
+        ctx.shadowBlur = 7;
+        ctx.fillText(line.text, width / 2, y);
+        y += lineHeight / 2 + gap;
+      });
+    },
+    2,
+  );
+  tex.magFilter = LinearFilter;
+  tex.minFilter = LinearMipmapLinearFilter;
+  tex.generateMipmaps = true;
+  tex.anisotropy = 8;
+
+  const sprite = new Sprite(
+    new SpriteMaterial({
+      map: tex,
+      transparent: true,
+      depthWrite: false,
+      depthTest: false,
+      opacity: options.opacity ?? 1,
+    }),
+  );
+  sprite.scale.set(options.worldWidth, (options.worldWidth * height) / width, 1);
+  sprite.renderOrder = 1000;
+  return sprite;
 }

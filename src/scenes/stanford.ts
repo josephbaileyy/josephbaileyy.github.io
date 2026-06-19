@@ -18,12 +18,10 @@ import {
   PointsMaterial,
   Shape,
   SphereGeometry,
-  Sprite,
-  SpriteMaterial,
   Vector3,
 } from 'three';
 import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
-import { canvasTexture } from './lib/assets';
+import { canvasTexture, textSprite } from './lib/assets';
 
 const SANDSTONE = 0x8f7f63;
 const ROOF = 0x7e2424;
@@ -407,14 +405,10 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   winGlow.position.copy(windowPos).addScaledVector(v, 0.5);
   group.add(winGlow);
 
-  const labelTex = canvasTexture(512, 64, (ctx) => {
-    ctx.font = '500 30px ui-monospace, Menlo, monospace';
-    ctx.fillStyle = '#ffd479';
-    ctx.textAlign = 'center';
-    ctx.fillText("my room — the light's on", 256, 42);
-  });
-  const label = new Sprite(new SpriteMaterial({ map: labelTex, transparent: true, depthWrite: false, opacity: 0.9 }));
-  label.scale.set(6, 0.75, 1);
+  const label = textSprite(
+    [{ text: "my room — the light's on", color: '#ffd479', size: 28 }],
+    { worldWidth: 8, width: 600 },
+  );
   label.position.copy(windowPos).add(new Vector3(0, 2.4, 0));
   group.add(label);
 

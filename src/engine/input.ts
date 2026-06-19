@@ -13,6 +13,8 @@ export interface InputOptions {
   reducedMotion: boolean;
   isModalOpen: () => boolean;
   onFirstInteraction?: () => void;
+  /** Prefetch the scene a gesture is moving toward before the camera arrives. */
+  onSceneIntent?: (index: number) => void;
   /** mutable target written with normalized mouse position for camera parallax */
   parallaxTarget?: { x: number; y: number };
 }
@@ -44,6 +46,7 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
       e.preventDefault();
       markInteracted();
       const px = e.deltaMode === 1 ? e.deltaY * LINE_HEIGHT : e.deltaY;
+      opts.onSceneIntent?.(Math.round(camera.depth) + Math.sign(-px));
       if (opts.reducedMotion) {
         reducedAcc += -px;
         if (Math.abs(reducedAcc) > 140) {
@@ -91,7 +94,9 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
       const s = spread();
       if (lastSpread > 0 && s > 0) {
         markInteracted();
-        camera.dragBy(Math.log2(s / lastSpread) * PINCH_GAIN, now());
+        const delta = Math.log2(s / lastSpread) * PINCH_GAIN;
+        opts.onSceneIntent?.(Math.round(camera.depth) + Math.sign(delta));
+        camera.dragBy(delta, now());
       }
       lastSpread = s;
     }
@@ -113,7 +118,9 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
     if (opts.isModalOpen()) return;
     e.preventDefault();
     markInteracted();
-    camera.tweenTo(Math.round(camera.depth) + 1, now());
+    const target = Math.round(camera.depth) + 1;
+    opts.onSceneIntent?.(target);
+    camera.tweenTo(target, now());
   });
 
   // --- Keyboard ---
@@ -124,7 +131,9 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
     const step = (dir: 1 | -1) => {
       e.preventDefault();
       markInteracted();
-      camera.tweenTo(Math.round(camera.depth) + dir, now(), 0.9);
+      const target = Math.round(camera.depth) + dir;
+      opts.onSceneIntent?.(target);
+      camera.tweenTo(target, now(), 0.9);
     };
     switch (e.key) {
       case '+':

@@ -59,4 +59,14 @@ describe('SceneLoader', () => {
     expect(loader.isReady(3)).toBe(false);
     expect(disposed[3]).toHaveBeenCalledOnce();
   });
+
+  it('supports a wider retention window for rapid travel', async () => {
+    const disposed = [vi.fn(), vi.fn(), vi.fn(), vi.fn()];
+    const ids: SceneDef3D['id'][] = ['galaxy', 'solar', 'earth', 'stanford'];
+    const loader = new SceneLoader(ids.map((id, i) => definition(id, () => instance(disposed[i]))));
+    await Promise.all(ids.map((_id, i) => loader.ensure(i)));
+    loader.prune(1, 2);
+    expect(ids.map((_id, i) => loader.isReady(i))).toEqual([true, true, true, true]);
+    expect(disposed.every((spy) => spy.mock.calls.length === 0)).toBe(true);
+  });
 });

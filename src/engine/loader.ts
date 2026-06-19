@@ -5,7 +5,7 @@ export type SceneLoadStatus = 'idle' | 'loading' | 'ready' | 'failed';
 
 /**
  * Async scene lifecycle: load assets + create on request, keep a window of
- * {settled−1, settled, settled+1} instantiated, dispose everything outside it
+ * a configurable window around the settled scene, dispose everything outside it
  * (bounded GPU memory). Prefetch is the caller's policy; this just dedupes.
  */
 export class SceneLoader implements SceneSource {
@@ -73,9 +73,9 @@ export class SceneLoader implements SceneSource {
   }
 
   /** Dispose instances outside the keep-window around the settled scene. */
-  prune(center: number): void {
+  prune(center: number, radius = 1): void {
     for (const [i, inst] of this.instances) {
-      if (Math.abs(i - center) > 1) {
+      if (Math.abs(i - center) > radius) {
         inst.dispose();
         this.instances.delete(i);
       }

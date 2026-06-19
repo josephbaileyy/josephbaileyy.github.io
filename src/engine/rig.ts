@@ -29,9 +29,8 @@ const UP = new Vector3(0, 1, 0);
 const DEG = Math.PI / 180;
 
 /**
- * Cover-fit rest distance: the camera never shows beyond the authored 16:10
- * frame (narrow viewports crop the sides) — direct analogue of the 2D
- * `restScale = max(vw/W, vh/H)`.
+ * Rest distance for the authored 16:10 frame. Cover-fit crops the sides on a
+ * narrow viewport; contain-fit preserves the full frame for hotspot layouts.
  */
 export function restDistance(pose: RestPose, vp: Viewport): number {
   const aspect = vp.w / vp.h;
@@ -39,7 +38,8 @@ export function restDistance(pose: RestPose, vp: Viewport): number {
   const halfW = pose.frameWidth / 2;
   const tanV = Math.tan((pose.fov / 2) * DEG);
   const tanH = tanV * aspect;
-  return Math.min(halfH / tanV, halfW / tanH);
+  const distances = [halfH / tanV, halfW / tanH];
+  return pose.fit === 'contain' ? Math.max(...distances) : Math.min(...distances);
 }
 
 /** Settled camera pose for a scene, in that scene's local space. */

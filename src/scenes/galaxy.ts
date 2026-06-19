@@ -18,7 +18,7 @@ import {
   Vector3,
 } from 'three';
 import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
-import { canvasTexture } from './lib/assets';
+import { canvasTexture, textSprite } from './lib/assets';
 
 /** deterministic RNG so the galaxy is identical every visit */
 function mulberry32(seed: number): () => number {
@@ -167,20 +167,11 @@ function buildGalaxyPoints(): { group: Group; materials: ShaderMaterial[] } {
   return { group, materials };
 }
 
-function makeLabel(lines: Array<[string, string, number]>, w = 512, h = 128): Sprite {
-  const tex = canvasTexture(w, h, (ctx) => {
-    ctx.textAlign = 'center';
-    let y = 44;
-    for (const [text, color, sizePx] of lines) {
-      ctx.font = `500 ${sizePx}px ui-monospace, Menlo, monospace`;
-      ctx.fillStyle = color;
-      ctx.fillText(text, w / 2, y);
-      y += sizePx + 14;
-    }
-  });
-  const s = new Sprite(new SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0.9 }));
-  s.scale.set(8, 2, 1);
-  return s;
+function makeLabel(lines: Array<[string, string, number]>): Sprite {
+  return textSprite(
+    lines.map(([text, color, size]) => ({ text, color, size })),
+    { worldWidth: 18, width: 640 },
+  );
 }
 
 /** The AM CVn binary: rotating frame, shader disk, particle stream. */
