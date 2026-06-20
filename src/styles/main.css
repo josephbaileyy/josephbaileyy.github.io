@@ -200,16 +200,24 @@ body {
   inset: 13px;
   border: 1px solid rgba(127, 212, 255, 0.82);
   border-radius: 50%;
-  background: rgba(5, 10, 28, 0.28);
+  background-color: rgba(5, 10, 28, 0.28);
+  background-image: var(--body-texture);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.5), 0 0 7px rgba(127, 212, 255, 0.25);
   transition: inset 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 .planet-reticle[data-body="earth"]::before { border-color: var(--gold); }
+.planet-reticle.selected { z-index: 4; }
+.planet-reticle[data-body="moon"] { z-index: 2; }
+.planet-reticle[data-body="earth"] { z-index: 6; }
 .planet-reticle.selected::before,
 .planet-reticle:hover::before,
 .planet-reticle:focus-visible::before {
   inset: 9px;
   border-color: var(--gold);
-  background: rgba(42, 35, 86, 0.5);
+  background-color: rgba(42, 35, 86, 0.5);
 }
 .planet-reticle i { position: absolute; z-index: 1; inset: 19px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; }
 .planet-reticle::after {

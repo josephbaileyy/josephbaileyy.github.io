@@ -316,8 +316,12 @@ export function createSolar(assets: SceneAssets): SceneInstance {
       childAnchor.position[2] = earthPosition.z;
       earthSunDir.value.copy(earthPosition).multiplyScalar(-1).normalize();
       overlayActive = Math.abs(ctx.localT) < 0.02;
-      if (overlayActive) {
-        const targetScale = focusBody === null ? 1 : focusScale(focusBody);
+      if (ctx.localT >= 0) {
+        // A focused orbit uses a closer camera while settled. Fade that
+        // offset out over the opening third of the Earth dive so the camera
+        // joins the physical anchor rig continuously instead of snapping
+        // back to the overview pose when the overlay disappears.
+        const targetScale = solarCameraScale(focusBody, ctx.localT);
         const blend = ctx.reducedMotion ? 1 : 1 - Math.exp(-ctx.dt * 4.2);
         cameraScale += (targetScale - cameraScale) * blend;
         ctx.camera.position.multiplyScalar(cameraScale);
@@ -329,6 +333,10 @@ export function createSolar(assets: SceneAssets): SceneInstance {
     },
     syncUi(camera, viewport) {
       overlay.update(camera, viewport, overlayActive);
+    },
+    hideUi() {
+      overlayActive = false;
+      overlay.hide();
     },
     setQuality(q) {
       belt.visible = q !== 'low';
@@ -350,6 +358,17 @@ function focusScale(body: TrackedBody): number {
   if (body === 'moon') return 8 / 64;
   const planet = PLANETS.find((candidate) => candidate.name === body);
   return Math.min(1, Math.max(3, (planet?.a ?? 1) * 4 + 4) / 64);
+}
+
+export function solarCameraScale(body: TrackedBody | null, localT: number): number {
+  if (body === null || localT < 0) return 1;
+  const focusWeight = 1 - smooth01(localT / 0.35);
+  return 1 + (focusScale(body) - 1) * focusWeight;
+}
+
+function smooth01(value: number): number {
+  const t = Math.min(1, Math.max(0, value));
+  return t * t * (3 - 2 * t);
 }
 
 function updateOsculatingOrbit(line: LineLoop, position: Vector3, velocity: Vector3): void {

@@ -19,4 +19,19 @@ describe('World physical-scale transitions', () => {
     expect(world.camera.near).toBeLessThan(1e-5);
     expect(instances[2].group.scale.x).toBeCloseTo(EARTH_RADIUS_AU / 10, 12);
   });
+
+  it('syncs child scene UI and hides it when the mount plan changes', () => {
+    const instances = CHAIN3D.map(() => scene());
+    instances[0].syncUi = vi.fn();
+    instances[1].syncUi = vi.fn();
+    instances[1].hideUi = vi.fn();
+    const source: SceneSource = { get: (index) => instances[index] ?? null, request: vi.fn() };
+    const world = new World(CHAIN3D, source);
+    world.update(0.5, { w: 1280, h: 800 }, 1 / 60, 0, true);
+    world.syncUi({ w: 1280, h: 800 });
+    expect(instances[0].syncUi).toHaveBeenCalled();
+    expect(instances[1].syncUi).toHaveBeenCalled();
+    world.update(0, { w: 1280, h: 800 }, 1 / 60, 1, true);
+    expect(instances[1].hideUi).toHaveBeenCalled();
+  });
 });

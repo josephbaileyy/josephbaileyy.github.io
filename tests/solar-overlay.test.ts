@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { layoutReticles } from '../src/ui/solar-overlay';
+import { solarCameraScale } from '../src/scenes/solar';
 
 const el = {} as HTMLButtonElement;
 
@@ -22,5 +23,15 @@ describe('solar reticle layout', () => {
     ], { w: 1280, h: 800 });
     expect(result.map(({ x, y }) => [x, y])).toEqual([[600, 400], [610, 400]]);
     expect(Math.abs(result[1].labelY - result[0].labelY)).toBeGreaterThanOrEqual(26);
+  });
+
+  it('fades a focused camera continuously into the Earth transition rig', () => {
+    const settled = solarCameraScale('earth', 0);
+    const midway = solarCameraScale('earth', 0.175);
+    const joined = solarCameraScale('earth', 0.35);
+    expect(settled).toBeLessThan(midway);
+    expect(midway).toBeLessThan(joined);
+    expect(joined).toBe(1);
+    expect(solarCameraScale('earth', -0.1)).toBe(1);
   });
 });

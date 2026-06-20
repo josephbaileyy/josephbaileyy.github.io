@@ -300,7 +300,7 @@ function frame(): void {
   }
 
   world.camera.updateMatrixWorld();
-  world.baseInstance()?.syncUi?.(world.camera, vp);
+  world.syncUi(vp);
 
   renderer.setExposure(exposureAt(camera.depth));
   if (quality.update(dt, t)) applyQuality();

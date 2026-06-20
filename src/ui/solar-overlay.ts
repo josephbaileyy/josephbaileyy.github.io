@@ -19,6 +19,19 @@ const SPEEDS = [
   ['real time', 1], ['1 day / sec', 86400], ['30 days / sec', 2592000], ['1 year / sec', 31557600],
 ] as const;
 
+const BODY_TEXTURES: Record<TrackedBody, string> = {
+  sun: 'radial-gradient(circle at 35% 32%, #fffbd6 0%, #ffc45f 28%, #e96516 68%, #6e1605 100%)',
+  mercury: 'url("/tex/mercury.jpg")',
+  venus: 'url("/tex/venus.jpg")',
+  earth: 'url("/tex/earth_day.jpg")',
+  mars: 'url("/tex/mars.jpg")',
+  jupiter: 'url("/tex/jupiter.jpg")',
+  saturn: 'url("/tex/saturn.jpg")',
+  uranus: 'url("/tex/uranus.jpg")',
+  neptune: 'url("/tex/neptune.jpg")',
+  moon: 'url("/tex/moon.jpg")',
+};
+
 export class SolarOverlay {
   private root = document.createElement('section');
   private date = document.createElement('input');
@@ -74,6 +87,7 @@ export class SolarOverlay {
       const reticle = document.createElement('button');
       reticle.className = 'planet-reticle';
       reticle.dataset.body = name;
+      reticle.style.setProperty('--body-texture', BODY_TEXTURES[name]);
       reticle.setAttribute('aria-label', `${name} — focus tracked real-time orbit`);
       reticle.innerHTML = `<i aria-hidden="true"></i><span>${name}</span>`;
       reticle.addEventListener('click', () => this.select(name));
@@ -132,6 +146,10 @@ export class SolarOverlay {
       // applied only to its label, never to the astronomical position.
       placement.el.style.transform = `translate(${Math.round(placement.x)}px, ${Math.round(placement.y)}px)`;
     }
+  }
+
+  hide(): void {
+    this.root.classList.remove('active');
   }
 
   dispose(): void { this.root.remove(); }

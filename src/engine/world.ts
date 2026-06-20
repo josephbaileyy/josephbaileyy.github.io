@@ -122,7 +122,17 @@ export class World {
     return this.plan?.base ?? 0;
   }
 
+  syncUi(viewport: Viewport): void {
+    if (!this.plan) return;
+    this.source.get(this.plan.base)?.syncUi?.(this.camera, viewport);
+    if (this.plan.child !== null) this.source.get(this.plan.child)?.syncUi?.(this.camera, viewport);
+  }
+
   private applyPlan(plan: MountPlan): void {
+    if (this.plan) {
+      this.source.get(this.plan.base)?.hideUi?.();
+      if (this.plan.child !== null) this.source.get(this.plan.child)?.hideUi?.();
+    }
     this.root.clear();
 
     const base = this.source.get(plan.base);

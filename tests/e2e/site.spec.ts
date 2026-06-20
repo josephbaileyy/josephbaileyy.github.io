@@ -152,15 +152,33 @@ test('solar focus mode expands inner orbits and keeps Earth travel explicit', as
     return Math.hypot(a!.x - b!.x, a!.y - b!.y);
   };
   const overviewDistance = await distance();
-  await page.getByLabel('Focus a planet').selectOption('earth');
+  const moon = page.locator('.planet-reticle[data-body="moon"]');
+  await earth.click();
   await expect(earth).toHaveClass(/selected/);
   await expect(earth).toBeVisible();
+  const [earthZ, moonZ, earthTexture] = await Promise.all([
+    earth.evaluate((node) => Number(getComputedStyle(node).zIndex)),
+    moon.evaluate((node) => Number(getComputedStyle(node).zIndex)),
+    earth.evaluate((node) => getComputedStyle(node, '::before').backgroundImage),
+  ]);
+  expect(earthZ).toBeGreaterThan(moonZ);
+  expect(earthTexture).toContain('earth_day.jpg');
   await expect(page.getByRole('button', { name: 'visit Earth' })).toBeVisible();
   if (testInfo.project.name === 'chromium') {
     await expect.poll(distance).toBeGreaterThan(overviewDistance * 3);
   }
   await page.getByRole('button', { name: 'visit Earth' }).click();
   await expect(page).toHaveURL(/#\/earth$/);
+});
+
+test('solar UI is removed when returning to the Milky Way', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/solar');
+  const overlay = page.locator('.solar-overlay');
+  await expect(overlay).toHaveClass(/active/, { timeout: 20_000 });
+  await page.getByRole('button', { name: 'Go to The Milky Way' }).click();
+  await expect(page).toHaveURL(/#\/galaxy$/);
+  await expect(overlay).not.toHaveClass(/active/);
 });
 
 test('Earth offers explicit exploration without replacing universe navigation', async ({ page }) => {

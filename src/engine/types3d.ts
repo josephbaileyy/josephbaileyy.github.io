@@ -74,6 +74,8 @@ export interface SceneInstance {
   update(ctx: FrameCtx): void;
   /** Project DOM scene UI after the camera's final render transform is applied. */
   syncUi?(camera: PerspectiveCamera, viewport: { w: number; h: number }): void;
+  /** Immediately hide scene-owned DOM when the scene is unmounted. */
+  hideUi?(): void;
   setQuality(q: QualityTier): void;
   dispose(): void;
 }
