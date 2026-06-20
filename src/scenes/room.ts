@@ -105,11 +105,12 @@ function powersPoster(): ReturnType<typeof canvasTexture> {
 
 export function createRoom(assets: SceneAssets): SceneInstance {
   const group = new Group();
+  let quality: 'high' | 'med' | 'low' = 'high';
 
   // ---- shell: floor + two walls (open dollhouse corner) ----
   const floor = new Mesh(
     new BoxGeometry(17, 0.5, 13),
-    new MeshStandardMaterial({ color: 0x5a4634, roughness: 0.9 }),
+    new MeshStandardMaterial({ color: 0x6b5541, roughness: 0.9 }),
   );
   floor.position.set(0, -0.25, -0.5);
   floor.receiveShadow = true;
@@ -123,7 +124,7 @@ export function createRoom(assets: SceneAssets): SceneInstance {
   rug.receiveShadow = true;
   group.add(rug);
 
-  const wallMat = new MeshStandardMaterial({ color: 0x3d3568, roughness: 1 });
+  const wallMat = new MeshStandardMaterial({ color: 0x4b4478, roughness: 1 });
   const backWall = new Mesh(new BoxGeometry(17, 9.5, 0.4), wallMat);
   backWall.position.set(0, 4.75, -6.7);
   backWall.receiveShadow = true;
@@ -204,8 +205,8 @@ export function createRoom(assets: SceneAssets): SceneInstance {
   const monitorGlow = new PointLight(0x9fc7ff, 8, 7, 2);
   monitorGlow.position.set(1.5, 2.7, -4.9);
   group.add(monitorGlow);
-  group.add(new AmbientLight(0x4a4480, 2.6));
-  group.add(new HemisphereLight(0x4a4490, 0x241e38, 2.0));
+  group.add(new AmbientLight(0x5a5594, 3.0));
+  group.add(new HemisphereLight(0x5d5aa0, 0x2d2745, 2.35));
 
   // ---- bookshelf on the left wall ----
   const shelfMat = new MeshStandardMaterial({ color: 0x4a3828, roughness: 0.9 });
@@ -383,13 +384,17 @@ export function createRoom(assets: SceneAssets): SceneInstance {
       if (!ctx.reducedMotion) {
         lampLight.intensity = 26 * (1 + 0.03 * Math.sin(ctx.time * 9.1) * Math.sin(ctx.time * 3.7));
         bulbs.forEach((b, i) => {
+          if (quality === 'low' && i % 2 === 1) return;
           (b.material as MeshBasicMaterial).opacity = 1;
           const tw = 0.75 + 0.25 * Math.sin(ctx.time * 1.7 + i * 1.3);
           b.scale.setScalar(0.9 + tw * 0.25);
         });
       }
     },
-    setQuality() {},
+    setQuality(q) {
+      quality = q;
+      bulbs.forEach((bulb, index) => { bulb.visible = q !== 'low' || index % 2 === 0; });
+    },
     dispose() {
       group.traverse((o) => {
         const m = o as Mesh;

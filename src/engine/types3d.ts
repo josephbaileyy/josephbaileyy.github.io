@@ -96,7 +96,7 @@ export interface SceneDef3D {
   hopIn?: HopTreatment;
   /** tone-mapping exposure when settled here (lerped across hops) */
   exposure?: number;
-  effects?: { bloom?: boolean; tiltShift?: boolean };
+  effects?: { bloom?: boolean };
   /** Lazy code boundary for the scene and its optional asset loader. */
   importScene(): Promise<SceneModule>;
 }

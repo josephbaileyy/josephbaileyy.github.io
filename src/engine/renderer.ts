@@ -18,7 +18,7 @@ export function webgl2Available(): boolean {
 
 /**
  * Thin wrapper around WebGLRenderer. The post-processing composer (bloom,
- * tilt-shift, warp) wraps this in renderer-fx.ts; this class stays the
+ * bloom and warp) wraps this in renderer-fx.ts; this class stays the
  * minimal direct path (also used outright in the LOW quality tier).
  */
 export class Renderer3D {

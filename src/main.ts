@@ -60,6 +60,8 @@ const world = new World(CHAIN3D, loader);
 const fx = new FxPipeline(renderer, world.root, world.camera);
 fx.setSize(vp.w, vp.h);
 const quality = new QualityMonitor();
+const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
+quality.configureDevice(vp.w * vp.h * (window.devicePixelRatio || 1) ** 2, deviceMemory);
 const jump = new JumpController(camera, reduced);
 const requestDestination = (index: number): void => {
   loader.request(index);
@@ -100,6 +102,14 @@ const hud = new Hud(
   },
 );
 const ribbon = new ScaleRibbon(hudEl);
+const SCENE_HINTS = [
+  'select a glowing research object · scroll inward to travel',
+  'choose a planet to focus · adjust UTC and playback above',
+  'explore the globe · select Stanford to continue inward',
+  'select the illuminated dorm window',
+  'click the monitor to enter BaileyOS',
+  'use the dock · drag, resize, minimize, or maximize windows',
+] as const;
 
 const SCREEN_INDEX = CHAIN3D.length - 1;
 const a11yLayer = document.getElementById('a11y-layer')!;
@@ -216,7 +226,10 @@ function applyQuality(): void {
   renderer.setPixelRatio(tier === 'high' ? Math.min(dpr, 2) : tier === 'med' ? Math.min(dpr, 1.5) : 1);
   renderer.resize(vp.w, vp.h);
   fx.setSize(vp.w, vp.h);
+  document.body.dataset.quality = tier;
 }
+
+applyQuality();
 
 // --- arrival: deep links start one scene above the target and glide in ---
 const initial = router.parse();
@@ -314,7 +327,9 @@ function frame(): void {
     syncScreenUi(settled);
     syncEarthExplorer(settled);
     if (settled !== null) {
+      quality.setScene(CHAIN3D[settled].id);
       hud.announce(CHAIN3D[settled].label);
+      hud.showHint(SCENE_HINTS[settled]);
       if (!panel.isOpen) router.replace(settled);
       if (pendingPanel && pendingPanel.scene === settled) {
         openPanel(pendingPanel.id, settled);

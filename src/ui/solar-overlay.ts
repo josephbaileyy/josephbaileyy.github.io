@@ -1,7 +1,7 @@
 import { Object3D, PerspectiveCamera, Vector3 } from 'three';
 import { EPHEMERIS_MAX_MS, EPHEMERIS_MIN_MS, simulationClock } from '../astronomy/clock';
 import type { EphemerisBody, EphemerisProvider } from '../astronomy/ephemeris';
-type TrackedBody = EphemerisBody | 'sun';
+export type TrackedBody = EphemerisBody | 'sun';
 
 interface ProjectedReticle {
   el: HTMLButtonElement;
@@ -24,9 +24,16 @@ export class SolarOverlay {
   private date = document.createElement('input');
   private status = document.createElement('span');
   private reticles = new Map<TrackedBody, HTMLButtonElement>();
+  private focus = document.createElement('select');
+  private visitEarth = document.createElement('button');
+  private selected: TrackedBody | null = null;
   private world = new Vector3();
 
-  constructor(private bodies: Map<TrackedBody, Object3D>, private provider: EphemerisProvider) {
+  constructor(
+    private bodies: Map<TrackedBody, Object3D>,
+    private provider: EphemerisProvider,
+    private onFocus: (body: TrackedBody | null) => void,
+  ) {
     this.root.className = 'solar-overlay';
     this.root.setAttribute('aria-label', 'Solar system time and planet locations');
     const controls = document.createElement('div');
@@ -47,22 +54,45 @@ export class SolarOverlay {
       if (Number.isFinite(value)) simulationClock.setUtcMs(value);
     });
     this.status.className = 'solar-status';
-    controls.append(live, pause, reverse, speed, this.date, this.status);
+    this.focus.setAttribute('aria-label', 'Focus a planet');
+    this.focus.add(new Option('overview', 'overview'));
+    for (const name of bodies.keys()) this.focus.add(new Option(name, name));
+    this.focus.addEventListener('change', () => {
+      this.select(this.focus.value === 'overview' ? null : this.focus.value as TrackedBody);
+    });
+    this.visitEarth.type = 'button';
+    this.visitEarth.className = 'solar-visit-earth';
+    this.visitEarth.textContent = 'visit Earth';
+    this.visitEarth.hidden = true;
+    this.visitEarth.addEventListener('click', () => {
+      window.dispatchEvent(new CustomEvent('universe:navigate', { detail: 2 }));
+    });
+    controls.append(live, pause, reverse, speed, this.date, this.focus, this.visitEarth, this.status);
     this.root.appendChild(controls);
 
     for (const [name] of bodies) {
       const reticle = document.createElement('button');
       reticle.className = 'planet-reticle';
       reticle.dataset.body = name;
-      reticle.setAttribute('aria-label', name === 'earth' ? 'Earth — visit Earth' : `${name} — tracked real-time position`);
+      reticle.setAttribute('aria-label', `${name} — focus tracked real-time orbit`);
       reticle.innerHTML = `<i aria-hidden="true"></i><span>${name}</span>`;
-      if (name === 'earth') reticle.addEventListener('click', () => {
-        window.dispatchEvent(new CustomEvent('universe:navigate', { detail: 2 }));
-      });
+      reticle.addEventListener('click', () => this.select(name));
       this.root.appendChild(reticle);
       this.reticles.set(name, reticle);
     }
     document.body.appendChild(this.root);
+  }
+
+  private select(body: TrackedBody | null): void {
+    this.selected = body;
+    this.focus.value = body ?? 'overview';
+    this.visitEarth.hidden = body !== 'earth';
+    for (const [name, reticle] of this.reticles) {
+      const selected = name === body;
+      reticle.classList.toggle('selected', selected);
+      reticle.setAttribute('aria-pressed', String(selected));
+    }
+    this.onFocus(body);
   }
 
   update(camera: PerspectiveCamera, viewport: { w: number; h: number }, active: boolean): void {

@@ -23,7 +23,7 @@ export function buildFakeOs(): HTMLElement {
   };
   tickClock();
   setInterval(tickClock, 10000);
-  menubar.innerHTML = `<span>⬡ <strong>BaileyOS</strong> · universe.app</span>`;
+  menubar.innerHTML = `<span>⬡ <strong>BaileyOS</strong> · dock opens apps · window controls save automatically</span>`;
   menubar.appendChild(clock);
   root.appendChild(menubar);
 

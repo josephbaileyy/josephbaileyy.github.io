@@ -1,7 +1,14 @@
-import type { QualityTier } from './types3d';
+import type { QualityTier, SceneId } from './types3d';
 
 const TIERS: QualityTier[] = ['high', 'med', 'low'];
-const BUDGET_MS = 17; // demote when sustained above ~1.3× a 60fps frame
+const SCENE_BUDGET_MS: Record<SceneId, number> = {
+  galaxy: 18,
+  solar: 18,
+  earth: 20,
+  stanford: 20,
+  room: 18,
+  screen: 17,
+};
 const DEMOTE_FRAMES = 60;
 const PROBE_AFTER_S = 12;
 
@@ -16,20 +23,30 @@ export class QualityMonitor {
   private over = 0;
   private cleanSince = 0;
   private changed = false;
+  private budgetMs = SCENE_BUDGET_MS.galaxy;
+
+  configureDevice(pixelCount: number, deviceMemoryGb = 8): void {
+    if (deviceMemoryGb <= 4 || pixelCount > 6_000_000) this.tier = 'med';
+  }
+
+  setScene(scene: SceneId): void {
+    this.budgetMs = SCENE_BUDGET_MS[scene];
+    this.over = 0;
+  }
 
   update(dt: number, now: number): boolean {
     this.changed = false;
     const ms = dt * 1000;
     this.ema = this.ema * 0.92 + ms * 0.08;
 
-    if (this.ema > BUDGET_MS * 1.4) {
+    if (this.ema > this.budgetMs * 1.4) {
       this.over++;
       if (this.over > DEMOTE_FRAMES) {
         this.shift(1, now);
       }
     } else {
       this.over = Math.max(0, this.over - 2);
-      if (this.ema < BUDGET_MS * 0.8 && now - this.cleanSince > PROBE_AFTER_S) {
+      if (this.ema < this.budgetMs * 0.8 && now - this.cleanSince > PROBE_AFTER_S) {
         this.shift(-1, now);
       }
     }

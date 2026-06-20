@@ -3,7 +3,7 @@ import type { FxState } from './renderer-fx';
 import type { SceneDef3D } from './types3d';
 
 /**
- * Per-frame effect levels: bloom/tilt follow the scenes' effect flags, lerped
+ * Per-frame effect levels: bloom follows the scenes' effect flags, lerped
  * across hops; streaks and flare come from the jump controller (time-based,
  * so they always decay — a pure function of depth would stay lit when the
  * camera settles on a boundary).
@@ -19,13 +19,10 @@ export function fxAt(
   const i = Math.min(Math.floor(d), n - 2);
   const t = d - i;
 
-  const flag = (def: SceneDef3D, key: 'bloom' | 'tiltShift'): number =>
+  const flag = (def: SceneDef3D, key: 'bloom'): number =>
     def.effects?.[key] ? 1 : 0;
   const bloom = flag(defs[i], 'bloom') + (flag(defs[i + 1], 'bloom') - flag(defs[i], 'bloom')) * t;
-  const tilt =
-    flag(defs[i], 'tiltShift') + (flag(defs[i + 1], 'tiltShift') - flag(defs[i], 'tiltShift')) * t;
-
-  return { bloom, streak: jumpStreak, flare: jumpFlare, tilt };
+  return { bloom, streak: jumpStreak, flare: jumpFlare };
 }
 
 const RAMP = 0.35; // s of streak ramp before the teleport

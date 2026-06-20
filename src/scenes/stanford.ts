@@ -1,4 +1,5 @@
 import {
+  AmbientLight,
   BoxGeometry,
   BufferAttribute,
   BufferGeometry,
@@ -138,6 +139,7 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
 
   // ---- lighting: moonlight + warm lamps ----
   group.add(new HemisphereLight(0x5a6eb0, 0x1a1528, 2.2));
+  group.add(new AmbientLight(0x6777a8, 1.15));
   const moon = new DirectionalLight(0xa8c4ff, 3.0);
   moon.position.set(18, 30, 12);
   // Real-time shadow maps become unstable while this entire diorama is
@@ -284,6 +286,7 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   }
 
   // ---- palms ----
+  const palms: Group[] = [];
   for (let i = 0; i < 11; i++) {
     const p = palm(rand);
     const x = -17 + rand() * 32;
@@ -291,6 +294,7 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
     p.position.set(x, 0, z);
     p.rotation.y = rand() * Math.PI * 2;
     group.add(p);
+    palms.push(p);
   }
 
   // ---- the Oval + Palm Drive hint ----
@@ -426,9 +430,11 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   }
   const starGeo = new BufferGeometry();
   starGeo.setAttribute('position', new BufferAttribute(starPos, 3));
-  group.add(
-    new Points(starGeo, new PointsMaterial({ color: 0xcdd4f0, size: 1.6, sizeAttenuation: false, transparent: true, opacity: 0.6 })),
+  const starField = new Points(
+    starGeo,
+    new PointsMaterial({ color: 0xcdd4f0, size: 1.6, sizeAttenuation: false, transparent: true, opacity: 0.6 }),
   );
+  group.add(starField);
 
   // ---- hotspot ----
   const hit = new Mesh(new BoxGeometry(3, 2.4, 1.5), new MeshBasicMaterial({ visible: false }));
@@ -463,7 +469,10 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
         beaconLight.visible = ctx.time % 2 < 1.4;
       }
     },
-    setQuality() {},
+    setQuality(q) {
+      starField.visible = q !== 'low';
+      palms.forEach((tree, index) => { tree.visible = q !== 'low' || index % 2 === 0; });
+    },
     dispose() {
       group.traverse((o) => {
         const m = o as Mesh;

@@ -7,7 +7,6 @@ export interface FxState {
   bloom: number; // 0..1 blend
   streak: number;
   flare: number;
-  tilt: number;
 }
 
 /**
@@ -37,14 +36,12 @@ export class FxPipeline {
 
   setSize(w: number, h: number): void {
     this.composer.setSize(w, h);
-    this.cinematic.uniforms.uTexel.value.set(1 / w, 1 / h);
   }
 
   apply(fx: FxState): void {
     this.bloom.blendMode.opacity.value = fx.bloom;
     this.cinematic.uniforms.uStreak.value = fx.streak;
     this.cinematic.uniforms.uFlare.value = fx.flare;
-    this.cinematic.uniforms.uTilt.value = fx.tilt;
   }
 
   render(dt: number): void {

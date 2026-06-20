@@ -141,6 +141,26 @@ test('solar reticles stay registered to the rendered orbits during pointer movem
   expect(Math.abs(after!.y - before!.y)).toBeLessThan(1);
 });
 
+test('solar focus mode expands inner orbits and keeps Earth travel explicit', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/solar');
+  await expect(page.locator('.solar-overlay')).toHaveClass(/active/, { timeout: 20_000 });
+  const sun = page.locator('.planet-reticle[data-body="sun"]');
+  const earth = page.locator('.planet-reticle[data-body="earth"]');
+  const distance = async () => {
+    const [a, b] = await Promise.all([sun.boundingBox(), earth.boundingBox()]);
+    return Math.hypot(a!.x - b!.x, a!.y - b!.y);
+  };
+  const overviewDistance = await distance();
+  await page.getByLabel('Focus a planet').selectOption('earth');
+  await expect(earth).toHaveClass(/selected/);
+  await expect(earth).toBeVisible();
+  await expect(page.getByRole('button', { name: 'visit Earth' })).toBeVisible();
+  await expect.poll(distance).toBeGreaterThan(overviewDistance * 3);
+  await page.getByRole('button', { name: 'visit Earth' }).click();
+  await expect(page).toHaveURL(/#\/earth$/);
+});
+
 test('Earth offers explicit exploration without replacing universe navigation', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/earth');
@@ -159,4 +179,21 @@ test('BaileyOS windows resize with accessible controls', async ({ page }, testIn
   await handle.press('ArrowRight');
   const after = await window.evaluate((node) => node.getBoundingClientRect().width);
   expect(after).toBeGreaterThan(before);
+  await page.getByLabel('Maximize terminal — zsh').click();
+  await expect(window).toHaveClass(/maximized/);
+  await page.getByLabel('Restore terminal — zsh').click();
+  await page.getByLabel('Minimize terminal — zsh').click();
+  await expect(window).toHaveClass(/minimized/);
+  await page.locator('.os-dock-item').filter({ hasText: 'terminal' }).click();
+  await expect(window).not.toHaveClass(/minimized/);
+});
+
+test('BaileyOS keeps one active app window on mobile', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'mobile window-management contract');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  await expect(page.getByLabel('terminal input')).toBeVisible();
+  await page.locator('.os-dock-item').filter({ hasText: 'research' }).click();
+  await expect(page.locator('.os-window:not(.mobile-inactive)')).toHaveCount(1);
+  await expect(page.locator('.os-window:not(.mobile-inactive)')).toContainText('research.md');
 });

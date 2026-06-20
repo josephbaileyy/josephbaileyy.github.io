@@ -76,6 +76,11 @@ export class Hud {
     this.live.textContent = `Now viewing: ${label}`;
   }
 
+  showHint(text: string): void {
+    this.hint.textContent = text;
+    this.hint.classList.remove('hidden');
+  }
+
   hideHint(): void {
     this.hint.classList.add('hidden');
   }

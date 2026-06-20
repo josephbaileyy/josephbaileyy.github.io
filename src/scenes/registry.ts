@@ -106,7 +106,7 @@ const defs: SceneDef3D[] = [
       quaternion: quat(WINDOW_QUAT),
       scale: 2.2 / 18,
     },
-    exposure: 1.15,
+    exposure: 1.3,
     effects: {},
     importScene: lazyScene(() => import('./stanford'), 'createStanford'),
   },
@@ -118,7 +118,7 @@ const defs: SceneDef3D[] = [
     hopIn: { kind: 'wipe', occluderName: 'window-glass' },
     // screen frame 16 × 0.0875 = 1.4 apparent units (monitor width) → K ≈ 12.9
     anchor: { position: [1.5, 2.6, -5.5], scale: 1.4 / 16 },
-    exposure: 1.15,
+    exposure: 1.25,
     effects: {},
     importScene: lazyScene(() => import('./room'), 'createRoom', 'loadRoom'),
   },

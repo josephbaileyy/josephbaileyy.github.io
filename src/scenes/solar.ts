@@ -27,7 +27,7 @@ import type { AnchorSpec } from '../engine/types3d';
 import { ephemeris, EPHEMERIS_BODIES, type EphemerisBody } from '../astronomy/ephemeris';
 import { simulationClock } from '../astronomy/clock';
 import { osculatingOrbitPoints } from '../astronomy/orbit';
-import { SolarOverlay } from '../ui/solar-overlay';
+import { SolarOverlay, type TrackedBody } from '../ui/solar-overlay';
 import { canvasTexture, loadStars, loadTexture, type StarData } from './lib/assets';
 import {
   AU_KM,
@@ -252,7 +252,17 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   const earthEntry = planetMeshes.get('earth')!;
   const hotspots: Hotspot3D[] = [];
   const childAnchor: AnchorSpec = { position: [0, 0, 0], scale: EARTH_RADIUS_AU / 10 };
-  const overlay = new SolarOverlay(trackedObjects, ephemeris);
+  let focusBody: TrackedBody | null = null;
+  let cameraScale = 1;
+  const overlay = new SolarOverlay(trackedObjects, ephemeris, (body) => {
+    focusBody = body;
+    for (const [name, line] of orbitLines) {
+      const selected = name === body;
+      const material = line.material as LineBasicMaterial;
+      material.color.setHex(selected ? 0xffd479 : 0x5a4ec2);
+      material.opacity = selected ? 0.9 : 0.34;
+    }
+  });
   const earthPosition = new Vector3();
   const velocity = new Vector3();
   const velocities = new Map<EphemerisBody, Vector3>(EPHEMERIS_BODIES.map((name) => [name, new Vector3()]));
@@ -306,13 +316,24 @@ export function createSolar(assets: SceneAssets): SceneInstance {
       childAnchor.position[2] = earthPosition.z;
       earthSunDir.value.copy(earthPosition).multiplyScalar(-1).normalize();
       overlayActive = Math.abs(ctx.localT) < 0.02;
+      if (overlayActive) {
+        const targetScale = focusBody === null ? 1 : focusScale(focusBody);
+        const blend = ctx.reducedMotion ? 1 : 1 - Math.exp(-ctx.dt * 4.2);
+        cameraScale += (targetScale - cameraScale) * blend;
+        ctx.camera.position.multiplyScalar(cameraScale);
+      } else {
+        cameraScale = 1;
+      }
       if (ctx.reducedMotion) return;
       belt.rotation.y += ctx.dt * 0.008;
     },
     syncUi(camera, viewport) {
       overlay.update(camera, viewport, overlayActive);
     },
-    setQuality() {},
+    setQuality(q) {
+      belt.visible = q !== 'low';
+      sky.visible = q !== 'low';
+    },
     dispose() {
       overlay.dispose();
       group.traverse((o) => {
@@ -322,6 +343,13 @@ export function createSolar(assets: SceneAssets): SceneInstance {
       });
     },
   };
+}
+
+function focusScale(body: TrackedBody): number {
+  if (body === 'sun') return 3 / 64;
+  if (body === 'moon') return 8 / 64;
+  const planet = PLANETS.find((candidate) => candidate.name === body);
+  return Math.min(1, Math.max(3, (planet?.a ?? 1) * 4 + 4) / 64);
 }
 
 function updateOsculatingOrbit(line: LineLoop, position: Vector3, velocity: Vector3): void {
