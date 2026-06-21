@@ -41,7 +41,8 @@
     {
       "title": "Interferometry and suspension systems — Caltech LIGO Lab",
       "description": "Supported simulation, testing, and preparation of suspension elements, and conducted laser-beam interferometry experiments with Python analysis.",
-      "meta": "Caltech LIGO Lab · 2023"
+      "meta": "Caltech LIGO Lab · 2023",
+      "links": [{ "label": "Report (PDF)", "href": "/papers/ligo-caltech-report.pdf" }]
     }
   ],
   "projects": [
