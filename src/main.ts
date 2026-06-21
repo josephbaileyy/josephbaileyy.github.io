@@ -138,6 +138,9 @@ const tour = new Tour(hudEl, {
 });
 if (firstVisit) hud.pulseJourney();
 
+// The BaileyOS terminal's hidden `tour` command hands off to the guided journey.
+window.addEventListener('universe:tour', () => tour.start());
+
 const ribbon = new ScaleRibbon(hudEl);
 const SCENE_HINTS = [
   'select a glowing research object · scroll inward to travel',

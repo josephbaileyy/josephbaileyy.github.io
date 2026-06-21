@@ -102,6 +102,11 @@ export function buildTerminal(): HTMLElement {
     sudo: () => 'joseph is not in the sudoers file. This incident will be reported.',
     pwd: () => '/home/joseph',
     exit: () => 'there is no escape. try zooming out instead.',
+    // Hidden easter egg: hand off to the guided journey (main.ts listens).
+    tour: () => {
+      window.dispatchEvent(new CustomEvent('universe:tour'));
+      return 'launching the guided journey — sit back and zoom out…';
+    },
   };
 
   print('BaileyOS terminal — type `help` to get started.', 'os-term-dim');

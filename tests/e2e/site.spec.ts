@@ -72,6 +72,16 @@ test('manual navigation cancels the guided journey', async ({ page }) => {
   await expect(page.getByRole('button', { name: /Take the guided journey/ })).toBeVisible();
 });
 
+test('the terminal `tour` command launches the guided journey', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  const terminal = page.getByLabel('terminal input');
+  await expect(terminal).toBeVisible();
+  await terminal.fill('tour');
+  await terminal.press('Enter');
+  await expect(page.locator('.tour-caption')).toHaveClass(/\bon\b/);
+});
+
 test('computer mode is collision-free at the active viewport', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
