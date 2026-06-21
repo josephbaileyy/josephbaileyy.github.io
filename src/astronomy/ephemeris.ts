@@ -115,7 +115,7 @@ export class EphemerisProvider extends EventTarget {
 
   private fallback(body: EphemerisBody, utcMs: number, position: Vector3, velocity: Vector3): BodyState {
     if (body === 'moon') {
-      const earth = planetPosition(PLANETS[2], daysSinceJ2000(utcMs), position);
+      planetPosition(PLANETS[2], daysSinceJ2000(utcMs), position);
       const phase = daysSinceJ2000(utcMs) * Math.PI * 2 / 27.321661;
       position.add(new Vector3(Math.cos(phase), 0.08 * Math.sin(phase * 0.9), -Math.sin(phase)).multiplyScalar(0.00257));
     } else {

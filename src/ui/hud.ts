@@ -2,12 +2,14 @@ export class Hud {
   private dots: HTMLButtonElement[] = [];
   private live: HTMLDivElement;
   private hint: HTMLDivElement;
+  private journey: HTMLButtonElement;
 
   constructor(
     private root: HTMLElement,
     scenes: ReadonlyArray<{ label: string }>,
     onNavigate: (index: number) => void,
     onZoomStep: (dir: 1 | -1) => void,
+    onTour: () => void,
   ) {
     const name = document.createElement('div');
     name.className = 'hud-name';
@@ -19,6 +21,16 @@ export class Hud {
     plain.href = '/about.html';
     plain.textContent = 'plain site ↗';
     root.appendChild(plain);
+
+    this.journey = document.createElement('button');
+    this.journey.className = 'hud-journey';
+    this.journey.innerHTML = '<span aria-hidden="true">▶</span> take the journey';
+    this.journey.setAttribute('aria-label', 'Take the guided journey from the galaxy to my desk');
+    this.journey.addEventListener('click', () => {
+      this.stopPulse();
+      onTour();
+    });
+    root.appendChild(this.journey);
 
     const dots = document.createElement('nav');
     dots.className = 'hud-dots';
@@ -70,6 +82,21 @@ export class Hud {
   setMode(mode: 'travel' | 'computer'): void {
     this.root.dataset.mode = mode;
     document.body.dataset.hudMode = mode;
+  }
+
+  /** Hide the journey button while the guided tour is running. */
+  setTouring(active: boolean): void {
+    this.journey.classList.toggle('hidden', active);
+    if (active) this.stopPulse();
+  }
+
+  /** First-visit nudge: draw the eye to the journey button. */
+  pulseJourney(): void {
+    this.journey.classList.add('pulse');
+  }
+
+  stopPulse(): void {
+    this.journey.classList.remove('pulse');
   }
 
   announce(label: string): void {

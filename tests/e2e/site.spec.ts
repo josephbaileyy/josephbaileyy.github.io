@@ -40,6 +40,38 @@ test('panels, history, keyboard navigation, and terminal work', async ({ page })
   await expect(page.locator('.os-term-scrollback')).toContainText('National Merit Finalist');
 });
 
+test('the guided journey autopilots from the galaxy down to the computer', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+
+  await page.getByRole('button', { name: /Take the guided journey/ }).click();
+  const caption = page.locator('.tour-caption');
+  await expect(caption).toHaveClass(/\bon\b/);
+  await expect(caption).toContainText('The Milky Way');
+
+  // The autopilot advances on its own through every scale and lands at the desk.
+  await expect(page).toHaveURL(/#\/screen$/, { timeout: 45_000 });
+  // Arrival ends the tour: the caption is dismissed.
+  await expect(caption).not.toHaveClass(/\bon\b/);
+});
+
+test('manual navigation cancels the guided journey', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+
+  await page.getByRole('button', { name: /Take the guided journey/ }).click();
+  const caption = page.locator('.tour-caption');
+  await expect(caption).toHaveClass(/\bon\b/);
+  // It should leave the galaxy on its own before we interrupt it.
+  await expect(page).toHaveURL(/#\/solar$/, { timeout: 20_000 });
+
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+  await page.keyboard.press('ArrowDown');
+  await expect(caption).not.toHaveClass(/\bon\b/);
+  await expect(page.getByRole('button', { name: /Take the guided journey/ })).toBeVisible();
+});
+
 test('computer mode is collision-free at the active viewport', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');

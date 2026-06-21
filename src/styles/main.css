@@ -560,9 +560,156 @@ body {
 #hud[data-mode='computer'] .hud-name,
 #hud[data-mode='computer'] .hud-dots,
 #hud[data-mode='computer'] .hud-hint,
+#hud[data-mode='computer'] .hud-journey,
+#hud[data-mode='computer'] .tour-caption,
 #hud[data-mode='computer'] .scale-ribbon {
   opacity: 0;
   pointer-events: none;
+}
+
+/* ---------- Guided journey ---------- */
+
+.hud-journey {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: auto;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--ink);
+  border: 1px solid rgba(255, 212, 121, 0.45);
+  padding: 7px 16px;
+  border-radius: 999px;
+  background: rgba(11, 16, 38, 0.55);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease,
+    opacity 0.3s ease;
+}
+
+.hud-journey span {
+  color: var(--gold);
+}
+
+.hud-journey:hover,
+.hud-journey:focus-visible {
+  color: var(--space-1);
+  background: var(--gold);
+  border-color: var(--gold);
+}
+
+.hud-journey:hover span,
+.hud-journey:focus-visible span {
+  color: var(--space-1);
+}
+
+.hud-journey.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* First-visit nudge: a soft gold halo that pulses to invite a click. */
+.hud-journey.pulse {
+  animation: journey-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes journey-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 212, 121, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 6px rgba(255, 212, 121, 0.22);
+  }
+}
+
+.tour-caption {
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%) translateY(6px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  max-width: min(92vw, 560px);
+  text-align: center;
+  padding: 12px 18px;
+  border-radius: 14px;
+  background: rgba(11, 16, 38, 0.72);
+  border: 1px solid rgba(127, 212, 255, 0.25);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+
+.tour-caption.on {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+  pointer-events: auto;
+}
+
+.tour-step {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+}
+
+.tour-line {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-dim);
+  line-height: 1.45;
+}
+
+.tour-line strong {
+  color: var(--ink);
+}
+
+.tour-skip {
+  margin-top: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--ink-dim);
+  background: none;
+  border: none;
+  border-bottom: 1px solid transparent;
+  padding: 0 0 1px;
+  cursor: pointer;
+}
+
+.tour-skip:hover,
+.tour-skip:focus-visible {
+  color: var(--ink);
+  border-bottom-color: var(--ink-dim);
+  outline: none;
+}
+
+@media (max-width: 760px) {
+  .tour-caption {
+    bottom: 120px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-journey.pulse {
+    animation: none;
+  }
+  .tour-caption {
+    transition: opacity 0.5s ease;
+    transform: translateX(-50%);
+  }
+  .tour-caption.on {
+    transform: translateX(-50%);
+  }
 }
 
 /* ---------- Panels ---------- */

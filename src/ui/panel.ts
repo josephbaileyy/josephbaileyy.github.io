@@ -32,9 +32,10 @@ export class PanelHost {
     const content = PANELS[panelId];
     if (!content) return;
     this.currentId = panelId;
+    this.dialog.setAttribute('aria-labelledby', 'panel-title');
     this.dialog.innerHTML = `
       <div class="panel-head">
-        <h2><span class="panel-kicker">${content.kicker}</span>${content.title}</h2>
+        <h2 id="panel-title"><span class="panel-kicker">${content.kicker}</span>${content.title}</h2>
         <button class="panel-close" aria-label="Close">&times;</button>
       </div>
       <div class="panel-body">${content.html}</div>

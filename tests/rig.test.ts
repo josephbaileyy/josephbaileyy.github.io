@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Matrix4, PerspectiveCamera, Quaternion, Vector3 } from 'three';
+import { PerspectiveCamera, Quaternion, Vector3 } from 'three';
 import {
   anchorMatrix,
   cameraPose,

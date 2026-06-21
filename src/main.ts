@@ -16,6 +16,7 @@ import { LoadingOverlay } from './ui/loading';
 import { PanelHost } from './ui/panel';
 import { ScaleRibbon } from './ui/scale-ribbon';
 import { ScreenUi } from './ui/screen-ui';
+import { Tour } from './ui/tour';
 import { Router } from './router';
 import { simulationClock } from './astronomy/clock';
 
@@ -72,6 +73,7 @@ const requestDestination = (index: number): void => {
 window.addEventListener('universe:navigate', (event) => {
   const index = (event as CustomEvent<number>).detail;
   if (!Number.isInteger(index) || index < 0 || index >= CHAIN3D.length) return;
+  tour.cancel();
   requestDestination(index);
   jump.go(index, now());
 });
@@ -90,17 +92,52 @@ const hud = new Hud(
   hudEl,
   CHAIN3D,
   (index) => {
-    hud.hideHint();
-    requestDestination(index);
-    jump.go(index, now());
+    tour.cancel();
+    navigateTo(index);
   },
   (dir) => {
+    tour.cancel();
     hud.hideHint();
     const target = Math.round(camera.depth) + dir;
     requestDestination(target);
     camera.tweenTo(target, now(), 0.9);
   },
+  () => tour.start(),
 );
+
+// Shared navigation path (HUD dots + guided tour): prefetch, then fly via the
+// JumpController so multi-level hops ramp/teleport/dive consistently.
+const navigateTo = (index: number): void => {
+  hud.hideHint();
+  requestDestination(index);
+  jump.go(index, now());
+};
+
+const markVisited = (): void => {
+  try {
+    localStorage.setItem('jb-visited', '1');
+  } catch {
+    /* private mode: just skip persistence */
+  }
+};
+const firstVisit = ((): boolean => {
+  try {
+    return !localStorage.getItem('jb-visited');
+  } catch {
+    return false;
+  }
+})();
+
+const tour = new Tour(hudEl, {
+  navigateTo,
+  reduced,
+  onActiveChange: (active) => {
+    hud.setTouring(active);
+    if (active) markVisited();
+  },
+});
+if (firstVisit) hud.pulseJourney();
+
 const ribbon = new ScaleRibbon(hudEl);
 const SCENE_HINTS = [
   'select a glowing research object · scroll inward to travel',
@@ -138,6 +175,7 @@ const ensureFakeOs = () => {
 };
 
 const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => {
+  tour.cancel();
   hud.hideHint();
   if (h.action.type === 'panel') {
     openPanel(h.action.panelId, world.baseIndex());
@@ -156,7 +194,12 @@ function projectUiMountRect(uiMount: Object3D): { x: number; y: number; w: numbe
     minY = Infinity,
     maxX = -Infinity,
     maxY = -Infinity;
-  for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+  for (const [sx, sy] of [
+    [-1, -1],
+    [1, -1],
+    [-1, 1],
+    [1, 1],
+  ]) {
     const corner = new Vector3((sx * w) / 2, (sy * h) / 2, 0).applyMatrix4(uiMount.matrixWorld);
     const px = projectToPx(corner, world.camera, vp);
     minX = Math.min(minX, px.x);
@@ -186,6 +229,7 @@ const router = new Router(CHAIN3D, (state) => {
   panel.close();
   pendingPanel = state.panel ? { scene: state.scene, id: state.panel } : null;
   if (Math.abs(state.scene - camera.depth) > 1e-6) {
+    tour.cancel();
     requestDestination(state.scene);
     jump.go(state.scene, now());
   }
@@ -205,8 +249,17 @@ const vAxisY = new Vector3(0, 1, 0);
 attachInput(canvas, camera, {
   reducedMotion: reduced,
   isModalOpen: () => panel.isOpen,
-  onFirstInteraction: () => hud.hideHint(),
-  onSceneIntent: requestDestination,
+  onFirstInteraction: () => {
+    hud.hideHint();
+    hud.stopPulse();
+    markVisited();
+  },
+  // onSceneIntent fires only on genuine user gestures (wheel/pinch/dblclick/
+  // keyboard), so it's the clean signal to bail out of the guided tour.
+  onSceneIntent: (index) => {
+    tour.cancel();
+    requestDestination(index);
+  },
   parallaxTarget,
 });
 
@@ -223,7 +276,9 @@ function applyQuality(): void {
   const tier = quality.tier;
   world.setQuality(tier);
   const dpr = window.devicePixelRatio || 1;
-  renderer.setPixelRatio(tier === 'high' ? Math.min(dpr, 2) : tier === 'med' ? Math.min(dpr, 1.5) : 1);
+  renderer.setPixelRatio(
+    tier === 'high' ? Math.min(dpr, 2) : tier === 'med' ? Math.min(dpr, 1.5) : 1,
+  );
   renderer.resize(vp.w, vp.h);
   fx.setSize(vp.w, vp.h);
   document.body.dataset.quality = tier;
@@ -319,6 +374,7 @@ function frame(): void {
   hotspots.update();
 
   const settled = camera.settledIndex;
+  tour.update(t, settled);
   const baseInstance = settled !== null ? world.baseInstance() : null;
   if (settled !== lastSettled || baseInstance !== lastBaseInstance) {
     lastSettled = settled;
@@ -329,7 +385,7 @@ function frame(): void {
     if (settled !== null) {
       quality.setScene(CHAIN3D[settled].id);
       hud.announce(CHAIN3D[settled].label);
-      hud.showHint(SCENE_HINTS[settled]);
+      if (!tour.active) hud.showHint(SCENE_HINTS[settled]);
       if (!panel.isOpen) router.replace(settled);
       if (pendingPanel && pendingPanel.scene === settled) {
         openPanel(pendingPanel.id, settled);

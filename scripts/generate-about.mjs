@@ -30,7 +30,10 @@ const html = `<!doctype html>
     <meta property="og:description" content="Machine learning for fundamental physics, research, projects, and CV." />
     <meta property="og:type" content="profile" />
     <meta property="og:url" content="https://josephbaileyy.github.io/about.html" />
-    <meta property="og:image" content="https://josephbaileyy.github.io/og-preview.png" />
+    <meta property="og:image" content="https://josephbaileyy.github.io/og-preview.jpg" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#0b1026" />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='16' r='7' fill='%23eef2ff'/%3E%3Ccircle cx='24' cy='13' r='4' fill='%23ffd479'/%3E%3C/svg%3E" />

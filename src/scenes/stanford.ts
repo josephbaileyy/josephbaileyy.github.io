@@ -40,7 +40,7 @@ function palm(rand: () => number): Group {
   const g = new Group();
   const trunkMat = new MeshStandardMaterial({ color: 0x4a3b30, roughness: 1 });
   let y = 0;
-  let lean = (rand() - 0.5) * 0.12;
+  const lean = (rand() - 0.5) * 0.12;
   for (let i = 0; i < 3; i++) {
     const seg = new Mesh(new CylinderGeometry(0.09 - i * 0.015, 0.11 - i * 0.015, 0.9, 6), trunkMat);
     seg.position.set(lean * i, y + 0.45, 0);

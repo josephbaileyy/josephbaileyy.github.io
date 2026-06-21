@@ -1,0 +1,6 @@
+dist
+coverage
+node_modules
+public
+about.html
+package-lock.json

@@ -2,7 +2,6 @@ import {
   AdditiveBlending,
   AmbientLight,
   BackSide,
-  CanvasTexture,
   DirectionalLight,
   Group,
   Mesh,
