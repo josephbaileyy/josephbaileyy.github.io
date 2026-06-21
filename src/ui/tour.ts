@@ -68,9 +68,12 @@ export class Tour {
     root.appendChild(this.el);
   }
 
-  /** Begin from the top of the chain regardless of where the camera sits. */
+  /**
+   * Begin (or restart) from the top of the chain regardless of where the camera
+   * sits. Idempotent on purpose: replaying via the HUD button, the dock, or the
+   * terminal always resets cleanly, even if a prior run was left mid-flight.
+   */
   start(): void {
-    if (this.active) return;
     this.active = true;
     this.i = 0;
     this.phase = 'travel';

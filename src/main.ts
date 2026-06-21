@@ -138,7 +138,7 @@ const tour = new Tour(hudEl, {
 });
 if (firstVisit) hud.pulseJourney();
 
-// The BaileyOS terminal's hidden `tour` command hands off to the guided journey.
+// The BaileyOS terminal command and dock 'journey' icon hand off to the tour.
 window.addEventListener('universe:tour', () => tour.start());
 
 const ribbon = new ScaleRibbon(hudEl);

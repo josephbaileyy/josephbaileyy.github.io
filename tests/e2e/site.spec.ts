@@ -82,6 +82,14 @@ test('the terminal `tour` command launches the guided journey', async ({ page })
   await expect(page.locator('.tour-caption')).toHaveClass(/\bon\b/);
 });
 
+test('the dock journey icon replays the guided journey from the desktop', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  await expect(page.getByLabel('terminal input')).toBeVisible();
+  await page.locator('.os-dock-item').filter({ hasText: 'journey' }).click();
+  await expect(page.locator('.tour-caption')).toHaveClass(/\bon\b/);
+});
+
 test('computer mode is collision-free at the active viewport', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');

@@ -6,6 +6,8 @@ export interface PortfolioItem {
   meta?: string;
   href?: string;
   linkLabel?: string;
+  /** Extra links (posters, reports, papers) shown alongside the primary one. */
+  links?: Array<{ label: string; href: string }>;
 }
 
 export interface PortfolioData {
@@ -31,16 +33,21 @@ const escapeHtml = (value: string): string =>
   })[char]!);
 
 const externalAttrs = (href: string): string =>
-  href.startsWith('http') ? ' target="_blank" rel="noopener"' : '';
+  href.startsWith('http') || href.endsWith('.pdf') ? ' target="_blank" rel="noopener"' : '';
+
+const itemLinks = (item: PortfolioItem): Array<{ label: string; href: string }> => [
+  ...(item.href ? [{ label: item.linkLabel ?? 'Open', href: item.href }] : []),
+  ...(item.links ?? []),
+];
 
 export const renderItems = (items: PortfolioItem[]): string =>
   `<ul class="panel-list">${items
     .map((item) => {
-      const link = item.href
-        ? ` <a href="${escapeHtml(item.href)}"${externalAttrs(item.href)}>${escapeHtml(item.linkLabel ?? 'Open')}</a>`
-        : '';
+      const links = itemLinks(item)
+        .map((l) => ` <a href="${escapeHtml(l.href)}"${externalAttrs(l.href)}>${escapeHtml(l.label)}</a>`)
+        .join('');
       const meta = item.meta ? `<span class="panel-meta">${escapeHtml(item.meta)}</span>` : '';
-      return `<li><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.description)}${link}</p>${meta}</li>`;
+      return `<li><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.description)}${links}</p>${meta}</li>`;
     })
     .join('')}</ul>`;
 

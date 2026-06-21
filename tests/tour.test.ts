@@ -61,6 +61,29 @@ describe('guided tour sequencer', () => {
     expect(root.querySelector('.tour-step')?.textContent).toBe(`1 / ${CHAIN3D.length}`);
   });
 
+  it('can be replayed: a second start resets to the top', () => {
+    const root = mount();
+    const nav: number[] = [];
+    const tour = new Tour(root, { navigateTo: (i) => nav.push(i), reduced: false });
+
+    // First run to completion.
+    tour.start();
+    let t = 1000;
+    for (let scene = 0; scene <= 5; scene++) {
+      tour.update(t, scene);
+      t += 5;
+      tour.update(t, scene);
+      t += 1;
+    }
+    expect(tour.active).toBe(false);
+
+    // Replaying must restart cleanly from the galaxy.
+    tour.start();
+    expect(tour.active).toBe(true);
+    expect(nav.at(-1)).toBe(0);
+    expect(root.querySelector('.tour-step')?.textContent).toBe(`1 / ${CHAIN3D.length}`);
+  });
+
   it('cancel stops the tour and hides the caption', () => {
     const root = mount();
     const tour = new Tour(root, { navigateTo: () => {}, reduced: false });

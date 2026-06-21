@@ -328,6 +328,16 @@ export function createSolar(assets: SceneAssets): SceneInstance {
       } else {
         cameraScale = 1;
       }
+      // Fade the solar-system scaffolding — the asteroid belt ("circle of
+      // dots") and orbit guides — out as the Earth dive begins, so you fly
+      // through clean space toward Earth instead of a cluttered field. Full
+      // opacity is restored the moment you settle back at the overview.
+      const diveFade = ctx.localT > 0 ? 1 - smooth01(ctx.localT / 0.35) : 1;
+      (belt.material as PointsMaterial).opacity = 0.5 * diveFade;
+      for (const [name, line] of orbitLines) {
+        (line.material as LineBasicMaterial).opacity = (name === focusBody ? 0.9 : 0.34) * diveFade;
+      }
+
       if (ctx.reducedMotion) return;
       belt.rotation.y += ctx.dt * 0.008;
     },

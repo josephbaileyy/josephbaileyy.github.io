@@ -43,12 +43,14 @@ export function buildFakeOs(): HTMLElement {
 
   const dock = document.createElement('div');
   dock.className = 'os-dock';
+  const launchJourney = () => window.dispatchEvent(new CustomEvent('universe:tour'));
   const items: Array<[string, string, (() => void) | string]> = [
     ['🖥', 'terminal', openTerminal],
     ['🔬', 'research', openResearch],
     ['🗂', 'projects', openProjects],
     ['📄', 'cv.pdf', '/resume.pdf'],
     ['🧑‍🚀', 'about', openProfile],
+    ['🌌', 'journey', launchJourney],
     ['💻', 'github', 'https://github.com/josephbaileyy'],
     ['🔗', 'linkedin', 'https://linkedin.com/in/baileyjosephr'],
     ['✉️', 'email', 'mailto:jrbailey555@gmail.com'],

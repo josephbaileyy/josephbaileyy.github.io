@@ -4,8 +4,15 @@ const portfolio = JSON.parse(await readFile(new URL('../src/content/portfolio.js
 const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (char) => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;',
 })[char]);
-const externalAttrs = (href) => href.startsWith('http') ? ' target="_blank" rel="noopener"' : '';
-const cards = (items) => items.map((item) => `<article class="card"><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}${item.href ? ` <a href="${escapeHtml(item.href)}"${externalAttrs(item.href)}>${escapeHtml(item.linkLabel ?? 'Open')}</a>` : ''}</p>${item.meta ? `<span class="meta">${escapeHtml(item.meta)}</span>` : ''}</article>`).join('\n');
+const externalAttrs = (href) => href.startsWith('http') || href.endsWith('.pdf') ? ' target="_blank" rel="noopener"' : '';
+const itemLinks = (item) => [
+  ...(item.href ? [{ label: item.linkLabel ?? 'Open', href: item.href }] : []),
+  ...(item.links ?? []),
+];
+const cards = (items) => items.map((item) => {
+  const links = itemLinks(item).map((l) => ` <a href="${escapeHtml(l.href)}"${externalAttrs(l.href)}>${escapeHtml(l.label)}</a>`).join('');
+  return `<article class="card"><h3>${escapeHtml(item.title)}</h3><p>${escapeHtml(item.description)}${links}</p>${item.meta ? `<span class="meta">${escapeHtml(item.meta)}</span>` : ''}</article>`;
+}).join('\n');
 const bullets = (items) => `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
 const links = portfolio.links.map((link) => `<a${link.kind === 'primary' ? ' class="primary"' : ''} href="${escapeHtml(link.href)}"${externalAttrs(link.href)}>${escapeHtml(link.label)}</a>`).join('\n');
 const jsonLd = JSON.stringify({

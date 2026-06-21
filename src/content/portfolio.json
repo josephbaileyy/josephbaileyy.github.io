@@ -17,22 +17,26 @@
     {
       "title": "Neutrino cross-section unfolding with machine learning",
       "description": "Implementing and evaluating OmniFold, an unbinned ML unfolding framework, on MINERvA neutrino-scattering data. I benchmark it against iterative Bayesian unfolding through closure tests, generator stress tests, bootstrap resampling, and bias–variance analysis, asking whether high-dimensional unbinned unfolding can reduce structural model bias in the few-GeV regime.",
-      "meta": "Prof. Benjamin Nachman, Stanford Physics · 2026–present · 2026 Stanford Major Grant"
+      "meta": "Prof. Benjamin Nachman, Stanford Physics · 2026–present · 2026 Stanford Major Grant",
+      "links": [{ "label": "Paper (PDF)", "href": "/papers/neutrino-unfolding.pdf" }]
     },
     {
       "title": "Collider machine learning — SLAC",
       "description": "On a four-person team proposing a γγ collider, using Delphes, ROOT, and Unix HPC to simulate and analyze terabytes of collider data and applying ML to study pileup effects on di-Higgs detection.",
-      "meta": "SLAC National Accelerator Laboratory · 2024–present"
+      "meta": "SLAC National Accelerator Laboratory · 2024–present",
+      "links": [{ "label": "Poster (PDF)", "href": "/papers/xcc-pileup-poster.pdf" }]
     },
     {
       "title": "Gaussian-process bump hunting — Jefferson Lab",
       "description": "Used Gaussian-process regression to search for excesses from the hypothetical X17 particle in collider data and presented the work at the APS Far West Section meeting at UC Santa Cruz.",
-      "meta": "Jefferson Lab · 2025"
+      "meta": "Jefferson Lab · 2025",
+      "links": [{ "label": "APS talk (PDF)", "href": "/papers/x17-bump-hunt-apsfws.pdf" }]
     },
     {
       "title": "AM CVn time-series photometry",
       "description": "Reduced 140 V-band CCD images and performed AAVSO differential photometry on 138 retained exposures, recovering variability consistent with the known 1051-second positive-superhump family.",
-      "meta": "PHYSICS 100: Observational Astrophysics · Spring 2026"
+      "meta": "PHYSICS 100: Observational Astrophysics · Spring 2026",
+      "links": [{ "label": "Report (PDF)", "href": "/papers/am-cvn-report.pdf" }]
     },
     {
       "title": "Interferometry and suspension systems — Caltech LIGO Lab",
@@ -51,19 +55,22 @@
       "title": "MINERvA-OmniFold",
       "description": "An implementation and evaluation pipeline for unbinned machine-learning unfolding of neutrino cross-sections.",
       "href": "https://github.com/josephbaileyy/MINERvA-OmniFold",
-      "linkLabel": "GitHub"
+      "linkLabel": "GitHub",
+      "links": [{ "label": "Paper (PDF)", "href": "/papers/neutrino-unfolding.pdf" }]
     },
     {
       "title": "SPLoRA — parameter-efficient GPT-2",
       "description": "LoRA fine-tuning of GPT-2 for paraphrase detection and Shakespearean sonnet generation: 0.888 development accuracy while training about 1% of parameters, with 41.94 chrF.",
       "href": "https://github.com/josephbaileyy/splora",
-      "linkLabel": "GitHub"
+      "linkLabel": "GitHub",
+      "links": [{ "label": "Poster (PDF)", "href": "/papers/splora-poster.pdf" }]
     },
     {
       "title": "LoRD — video person re-identification",
       "description": "Video person re-identification with DINOv2/v3 vision backbones, LoRA adaptation, BNNeck, and temporal attention, evaluated on the MARS benchmark.",
       "href": "https://github.com/anandkrishnan27/lord",
-      "linkLabel": "GitHub"
+      "linkLabel": "GitHub",
+      "links": [{ "label": "Poster (PDF)", "href": "/papers/lord-poster.pdf" }]
     },
     {
       "title": "Soccer action prediction with graph neural networks",
