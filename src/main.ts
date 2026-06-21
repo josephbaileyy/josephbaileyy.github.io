@@ -182,6 +182,9 @@ const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => 
   hud.hideHint();
   if (h.action.type === 'panel') {
     openPanel(h.action.panelId, world.baseIndex());
+  } else if (h.action.type === 'navigate') {
+    requestDestination(h.action.index);
+    jump.go(h.action.index, now());
   } else {
     const target = world.baseIndex() + (h.action.dir === 'in' ? 1 : -1);
     requestDestination(target);

@@ -5,7 +5,8 @@ export type QualityTier = 'high' | 'med' | 'low';
 
 export type HotspotAction =
   | { type: 'panel'; panelId: string }
-  | { type: 'zoom'; dir: 'in' | 'out' };
+  | { type: 'zoom'; dir: 'in' | 'out' }
+  | { type: 'navigate'; index: number };
 
 /**
  * The camera's settled framing for a scene, authored against a 16:10 reference

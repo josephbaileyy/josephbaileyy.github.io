@@ -405,8 +405,8 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
   bh.add(bhDisk);
   group.add(bh);
   const bhLabel = makeLabel([
-    ['ML, systems & security', '#ffb784', 28],
-    ['projects — click', '#9aa3c7', 22],
+    ['my projects, on my desk', '#ffb784', 28],
+    ['dive in — click', '#9aa3c7', 22],
   ]);
   bhLabel.position.copy(bh.position).add(new Vector3(0, -3.2, 0));
   group.add(bhLabel);
@@ -491,8 +491,8 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
     },
     {
       object: bhHit,
-      label: 'Machine learning, systems & security projects',
-      action: { type: 'panel', panelId: 'projects' },
+      label: 'Dive to my computer — projects live in BaileyOS',
+      action: { type: 'navigate', index: 5 },
       setHover(on) {
         bhLabel.material.opacity = on ? 1 : 0.9;
       },

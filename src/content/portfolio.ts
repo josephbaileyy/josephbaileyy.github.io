@@ -8,6 +8,8 @@ export interface PortfolioItem {
   linkLabel?: string;
   /** Extra links (posters, reports, papers) shown alongside the primary one. */
   links?: Array<{ label: string; href: string }>;
+  /** Present on projects surfaced as BaileyOS apps: icon + short dock label. */
+  app?: { icon: string; short: string };
 }
 
 export interface PortfolioData {
@@ -23,6 +25,9 @@ export interface PortfolioData {
 
 export const PORTFOLIO = data as PortfolioData;
 
+/** Projects surfaced as clickable apps on the BaileyOS desktop + dock. */
+export const APP_PROJECTS = PORTFOLIO.projects.filter((p) => p.app);
+
 const escapeHtml = (value: string): string =>
   value.replace(/[&<>"']/g, (char) => ({
     '&': '&amp;',
@@ -35,10 +40,12 @@ const escapeHtml = (value: string): string =>
 const externalAttrs = (href: string): string =>
   href.startsWith('http') || href.endsWith('.pdf') ? ' target="_blank" rel="noopener"' : '';
 
-const itemLinks = (item: PortfolioItem): Array<{ label: string; href: string }> => [
+export const itemLinks = (item: PortfolioItem): Array<{ label: string; href: string }> => [
   ...(item.href ? [{ label: item.linkLabel ?? 'Open', href: item.href }] : []),
   ...(item.links ?? []),
 ];
+
+export const isPdfHref = (href: string): boolean => href.endsWith('.pdf');
 
 export const renderItems = (items: PortfolioItem[]): string =>
   `<ul class="panel-list">${items

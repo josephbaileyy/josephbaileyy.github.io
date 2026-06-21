@@ -90,6 +90,40 @@ test('the dock journey icon replays the guided journey from the desktop', async 
   await expect(page.locator('.tour-caption')).toHaveClass(/\bon\b/);
 });
 
+test('BaileyOS surfaces the CS projects as desktop + dock apps', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  await expect(page.getByLabel('terminal input')).toBeVisible();
+
+  await expect(page.locator('.os-dock-item').filter({ hasText: 'league' })).toBeVisible();
+  await expect(page.locator('.os-dock-item').filter({ hasText: 'SPLoRA' })).toBeVisible();
+  await expect(page.locator('.os-desktop-icon')).toHaveCount(5);
+
+  await page.locator('.os-dock-item').filter({ hasText: 'league' }).click();
+  await expect(page.locator('.os-window').filter({ hasText: 'League of Legends' })).toBeVisible();
+});
+
+test('project PDFs open inside BaileyOS with tab/download options', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  await expect(page.getByLabel('terminal input')).toBeVisible();
+
+  await page.locator('.os-dock-item').filter({ hasText: 'league' }).click();
+  const projectWindow = page.locator('.os-window').filter({ hasText: 'League of Legends' });
+  await projectWindow.getByRole('button', { name: 'Report (PDF)' }).click();
+
+  await expect(page.locator('iframe.os-pdf-frame')).toHaveAttribute('src', /lol-report\.pdf/);
+  await expect(page.getByRole('link', { name: /open in new tab/ })).toBeVisible();
+  await expect(page.getByRole('link', { name: /download/ })).toBeVisible();
+});
+
+test('the galaxy black hole dives down to BaileyOS', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/galaxy');
+  await page.getByRole('button', { name: /Dive to my computer/ }).click();
+  await expect(page).toHaveURL(/#\/screen$/, { timeout: 30_000 });
+});
+
 test('computer mode is collision-free at the active viewport', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');

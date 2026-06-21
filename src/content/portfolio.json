@@ -11,7 +11,8 @@
     { "label": "GitHub", "href": "https://github.com/josephbaileyy" },
     { "label": "LinkedIn", "href": "https://linkedin.com/in/baileyjosephr" },
     { "label": "Email", "href": "mailto:jrbailey555@gmail.com" },
-    { "label": "Stanford", "href": "mailto:josephrb@stanford.edu" }
+    { "label": "Stanford", "href": "mailto:josephrb@stanford.edu" },
+    { "label": "Track profile", "href": "https://gostanford.com/sports/track-field/roster/player/joseph-bailey" }
   ],
   "research": [
     {
@@ -36,7 +37,10 @@
       "title": "AM CVn time-series photometry",
       "description": "Reduced 140 V-band CCD images and performed AAVSO differential photometry on 138 retained exposures, recovering variability consistent with the known 1051-second positive-superhump family.",
       "meta": "PHYSICS 100: Observational Astrophysics · Spring 2026",
-      "links": [{ "label": "Report (PDF)", "href": "/papers/am-cvn-report.pdf" }]
+      "links": [
+        { "label": "Report (PDF)", "href": "/papers/am-cvn-report.pdf" },
+        { "label": "Slides (PDF)", "href": "/papers/am-cvn-presentation.pdf" }
+      ]
     },
     {
       "title": "Interferometry and suspension systems — Caltech LIGO Lab",
@@ -64,24 +68,51 @@
       "description": "LoRA fine-tuning of GPT-2 for paraphrase detection and Shakespearean sonnet generation: 0.888 development accuracy while training about 1% of parameters, with 41.94 chrF.",
       "href": "https://github.com/josephbaileyy/splora",
       "linkLabel": "GitHub",
-      "links": [{ "label": "Poster (PDF)", "href": "/papers/splora-poster.pdf" }]
+      "links": [
+        { "label": "Paper (PDF)", "href": "/papers/splora-report.pdf" },
+        { "label": "Poster (PDF)", "href": "/papers/splora-poster.pdf" }
+      ],
+      "app": { "icon": "🧪", "short": "SPLoRA" }
     },
     {
       "title": "LoRD — video person re-identification",
       "description": "Video person re-identification with DINOv2/v3 vision backbones, LoRA adaptation, BNNeck, and temporal attention, evaluated on the MARS benchmark.",
       "href": "https://github.com/anandkrishnan27/lord",
       "linkLabel": "GitHub",
-      "links": [{ "label": "Poster (PDF)", "href": "/papers/lord-poster.pdf" }]
+      "links": [
+        { "label": "Paper (PDF)", "href": "/papers/lord-report.pdf" },
+        { "label": "Poster (PDF)", "href": "/papers/lord-poster.pdf" }
+      ],
+      "app": { "icon": "🎥", "short": "LoRD" }
     },
     {
       "title": "Soccer action prediction with graph neural networks",
       "description": "Modeled soccer possessions as heterogeneous graphs using GraphSAGE and a Relational Graph Transformer with PyG and RelBench to predict the best next action.",
       "href": "https://github.com/josephbaileyy/cs-224w-project",
-      "linkLabel": "GitHub"
+      "linkLabel": "GitHub",
+      "links": [
+        {
+          "label": "Blog post",
+          "href": "https://medium.com/@yqin604/understanding-soccer-through-next-action-prediction-with-gnn-40f8e58d92d2"
+        }
+      ],
+      "app": { "icon": "⚽", "short": "soccer-gnn" }
+    },
+    {
+      "title": "Predicting professional League of Legends matches",
+      "description": "Machine learning over draft, economy, and objective data to predict the outcomes of professional League of Legends matches, with calibrated win-probability models benchmarked against baselines.",
+      "href": "https://github.com/josephbaileyy/cs-229-project",
+      "linkLabel": "GitHub",
+      "links": [
+        { "label": "Report (PDF)", "href": "/papers/lol-report.pdf" },
+        { "label": "Poster (PDF)", "href": "/papers/lol-poster.pdf" }
+      ],
+      "app": { "icon": "🎮", "short": "league" }
     },
     {
       "title": "Systems and security",
-      "description": "Built a Solidity and Foundry 2-of-3 multisig Ethereum wallet, an end-to-end encrypted chat client implementing the Double Ratchet, and Pintos OS enhancements spanning scheduling, system calls, and virtual memory."
+      "description": "Built a Solidity and Foundry 2-of-3 multisig Ethereum wallet, an end-to-end encrypted chat client implementing the Double Ratchet, and Pintos OS enhancements spanning scheduling, system calls, and virtual memory.",
+      "app": { "icon": "🔐", "short": "systems" }
     }
   ],
   "education": [
