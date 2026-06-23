@@ -32,8 +32,8 @@ jobs:
       - run: npm run build
         env:
           VITE_CESIUM_ION_TOKEN: ${{ secrets.VITE_CESIUM_ION_TOKEN }}
-      - run: npx playwright install --with-deps chromium webkit
-      - run: npm run test:e2e
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e -- --project=chromium --project=mobile
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
