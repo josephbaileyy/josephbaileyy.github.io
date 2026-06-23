@@ -112,6 +112,7 @@ test('BaileyOS keeps projects on the desktop and videos in the dock', async ({ p
   const videos = page.locator('.os-window').filter({ hasText: 'Performance reel' });
   await expect(videos.getByRole('link')).toHaveCount(4);
   await expect(videos).toContainText('WBA Grand Champion');
+  await expect(videos.locator('.os-video-achievement').filter({ hasText: 'WBA Grand Champion' })).toHaveCount(3);
   await expect(videos).toContainText('WGI World Silver');
 });
 

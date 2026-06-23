@@ -24,12 +24,14 @@ const PERFORMANCE_VIDEOS: PerformanceVideo[] = [
     title: 'Heart of the Home',
     year: '2021 · WBA Finals',
     note: 'Marching band · saxophone soloist',
+    achievement: 'WBA Grand Champion',
   },
   {
     id: 'ElUdzfNCs7U',
     title: 'All the World’s a Stage',
     year: '2022 · WBA Finals',
     note: 'Marching band · saxophone soloist',
+    achievement: 'WBA Grand Champion',
   },
   {
     id: 'ry0rKeoQI0o',
