@@ -9,6 +9,10 @@ export interface FxState {
   flare: number;
 }
 
+export interface FxOptions {
+  soft?: boolean;
+}
+
 /**
  * Post pipeline: RenderPass → EffectPass(Bloom) → ShaderPass(cinematic).
  * The LOW quality tier bypasses this entirely (Renderer3D.render direct).
@@ -18,15 +22,15 @@ export class FxPipeline {
   private bloom: BloomEffect;
   private cinematic: ShaderMaterial;
 
-  constructor(r3d: Renderer3D, scene: Scene, camera: PerspectiveCamera) {
+  constructor(r3d: Renderer3D, scene: Scene, camera: PerspectiveCamera, private options: FxOptions = {}) {
     this.composer = new EffectComposer(r3d.gl);
     this.composer.addPass(new RenderPass(scene, camera));
 
     this.bloom = new BloomEffect({
-      intensity: 1.1,
-      luminanceThreshold: 0.32,
-      luminanceSmoothing: 0.25,
-      mipmapBlur: true,
+      intensity: options.soft ? 0.45 : 1.1,
+      luminanceThreshold: options.soft ? 0.42 : 0.32,
+      luminanceSmoothing: options.soft ? 0.18 : 0.25,
+      mipmapBlur: !options.soft,
     });
     this.composer.addPass(new EffectPass(camera, this.bloom));
 
@@ -39,8 +43,9 @@ export class FxPipeline {
   }
 
   apply(fx: FxState): void {
-    this.bloom.blendMode.opacity.value = fx.bloom;
-    this.cinematic.uniforms.uStreak.value = fx.streak;
+    const softness = this.options.soft ? 0.55 : 1;
+    this.bloom.blendMode.opacity.value = fx.bloom * softness;
+    this.cinematic.uniforms.uStreak.value = fx.streak * softness;
     this.cinematic.uniforms.uFlare.value = fx.flare;
   }
 

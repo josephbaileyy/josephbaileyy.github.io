@@ -3,6 +3,43 @@ import { APP_PROJECTS, itemLinks, isPdfHref, type PortfolioItem } from '../../co
 import { buildTerminal } from './terminal';
 import { WindowManager } from './wm';
 
+interface PerformanceVideo {
+  id: string;
+  title: string;
+  year: string;
+  note: string;
+  achievement?: string;
+}
+
+const PERFORMANCE_VIDEOS: PerformanceVideo[] = [
+  {
+    id: 'I0edzg5Sk58',
+    title: 'Ripple Effect',
+    year: '2019 · WBA Finals',
+    note: 'Marching band · saxophone soloist',
+    achievement: 'WBA Grand Champion',
+  },
+  {
+    id: 'Bs_qo1PKeF0',
+    title: 'Heart of the Home',
+    year: '2021 · WBA Finals',
+    note: 'Marching band · saxophone soloist',
+  },
+  {
+    id: 'ElUdzfNCs7U',
+    title: 'All the World’s a Stage',
+    year: '2022 · WBA Finals',
+    note: 'Marching band · saxophone soloist',
+  },
+  {
+    id: 'ry0rKeoQI0o',
+    title: 'In This Room',
+    year: '2023 · WGI Finals',
+    note: 'Indoor drumline · saxophone soloist',
+    achievement: 'WGI World Silver',
+  },
+];
+
 function panelBody(panelId: string): HTMLElement {
   const div = document.createElement('div');
   div.className = 'os-doc panel-body';
@@ -38,7 +75,10 @@ function pdfBody(href: string, title: string): HTMLElement {
 }
 
 /** A project "app": its description plus buttons for each link. */
-function projectBody(project: PortfolioItem, openPdf: (href: string, title: string) => void): HTMLElement {
+function projectBody(
+  project: PortfolioItem,
+  openPdf: (href: string, title: string) => void,
+): HTMLElement {
   const div = document.createElement('div');
   div.className = 'os-doc os-project';
   const desc = document.createElement('p');
@@ -57,7 +97,9 @@ function projectBody(project: PortfolioItem, openPdf: (href: string, title: stri
       const btn = document.createElement('button');
       btn.className = 'os-project-link';
       btn.textContent = link.label;
-      btn.addEventListener('click', () => openPdf(link.href, `${project.app?.short ?? project.title} — ${link.label}`));
+      btn.addEventListener('click', () =>
+        openPdf(link.href, `${project.app?.short ?? project.title} — ${link.label}`),
+      );
       actions.appendChild(btn);
     } else {
       const a = document.createElement('a');
@@ -71,6 +113,84 @@ function projectBody(project: PortfolioItem, openPdf: (href: string, title: stri
   }
   div.appendChild(actions);
   return div;
+}
+
+function videosBody(): HTMLElement {
+  const wrap = document.createElement('div');
+  wrap.className = 'os-videos';
+
+  const intro = document.createElement('div');
+  intro.className = 'os-videos-intro';
+  intro.innerHTML = '<strong>Performance reel</strong><span>Marching arts · Chino Hills HS</span>';
+  wrap.appendChild(intro);
+
+  const grid = document.createElement('div');
+  grid.className = 'os-video-grid';
+  for (const video of PERFORMANCE_VIDEOS) {
+    const link = document.createElement('a');
+    link.className = 'os-video-card';
+    link.href = `https://youtu.be/${video.id}`;
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.setAttribute('aria-label', `Watch ${video.title} on YouTube`);
+
+    const thumb = document.createElement('span');
+    thumb.className = 'os-video-thumb';
+    const image = document.createElement('img');
+    image.src = `https://i.ytimg.com/vi/${video.id}/hqdefault.jpg`;
+    image.alt = '';
+    image.loading = 'lazy';
+    image.referrerPolicy = 'no-referrer';
+    const play = document.createElement('span');
+    play.className = 'os-video-play';
+    play.setAttribute('aria-hidden', 'true');
+    thumb.append(image, play);
+
+    const copy = document.createElement('span');
+    copy.className = 'os-video-copy';
+    const title = document.createElement('strong');
+    title.textContent = video.title;
+    const year = document.createElement('span');
+    year.className = 'os-video-year';
+    year.textContent = video.year;
+    const note = document.createElement('span');
+    note.className = 'os-video-note';
+    note.textContent = video.note;
+    copy.append(title, year, note);
+    if (video.achievement) {
+      const achievement = document.createElement('span');
+      achievement.className = 'os-video-achievement';
+      achievement.textContent = `✦ ${video.achievement}`;
+      copy.appendChild(achievement);
+    }
+
+    link.append(thumb, copy);
+    grid.appendChild(link);
+  }
+  wrap.appendChild(grid);
+  return wrap;
+}
+
+function playIcon(className: string): HTMLElement {
+  const icon = document.createElement('span');
+  icon.className = `${className} os-play-app-icon`;
+  icon.setAttribute('aria-hidden', 'true');
+  return icon;
+}
+
+function projectIcon(iconValue: string): HTMLElement {
+  const icon = document.createElement('span');
+  icon.className = 'os-desktop-icon-glyph';
+  if (iconValue.startsWith('/')) {
+    const image = document.createElement('img');
+    image.className = 'os-app-icon-image';
+    image.src = iconValue;
+    image.alt = '';
+    icon.appendChild(image);
+  } else {
+    icon.textContent = iconValue;
+  }
+  return icon;
 }
 
 /** The little desktop that lives on the monitor at depth 5. */
@@ -108,20 +228,57 @@ export function buildFakeOs(): HTMLElement {
       h: 320,
     });
   const openTerminal = () =>
-    wm.open({ id: 'terminal', title: 'terminal — zsh', body: buildTerminal(), x: 8, y: 12, w: 460, h: 320 });
+    wm.open({
+      id: 'terminal',
+      title: 'terminal — zsh',
+      body: buildTerminal(),
+      x: 8,
+      y: 12,
+      w: 460,
+      h: 320,
+    });
   const openResearch = () =>
-    wm.open({ id: 'research', title: 'research.md — physics', body: panelBody('research'), x: 30, y: 8, w: 410, h: 350 });
+    wm.open({
+      id: 'research',
+      title: 'research.md — physics',
+      body: panelBody('research'),
+      x: 30,
+      y: 8,
+      w: 410,
+      h: 350,
+    });
   const openProfile = () =>
-    wm.open({ id: 'profile', title: 'about.md — joseph', body: panelBody('profile'), x: 16, y: 8, w: 440, h: 350 });
+    wm.open({
+      id: 'profile',
+      title: 'about.md — joseph',
+      body: panelBody('profile'),
+      x: 16,
+      y: 8,
+      w: 440,
+      h: 350,
+    });
+  const openVideos = () =>
+    wm.open({
+      id: 'videos',
+      title: 'videos — performance reel',
+      body: videosBody(),
+      x: 22,
+      y: 7,
+      w: 620,
+      h: 450,
+    });
   const launchJourney = () => window.dispatchEvent(new CustomEvent('universe:tour'));
 
-  // ---- desktop icons (the CS projects live here, double duty with the dock) ----
+  // ---- desktop icons (projects deliberately live here, not in the dock) ----
   const icons = document.createElement('div');
   icons.className = 'os-desktop-icons';
   for (const project of APP_PROJECTS) {
     const icon = document.createElement('button');
     icon.className = 'os-desktop-icon';
-    icon.innerHTML = `<span class="os-desktop-icon-glyph">${project.app!.icon}</span><span class="os-desktop-icon-label">${project.app!.short}</span>`;
+    const label = document.createElement('span');
+    label.className = 'os-desktop-icon-label';
+    label.textContent = project.app!.short;
+    icon.append(projectIcon(project.app!.icon), label);
     icon.setAttribute('aria-label', `Open ${project.title}`);
     icon.addEventListener('click', () => openProject(project));
     icons.appendChild(icon);
@@ -131,26 +288,30 @@ export function buildFakeOs(): HTMLElement {
   // ---- dock ----
   const dock = document.createElement('div');
   dock.className = 'os-dock';
-  const projectDockItems: Array<[string, string, () => void]> = APP_PROJECTS.map((project) => [
-    project.app!.icon,
-    project.app!.short,
-    () => openProject(project),
-  ]);
-  const items: Array<[string, string, (() => void) | string]> = [
+  const items: Array<[string | HTMLElement, string, (() => void) | string]> = [
     ['🖥', 'terminal', openTerminal],
-    ...projectDockItems,
     ['🔬', 'research', openResearch],
     ['📄', 'cv.pdf', () => openPdf('/resume.pdf', 'cv.pdf')],
     ['🧑‍🚀', 'about', openProfile],
+    [playIcon('os-dock-icon'), 'videos', openVideos],
     ['🌌', 'journey', launchJourney],
     ['💻', 'github', 'https://github.com/josephbaileyy'],
     ['🔗', 'linkedin', 'https://linkedin.com/in/baileyjosephr'],
     ['✉️', 'email', 'mailto:jrbailey555@gmail.com'],
   ];
   for (const [icon, label, action] of items) {
-    const el = typeof action === 'string' ? document.createElement('a') : document.createElement('button');
+    const el =
+      typeof action === 'string' ? document.createElement('a') : document.createElement('button');
     el.className = 'os-dock-item';
-    el.innerHTML = `<span class="os-dock-icon">${icon}</span><span class="os-dock-label">${label}</span>`;
+    const iconElement = typeof icon === 'string' ? document.createElement('span') : icon;
+    if (typeof icon === 'string') {
+      iconElement.className = 'os-dock-icon';
+      iconElement.textContent = icon;
+    }
+    const labelElement = document.createElement('span');
+    labelElement.className = 'os-dock-label';
+    labelElement.textContent = label;
+    el.append(iconElement, labelElement);
     if (typeof action === 'string') {
       const a = el as HTMLAnchorElement;
       a.href = action;

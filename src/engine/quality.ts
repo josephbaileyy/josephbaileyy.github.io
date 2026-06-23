@@ -19,14 +19,25 @@ const PROBE_AFTER_S = 12;
  */
 export class QualityMonitor {
   tier: QualityTier = 'high';
+  private maxTier: QualityTier = 'high';
   private ema = 16;
   private over = 0;
   private cleanSince = 0;
   private changed = false;
   private budgetMs = SCENE_BUDGET_MS.galaxy;
 
-  configureDevice(pixelCount: number, deviceMemoryGb = 8): void {
-    if (deviceMemoryGb <= 4 || pixelCount > 6_000_000) this.tier = 'med';
+  configureDevice(
+    pixelCount: number,
+    deviceMemoryGb = 8,
+    profile: { isMobile?: boolean; isWebKit?: boolean; lowPowerGpu?: boolean } = {},
+  ): void {
+    this.maxTier = profile.lowPowerGpu ? 'low' : profile.isMobile || profile.isWebKit ? 'med' : 'high';
+
+    if (profile.lowPowerGpu) this.tier = 'low';
+    else if (profile.isMobile || profile.isWebKit || deviceMemoryGb <= 4 || pixelCount > 6_000_000) this.tier = 'med';
+    else this.tier = 'high';
+
+    this.tier = this.clampToMaxTier(this.tier);
   }
 
   setScene(scene: SceneId): void {
@@ -59,10 +70,19 @@ export class QualityMonitor {
       this.cleanSince = now;
       return;
     }
-    this.tier = TIERS[idx];
+    const next = this.clampToMaxTier(TIERS[idx]);
+    if (next === this.tier) {
+      this.cleanSince = now;
+      return;
+    }
+    this.tier = next;
     this.over = 0;
     this.cleanSince = now;
     this.ema = 16;
     this.changed = true;
+  }
+
+  private clampToMaxTier(tier: QualityTier): QualityTier {
+    return TIERS[Math.max(TIERS.indexOf(tier), TIERS.indexOf(this.maxTier))];
   }
 }

@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+const isMobileProject = (name: string): boolean => name.includes('mobile');
+
 const scenes = [
   ['galaxy', 'The Milky Way'],
   ['solar', 'The Solar System'],
@@ -19,7 +21,6 @@ test.describe('deep links', () => {
     });
   }
 });
-
 test('panels, history, keyboard navigation, and terminal work', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/galaxy');
@@ -90,17 +91,28 @@ test('the dock journey icon replays the guided journey from the desktop', async 
   await expect(page.locator('.tour-caption')).toHaveClass(/\bon\b/);
 });
 
-test('BaileyOS surfaces the CS projects as desktop + dock apps', async ({ page }) => {
+test('BaileyOS keeps projects on the desktop and videos in the dock', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
   await expect(page.getByLabel('terminal input')).toBeVisible();
 
-  await expect(page.locator('.os-dock-item').filter({ hasText: 'league' })).toBeVisible();
-  await expect(page.locator('.os-dock-item').filter({ hasText: 'SPLoRA' })).toBeVisible();
+  await expect(page.locator('.os-dock-item').filter({ hasText: 'league' })).toHaveCount(0);
+  await expect(page.locator('.os-dock-item').filter({ hasText: 'SPLoRA' })).toHaveCount(0);
   await expect(page.locator('.os-desktop-icon')).toHaveCount(5);
+  await expect(page.locator('.os-desktop-icon').filter({ hasText: 'league' }).locator('img')).toHaveAttribute(
+    'src',
+    '/icons/league-of-legends.png',
+  );
 
-  await page.locator('.os-dock-item').filter({ hasText: 'league' }).click();
+  await page.getByRole('button', { name: 'Close terminal — zsh' }).click();
+  await page.locator('.os-desktop-icon').filter({ hasText: 'league' }).click();
   await expect(page.locator('.os-window').filter({ hasText: 'League of Legends' })).toBeVisible();
+
+  await page.locator('.os-dock-item').filter({ hasText: 'videos' }).click();
+  const videos = page.locator('.os-window').filter({ hasText: 'Performance reel' });
+  await expect(videos.getByRole('link')).toHaveCount(4);
+  await expect(videos).toContainText('WBA Grand Champion');
+  await expect(videos).toContainText('WGI World Silver');
 });
 
 test('project PDFs open inside BaileyOS with tab/download options', async ({ page }) => {
@@ -108,7 +120,8 @@ test('project PDFs open inside BaileyOS with tab/download options', async ({ pag
   await page.goto('/#/screen');
   await expect(page.getByLabel('terminal input')).toBeVisible();
 
-  await page.locator('.os-dock-item').filter({ hasText: 'league' }).click();
+  await page.getByRole('button', { name: 'Close terminal — zsh' }).click();
+  await page.locator('.os-desktop-icon').filter({ hasText: 'league' }).click();
   const projectWindow = page.locator('.os-window').filter({ hasText: 'League of Legends' });
   await projectWindow.getByRole('button', { name: 'Report (PDF)' }).click();
 
@@ -124,7 +137,8 @@ test('the galaxy black hole dives down to BaileyOS', async ({ page }) => {
   await expect(page).toHaveURL(/#\/screen$/, { timeout: 30_000 });
 });
 
-test('computer mode is collision-free at the active viewport', async ({ page }) => {
+test('computer mode is collision-free at the active viewport', async ({ page }, testInfo) => {
+  test.skip(isMobileProject(testInfo.project.name), 'desktop HUD collision contract');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
   await expect(page.getByLabel('terminal input')).toBeVisible();
@@ -169,7 +183,8 @@ test('users without WebGL receive an actionable fallback', async ({ page }) => {
   await expect(page.getByRole('link', { name: /Visit the plain version/ })).toHaveAttribute('href', '/about.html');
 });
 
-test('browser zoom gestures do not move the universe camera', async ({ page }) => {
+test('browser zoom gestures do not move the universe camera', async ({ page }, testInfo) => {
+  test.skip(isMobileProject(testInfo.project.name), 'wheel gesture contract is desktop-only');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/galaxy');
   await page.mouse.move(200, 200);
@@ -177,6 +192,18 @@ test('browser zoom gestures do not move the universe camera', async ({ page }) =
   await page.mouse.wheel(0, -600);
   await page.keyboard.up('Control');
   await expect(page).toHaveURL(/#\/galaxy$/);
+});
+
+test('mobile tap controls navigate without requiring pinch or hover', async ({ page }, testInfo) => {
+  test.skip(!isMobileProject(testInfo.project.name), 'mobile touch affordance');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/galaxy');
+
+  await page.getByRole('button', { name: 'Travel inward one level' }).click();
+  await expect(page).toHaveURL(/#\/solar$/, { timeout: 20_000 });
+
+  await page.getByRole('button', { name: 'Travel outward one level' }).click();
+  await expect(page).toHaveURL(/#\/galaxy$/, { timeout: 20_000 });
 });
 
 test('true-scale solar system keeps every tracked body discoverable on mobile', async ({ page }) => {
@@ -208,8 +235,24 @@ test('true-scale solar system keeps every tracked body discoverable on mobile', 
   }
 });
 
+test('immersive HUD controls toggle scale, drift, and the observation log', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/solar');
+  await expect(page.getByRole('button', { name: 'Toggle Solar System scale mode' })).toBeVisible({ timeout: 20_000 });
+
+  await page.getByRole('button', { name: 'Toggle Solar System scale mode' }).click();
+  await expect(page.getByRole('button', { name: 'Toggle Solar System scale mode' })).toContainText('scale: real');
+  await expect(page.getByText('JPL DE440 · UTC · real scale')).toBeAttached();
+
+  await page.getByRole('button', { name: 'Toggle free drift camera mode' }).click();
+  await expect(page.getByRole('button', { name: 'Toggle free drift camera mode' })).toContainText('drift: on');
+
+  await page.getByRole('button', { name: 'Open observation log' }).click();
+  await expect(page.locator('.observation-log.open')).toContainText('The Solar System');
+});
+
 test('solar reticles stay registered to the rendered orbits during pointer movement', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name === 'mobile', 'desktop pointer-parallax regression');
+  test.skip(isMobileProject(testInfo.project.name), 'desktop pointer-parallax regression');
   await page.goto('/#/solar');
   await expect(page.locator('.solar-overlay')).toHaveClass(/active/, { timeout: 20_000 });
   const earth = page.locator('.planet-reticle[data-body="earth"]');
@@ -273,7 +316,7 @@ test('Earth offers explicit exploration without replacing universe navigation', 
 });
 
 test('BaileyOS windows resize with accessible controls', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name === 'mobile', 'mobile windows intentionally use the full available width');
+  test.skip(isMobileProject(testInfo.project.name), 'mobile windows intentionally use the full available width');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
   await expect(page.getByLabel('terminal input')).toBeVisible();
@@ -293,7 +336,7 @@ test('BaileyOS windows resize with accessible controls', async ({ page }, testIn
 });
 
 test('BaileyOS keeps one active app window on mobile', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name !== 'mobile', 'mobile window-management contract');
+  test.skip(!isMobileProject(testInfo.project.name), 'mobile window-management contract');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
   await expect(page.getByLabel('terminal input')).toBeVisible();

@@ -5,6 +5,8 @@ import {
   Color,
   DoubleSide,
   Group,
+  LineBasicMaterial,
+  LineSegments,
   Mesh,
   MeshBasicMaterial,
   NormalBlending,
@@ -14,6 +16,7 @@ import {
   SphereGeometry,
   Sprite,
   SpriteMaterial,
+  Texture,
   Uniform,
   Vector3,
 } from 'three';
@@ -174,6 +177,52 @@ function makeLabel(lines: Array<[string, string, number]>): Sprite {
   );
 }
 
+function nebulaTexture(seed: number, color: string): Texture {
+  const r = parseInt(color.slice(1, 3), 16);
+  const gChan = parseInt(color.slice(3, 5), 16);
+  const b = parseInt(color.slice(5, 7), 16);
+  const rgba = (alpha: number) => `rgba(${r}, ${gChan}, ${b}, ${alpha})`;
+  return canvasTexture(256, 256, (ctx) => {
+    const rand = mulberry32(seed);
+    ctx.clearRect(0, 0, 256, 256);
+    const x = 110 + (rand() - 0.5) * 42;
+    const y = 130 + (rand() - 0.5) * 42;
+    const g = ctx.createRadialGradient(x, y, 0, 128, 128, 128);
+    g.addColorStop(0, rgba(0.28));
+    g.addColorStop(0.42, rgba(0.1));
+    g.addColorStop(0.78, rgba(0.025));
+    g.addColorStop(1, rgba(0));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 256, 256);
+  });
+}
+
+function buildTravelStreaks(): { streaks: LineSegments; material: LineBasicMaterial } {
+  const rand = mulberry32(19981207);
+  const count = 160;
+  const pos = new Float32Array(count * 2 * 3);
+  for (let i = 0; i < count; i++) {
+    const u = rand() * 2 - 1;
+    const phi = rand() * Math.PI * 2;
+    const r = 30 + rand() * 95;
+    const s = Math.sqrt(1 - u * u);
+    const x = r * s * Math.cos(phi);
+    const y = r * u * 0.65;
+    const z = r * s * Math.sin(phi);
+    const len = 1.2 + rand() * 3.8;
+    pos[i * 6] = x;
+    pos[i * 6 + 1] = y;
+    pos[i * 6 + 2] = z;
+    pos[i * 6 + 3] = x * (1 + len / r);
+    pos[i * 6 + 4] = y * (1 + len / r);
+    pos[i * 6 + 5] = z * (1 + len / r);
+  }
+  const geo = new BufferGeometry();
+  geo.setAttribute('position', new BufferAttribute(pos, 3));
+  const material = new LineBasicMaterial({ color: 0x9fd4ff, transparent: true, opacity: 0, blending: AdditiveBlending });
+  return { streaks: new LineSegments(geo, material), material };
+}
+
 /** The AM CVn binary: rotating frame, shader disk, particle stream. */
 function buildBinary(): {
   group: Group;
@@ -312,6 +361,28 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
   points.rotation.z = 0.08;
   group.add(points);
 
+  const nebulae = new Group();
+  const nebulaRand = mulberry32(9090);
+  for (let i = 0; i < 9; i++) {
+    const color = i % 3 === 0 ? '#7fd4ff' : i % 3 === 1 ? '#ff7ccf' : '#ffd479';
+    const sprite = new Sprite(
+      new SpriteMaterial({
+        map: nebulaTexture(300 + i, color),
+        transparent: true,
+        depthWrite: false,
+        blending: AdditiveBlending,
+        opacity: 0.16,
+      }),
+    );
+    sprite.position.set((nebulaRand() - 0.5) * 78, (nebulaRand() - 0.5) * 9, (nebulaRand() - 0.5) * 78);
+    sprite.scale.set(18 + nebulaRand() * 24, 8 + nebulaRand() * 16, 1);
+    nebulae.add(sprite);
+  }
+  group.add(nebulae);
+
+  const travel = buildTravelStreaks();
+  group.add(travel.streaks);
+
   // distant galaxies
   const blobTex = canvasTexture(64, 64, (ctx) => {
     const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
@@ -376,6 +447,32 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
   const bh = new Group();
   bh.position.set(10, -17, 3);
   bh.add(new Mesh(new SphereGeometry(0.5, 24, 16), new MeshBasicMaterial({ color: 0x000000 })));
+  const lens = new Mesh(
+    new PlaneGeometry(5.2, 5.2),
+    new ShaderMaterial({
+      uniforms: { uTime: new Uniform(0) },
+      vertexShader: `varying vec2 vUv; void main(){ vUv = uv*2.0-1.0; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
+      fragmentShader: /* glsl */ `
+        uniform float uTime;
+        varying vec2 vUv;
+        void main() {
+          float r = length(vUv);
+          float ang = atan(vUv.y, vUv.x);
+          float einstein = smoothstep(0.04, 0.0, abs(r - 0.38));
+          float arc = 0.45 + 0.55 * sin(ang * 5.0 + uTime * 0.35);
+          float outer = smoothstep(0.02, 0.0, abs(r - 0.62)) * smoothstep(0.25, 1.0, arc);
+          float alpha = einstein * 0.42 + outer * 0.2;
+          gl_FragColor = vec4(vec3(0.72, 0.86, 1.0) * alpha, alpha);
+        }
+      `,
+      transparent: true,
+      blending: AdditiveBlending,
+      depthWrite: false,
+      side: DoubleSide,
+    }),
+  );
+  lens.rotation.x = -Math.PI / 2 + 0.35;
+  bh.add(lens);
   const bhDisk = new Mesh(
     new PlaneGeometry(3.2, 3.2),
     new ShaderMaterial({
@@ -526,6 +623,8 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
       // this is what covers the 10^9 scale cheat
       const fade = 1 - smoothstep(0.62, 0.96, Math.max(ctx.localT, 0));
       for (const m of pointMats) m.uniforms.uFade.value = fade;
+      travel.material.opacity = ctx.reducedMotion ? 0 : smoothstep(0.18, 0.7, ctx.localT) * (1 - smoothstep(0.78, 0.98, ctx.localT)) * 0.75;
+      if (!ctx.reducedMotion) nebulae.rotation.y += ctx.dt * 0.0015;
 
       // AM CVn
       if (!reduced) binary.rotor.rotation.y = (ctx.time * 2 * Math.PI) / 6;
@@ -567,10 +666,14 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
       if (!reduced) {
         beams.rotation.z = ctx.time * (Math.PI * 2) / 1.5;
         (bhDisk.material as ShaderMaterial).uniforms.uTime.value = ctx.time;
+        (lens.material as ShaderMaterial).uniforms.uTime.value = ctx.time;
         (sunRing.material as ShaderMaterial).uniforms.uTime.value = ctx.time;
       }
     },
-    setQuality() {},
+    setQuality(q) {
+      nebulae.visible = q !== 'low';
+      travel.streaks.visible = q !== 'low';
+    },
     dispose() {
       group.traverse((o) => {
         const m = o as Mesh;

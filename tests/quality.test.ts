@@ -12,6 +12,19 @@ describe('scene-aware quality monitor', () => {
     expect(pixelLimited.tier).toBe('med');
   });
 
+  it('caps WebKit/mobile devices before they overheat the GPU path', () => {
+    const desktopSafari = new QualityMonitor();
+    desktopSafari.configureDevice(2_000_000, 8, { isWebKit: true });
+    expect(desktopSafari.tier).toBe('med');
+
+    const mobileSafari = new QualityMonitor();
+    mobileSafari.configureDevice(2_000_000, 8, { isMobile: true, isWebKit: true, lowPowerGpu: true });
+    expect(mobileSafari.tier).toBe('low');
+
+    for (let frame = 0; frame < 900; frame++) mobileSafari.update(0.01, frame * 0.05);
+    expect(mobileSafari.tier).toBe('low');
+  });
+
   it('demotes after a sustained scene-budget overrun', () => {
     const monitor = new QualityMonitor();
     monitor.setScene('screen');

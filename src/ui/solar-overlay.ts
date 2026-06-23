@@ -41,6 +41,7 @@ export class SolarOverlay {
   private visitEarth = document.createElement('button');
   private selected: TrackedBody | null = null;
   private world = new Vector3();
+  private scaleMode: 'cinematic' | 'real' = 'cinematic';
 
   constructor(
     private bodies: Map<TrackedBody, Object3D>,
@@ -97,6 +98,10 @@ export class SolarOverlay {
     document.body.appendChild(this.root);
   }
 
+  setScaleMode(mode: 'cinematic' | 'real'): void {
+    this.scaleMode = mode;
+  }
+
   private select(body: TrackedBody | null): void {
     this.selected = body;
     this.focus.value = body ?? 'overview';
@@ -115,7 +120,7 @@ export class SolarOverlay {
     const utcMs = simulationClock.utcMs;
     this.date.value = isoDate(utcMs);
     this.status.textContent = this.provider.status === 'ready'
-      ? 'JPL DE440 · UTC'
+      ? `JPL DE440 · UTC · ${this.scaleMode} scale`
       : this.provider.status === 'loading' ? 'buffering JPL trajectory…' : 'approximate fallback';
     camera.updateMatrixWorld();
     const placements: ProjectedReticle[] = [];

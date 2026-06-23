@@ -6,6 +6,7 @@ import { attachInput } from './engine/input';
 import { QualityMonitor } from './engine/quality';
 import { Renderer3D, webgl2Available } from './engine/renderer';
 import { FxPipeline } from './engine/renderer-fx';
+import { detectDeviceProfile, viewportSize } from './engine/device';
 import { projectToPx, scaleExponent } from './engine/rig';
 import { fxAt, JumpController } from './engine/transitions';
 import { World } from './engine/world';
@@ -19,12 +20,17 @@ import { ScreenUi } from './ui/screen-ui';
 import { Tour } from './ui/tour';
 import { Router } from './router';
 import { simulationClock } from './astronomy/clock';
+import { AmbientSound } from './ui/ambient';
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const now = () => performance.now() / 1000;
 
 const canvas = document.getElementById('universe') as HTMLCanvasElement;
 const hudEl = document.getElementById('hud')!;
+const device = detectDeviceProfile();
+document.body.dataset.browserEngine = device.isWebKit ? 'webkit' : 'other';
+document.body.dataset.inputMode = device.isCoarsePointer ? 'touch' : 'pointer';
+document.body.dataset.postfx = device.disablePostFx ? 'off' : device.softenPostFx ? 'soft' : 'full';
 
 // --- WebGL2 gate: this is a WebGL universe; everyone else gets the plain site ---
 if (!webgl2Available()) {
@@ -38,7 +44,12 @@ if (!webgl2Available()) {
   throw new Error('WebGL2 unavailable');
 }
 
-const vp = { w: window.innerWidth, h: window.innerHeight };
+const vp = viewportSize();
+function syncViewportCss(): void {
+  document.documentElement.style.setProperty('--app-height', `${vp.h}px`);
+  document.documentElement.style.setProperty('--app-width', `${vp.w}px`);
+}
+syncViewportCss();
 const camera = new Camera(CHAIN3D.length, reduced);
 const panel = new PanelHost();
 const renderer = new Renderer3D(canvas);
@@ -58,12 +69,16 @@ const loader = new SceneLoader(
   },
 );
 const world = new World(CHAIN3D, loader);
-const fx = new FxPipeline(renderer, world.root, world.camera);
-fx.setSize(vp.w, vp.h);
+const fx = device.disablePostFx ? null : new FxPipeline(renderer, world.root, world.camera, { soft: device.softenPostFx });
+fx?.setSize(vp.w, vp.h);
 const quality = new QualityMonitor();
-const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? 8;
-quality.configureDevice(vp.w * vp.h * (window.devicePixelRatio || 1) ** 2, deviceMemory);
+const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? (device.lowPowerGpu ? 4 : 8);
+quality.configureDevice(vp.w * vp.h * (window.devicePixelRatio || 1) ** 2, deviceMemory, device);
 const jump = new JumpController(camera, reduced);
+const ambient = new AmbientSound();
+let scaleMode: 'cinematic' | 'real' = 'cinematic';
+let driftMode = false;
+document.body.dataset.scaleMode = scaleMode;
 const requestDestination = (index: number): void => {
   loader.request(index);
   loader.request(index - 1);
@@ -103,6 +118,20 @@ const hud = new Hud(
     camera.tweenTo(target, now(), 0.9);
   },
   () => tour.start(),
+  {
+    onScaleToggle: () => {
+      scaleMode = scaleMode === 'cinematic' ? 'real' : 'cinematic';
+      document.body.dataset.scaleMode = scaleMode;
+      window.dispatchEvent(new CustomEvent('universe:scale-mode', { detail: scaleMode }));
+      return scaleMode;
+    },
+    onAmbientToggle: () => ambient.toggle(),
+    onDriftToggle: () => {
+      driftMode = !driftMode;
+      document.body.dataset.driftMode = driftMode ? 'on' : 'off';
+      return driftMode;
+    },
+  },
 );
 
 // Shared navigation path (HUD dots + guided tour): prefetch, then fly via the
@@ -151,6 +180,20 @@ const SCENE_HINTS = [
   'use the dock · drag, resize, minimize, or maximize windows',
 ] as const;
 
+const OBSERVATIONS: Record<string, string> = {
+  galaxy: 'The Milky Way scene uses layered procedural stars, dust, and research beacons.',
+  solar: 'Planet positions come from checked-in JPL ephemeris data; the scale toggle changes visual body size only.',
+  earth: 'Earth uses a live terminator so day and night follow the selected time.',
+  stanford: 'The Stanford scene is the handoff from planet scale into a lived-in campus scale.',
+  room: 'The dorm-room hop uses the lit monitor as a physical portal into BaileyOS.',
+  screen: 'BaileyOS is a DOM desktop projected onto the monitor inside the 3D universe.',
+};
+
+const HOTSPOT_OBSERVATIONS: Record<string, string> = {
+  'am-cvn': 'AM CVn systems are helium-transferring compact binaries; the model shows a disk, stream, and hot spot.',
+  research: 'The pulsar marker gathers the particle, neutrino, and collider-ML side of the portfolio.',
+};
+
 const SCREEN_INDEX = CHAIN3D.length - 1;
 const a11yLayer = document.getElementById('a11y-layer')!;
 const screenUi = new ScreenUi((id) => openPanel(id, SCREEN_INDEX));
@@ -181,6 +224,7 @@ const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => 
   tour.cancel();
   hud.hideHint();
   if (h.action.type === 'panel') {
+    hud.addObservation(h.action.panelId, h.label, HOTSPOT_OBSERVATIONS[h.action.panelId] ?? 'Opened a research note from the 3D scene.');
     openPanel(h.action.panelId, world.baseIndex());
   } else if (h.action.type === 'navigate') {
     requestDestination(h.action.index);
@@ -251,6 +295,8 @@ const PARALLAX_MAX = (1.6 * Math.PI) / 180;
 const qParallax = new Quaternion();
 const vAxisX = new Vector3(1, 0, 0);
 const vAxisY = new Vector3(0, 1, 0);
+const vDriftRight = new Vector3();
+const vDriftUp = new Vector3();
 
 attachInput(canvas, camera, {
   reducedMotion: reduced,
@@ -269,24 +315,28 @@ attachInput(canvas, camera, {
   parallaxTarget,
 });
 
-window.addEventListener('resize', () => {
-  vp.w = window.innerWidth;
-  vp.h = window.innerHeight;
+function handleViewportChange(): void {
+  const next = viewportSize();
+  vp.w = next.w;
+  vp.h = next.h;
+  syncViewportCss();
   renderer.resize(vp.w, vp.h);
-  fx.setSize(vp.w, vp.h);
+  fx?.setSize(vp.w, vp.h);
   hotspots.rebuildProxies();
   if (screenUi.visible) syncScreenUi(camera.settledIndex);
-});
+}
+
+window.addEventListener('resize', handleViewportChange);
+window.visualViewport?.addEventListener('resize', handleViewportChange);
+window.visualViewport?.addEventListener('scroll', handleViewportChange);
 
 function applyQuality(): void {
   const tier = quality.tier;
   world.setQuality(tier);
   const dpr = window.devicePixelRatio || 1;
-  renderer.setPixelRatio(
-    tier === 'high' ? Math.min(dpr, 2) : tier === 'med' ? Math.min(dpr, 1.5) : 1,
-  );
+  renderer.setPixelRatio(Math.min(dpr, device.maxDpr[tier]));
   renderer.resize(vp.w, vp.h);
-  fx.setSize(vp.w, vp.h);
+  fx?.setSize(vp.w, vp.h);
   document.body.dataset.quality = tier;
 }
 
@@ -358,6 +408,13 @@ function frame(): void {
     world.camera.quaternion.multiply(qParallax);
     qParallax.setFromAxisAngle(vAxisX, -parallax.y * amp);
     world.camera.quaternion.multiply(qParallax);
+    if (driftMode) {
+      const sceneIndex = Math.round(Math.min(Math.max(camera.depth, 0), CHAIN3D.length - 1));
+      const driftAmp = CHAIN3D[sceneIndex].restPose.frameWidth * 0.028 * dockFade;
+      vDriftRight.set(1, 0, 0).applyQuaternion(world.camera.quaternion).multiplyScalar(parallax.x * driftAmp);
+      vDriftUp.set(0, 1, 0).applyQuaternion(world.camera.quaternion).multiplyScalar(-parallax.y * driftAmp);
+      world.camera.position.add(vDriftRight).add(vDriftUp);
+    }
   }
 
   world.camera.updateMatrixWorld();
@@ -366,7 +423,7 @@ function frame(): void {
   renderer.setExposure(exposureAt(camera.depth));
   if (quality.update(dt, t)) applyQuality();
 
-  if (quality.tier === 'low') {
+  if (quality.tier === 'low' || !fx) {
     renderer.render(world.root, world.camera);
   } else {
     fx.apply(fxAt(camera.depth, CHAIN3D, jump.streak(t), jump.flare(t)));
@@ -391,6 +448,7 @@ function frame(): void {
     if (settled !== null) {
       quality.setScene(CHAIN3D[settled].id);
       hud.announce(CHAIN3D[settled].label);
+      hud.addObservation(CHAIN3D[settled].id, CHAIN3D[settled].label, OBSERVATIONS[CHAIN3D[settled].id]);
       if (!tour.active) hud.showHint(SCENE_HINTS[settled]);
       if (!panel.isOpen) router.replace(settled);
       if (pendingPanel && pendingPanel.scene === settled) {

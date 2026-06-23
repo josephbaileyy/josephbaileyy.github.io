@@ -5,11 +5,13 @@ import {
   BufferGeometry,
   DoubleSide,
   Group,
+  Line,
   LineBasicMaterial,
   LineLoop,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
+  PlaneGeometry,
   Points,
   PointsMaterial,
   PointLight,
@@ -83,6 +85,32 @@ function coronaTexture(): Texture {
     g.addColorStop(1, 'rgba(255, 140, 40, 0)');
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, 256, 256);
+  });
+}
+
+function glowTexture(color: string): Texture {
+  const r = parseInt(color.slice(1, 3), 16);
+  const gChan = parseInt(color.slice(3, 5), 16);
+  const b = parseInt(color.slice(5, 7), 16);
+  const rgba = (alpha: number) => `rgba(${r}, ${gChan}, ${b}, ${alpha})`;
+  return canvasTexture(128, 128, (ctx) => {
+    const g = ctx.createRadialGradient(64, 64, 0, 64, 64, 64);
+    g.addColorStop(0, rgba(0.28));
+    g.addColorStop(0.42, rgba(0.14));
+    g.addColorStop(1, rgba(0));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 128, 128);
+  });
+}
+
+function cometTexture(): Texture {
+  return canvasTexture(96, 96, (ctx) => {
+    const g = ctx.createRadialGradient(60, 48, 0, 60, 48, 48);
+    g.addColorStop(0, 'rgba(240, 255, 255, 1)');
+    g.addColorStop(0.22, 'rgba(127, 212, 255, 0.72)');
+    g.addColorStop(1, 'rgba(127, 212, 255, 0)');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 96, 96);
   });
 }
 
@@ -163,6 +191,16 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   const planetMeshes = new Map<EphemerisBody, { pivot: Group; mesh: Mesh; spin: number }>();
   const trackedObjects = new Map<EphemerisBody | 'sun', import('three').Object3D>();
   trackedObjects.set('sun', sun);
+  const glowColors: Record<string, string> = {
+    mercury: '#bdb6aa',
+    venus: '#f2c777',
+    earth: '#7fd4ff',
+    mars: '#ff7c52',
+    jupiter: '#ffd79a',
+    saturn: '#ffe0a1',
+    uranus: '#9de7ff',
+    neptune: '#7aa5ff',
+  };
   for (const p of PLANETS) {
     const radius = planetRadius(p.radiusKm);
     const material = p.name === 'earth'
@@ -184,6 +222,18 @@ export function createSolar(assets: SceneAssets): SceneInstance {
     const pivot = new Group();
     pivot.add(mesh);
 
+    const atmosphere = new Sprite(
+      new SpriteMaterial({
+        map: glowTexture(glowColors[p.name]),
+        transparent: true,
+        depthWrite: false,
+        blending: AdditiveBlending,
+        opacity: p.name === 'earth' ? 0.9 : 0.42,
+      }),
+    );
+    atmosphere.scale.setScalar(radius * (p.name === 'earth' ? 8 : 5));
+    pivot.add(atmosphere);
+
     if (p.name === 'saturn') {
       const ringGeo = new RingGeometry(radius * 1.35, radius * 2.25, 96);
       // remap UVs radially so the ring strip texture reads outward
@@ -204,6 +254,14 @@ export function createSolar(assets: SceneAssets): SceneInstance {
       );
       ringMesh.rotation.x = Math.PI / 2 + 0.466; // 26.7° tilt, opened toward the camera
       pivot.add(ringMesh);
+
+      const shadow = new Mesh(
+        new PlaneGeometry(radius * 2.25, radius * 0.36),
+        new MeshBasicMaterial({ color: 0x05030a, transparent: true, opacity: 0.36, depthWrite: false }),
+      );
+      shadow.rotation.x = Math.PI / 2 + 0.466;
+      shadow.rotation.z = -0.18;
+      pivot.add(shadow);
     }
 
     group.add(pivot);
@@ -219,6 +277,29 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   ));
   group.add(moonPivot);
   trackedObjects.set('moon', moonPivot);
+
+  // ---- a lightweight comet: line trail + glow sprite, no external assets ----
+  const cometOrbit = new BufferGeometry();
+  const cometTrailPoints = 120;
+  const cometTrail = new Float32Array(cometTrailPoints * 3);
+  for (let i = 0; i < cometTrailPoints; i++) {
+    const a = (i / (cometTrailPoints - 1)) * Math.PI * 2;
+    const r = 4.5 / (1 + 0.62 * Math.cos(a));
+    cometTrail[i * 3] = r * Math.cos(a) - 1.2;
+    cometTrail[i * 3 + 1] = Math.sin(a) * 0.16;
+    cometTrail[i * 3 + 2] = r * Math.sin(a) * 0.78;
+  }
+  cometOrbit.setAttribute('position', new BufferAttribute(cometTrail, 3));
+  const cometLine = new Line(
+    cometOrbit,
+    new LineBasicMaterial({ color: 0x7fd4ff, transparent: true, opacity: 0.22 }),
+  );
+  group.add(cometLine);
+  const comet = new Sprite(
+    new SpriteMaterial({ map: cometTexture(), transparent: true, depthWrite: false, blending: AdditiveBlending }),
+  );
+  comet.scale.setScalar(0.18);
+  group.add(comet);
 
   // ---- asteroid belt ----
   const beltCount = 2200;
@@ -272,6 +353,24 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   let requestedYear = new Date(displayUtcMs).getUTCFullYear();
   let prefetchedYear = Number.NaN;
   let overlayActive = false;
+  let scaleMode: 'cinematic' | 'real' = document.body.dataset.scaleMode === 'real' ? 'real' : 'cinematic';
+  let qualityScale = 900;
+  const applyVisualScale = () => {
+    const visualScale = scaleMode === 'real' ? 1 : qualityScale;
+    for (const { pivot } of planetMeshes.values()) pivot.scale.setScalar(visualScale);
+    moonPivot.scale.setScalar(scaleMode === 'real' ? 1 : visualScale * 0.82);
+    const showComet = scaleMode === 'cinematic' && qualityScale > 360;
+    comet.visible = showComet;
+    cometLine.visible = showComet;
+  };
+  const scaleListener = (event: Event) => {
+    scaleMode = (event as CustomEvent<'cinematic' | 'real'>).detail === 'real' ? 'real' : 'cinematic';
+    overlay.setScaleMode(scaleMode);
+    applyVisualScale();
+  };
+  window.addEventListener('universe:scale-mode', scaleListener);
+  overlay.setScaleMode(scaleMode);
+  applyVisualScale();
 
   return {
     group,
@@ -340,6 +439,10 @@ export function createSolar(assets: SceneAssets): SceneInstance {
 
       if (ctx.reducedMotion) return;
       belt.rotation.y += ctx.dt * 0.008;
+      const cometPhase = (ctx.time * 0.08) % (Math.PI * 2);
+      const cometR = 4.5 / (1 + 0.62 * Math.cos(cometPhase));
+      comet.position.set(cometR * Math.cos(cometPhase) - 1.2, Math.sin(cometPhase) * 0.16, cometR * Math.sin(cometPhase) * 0.78);
+      comet.material.opacity = 0.45 + 0.35 * Math.sin(ctx.time * 1.7);
     },
     syncUi(camera, viewport) {
       overlay.update(camera, viewport, overlayActive);
@@ -351,8 +454,11 @@ export function createSolar(assets: SceneAssets): SceneInstance {
     setQuality(q) {
       belt.visible = q !== 'low';
       sky.visible = q !== 'low';
+      qualityScale = q === 'high' ? 900 : q === 'med' ? 650 : 360;
+      applyVisualScale();
     },
     dispose() {
+      window.removeEventListener('universe:scale-mode', scaleListener);
       overlay.dispose();
       group.traverse((o) => {
         const m = o as Mesh;

@@ -24,7 +24,7 @@
     {
       "title": "Collider machine learning — SLAC",
       "description": "On a four-person team proposing a γγ collider, using Delphes, ROOT, and Unix HPC to simulate and analyze terabytes of collider data and applying ML to study pileup effects on di-Higgs detection.",
-      "meta": "SLAC National Accelerator Laboratory · 2024–present",
+      "meta": "SLAC National Accelerator Laboratory · June 2024–January 2025",
       "links": [{ "label": "Poster (PDF)", "href": "/papers/xcc-pileup-poster.pdf" }]
     },
     {
@@ -107,7 +107,7 @@
         { "label": "Report (PDF)", "href": "/papers/lol-report.pdf" },
         { "label": "Poster (PDF)", "href": "/papers/lol-poster.pdf" }
       ],
-      "app": { "icon": "🎮", "short": "league" }
+      "app": { "icon": "/icons/league-of-legends.png", "short": "league" }
     },
     {
       "title": "Systems and security",
@@ -131,7 +131,7 @@
   "beyond": [
     "NCAA Division I track & field — 400-meter hurdles for Stanford",
     "Jazz (alto sax, flute, clarinet) and classical piano — MTAC Level 10",
-    "Incoming Product Management Intern, WisdomTree Digital Movement (digital assets), Summer 2026",
+    "Product Management Intern, WisdomTree Digital Movement (digital assets), New York City, Summer 2026",
     "Interested in scientific ML, compact-object astrophysics, secure systems, and digital assets"
   ],
   "amCvn": {
