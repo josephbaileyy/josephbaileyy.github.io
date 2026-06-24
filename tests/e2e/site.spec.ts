@@ -244,6 +244,23 @@ test('immersive HUD controls toggle scale, drift, and the observation log', asyn
   await expect(solarOverlay).toHaveAttribute('data-scale-mode', 'cinematic', { timeout: 20_000 });
   const mercury = page.locator('.planet-reticle[data-body="mercury"]');
   await expect.poll(() => mercury.evaluate((node) => getComputedStyle(node, '::before').opacity)).toBe('0');
+  const reticleMotion = await mercury.evaluate((node) => {
+    const style = getComputedStyle(node);
+    return { property: style.transitionProperty, duration: style.transitionDuration };
+  });
+  expect(reticleMotion.property).not.toContain('transform');
+
+  const journey = page.getByRole('button', { name: 'Take the guided journey from the galaxy to my desk' });
+  const controls = page.locator('.solar-controls');
+  const [journeyBox, controlsBox] = await Promise.all([journey.boundingBox(), controls.boundingBox()]);
+  expect(journeyBox).not.toBeNull();
+  expect(controlsBox).not.toBeNull();
+  expect(
+    journeyBox!.x + journeyBox!.width <= controlsBox!.x
+      || journeyBox!.x >= controlsBox!.x + controlsBox!.width
+      || journeyBox!.y + journeyBox!.height <= controlsBox!.y
+      || journeyBox!.y >= controlsBox!.y + controlsBox!.height,
+  ).toBe(true);
 
   await page.getByRole('button', { name: 'Toggle Solar System scale mode' }).click();
   await expect(page.getByRole('button', { name: 'Toggle Solar System scale mode' })).toContainText('scale: real');
@@ -256,6 +273,22 @@ test('immersive HUD controls toggle scale, drift, and the observation log', asyn
 
   await page.getByRole('button', { name: 'Open observation log' }).click();
   await expect(page.locator('.observation-log.open')).toContainText('The Solar System');
+});
+
+test('stage navigation stays pixel-aligned for Safari', async ({ page }) => {
+  await page.goto('/#/solar');
+  const dot = page.getByRole('button', { name: 'Go to The Solar System' });
+  await expect(dot).toBeVisible({ timeout: 20_000 });
+  const style = await dot.evaluate((node) => {
+    const computed = getComputedStyle(node);
+    const parent = getComputedStyle(node.parentElement!);
+    return {
+      borderWidth: computed.borderTopWidth,
+      transform: parent.transform,
+    };
+  });
+  expect(style.borderWidth).toBe('2px');
+  expect(style.transform).toBe('none');
 });
 
 test('solar reticles stay registered to the rendered orbits during pointer movement', async ({ page }, testInfo) => {

@@ -192,7 +192,11 @@ body {
   color: var(--ink);
   pointer-events: auto;
   cursor: pointer;
-  transition: transform 0.12s linear, opacity 0.15s ease;
+  /* Position is projected from the live Three.js camera every frame. A CSS
+     transform transition makes the marker chase that position and visibly
+     lag behind drift/focus motion. */
+  transition: opacity 0.15s ease;
+  will-change: transform;
 }
 
 .planet-reticle::before {
@@ -268,7 +272,7 @@ body {
   white-space: nowrap;
   transform: translateY(var(--label-shift-y));
   opacity: 0;
-  transition: transform 0.12s linear, opacity 0.15s ease;
+  transition: opacity 0.15s ease;
 }
 .planet-reticle.left-label span { left: auto; right: 50px; }
 .planet-reticle:hover span,
@@ -471,7 +475,9 @@ body {
   position: absolute;
   right: 20px;
   top: 50%;
-  transform: translateY(-50%);
+  /* Keep the whole control on integer-aligned pixels. Safari rasterizes
+     children of a translated layer softly, especially circular borders. */
+  margin-top: -77px;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -480,10 +486,10 @@ body {
 
 .hud-dot {
   position: relative;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  border: 1.5px solid var(--ink-dim);
+  border: 2px solid var(--ink-dim);
   background: transparent;
   cursor: pointer;
   padding: 0;
@@ -729,8 +735,7 @@ body {
 .hud-journey {
   position: absolute;
   top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 20px;
   pointer-events: auto;
   font-family: var(--font-mono);
   font-size: 13px;
@@ -768,6 +773,33 @@ body {
 .hud-journey.hidden {
   opacity: 0;
   pointer-events: none;
+}
+
+/* WebKit can blur text and borders when a translucent interactive element is
+   promoted into a backdrop-filter layer. The slightly more opaque fallback
+   reads the same while keeping Safari's controls pixel-sharp. */
+body[data-browser-engine='webkit'] :is(
+  .solar-controls,
+  .hud-plain,
+  .hud-zoom button,
+  .hud-touch-nav button,
+  .hud-tools button,
+  .hud-journey
+) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+body[data-browser-engine='webkit'] :is(
+  .solar-controls,
+  .hud-plain,
+  .hud-zoom button,
+  .hud-touch-nav button,
+  .hud-tools button,
+  .hud-journey
+) {
+  background-color: rgba(11, 16, 38, 0.9);
 }
 
 /* First-visit nudge: a soft gold halo that pulses to invite a click. */
@@ -1641,6 +1673,7 @@ body[data-hud-mode='computer'] .os-dock {
   .hud-dots {
     right: 18px;
     gap: 12px;
+    margin-top: -72px;
   }
 
   .hud-dot {
