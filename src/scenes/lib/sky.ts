@@ -123,7 +123,7 @@ export function setSkyOpacity(sky: Group, opacity: number): void {
  * the camera crosses them. Keep them hidden through most of either zoom and
  * only blend them in near the settled scene.
  */
-export function skyTransitionOpacity(localT: number, edge = 0.18): number {
+export function skyTransitionOpacity(localT: number, edge = 0.02): number {
   const normalized = localT < 0 ? (localT + edge) / edge : 1 - localT / edge;
   const clamped = Math.min(1, Math.max(0, normalized));
   return clamped * clamped * (3 - 2 * clamped);

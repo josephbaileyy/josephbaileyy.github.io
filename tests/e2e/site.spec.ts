@@ -240,12 +240,16 @@ test('immersive HUD controls toggle scale, drift, and the observation log', asyn
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/solar');
   await expect(page.getByRole('button', { name: 'Toggle Solar System scale mode' })).toBeVisible({ timeout: 20_000 });
-  await expect(page.locator('.solar-overlay')).toHaveAttribute('data-scale-mode', 'cinematic');
+  const solarOverlay = page.locator('.solar-overlay');
+  await expect(solarOverlay).toHaveAttribute('data-scale-mode', 'cinematic', { timeout: 20_000 });
+  const mercury = page.locator('.planet-reticle[data-body="mercury"]');
+  await expect.poll(() => mercury.evaluate((node) => getComputedStyle(node, '::before').opacity)).toBe('0');
 
   await page.getByRole('button', { name: 'Toggle Solar System scale mode' }).click();
   await expect(page.getByRole('button', { name: 'Toggle Solar System scale mode' })).toContainText('scale: real');
   await expect(page.getByText('JPL DE440 · UTC · real scale')).toBeAttached();
-  await expect(page.locator('.solar-overlay')).toHaveAttribute('data-scale-mode', 'real');
+  await expect(solarOverlay).toHaveAttribute('data-scale-mode', 'real');
+  await expect.poll(() => mercury.evaluate((node) => getComputedStyle(node, '::before').opacity)).toBe('1');
 
   await page.getByRole('button', { name: 'Toggle free drift camera mode' }).click();
   await expect(page.getByRole('button', { name: 'Toggle free drift camera mode' })).toContainText('drift: on');
@@ -286,13 +290,14 @@ test('solar focus mode expands inner orbits and keeps Earth travel explicit', as
   await earth.click();
   await expect(earth).toHaveClass(/selected/);
   await expect(earth).toBeVisible();
-  const [earthZ, moonZ, earthTexture] = await Promise.all([
+  const [earthZ, moonZ, earthBackground] = await Promise.all([
     earth.evaluate((node) => Number(getComputedStyle(node).zIndex)),
     moon.evaluate((node) => Number(getComputedStyle(node).zIndex)),
     earth.evaluate((node) => getComputedStyle(node, '::before').backgroundImage),
   ]);
   expect(earthZ).toBeGreaterThan(moonZ);
-  expect(earthTexture).toContain('earth_day.jpg');
+  expect(earthBackground).toBe('none');
+  await expect.poll(() => earth.evaluate((node) => getComputedStyle(node, '::before').opacity)).toBe('1');
   await expect(page.getByRole('button', { name: 'visit Earth' })).toBeVisible();
   if (testInfo.project.name === 'chromium') {
     await expect.poll(distance).toBeGreaterThan(overviewDistance * 3);

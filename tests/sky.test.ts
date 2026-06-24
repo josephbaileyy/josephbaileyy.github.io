@@ -9,7 +9,7 @@ describe('sky transition opacity', () => {
   });
 
   it('fades symmetrically near either side of the settled scene', () => {
-    expect(skyTransitionOpacity(-0.09)).toBeCloseTo(0.5);
-    expect(skyTransitionOpacity(0.09)).toBeCloseTo(0.5);
+    expect(skyTransitionOpacity(-0.01)).toBeCloseTo(0.5);
+    expect(skyTransitionOpacity(0.01)).toBeCloseTo(0.5);
   });
 });
