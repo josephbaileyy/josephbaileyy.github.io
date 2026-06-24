@@ -20,7 +20,7 @@ import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
 import { canvasTexture, loadStars, loadTexture, textSprite, type StarData } from './lib/assets';
 import { latLonToVec3, STANFORD_LAT, STANFORD_LON, sunDirection } from './lib/astro';
 import { earthGlobeMaterial } from './lib/earth-globe';
-import { makeSky } from './lib/sky';
+import { makeSky, setSkyOpacity, skyTransitionOpacity } from './lib/sky';
 import { ephemeris } from '../astronomy/ephemeris';
 import { daysSinceJ2000 } from './lib/astro';
 
@@ -224,6 +224,7 @@ export function createEarth(assets: SceneAssets): SceneInstance {
       moon.position.copy(moonHelio.sub(earthHelio).normalize().multiplyScalar(26));
       const gmstDeg = (280.46061837 + 360.98564736629 * daysSinceJ2000(ctx.utcMs)) % 360;
       sky.rotation.y = (-gmstDeg * Math.PI) / 180;
+      setSkyOpacity(sky, skyTransitionOpacity(ctx.localT));
 
       if (!ctx.reducedMotion) {
         cloudSpin += ctx.dt * 0.004;

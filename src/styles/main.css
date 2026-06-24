@@ -209,6 +209,15 @@ body {
   box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.5), 0 0 7px rgba(127, 212, 255, 0.25);
   transition: inset 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
+.solar-overlay[data-scale-mode="cinematic"] .planet-reticle::before {
+  inset: 17px;
+  background-image: none;
+  background-color: rgba(5, 10, 28, 0.12);
+  box-shadow: 0 0 6px rgba(127, 212, 255, 0.18);
+}
+.solar-overlay[data-scale-mode="cinematic"] .planet-reticle i {
+  inset: 20px;
+}
 .planet-reticle[data-body="earth"]::before { border-color: var(--gold); }
 .planet-reticle.selected { z-index: 4; }
 .planet-reticle[data-body="moon"] { z-index: 2; }
@@ -1385,9 +1394,8 @@ body[data-hud-mode='computer'] .os-dock {
   display: block;
   width: 34px;
   height: 34px;
-  border-radius: 8px;
-  object-fit: cover;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+  object-fit: contain;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.48));
 }
 
 .os-desktop-icon-label {

@@ -240,10 +240,12 @@ test('immersive HUD controls toggle scale, drift, and the observation log', asyn
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/solar');
   await expect(page.getByRole('button', { name: 'Toggle Solar System scale mode' })).toBeVisible({ timeout: 20_000 });
+  await expect(page.locator('.solar-overlay')).toHaveAttribute('data-scale-mode', 'cinematic');
 
   await page.getByRole('button', { name: 'Toggle Solar System scale mode' }).click();
   await expect(page.getByRole('button', { name: 'Toggle Solar System scale mode' })).toContainText('scale: real');
   await expect(page.getByText('JPL DE440 · UTC · real scale')).toBeAttached();
+  await expect(page.locator('.solar-overlay')).toHaveAttribute('data-scale-mode', 'real');
 
   await page.getByRole('button', { name: 'Toggle free drift camera mode' }).click();
   await expect(page.getByRole('button', { name: 'Toggle free drift camera mode' })).toContainText('drift: on');

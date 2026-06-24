@@ -100,6 +100,7 @@ export class SolarOverlay {
 
   setScaleMode(mode: 'cinematic' | 'real'): void {
     this.scaleMode = mode;
+    this.root.dataset.scaleMode = mode;
   }
 
   private select(body: TrackedBody | null): void {

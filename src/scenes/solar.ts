@@ -40,7 +40,7 @@ import {
   SUN_RADIUS_AU,
 } from './lib/astro';
 import { earthGlobeMaterial } from './lib/earth-globe';
-import { makeSky } from './lib/sky';
+import { makeSky, setSkyOpacity, skyTransitionOpacity } from './lib/sky';
 
 const TEXTURES: Record<string, string> = {
   mercury: '/tex/mercury.jpg',
@@ -359,6 +359,8 @@ export function createSolar(assets: SceneAssets): SceneInstance {
     const visualScale = scaleMode === 'real' ? 1 : qualityScale;
     for (const { pivot } of planetMeshes.values()) pivot.scale.setScalar(visualScale);
     moonPivot.scale.setScalar(scaleMode === 'real' ? 1 : visualScale * 0.82);
+    sun.scale.setScalar(scaleMode === 'real' ? 1 : 18);
+    corona.scale.setScalar(SUN_RADIUS_AU * 8 * (scaleMode === 'real' ? 1 : 3));
     const showComet = scaleMode === 'cinematic' && qualityScale > 360;
     comet.visible = showComet;
     cometLine.visible = showComet;
@@ -436,6 +438,7 @@ export function createSolar(assets: SceneAssets): SceneInstance {
       for (const [name, line] of orbitLines) {
         (line.material as LineBasicMaterial).opacity = (name === focusBody ? 0.9 : 0.34) * diveFade;
       }
+      setSkyOpacity(sky, skyTransitionOpacity(ctx.localT));
 
       if (ctx.reducedMotion) return;
       belt.rotation.y += ctx.dt * 0.008;
