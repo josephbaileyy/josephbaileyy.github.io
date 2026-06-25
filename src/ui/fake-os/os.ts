@@ -219,6 +219,24 @@ function projectIcon(iconValue: string): HTMLElement {
   return icon;
 }
 
+function mobileIcon(iconValue: string | HTMLElement, className = ''): HTMLElement {
+  const wrap = document.createElement('span');
+  wrap.className = `os-mobile-app-icon ${className}`.trim();
+  if (typeof iconValue === 'string') {
+    if (iconValue.startsWith('/')) {
+      const image = document.createElement('img');
+      image.src = iconValue;
+      image.alt = '';
+      wrap.appendChild(image);
+    } else {
+      wrap.textContent = iconValue;
+    }
+  } else {
+    wrap.appendChild(iconValue.cloneNode(true));
+  }
+  return wrap;
+}
+
 /** The little desktop that lives on the monitor at depth 5. */
 export function buildFakeOs(): HTMLElement {
   const root = document.createElement('div');
@@ -237,12 +255,17 @@ export function buildFakeOs(): HTMLElement {
   arrange.textContent = 'arrange windows';
   arrange.setAttribute('aria-label', 'Arrange BaileyOS windows');
   const clock = document.createElement('span');
+  clock.className = 'os-clock';
+  const status = document.createElement('span');
+  status.className = 'os-mobile-status';
+  status.setAttribute('aria-hidden', 'true');
+  status.innerHTML = '<i></i><i></i><i></i><b></b><em></em>';
   const tickClock = () => {
     clock.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   tickClock();
   setInterval(tickClock, 10000);
-  actions.append(arrange, clock);
+  actions.append(arrange, clock, status);
   menubar.append(identity, actions);
   root.appendChild(menubar);
 
@@ -332,6 +355,37 @@ export function buildFakeOs(): HTMLElement {
   };
   window.addEventListener('universe:open-app', openApp);
 
+  const createMobileLauncher = (
+    appId: string,
+    icon: string | HTMLElement,
+    label: string,
+    action: (() => void) | string,
+    docked = false,
+  ): HTMLElement => {
+    const el =
+      typeof action === 'string' ? document.createElement('a') : document.createElement('button');
+    el.className = docked ? 'os-mobile-dock-item' : 'os-mobile-app';
+    el.dataset.appId = appId;
+    el.setAttribute('aria-label', `${typeof action === 'string' ? 'Open' : 'Launch'} ${label}`);
+    el.appendChild(mobileIcon(icon, `os-mobile-icon-${appId.replace(/[^a-z0-9-]/gi, '-')}`));
+    if (!docked) {
+      const text = document.createElement('span');
+      text.textContent = label;
+      el.appendChild(text);
+    }
+    if (typeof action === 'string') {
+      const link = el as HTMLAnchorElement;
+      link.href = action;
+      if (action.startsWith('http') || action.endsWith('.pdf')) {
+        link.target = '_blank';
+        link.rel = 'noopener';
+      }
+    } else {
+      el.addEventListener('click', action);
+    }
+    return el;
+  };
+
   // ---- desktop icons (projects deliberately live here, not in the dock) ----
   const icons = document.createElement('div');
   icons.className = 'os-desktop-icons';
@@ -347,6 +401,49 @@ export function buildFakeOs(): HTMLElement {
     icons.appendChild(icon);
   }
   desktop.appendChild(icons);
+
+  // Mobile turns BaileyOS into a focused launcher rather than shrinking the desktop metaphor.
+  const mobileHome = document.createElement('div');
+  mobileHome.className = 'os-mobile-home';
+  mobileHome.setAttribute('role', 'navigation');
+  mobileHome.setAttribute('aria-label', 'BaileyOS apps');
+  const mobileProjectIcons: Array<[string, string | HTMLElement, string, () => void]> =
+    APP_PROJECTS.map((project) => [
+      `project:${project.app!.short}`,
+      project.app!.icon,
+      project.app!.short,
+      () => openProject(project),
+    ]);
+  const mobileCoreIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
+    ['terminal', '⌘', 'Terminal', openTerminal],
+    ['research', '🔬', 'Research', openResearch],
+    ['experience', '🛰️', 'Experience', openExperience],
+    ['cv', '📄', 'CV', () => openPdf('/resume.pdf', 'cv.pdf')],
+    ['profile', '🧑‍🚀', 'About', openProfile],
+    ['videos', playIcon(''), 'Videos', openVideos],
+    ['journey', '🌌', 'Journey', launchJourney],
+    ['github', '⌨', 'GitHub', 'https://github.com/josephbaileyy'],
+    ['linkedin', 'in', 'LinkedIn', 'https://linkedin.com/in/baileyjosephr'],
+    ['email', '✉', 'Mail', 'mailto:jrbailey555@gmail.com'],
+  ];
+  for (const [appId, icon, label, action] of [...mobileCoreIcons, ...mobileProjectIcons]) {
+    mobileHome.appendChild(createMobileLauncher(appId, icon, label, action));
+  }
+  desktop.appendChild(mobileHome);
+
+  const mobileDock = document.createElement('div');
+  mobileDock.className = 'os-mobile-dock';
+  mobileDock.setAttribute('role', 'navigation');
+  mobileDock.setAttribute('aria-label', 'Favorite BaileyOS apps');
+  for (const [appId, icon, label, action] of mobileCoreIcons.slice(0, 4)) {
+    mobileDock.appendChild(createMobileLauncher(appId, icon, label, action, true));
+  }
+  root.appendChild(mobileDock);
+
+  const homeIndicator = document.createElement('span');
+  homeIndicator.className = 'os-home-indicator';
+  homeIndicator.setAttribute('aria-hidden', 'true');
+  root.appendChild(homeIndicator);
 
   // ---- dock ----
   const dock = document.createElement('div');
@@ -414,11 +511,15 @@ export function buildFakeOs(): HTMLElement {
             : 'closed';
       el.setAttribute('aria-label', `${label} — ${status}`);
     }
+    root.classList.toggle(
+      'app-open',
+      states.some((state) => state.active),
+    );
   });
   root.appendChild(dock);
 
-  // a welcoming window on first dock
-  setTimeout(openTerminal, 450);
+  // Desktop welcomes with the terminal; mobile begins on the app launcher.
+  if (!window.matchMedia('(max-width: 760px)').matches) setTimeout(openTerminal, 450);
 
   return root;
 }

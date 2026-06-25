@@ -1609,10 +1609,17 @@ body[data-hud-mode='computer'] .os-dock {
   display: inline-block;
   width: 28px;
   height: 20px;
-  margin-block: 2px 1px;
+  margin-block: 4px;
   border-radius: 6px;
   background: #ff3141;
   box-shadow: 0 2px 8px rgba(255, 49, 65, 0.3);
+}
+
+.os-mobile-home,
+.os-mobile-dock,
+.os-home-indicator,
+.os-mobile-status {
+  display: none;
 }
 
 .os-play-app-icon::after {
@@ -1623,6 +1630,10 @@ body[data-hud-mode='computer'] .os-dock {
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
   border-left: 7px solid white;
+}
+
+.os-dock .os-play-app-icon {
+  transform: translateY(1.5px);
 }
 
 /* ---- desktop icons (the CS projects) ---- */
@@ -1951,6 +1962,19 @@ body[data-hud-mode='computer'] .os-dock {
 }
 
 @media (max-width: 760px) {
+  #hud[data-mode='computer'] .hud-name,
+  #hud[data-mode='computer'] .hud-dots,
+  #hud[data-mode='computer'] .hud-hint,
+  #hud[data-mode='computer'] .hud-journey,
+  #hud[data-mode='computer'] .hud-tools,
+  #hud[data-mode='computer'] .hud-tools-toggle,
+  #hud[data-mode='computer'] .hud-touch-nav,
+  #hud[data-mode='computer'] .observation-log,
+  #hud[data-mode='computer'] .tour-caption,
+  #hud[data-mode='computer'] .scale-ribbon {
+    visibility: hidden;
+  }
+
   .hud-name {
     left: 12px;
     bottom: calc(76px + env(safe-area-inset-bottom, 0px));
@@ -1999,42 +2023,322 @@ body[data-hud-mode='computer'] .os-dock {
     background: rgba(11, 16, 38, 0.9);
   }
 
+  .fake-os {
+    border-radius: 28px;
+    background:
+      linear-gradient(180deg, rgba(8, 13, 34, 0.08), rgba(6, 8, 24, 0.22)),
+      radial-gradient(circle at 70% 15%, rgba(113, 190, 255, 0.16), transparent 34%);
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+  }
+
   .os-menubar {
-    padding: 7px 10px;
-    font-size: 11px;
+    position: relative;
+    z-index: 40;
+    min-height: 40px;
+    padding: 8px 18px 6px;
+    border: 0;
+    background: transparent;
+    color: white;
+    font:
+      600 12px/1 -apple-system,
+      BlinkMacSystemFont,
+      'SF Pro Text',
+      sans-serif;
   }
 
   body[data-hud-mode='computer'] .os-menubar {
-    padding-right: 112px;
+    padding-right: 18px;
   }
 
   .os-menubar > span:first-child {
-    max-width: 42%;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    position: absolute;
+    left: 50%;
+    max-width: none;
+    transform: translateX(-50%);
+    overflow: visible;
+    color: rgba(255, 255, 255, 0.88);
+    font-size: 11px;
+    text-overflow: clip;
     white-space: nowrap;
   }
 
+  .os-menubar > span:first-child strong {
+    font-weight: 600;
+  }
+
+  .os-menubar > span:first-child {
+    font-size: 0;
+  }
+
+  .os-menubar > span:first-child strong {
+    font-size: 11px;
+  }
+
   .os-menubar-actions {
-    gap: 7px;
+    width: 100%;
+    justify-content: space-between;
+    gap: 0;
+  }
+
+  .os-clock {
+    order: -1;
+    min-width: 52px;
   }
 
   .os-arrange {
-    padding-inline: 7px;
+    display: none;
+  }
+
+  .os-mobile-status {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 12px;
+  }
+
+  .os-mobile-status i {
+    display: block;
+    width: 3px;
+    border-radius: 1px;
+    background: white;
+  }
+
+  .os-mobile-status i:nth-child(1) {
+    height: 4px;
+  }
+
+  .os-mobile-status i:nth-child(2) {
+    height: 7px;
+  }
+
+  .os-mobile-status i:nth-child(3) {
+    height: 10px;
+  }
+
+  .os-mobile-status b {
+    width: 13px;
+    height: 9px;
+    margin-left: 4px;
+    border: 1.5px solid white;
+    border-radius: 3px;
+  }
+
+  .os-mobile-status em {
+    width: 2px;
+    height: 5px;
+    margin: 0 0 2px -1px;
+    border-radius: 0 2px 2px 0;
+    background: white;
   }
 
   .os-desktop {
-    padding: 10px;
+    padding: 0;
+    overflow: hidden;
+  }
+
+  .os-mobile-home {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-content: start;
+    gap: 18px 10px;
+    overflow-y: auto;
+    padding: 22px 14px 128px;
+    scrollbar-width: none;
+    transition:
+      opacity 0.22s ease,
+      transform 0.22s ease;
+  }
+
+  .os-mobile-home::-webkit-scrollbar {
+    display: none;
+  }
+
+  .os-mobile-app,
+  .os-mobile-dock-item {
+    display: flex;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: white;
+    cursor: pointer;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+    text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .os-mobile-app {
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    font-size: 10px;
+    line-height: 1.15;
+    text-align: center;
+  }
+
+  .os-mobile-app > span:last-child {
+    overflow: hidden;
+    width: 100%;
+    text-overflow: ellipsis;
+    text-shadow: 0 1px 5px rgba(0, 0, 0, 0.85);
+    white-space: nowrap;
+  }
+
+  .os-mobile-app-icon {
+    display: grid;
+    width: 52px;
+    height: 52px;
+    place-items: center;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 13px;
+    background: linear-gradient(145deg, rgba(43, 51, 96, 0.94), rgba(11, 16, 38, 0.96));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 6px 16px rgba(0, 0, 0, 0.28);
+    font:
+      26px/1 -apple-system,
+      BlinkMacSystemFont,
+      'Apple Color Emoji',
+      sans-serif;
+  }
+
+  .os-mobile-app-icon img {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+  }
+
+  .os-mobile-app-icon .os-play-app-icon {
+    width: 34px;
+    height: 24px;
+    margin: 0;
+    border-radius: 7px;
+  }
+
+  .os-mobile-icon-terminal {
+    background: linear-gradient(145deg, #30333b, #08090d);
+    color: #7dff9b;
+    font-family: var(--font-mono);
+  }
+
+  .os-mobile-icon-research {
+    background: linear-gradient(145deg, #5a40b9, #23165a);
+  }
+
+  .os-mobile-icon-experience {
+    background: linear-gradient(145deg, #246fbb, #12365f);
+  }
+
+  .os-mobile-icon-cv {
+    background: linear-gradient(145deg, #f2f4f8, #bfc7d7);
+  }
+
+  .os-mobile-icon-profile {
+    background: linear-gradient(145deg, #ffb867, #ad5e36);
+  }
+
+  .os-mobile-icon-videos {
+    background: linear-gradient(145deg, #ff5f68, #b7172c);
+  }
+
+  .os-mobile-icon-journey {
+    background: linear-gradient(145deg, #233270, #090d29);
+  }
+
+  .os-mobile-icon-github {
+    background: linear-gradient(145deg, #404854, #11151a);
+    font-family: var(--font-mono);
+  }
+
+  .os-mobile-icon-linkedin {
+    background: linear-gradient(145deg, #168ad4, #07558d);
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  .os-mobile-icon-email {
+    background: linear-gradient(145deg, #73aaff, #315ca3);
+  }
+
+  .os-mobile-dock {
+    position: absolute;
+    z-index: 30;
+    left: 50%;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    display: grid;
+    width: min(286px, calc(100% - 32px));
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 10px 12px;
+    transform: translateX(-50%);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 22px;
+    background: rgba(216, 225, 245, 0.2);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.18),
+      0 12px 30px rgba(0, 0, 0, 0.24);
+    -webkit-backdrop-filter: blur(22px) saturate(1.35);
+    backdrop-filter: blur(22px) saturate(1.35);
+    transition:
+      opacity 0.18s ease,
+      transform 0.18s ease;
+  }
+
+  .os-mobile-dock-item {
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .os-mobile-dock .os-mobile-app-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+
+  .os-home-indicator {
+    position: absolute;
+    z-index: 60;
+    left: 50%;
+    bottom: calc(3px + env(safe-area-inset-bottom, 0px));
+    display: block;
+    width: 92px;
+    height: 4px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.88);
+    mix-blend-mode: screen;
+  }
+
+  .fake-os.app-open .os-mobile-home,
+  .fake-os.app-open .os-mobile-dock {
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 12px) scale(0.96);
+  }
+
+  .fake-os.app-open .os-mobile-home {
+    transform: scale(0.96);
   }
 
   .os-window {
-    left: 10px !important;
-    top: 10px !important;
-    width: calc(100% - 20px) !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
     max-width: none;
-    max-height: calc(100% - 20px);
-    height: auto !important;
+    max-height: none;
     min-width: 0;
+    min-height: 0;
+    border: 0;
+    border-radius: 24px 24px 0 0;
+    background: rgba(9, 13, 32, 0.96);
+    box-shadow: none;
   }
 
   .os-window.mobile-inactive {
@@ -2053,21 +2357,69 @@ body[data-hud-mode='computer'] .os-dock {
   }
 
   .os-titlebar {
+    position: relative;
+    justify-content: center;
+    min-height: 46px;
+    padding: 8px 54px;
+    border-bottom-color: rgba(255, 255, 255, 0.1);
+    background: rgba(24, 30, 60, 0.82);
+    color: white;
     cursor: default;
-    min-height: 38px;
+    font:
+      600 12px/1.2 -apple-system,
+      BlinkMacSystemFont,
+      'SF Pro Text',
+      sans-serif;
+    text-align: center;
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+  }
+
+  .os-window-controls {
+    position: absolute;
+    left: 12px;
+  }
+
+  .os-close {
+    width: auto;
+    height: 32px;
+    border-radius: 999px;
+    background: transparent;
+    color: #78c7ff;
+  }
+
+  .os-close::after {
+    content: '‹ Home';
+    font:
+      500 13px -apple-system,
+      BlinkMacSystemFont,
+      'SF Pro Text',
+      sans-serif;
+  }
+
+  .os-close:hover,
+  .os-close:focus-visible {
+    background: rgba(127, 212, 255, 0.12);
+    color: white;
+    outline: none;
+  }
+
+  .os-minimize,
+  .os-maximize {
+    display: none;
   }
 
   .os-terminal {
-    height: min(310px, 48vh);
+    height: auto;
     font-size: 12px;
   }
 
   .os-doc {
-    max-height: min(420px, 58vh);
+    max-height: none;
   }
 
   .os-videos {
-    max-height: min(500px, 64vh);
+    max-height: none;
     padding: 11px;
   }
 
@@ -2085,26 +2437,9 @@ body[data-hud-mode='computer'] .os-dock {
     grid-template-columns: 116px minmax(0, 1fr);
   }
 
-  .os-dock {
-    justify-content: flex-start;
-    gap: 2px;
-    overflow-x: auto;
-    padding: 7px 58px 7px 8px;
-    scrollbar-width: none;
-  }
-
-  .os-dock::-webkit-scrollbar {
+  .os-dock,
+  .os-desktop-icons {
     display: none;
-  }
-
-  .os-dock-item {
-    flex: 0 0 58px;
-    min-height: 52px;
-    padding: 4px 5px;
-  }
-
-  .os-dock-icon {
-    font-size: 19px;
   }
 
   dialog.panel {

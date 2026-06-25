@@ -60,3 +60,15 @@ test('visual contract: quick portfolio mobile', async ({ page }, testInfo) => {
     maxDiffPixelRatio: 0.15,
   });
 });
+
+test('visual contract: BaileyOS mobile launcher', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'mobile BaileyOS baseline');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  await expect(page.locator('.os-mobile-home')).toBeVisible();
+  await expect(page.locator('.os-mobile-dock-item')).toHaveCount(4);
+  await expect(page).toHaveScreenshot('baileyos-mobile.png', {
+    animations: 'disabled',
+    maxDiffPixelRatio: 0.12,
+  });
+});
