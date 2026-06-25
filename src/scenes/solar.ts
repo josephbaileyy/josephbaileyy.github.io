@@ -5,7 +5,6 @@ import {
   BufferGeometry,
   DoubleSide,
   Group,
-  Line,
   LineBasicMaterial,
   LineLoop,
   Mesh,
@@ -278,23 +277,9 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   group.add(moonPivot);
   trackedObjects.set('moon', moonPivot);
 
-  // ---- a lightweight comet: line trail + glow sprite, no external assets ----
-  const cometOrbit = new BufferGeometry();
-  const cometTrailPoints = 120;
-  const cometTrail = new Float32Array(cometTrailPoints * 3);
-  for (let i = 0; i < cometTrailPoints; i++) {
-    const a = (i / (cometTrailPoints - 1)) * Math.PI * 2;
-    const r = 4.5 / (1 + 0.62 * Math.cos(a));
-    cometTrail[i * 3] = r * Math.cos(a) - 1.2;
-    cometTrail[i * 3 + 1] = Math.sin(a) * 0.16;
-    cometTrail[i * 3 + 2] = r * Math.sin(a) * 0.78;
-  }
-  cometOrbit.setAttribute('position', new BufferAttribute(cometTrail, 3));
-  const cometLine = new Line(
-    cometOrbit,
-    new LineBasicMaterial({ color: 0x7fd4ff, transparent: true, opacity: 0.22 }),
-  );
-  group.add(cometLine);
+  // ---- a lightweight comet glow, no external assets ----
+  // Its orbit remains implicit because the comet is ambient scenery rather
+  // than an interactive body; a permanent guide suggests otherwise.
   const comet = new Sprite(
     new SpriteMaterial({ map: cometTexture(), transparent: true, depthWrite: false, blending: AdditiveBlending }),
   );
@@ -363,7 +348,6 @@ export function createSolar(assets: SceneAssets): SceneInstance {
     corona.scale.setScalar(SUN_RADIUS_AU * 8 * (scaleMode === 'real' ? 1 : 3));
     const showComet = scaleMode === 'cinematic' && qualityScale > 360;
     comet.visible = showComet;
-    cometLine.visible = showComet;
   };
   const scaleListener = (event: Event) => {
     scaleMode = (event as CustomEvent<'cinematic' | 'real'>).detail === 'real' ? 'real' : 'cinematic';
