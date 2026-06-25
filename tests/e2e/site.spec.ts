@@ -571,6 +571,37 @@ test('BaileyOS terminal activation keeps every window control cluster reachable'
   await expect(page.locator('.os-window.active')).toHaveCount(1);
 });
 
+test('opening Terminal does not move existing BaileyOS geometry', async ({ page }, testInfo) => {
+  test.skip(isMobileProject(testInfo.project.name), 'desktop geometry contract');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  await expect(page.getByLabel('terminal input')).toBeVisible();
+  await page.getByLabel('Close terminal — zsh').click();
+  for (const appId of ['research', 'experience', 'profile']) {
+    await page.locator(`.os-dock-item[data-app-id="${appId}"]`).click();
+  }
+  const measure = () =>
+    page.evaluate(() => {
+      const box = (node: Element) => {
+        const rect = node.getBoundingClientRect();
+        return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+      };
+      return {
+        screen: box(document.querySelector('.screen-ui')!),
+        icons: box(document.querySelector('.os-desktop-icons')!),
+        windows: [...document.querySelectorAll<HTMLElement>('.os-window')]
+          .map((window) => ({ id: window.dataset.windowId, ...box(window) }))
+          .sort((a, b) => String(a.id).localeCompare(String(b.id))),
+      };
+    });
+  const before = await measure();
+  await page.locator('.os-dock-item[data-app-id="terminal"]').click();
+  const after = await measure();
+  expect(after.screen).toEqual(before.screen);
+  expect(after.icons).toEqual(before.icons);
+  expect(after.windows.filter((window) => window.id !== 'terminal')).toEqual(before.windows);
+});
+
 test('BaileyOS dock reports open and minimized app state', async ({ page }, testInfo) => {
   test.skip(isMobileProject(testInfo.project.name), 'desktop dock state contract');
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -597,6 +628,13 @@ test('BaileyOS keeps one active app window on mobile', async ({ page }, testInfo
 
   await page.locator('.os-mobile-dock-item[data-app-id="terminal"]').click();
   await expect(page.getByLabel('terminal input')).toBeVisible();
+  await page.waitForTimeout(450);
+  await expect(page.getByLabel('terminal input')).not.toBeFocused();
+  await expect(page.getByLabel('terminal input')).toHaveCSS('font-size', '16px');
+  await expect(page.locator('.fake-os')).toHaveCSS(
+    'font-family',
+    /(-apple-system|BlinkMacSystemFont|SF Pro)/,
+  );
   await expect(page.locator('.os-window:not(.mobile-inactive)')).toHaveCount(1);
   await expect(page.getByLabel('Minimize terminal — zsh')).toBeHidden();
   await expect(page.getByLabel('Maximize terminal — zsh')).toBeHidden();

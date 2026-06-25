@@ -6,7 +6,7 @@ import { attachInput } from './engine/input';
 import { QualityMonitor } from './engine/quality';
 import { Renderer3D, webgl2Available } from './engine/renderer';
 import { FxPipeline } from './engine/renderer-fx';
-import { detectDeviceProfile, viewportSize } from './engine/device';
+import { detectDeviceProfile, isKeyboardOnlyViewportResize, viewportSize } from './engine/device';
 import { projectToPx, scaleExponent } from './engine/rig';
 import { fxAt, JumpController } from './engine/transitions';
 import { World } from './engine/world';
@@ -378,6 +378,14 @@ attachInput(canvas, camera, {
 
 function handleViewportChange(): void {
   const next = viewportSize();
+  const active = document.activeElement;
+  const editing =
+    active instanceof HTMLInputElement ||
+    active instanceof HTMLTextAreaElement ||
+    active instanceof HTMLSelectElement ||
+    (active instanceof HTMLElement && active.isContentEditable);
+  const keyboardOnlyResize = isKeyboardOnlyViewportResize(vp, next, device.isMobile, editing);
+  if (keyboardOnlyResize) return;
   vp.w = next.w;
   vp.h = next.h;
   syncViewportCss();

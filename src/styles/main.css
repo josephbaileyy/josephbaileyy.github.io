@@ -10,6 +10,9 @@
   --ink: #eef2ff;
   --ink-dim: #9aa3c7;
   --cardinal: #8c1515;
+  --font-apple:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Helvetica Neue', Arial,
+    sans-serif;
   --font-ui: 'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
 }
@@ -2038,7 +2041,20 @@ body[data-hud-mode='computer'] .os-dock {
       linear-gradient(180deg, rgba(8, 13, 34, 0.08), rgba(6, 8, 24, 0.22)),
       radial-gradient(circle at 70% 15%, rgba(113, 190, 255, 0.16), transparent 34%);
     color: white;
-    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', sans-serif;
+    font-family: var(--font-apple);
+    font-feature-settings:
+      'kern' 1,
+      'liga' 1;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  .fake-os button,
+  .fake-os a,
+  .fake-os input,
+  .fake-os .os-doc,
+  .fake-os .os-videos {
+    font-family: var(--font-apple);
   }
 
   .os-menubar {
@@ -2429,7 +2445,13 @@ body[data-hud-mode='computer'] .os-dock {
 
   .os-terminal {
     height: auto;
+    font-family: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, monospace;
     font-size: 12px;
+  }
+
+  .os-terminal input {
+    font-family: ui-monospace, 'SF Mono', Menlo, Monaco, Consolas, monospace;
+    font-size: 16px;
   }
 
   .os-doc {

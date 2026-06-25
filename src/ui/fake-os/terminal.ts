@@ -38,6 +38,9 @@ export function buildTerminal(): HTMLElement {
   const input = document.createElement('input');
   input.type = 'text';
   input.spellcheck = false;
+  input.autocapitalize = 'none';
+  input.autocomplete = 'off';
+  input.setAttribute('enterkeyhint', 'send');
   input.setAttribute('aria-label', 'terminal input');
   inputLine.appendChild(input);
   root.append(scrollback, inputLine);
@@ -143,7 +146,6 @@ export function buildTerminal(): HTMLElement {
     if (out) print(out);
   });
 
-  root.addEventListener('click', () => input.focus());
-  setTimeout(() => input.focus(), 350);
+  root.addEventListener('click', () => input.focus({ preventScroll: true }));
   return root;
 }

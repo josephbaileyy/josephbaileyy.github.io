@@ -381,7 +381,20 @@ export function buildFakeOs(): HTMLElement {
         link.rel = 'noopener';
       }
     } else {
-      el.addEventListener('click', action);
+      el.addEventListener('click', () => {
+        el.blur();
+        action();
+        requestAnimationFrame(() => {
+          const active = document.activeElement;
+          if (
+            window.matchMedia('(max-width: 760px)').matches &&
+            active instanceof HTMLInputElement &&
+            active.closest('.os-terminal')
+          ) {
+            active.blur();
+          }
+        });
+      });
     }
     return el;
   };
