@@ -31,27 +31,30 @@ const NOTES: string[] = [
 
 export class Tour {
   active = false;
+  paused = false;
 
   private el: HTMLDivElement;
   private captionEl: HTMLParagraphElement;
   private stepEl: HTMLSpanElement;
+  private pauseButton: HTMLButtonElement;
   private phase: 'travel' | 'dwell' = 'travel';
   private i = 0;
   private dwellUntil = 0;
   private readonly last = CHAIN3D.length - 1;
   private readonly dwell: number;
+  private lastNow = 0;
 
   constructor(
     root: HTMLElement,
     private deps: TourDeps,
   ) {
-    this.dwell = deps.reduced ? 2.6 : 1.8;
+    this.dwell = deps.reduced ? 3.2 : 2.4;
 
     this.el = document.createElement('div');
     this.el.className = 'tour-caption';
-    // Purely visual: the main loop already announces each settled scene to
-    // screen readers via Hud.announce(), so keep this out of the a11y tree.
-    this.el.setAttribute('aria-hidden', 'true');
+    this.el.hidden = true;
+    this.el.setAttribute('role', 'region');
+    this.el.setAttribute('aria-label', 'Guided universe journey');
 
     this.captionEl = document.createElement('p');
     this.captionEl.className = 'tour-line';
@@ -59,12 +62,25 @@ export class Tour {
     this.stepEl = document.createElement('span');
     this.stepEl.className = 'tour-step';
 
-    const skip = document.createElement('button');
-    skip.className = 'tour-skip';
-    skip.textContent = 'skip';
-    skip.addEventListener('click', () => this.cancel());
+    const controls = document.createElement('div');
+    controls.className = 'tour-controls';
+    this.pauseButton = document.createElement('button');
+    this.pauseButton.className = 'tour-pause';
+    this.pauseButton.type = 'button';
+    this.pauseButton.textContent = 'pause';
+    this.pauseButton.setAttribute('aria-label', 'Pause guided journey');
+    this.pauseButton.setAttribute('aria-pressed', 'false');
+    this.pauseButton.addEventListener('click', () => {
+      if (this.paused) this.resume();
+      else this.pause();
+    });
+    const portfolio = document.createElement('a');
+    portfolio.className = 'tour-portfolio';
+    portfolio.href = '/about.html';
+    portfolio.textContent = 'skip to portfolio ↗';
+    controls.append(this.pauseButton, portfolio);
 
-    this.el.append(this.stepEl, this.captionEl, skip);
+    this.el.append(this.stepEl, this.captionEl, controls);
     root.appendChild(this.el);
   }
 
@@ -75,9 +91,13 @@ export class Tour {
    */
   start(): void {
     this.active = true;
+    this.paused = false;
+    this.lastNow = 0;
     this.i = 0;
     this.phase = 'travel';
     this.el.classList.add('on');
+    this.el.hidden = false;
+    this.syncPauseButton();
     this.render();
     this.deps.onActiveChange?.(true);
     this.deps.navigateTo(0);
@@ -86,13 +106,37 @@ export class Tour {
   cancel(): void {
     if (!this.active) return;
     this.active = false;
+    this.paused = false;
     this.el.classList.remove('on');
+    this.el.hidden = true;
+    this.syncPauseButton();
     this.deps.onActiveChange?.(false);
+  }
+
+  pause(): void {
+    if (!this.active || this.paused) return;
+    this.paused = true;
+    this.el.classList.add('paused');
+    this.syncPauseButton();
+  }
+
+  resume(): void {
+    if (!this.active || !this.paused) return;
+    this.paused = false;
+    this.el.classList.remove('paused');
+    this.syncPauseButton();
   }
 
   /** Ticked each frame with the camera's settled scene index (or null). */
   update(now: number, settled: number | null): void {
     if (!this.active) return;
+    if (this.paused) {
+      if (this.phase === 'dwell' && this.lastNow)
+        this.dwellUntil += Math.max(0, now - this.lastNow);
+      this.lastNow = now;
+      return;
+    }
+    this.lastNow = now;
 
     if (this.phase === 'travel') {
       if (settled === this.i) {
@@ -117,5 +161,14 @@ export class Tour {
   private render(): void {
     this.stepEl.textContent = `${this.i + 1} / ${this.last + 1}`;
     this.captionEl.innerHTML = `<strong>${CHAIN3D[this.i].label}</strong>${NOTES[this.i] ? ` — ${NOTES[this.i]}` : ''}`;
+  }
+
+  private syncPauseButton(): void {
+    this.pauseButton.textContent = this.paused ? 'resume' : 'pause';
+    this.pauseButton.setAttribute(
+      'aria-label',
+      this.paused ? 'Resume guided journey' : 'Pause guided journey',
+    );
+    this.pauseButton.setAttribute('aria-pressed', String(this.paused));
   }
 }

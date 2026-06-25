@@ -17,7 +17,14 @@ import {
   Vector3,
 } from 'three';
 import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
-import { canvasTexture, loadStars, loadTexture, textSprite, type StarData } from './lib/assets';
+import {
+  canvasTexture,
+  loadStars,
+  loadTexture,
+  loadTextureWithFallback,
+  textSprite,
+  type StarData,
+} from './lib/assets';
 import { latLonToVec3, STANFORD_LAT, STANFORD_LON, sunDirection } from './lib/astro';
 import { earthGlobeMaterial } from './lib/earth-globe';
 import { makeSky, setSkyOpacity, skyTransitionOpacity } from './lib/sky';
@@ -38,7 +45,7 @@ export async function loadEarth(onProgress?: (p: number) => void): Promise<Scene
     tick(loadTexture('/tex/earth_night.jpg')),
     tick(loadTexture('/tex/earth_clouds.jpg', false)),
     tick(loadTexture('/tex/moon.jpg')),
-    tick(loadTexture('/tex/milkyway.jpg')),
+    tick(loadTextureWithFallback('/tex/milkyway.webp', '/tex/milkyway.jpg')),
     tick(loadStars()),
   ]);
   return { day, night, clouds, moon, milkyway, stars };
@@ -64,10 +71,7 @@ export function createEarth(assets: SceneAssets): SceneInstance {
 
   // ---- the globe: day/night/city-lights/ocean-glint shader ----
   const uSunDir = new Uniform(new Vector3(1, 0, 0));
-  const globe = new Mesh(
-    new SphereGeometry(R, 96, 64),
-    earthGlobeMaterial(day, night, uSunDir),
-  );
+  const globe = new Mesh(new SphereGeometry(R, 96, 64), earthGlobeMaterial(day, night, uSunDir));
   group.add(globe);
 
   // ---- cloud layer ----
@@ -156,7 +160,9 @@ export function createEarth(assets: SceneAssets): SceneInstance {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, 32, 128);
   });
-  const pillar = new Sprite(new SpriteMaterial({ map: pillarTex, transparent: true, depthWrite: false }));
+  const pillar = new Sprite(
+    new SpriteMaterial({ map: pillarTex, transparent: true, depthWrite: false }),
+  );
   pillar.scale.set(0.18, 1.1, 1);
   pillar.position.y = 0.55;
   beacon.add(pillar);
@@ -218,7 +224,8 @@ export function createEarth(assets: SceneAssets): SceneInstance {
       sunLight.position.copy(sunDir).multiplyScalar(100);
       sunSprite.position.copy(sunDir).multiplyScalar(750);
 
-      if (!ephemeris.hasDate(ctx.utcMs) && ephemeris.status !== 'loading') void ephemeris.loadFor(ctx.utcMs);
+      if (!ephemeris.hasDate(ctx.utcMs) && ephemeris.status !== 'loading')
+        void ephemeris.loadFor(ctx.utcMs);
       ephemeris.state('moon', ctx.utcMs, moonHelio, stateVelocity);
       ephemeris.state('earth', ctx.utcMs, earthHelio, stateVelocity);
       moon.position.copy(moonHelio.sub(earthHelio).normalize().multiplyScalar(26));

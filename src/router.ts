@@ -18,7 +18,6 @@ export function formatRoute(scene: number, names: string[], panel?: string): str
 
 export class Router {
   private names: string[];
-  private lastWritten = '';
 
   constructor(
     scenes: ReadonlyArray<{ id: string }>,
@@ -26,9 +25,7 @@ export class Router {
   ) {
     this.names = scenes.map((s) => s.id);
     window.addEventListener('hashchange', () => {
-      const hash = location.hash;
-      if (hash === this.lastWritten) return;
-      const state = this.parse(hash);
+      const state = this.parse(location.hash);
       if (state) this.onNavigate(state);
     });
   }
@@ -41,7 +38,6 @@ export class Router {
   replace(scene: number, panel?: string): void {
     const hash = formatRoute(scene, this.names, panel);
     if (location.hash === hash) return;
-    this.lastWritten = hash;
     history.replaceState(null, '', hash);
   }
 
@@ -49,7 +45,6 @@ export class Router {
   push(scene: number, panel?: string): void {
     const hash = formatRoute(scene, this.names, panel);
     if (location.hash === hash) return;
-    this.lastWritten = hash;
-    location.hash = hash;
+    history.pushState(null, '', hash);
   }
 }

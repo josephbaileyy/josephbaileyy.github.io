@@ -29,7 +29,13 @@ import { ephemeris, EPHEMERIS_BODIES, type EphemerisBody } from '../astronomy/ep
 import { simulationClock } from '../astronomy/clock';
 import { osculatingOrbitPoints } from '../astronomy/orbit';
 import { SolarOverlay, type TrackedBody } from '../ui/solar-overlay';
-import { canvasTexture, loadStars, loadTexture, type StarData } from './lib/assets';
+import {
+  canvasTexture,
+  loadStars,
+  loadTexture,
+  loadTextureWithFallback,
+  type StarData,
+} from './lib/assets';
 import {
   AU_KM,
   EARTH_RADIUS_AU,
@@ -65,7 +71,7 @@ export async function loadSolar(onProgress?: (p: number) => void): Promise<Scene
   const [ring, moon, milkyway, stars, earthNight] = await Promise.all([
     tick(loadTexture('/tex/saturn_ring.png')),
     tick(loadTexture('/tex/moon.jpg')),
-    tick(loadTexture('/tex/milkyway.jpg')),
+    tick(loadTextureWithFallback('/tex/milkyway.webp', '/tex/milkyway.jpg')),
     tick(loadStars()),
     tick(loadTexture('/tex/earth_night.jpg')),
   ]);
@@ -167,7 +173,12 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   const sun = new Mesh(new SphereGeometry(SUN_RADIUS_AU, 48, 32), sunMat);
   group.add(sun);
   const corona = new Sprite(
-    new SpriteMaterial({ map: coronaTexture(), transparent: true, depthWrite: false, blending: AdditiveBlending }),
+    new SpriteMaterial({
+      map: coronaTexture(),
+      transparent: true,
+      depthWrite: false,
+      blending: AdditiveBlending,
+    }),
   );
   corona.scale.setScalar(SUN_RADIUS_AU * 8);
   group.add(corona);
@@ -202,18 +213,19 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   };
   for (const p of PLANETS) {
     const radius = planetRadius(p.radiusKm);
-    const material = p.name === 'earth'
-      ? earthGlobeMaterial(assets.tex_earth as Texture, assets.earthNight as Texture, earthSunDir)
-      : new MeshStandardMaterial({
-        map: assets[`tex_${p.name}`] as Texture,
-        roughness: 1,
-        metalness: 0,
-        // keep night sides readable — Earth especially is the gateway and
-        // can legitimately face us with its dark side
-        emissiveMap: assets[`tex_${p.name}`] as Texture,
-        emissive: 0xffffff,
-        emissiveIntensity: p.name === 'earth' ? 0.42 : 0.18,
-      });
+    const material =
+      p.name === 'earth'
+        ? earthGlobeMaterial(assets.tex_earth as Texture, assets.earthNight as Texture, earthSunDir)
+        : new MeshStandardMaterial({
+            map: assets[`tex_${p.name}`] as Texture,
+            roughness: 1,
+            metalness: 0,
+            // keep night sides readable — Earth especially is the gateway and
+            // can legitimately face us with its dark side
+            emissiveMap: assets[`tex_${p.name}`] as Texture,
+            emissive: 0xffffff,
+            emissiveIntensity: p.name === 'earth' ? 0.42 : 0.18,
+          });
     const mesh = new Mesh(
       new SphereGeometry(radius, p.name === 'earth' ? 64 : 40, p.name === 'earth' ? 48 : 28),
       material,
@@ -256,7 +268,12 @@ export function createSolar(assets: SceneAssets): SceneInstance {
 
       const shadow = new Mesh(
         new PlaneGeometry(radius * 2.25, radius * 0.36),
-        new MeshBasicMaterial({ color: 0x05030a, transparent: true, opacity: 0.36, depthWrite: false }),
+        new MeshBasicMaterial({
+          color: 0x05030a,
+          transparent: true,
+          opacity: 0.36,
+          depthWrite: false,
+        }),
       );
       shadow.rotation.x = Math.PI / 2 + 0.466;
       shadow.rotation.z = -0.18;
@@ -270,10 +287,12 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   }
 
   const moonPivot = new Group();
-  moonPivot.add(new Mesh(
-    new SphereGeometry(1737.4 / AU_KM, 24, 16),
-    new MeshStandardMaterial({ map: assets.moon as Texture, roughness: 1 }),
-  ));
+  moonPivot.add(
+    new Mesh(
+      new SphereGeometry(1737.4 / AU_KM, 24, 16),
+      new MeshStandardMaterial({ map: assets.moon as Texture, roughness: 1 }),
+    ),
+  );
   group.add(moonPivot);
   trackedObjects.set('moon', moonPivot);
 
@@ -281,7 +300,12 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   // Its orbit remains implicit because the comet is ambient scenery rather
   // than an interactive body; a permanent guide suggests otherwise.
   const comet = new Sprite(
-    new SpriteMaterial({ map: cometTexture(), transparent: true, depthWrite: false, blending: AdditiveBlending }),
+    new SpriteMaterial({
+      map: cometTexture(),
+      transparent: true,
+      depthWrite: false,
+      blending: AdditiveBlending,
+    }),
   );
   comet.scale.setScalar(0.18);
   group.add(comet);
@@ -302,7 +326,13 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   beltGeo.setAttribute('position', new BufferAttribute(beltPos, 3));
   const belt = new Points(
     beltGeo,
-    new PointsMaterial({ color: 0x8a7a5e, size: 1.3, sizeAttenuation: false, transparent: true, opacity: 0.5 }),
+    new PointsMaterial({
+      color: 0x8a7a5e,
+      size: 1.3,
+      sizeAttenuation: false,
+      transparent: true,
+      opacity: 0.5,
+    }),
   );
   group.add(belt);
 
@@ -331,14 +361,17 @@ export function createSolar(assets: SceneAssets): SceneInstance {
   });
   const earthPosition = new Vector3();
   const velocity = new Vector3();
-  const velocities = new Map<EphemerisBody, Vector3>(EPHEMERIS_BODIES.map((name) => [name, new Vector3()]));
+  const velocities = new Map<EphemerisBody, Vector3>(
+    EPHEMERIS_BODIES.map((name) => [name, new Vector3()]),
+  );
   let displayUtcMs = simulationClock.utcMs;
   let orbitEpochMs = -Infinity;
   let orbitUpdateTime = -Infinity;
   let requestedYear = new Date(displayUtcMs).getUTCFullYear();
   let prefetchedYear = Number.NaN;
   let overlayActive = false;
-  let scaleMode: 'cinematic' | 'real' = document.body.dataset.scaleMode === 'real' ? 'real' : 'cinematic';
+  let scaleMode: 'cinematic' | 'real' =
+    document.body.dataset.scaleMode === 'real' ? 'real' : 'cinematic';
   let qualityScale = 900;
   const applyVisualScale = () => {
     const visualScale = scaleMode === 'real' ? 1 : qualityScale;
@@ -350,7 +383,8 @@ export function createSolar(assets: SceneAssets): SceneInstance {
     comet.visible = showComet;
   };
   const scaleListener = (event: Event) => {
-    scaleMode = (event as CustomEvent<'cinematic' | 'real'>).detail === 'real' ? 'real' : 'cinematic';
+    scaleMode =
+      (event as CustomEvent<'cinematic' | 'real'>).detail === 'real' ? 'real' : 'cinematic';
     overlay.setScaleMode(scaleMode);
     applyVisualScale();
   };
@@ -387,12 +421,19 @@ export function createSolar(assets: SceneAssets): SceneInstance {
         const entry = planetMeshes.get(name);
         if (entry && !ctx.reducedMotion) entry.mesh.rotation.y += ctx.dt * entry.spin;
       }
-      if (Math.abs(displayUtcMs - orbitEpochMs) >= 30 * 86400000 && ctx.time - orbitUpdateTime >= 0.25) {
+      if (
+        Math.abs(displayUtcMs - orbitEpochMs) >= 30 * 86400000 &&
+        ctx.time - orbitUpdateTime >= 0.25
+      ) {
         orbitEpochMs = displayUtcMs;
         orbitUpdateTime = ctx.time;
         for (const p of PLANETS) {
           const name = p.name as EphemerisBody;
-          updateOsculatingOrbit(orbitLines.get(name)!, trackedObjects.get(name)!.position, velocities.get(name)!);
+          updateOsculatingOrbit(
+            orbitLines.get(name)!,
+            trackedObjects.get(name)!.position,
+            velocities.get(name)!,
+          );
         }
       }
       earthPosition.copy(earthEntry.pivot.position);
@@ -428,7 +469,11 @@ export function createSolar(assets: SceneAssets): SceneInstance {
       belt.rotation.y += ctx.dt * 0.008;
       const cometPhase = (ctx.time * 0.08) % (Math.PI * 2);
       const cometR = 4.5 / (1 + 0.62 * Math.cos(cometPhase));
-      comet.position.set(cometR * Math.cos(cometPhase) - 1.2, Math.sin(cometPhase) * 0.16, cometR * Math.sin(cometPhase) * 0.78);
+      comet.position.set(
+        cometR * Math.cos(cometPhase) - 1.2,
+        Math.sin(cometPhase) * 0.16,
+        cometR * Math.sin(cometPhase) * 0.78,
+      );
       comet.material.opacity = 0.45 + 0.35 * Math.sin(ctx.time * 1.7);
     },
     syncUi(camera, viewport) {

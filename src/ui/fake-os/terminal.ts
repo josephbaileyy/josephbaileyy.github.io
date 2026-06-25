@@ -18,8 +18,10 @@ const FILES: Record<string, () => string> = {
   'about.txt': () =>
     `${PORTFOLIO.profile.name.toLowerCase()} — ${PORTFOLIO.profile.tagline}.\n\n${PORTFOLIO.profile.summary}\n\n(full story: type 'open about')`,
   'research.txt': () => stripHtml(PANELS['research'].html),
+  'experience.txt': () => stripHtml(PANELS['experience'].html),
   'projects.txt': () => stripHtml(PANELS['projects'].html),
-  'education.txt': () => PORTFOLIO.education.map((item) => `${item.title}\n${item.description}`).join('\n\n'),
+  'education.txt': () =>
+    PORTFOLIO.education.map((item) => `${item.title}\n${item.description}`).join('\n\n'),
   'honors.txt': () => PORTFOLIO.honors.map((item) => `· ${item}`).join('\n'),
   'amcvn.txt': () => stripHtml(PANELS['am-cvn'].html),
   'resume.pdf': () => "binary file — try 'open resume'",
@@ -58,7 +60,7 @@ export function buildTerminal(): HTMLElement {
     ls: (args) =>
       args[0] === 'projects' || args[0] === 'projects/'
         ? 'neutrino-unfolding/   splora/   lord/   soccer-gnn/   eth-wallet/   this-website/'
-        : 'resume.pdf   about.txt   research.txt   projects.txt   education.txt   honors.txt   amcvn.txt   projects/',
+        : 'resume.pdf   about.txt   research.txt   experience.txt   projects.txt   education.txt   honors.txt   amcvn.txt   projects/',
     cat: (args) => {
       if (!args[0]) return 'usage: cat <file>';
       const f = FILES[args[0]];

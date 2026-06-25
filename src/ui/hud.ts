@@ -3,9 +3,12 @@ export class Hud {
   private live: HTMLDivElement;
   private hint: HTMLDivElement;
   private journey: HTMLButtonElement;
+  private tools: HTMLDivElement;
+  private toolsToggle: HTMLButtonElement;
   private scaleToggle: HTMLButtonElement;
   private ambientToggle: HTMLButtonElement;
   private driftToggle: HTMLButtonElement;
+  private logToggle: HTMLButtonElement;
   private logPanel: HTMLDivElement;
   private logList: HTMLUListElement;
   private observations = new Map<string, { title: string; body: string }>();
@@ -20,17 +23,31 @@ export class Hud {
       onScaleToggle?: () => 'cinematic' | 'real';
       onAmbientToggle?: () => Promise<boolean> | boolean;
       onDriftToggle?: () => boolean;
+      onOpenPanel?: (panelId: string) => void;
     } = {},
   ) {
     const name = document.createElement('div');
     name.className = 'hud-name';
-    name.innerHTML = `<strong>Joseph Bailey</strong><span>physics @ stanford</span>`;
+    name.innerHTML = `
+      <strong>Joseph Bailey</strong>
+      <span>Physics + CS at Stanford</span>
+      <em>ML for fundamental science</em>
+      <div class="hud-credentials">
+        <button type="button" data-action="research">Research</button>
+        <a href="/resume.pdf" target="_blank" rel="noopener">CV</a>
+        <a href="mailto:jrbailey555@gmail.com">Contact</a>
+      </div>`;
+    name
+      .querySelector<HTMLButtonElement>('[data-action="research"]')!
+      .addEventListener('click', () => {
+        options.onOpenPanel?.('research');
+      });
     root.appendChild(name);
 
     const plain = document.createElement('a');
     plain.className = 'hud-plain';
     plain.href = '/about.html';
-    plain.textContent = 'plain site ↗';
+    plain.textContent = 'quick portfolio ↗';
     root.appendChild(plain);
 
     this.journey = document.createElement('button');
@@ -85,47 +102,84 @@ export class Hud {
     touchNav.append(outward, inward);
     root.appendChild(touchNav);
 
-    const tools = document.createElement('div');
-    tools.className = 'hud-tools';
+    this.toolsToggle = document.createElement('button');
+    this.toolsToggle.type = 'button';
+    this.toolsToggle.className = 'hud-tools-toggle';
+    this.toolsToggle.textContent = 'tools';
+    this.toolsToggle.setAttribute('aria-controls', 'universe-tools');
+    this.toolsToggle.setAttribute('aria-expanded', 'false');
+    this.toolsToggle.addEventListener('click', () => {
+      const open = !this.tools.classList.contains('mobile-open');
+      this.tools.classList.toggle('mobile-open', open);
+      this.toolsToggle.setAttribute('aria-expanded', String(open));
+    });
+    root.appendChild(this.toolsToggle);
+
+    this.tools = document.createElement('div');
+    this.tools.id = 'universe-tools';
+    this.tools.className = 'hud-tools';
     this.scaleToggle = document.createElement('button');
     this.scaleToggle.type = 'button';
     this.scaleToggle.textContent = 'scale: cinematic';
     this.scaleToggle.setAttribute('aria-label', 'Toggle Solar System scale mode');
+    this.scaleToggle.setAttribute('aria-pressed', 'false');
     this.scaleToggle.addEventListener('click', () => {
       const mode = options.onScaleToggle?.() ?? 'cinematic';
       this.scaleToggle.textContent = `scale: ${mode}`;
-      this.addObservation('scale-mode', 'Scale mode', mode === 'cinematic'
-        ? 'Cinematic scale enlarges planet bodies while keeping real orbital positions.'
-        : 'Real scale keeps body sizes physically honest; reticles keep planets discoverable.');
+      this.scaleToggle.setAttribute('aria-pressed', String(mode === 'real'));
+      this.addObservation(
+        'scale-mode',
+        'Scale mode',
+        mode === 'cinematic'
+          ? 'Cinematic scale enlarges planet bodies while keeping real orbital positions.'
+          : 'Real scale keeps body sizes physically honest; reticles keep planets discoverable.',
+      );
     });
     this.ambientToggle = document.createElement('button');
     this.ambientToggle.type = 'button';
     this.ambientToggle.textContent = 'ambient: off';
     this.ambientToggle.setAttribute('aria-label', 'Toggle ambient space audio');
+    this.ambientToggle.setAttribute('aria-pressed', 'false');
     this.ambientToggle.addEventListener('click', async () => {
       const active = await options.onAmbientToggle?.();
       this.ambientToggle.textContent = `ambient: ${active ? 'on' : 'off'}`;
+      this.ambientToggle.setAttribute('aria-pressed', String(Boolean(active)));
     });
     this.driftToggle = document.createElement('button');
     this.driftToggle.type = 'button';
     this.driftToggle.textContent = 'drift: off';
     this.driftToggle.setAttribute('aria-label', 'Toggle free drift camera mode');
+    this.driftToggle.setAttribute('aria-pressed', 'false');
     this.driftToggle.addEventListener('click', () => {
       const active = options.onDriftToggle?.() ?? false;
       this.driftToggle.textContent = `drift: ${active ? 'on' : 'off'}`;
-      if (active) this.addObservation('drift-mode', 'Drift mode', 'Pointer movement adds a gentle free-flight offset inside the current scale.');
+      this.driftToggle.setAttribute('aria-pressed', String(active));
+      if (active)
+        this.addObservation(
+          'drift-mode',
+          'Drift mode',
+          'Pointer movement adds a gentle free-flight offset inside the current scale.',
+        );
     });
-    const logToggle = document.createElement('button');
-    logToggle.type = 'button';
-    logToggle.textContent = 'log';
-    logToggle.setAttribute('aria-label', 'Open observation log');
-    logToggle.addEventListener('click', () => this.logPanel.classList.toggle('open'));
-    tools.append(this.scaleToggle, this.ambientToggle, this.driftToggle, logToggle);
-    root.appendChild(tools);
+    this.logToggle = document.createElement('button');
+    this.logToggle.type = 'button';
+    this.logToggle.textContent = 'log';
+    this.logToggle.setAttribute('aria-label', 'Open observation log');
+    this.logToggle.setAttribute('aria-expanded', 'false');
+    this.logToggle.setAttribute('aria-controls', 'observation-log');
+    this.logToggle.addEventListener('click', () => {
+      const open = !this.logPanel.classList.contains('open');
+      this.logPanel.classList.toggle('open', open);
+      this.logToggle.setAttribute('aria-expanded', String(open));
+    });
+    this.tools.append(this.scaleToggle, this.ambientToggle, this.driftToggle, this.logToggle);
+    root.appendChild(this.tools);
 
     this.logPanel = document.createElement('div');
+    this.logPanel.id = 'observation-log';
     this.logPanel.className = 'observation-log';
-    this.logPanel.innerHTML = '<strong>Observation log</strong><p>Travel through the universe to collect notes.</p>';
+    this.logPanel.innerHTML =
+      '<strong>Observation log</strong><p>Travel through the universe to collect notes.</p>';
     this.logList = document.createElement('ul');
     this.logPanel.appendChild(this.logList);
     root.appendChild(this.logPanel);
@@ -148,6 +202,11 @@ export class Hud {
       if (active) d.setAttribute('aria-current', 'step');
       else d.removeAttribute('aria-current');
     });
+    this.root.dataset.scene = String(index);
+    this.scaleToggle.hidden = index !== 1;
+    if (index !== 1 && this.scaleToggle === document.activeElement) {
+      this.toolsToggle.focus();
+    }
   }
 
   setMode(mode: 'travel' | 'computer'): void {
@@ -194,11 +253,15 @@ export class Hud {
 }
 
 function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (char) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;',
-  })[char]!);
+  return value.replace(
+    /[&<>"']/g,
+    (char) =>
+      ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;',
+      })[char]!,
+  );
 }

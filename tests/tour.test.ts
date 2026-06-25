@@ -93,4 +93,34 @@ describe('guided tour sequencer', () => {
     expect(tour.active).toBe(false);
     expect(root.querySelector('.tour-caption')?.classList.contains('on')).toBe(false);
   });
+
+  it('pauses without consuming dwell time and resumes from the same step', () => {
+    const root = mount();
+    const nav: number[] = [];
+    const tour = new Tour(root, { navigateTo: (i) => nav.push(i), reduced: false });
+    tour.start();
+    tour.update(100, 0);
+    tour.pause();
+
+    tour.update(120, 0);
+    expect(tour.paused).toBe(true);
+    expect(nav).toEqual([0]);
+    expect(root.querySelector('.tour-pause')?.getAttribute('aria-pressed')).toBe('true');
+
+    tour.resume();
+    tour.update(121, 0);
+    expect(nav).toEqual([0]);
+    tour.update(124, 0);
+    expect(nav).toEqual([0, 1]);
+  });
+
+  it('exposes keyboard-accessible pause and quick-portfolio controls', () => {
+    const root = mount();
+    new Tour(root, { navigateTo: () => {}, reduced: false });
+    expect(root.querySelector('.tour-caption')?.getAttribute('aria-hidden')).toBeNull();
+    expect(root.querySelector('.tour-pause')?.getAttribute('aria-label')).toBe(
+      'Pause guided journey',
+    );
+    expect(root.querySelector<HTMLAnchorElement>('.tour-portfolio')?.href).toContain('/about.html');
+  });
 });

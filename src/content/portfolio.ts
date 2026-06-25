@@ -16,6 +16,7 @@ export interface PortfolioData {
   profile: { name: string; tagline: string; summary: string; location: string; graduation: string };
   links: Array<{ label: string; href: string; kind?: string }>;
   research: PortfolioItem[];
+  experience: PortfolioItem[];
   projects: PortfolioItem[];
   education: PortfolioItem[];
   honors: string[];
@@ -29,13 +30,17 @@ export const PORTFOLIO = data as PortfolioData;
 export const APP_PROJECTS = PORTFOLIO.projects.filter((p) => p.app);
 
 const escapeHtml = (value: string): string =>
-  value.replace(/[&<>"']/g, (char) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;',
-  })[char]!);
+  value.replace(
+    /[&<>"']/g,
+    (char) =>
+      ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;',
+      })[char]!,
+  );
 
 const externalAttrs = (href: string): string =>
   href.startsWith('http') || href.endsWith('.pdf') ? ' target="_blank" rel="noopener"' : '';
@@ -51,7 +56,10 @@ export const renderItems = (items: PortfolioItem[]): string =>
   `<ul class="panel-list">${items
     .map((item) => {
       const links = itemLinks(item)
-        .map((l) => ` <a href="${escapeHtml(l.href)}"${externalAttrs(l.href)}>${escapeHtml(l.label)}</a>`)
+        .map(
+          (l) =>
+            ` <a href="${escapeHtml(l.href)}"${externalAttrs(l.href)}>${escapeHtml(l.label)}</a>`,
+        )
         .join('');
       const meta = item.meta ? `<span class="panel-meta">${escapeHtml(item.meta)}</span>` : '';
       return `<li><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.description)}${links}</p>${meta}</li>`;
@@ -63,7 +71,10 @@ const renderBullets = (items: string[]): string =>
 
 const renderProfileLinks = (): string =>
   `<div class="panel-links">${PORTFOLIO.links
-    .map((link) => `<a href="${escapeHtml(link.href)}"${externalAttrs(link.href)}>${escapeHtml(link.label)}</a>`)
+    .map(
+      (link) =>
+        `<a href="${escapeHtml(link.href)}"${externalAttrs(link.href)}>${escapeHtml(link.label)}</a>`,
+    )
     .join('')}</div>`;
 
 export interface PanelContent {
@@ -79,14 +90,19 @@ export const PANELS: Record<string, PanelContent> = {
     html: PORTFOLIO.amCvn.paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join(''),
   },
   profile: {
-    kicker: 'about · education · beyond research',
+    kicker: 'about · experience · education',
     title: PORTFOLIO.profile.name,
-    html: `<p>${escapeHtml(PORTFOLIO.profile.summary)}</p>${renderProfileLinks()}<h3>Education</h3>${renderItems(PORTFOLIO.education)}<h3>Honors</h3>${renderBullets(PORTFOLIO.honors)}<h3>Beyond research</h3>${renderBullets(PORTFOLIO.beyond)}`,
+    html: `<p>${escapeHtml(PORTFOLIO.profile.summary)}</p>${renderProfileLinks()}<h3>Professional experience</h3>${renderItems(PORTFOLIO.experience)}<h3>Education</h3>${renderItems(PORTFOLIO.education)}<h3>Honors</h3>${renderBullets(PORTFOLIO.honors)}<h3>Beyond research</h3>${renderBullets(PORTFOLIO.beyond)}`,
   },
   research: {
     kicker: 'research · ai for fundamental physics',
     title: 'Research',
     html: renderItems(PORTFOLIO.research),
+  },
+  experience: {
+    kicker: 'professional experience · product & engineering',
+    title: 'Experience',
+    html: renderItems(PORTFOLIO.experience),
   },
   projects: {
     kicker: 'projects · ml, systems & security',

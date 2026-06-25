@@ -16,12 +16,15 @@ import {
   Texture,
 } from 'three';
 import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
-import { canvasTexture, loadTexture, textSprite } from './lib/assets';
+import { canvasTexture, loadTextureWithFallback, textSprite } from './lib/assets';
 
 const BOOK_COLORS = [0xb83a3a, 0x7fd4ff, 0xffd479, 0x56a06b, 0x5a78e6, 0xcdd4f0, 0x8c5e9e];
 
 export async function loadRoom(onProgress?: (p: number) => void): Promise<SceneAssets> {
-  const wallpaper = await loadTexture('/tex/baileyos-wallpaper.png');
+  const wallpaper = await loadTextureWithFallback(
+    '/tex/baileyos-wallpaper.webp',
+    '/tex/baileyos-wallpaper.png',
+  );
   wallpaper.repeat.set(1, 0.9375);
   wallpaper.offset.y = 0.03125;
   onProgress?.(1);
@@ -165,27 +168,45 @@ export function createRoom(assets: SceneAssets): SceneInstance {
   const screenFace = new Mesh(new PlaneGeometry(1.4, 0.875), wallpaperMat);
   screenFace.position.set(1.5, 2.6, -5.49);
   group.add(screenFace);
-  const stand = new Mesh(new CylinderGeometry(0.07, 0.09, 0.45, 8), new MeshStandardMaterial({ color: 0x2c2750 }));
+  const stand = new Mesh(
+    new CylinderGeometry(0.07, 0.09, 0.45, 8),
+    new MeshStandardMaterial({ color: 0x2c2750 }),
+  );
   stand.position.set(1.5, 1.95 + 0.22, -5.6);
   group.add(stand);
 
   // keyboard + mug + book stack
-  const keyboard = new Mesh(new BoxGeometry(1.5, 0.07, 0.5), new MeshStandardMaterial({ color: 0x2c2750, roughness: 0.7 }));
+  const keyboard = new Mesh(
+    new BoxGeometry(1.5, 0.07, 0.5),
+    new MeshStandardMaterial({ color: 0x2c2750, roughness: 0.7 }),
+  );
   keyboard.position.set(1.4, 2.11, -4.6);
   group.add(keyboard);
-  const mug = new Mesh(new CylinderGeometry(0.14, 0.12, 0.3, 12), new MeshStandardMaterial({ color: 0x8c1515, roughness: 0.6 }));
+  const mug = new Mesh(
+    new CylinderGeometry(0.14, 0.12, 0.3, 12),
+    new MeshStandardMaterial({ color: 0x8c1515, roughness: 0.6 }),
+  );
   mug.position.set(3.3, 2.23, -4.9);
   group.add(mug);
-  const bookStack = new Mesh(new BoxGeometry(0.8, 0.36, 0.6), new MeshStandardMaterial({ color: 0x3d6b8f, roughness: 0.9 }));
+  const bookStack = new Mesh(
+    new BoxGeometry(0.8, 0.36, 0.6),
+    new MeshStandardMaterial({ color: 0x3d6b8f, roughness: 0.9 }),
+  );
   bookStack.position.set(-0.6, 2.26, -5.1);
   bookStack.rotation.y = 0.2;
   group.add(bookStack);
 
   // ---- lamp: the warm key light ----
-  const lampBase = new Mesh(new CylinderGeometry(0.3, 0.36, 0.1, 12), new MeshStandardMaterial({ color: 0x2c2750 }));
+  const lampBase = new Mesh(
+    new CylinderGeometry(0.3, 0.36, 0.1, 12),
+    new MeshStandardMaterial({ color: 0x2c2750 }),
+  );
   lampBase.position.set(4.2, 2.13, -5.5);
   group.add(lampBase);
-  const lampArm = new Mesh(new CylinderGeometry(0.05, 0.05, 1.5, 8), new MeshStandardMaterial({ color: 0x2c2750 }));
+  const lampArm = new Mesh(
+    new CylinderGeometry(0.05, 0.05, 1.5, 8),
+    new MeshStandardMaterial({ color: 0x2c2750 }),
+  );
   lampArm.position.set(4.2, 2.9, -5.5);
   lampArm.rotation.z = 0.3;
   group.add(lampArm);
@@ -225,7 +246,10 @@ export function createRoom(assets: SceneAssets): SceneInstance {
       const bh = 0.6 + rand() * 0.35;
       const book = new Mesh(
         new BoxGeometry(0.5, bh, bw),
-        new MeshStandardMaterial({ color: BOOK_COLORS[Math.floor(rand() * BOOK_COLORS.length)], roughness: 0.85 }),
+        new MeshStandardMaterial({
+          color: BOOK_COLORS[Math.floor(rand() * BOOK_COLORS.length)],
+          roughness: 0.85,
+        }),
       );
       book.position.set(-8.3, shelfY + 0.06 + bh / 2, z);
       if (rand() < 0.12) book.rotation.x = 0.18;
@@ -235,7 +259,11 @@ export function createRoom(assets: SceneAssets): SceneInstance {
   }
 
   // ---- posters ----
-  const posterMatProps = { roughness: 0.95, emissive: 0xffffff as number | undefined, emissiveIntensity: 0.5 };
+  const posterMatProps = {
+    roughness: 0.95,
+    emissive: 0xffffff as number | undefined,
+    emissiveIntensity: 0.5,
+  };
   const p1tex = amcvnPoster();
   const poster1 = new Mesh(
     new PlaneGeometry(1.7, 2.27),
@@ -308,12 +336,20 @@ export function createRoom(assets: SceneAssets): SceneInstance {
   });
   const win = new Mesh(
     new PlaneGeometry(2.6, 3.2),
-    new MeshStandardMaterial({ map: windowTex, emissiveMap: windowTex, emissive: 0xffffff, emissiveIntensity: 0.5 }),
+    new MeshStandardMaterial({
+      map: windowTex,
+      emissiveMap: windowTex,
+      emissive: 0xffffff,
+      emissiveIntensity: 0.5,
+    }),
   );
   win.rotation.y = Math.PI / 2;
   win.position.set(-8.48, 4.6, 1.6);
   group.add(win);
-  const winFrame = new Mesh(new BoxGeometry(0.12, 3.5, 2.9), new MeshStandardMaterial({ color: 0x2c2750 }));
+  const winFrame = new Mesh(
+    new BoxGeometry(0.12, 3.5, 2.9),
+    new MeshStandardMaterial({ color: 0x2c2750 }),
+  );
   winFrame.position.set(-8.52, 4.6, 1.6);
   group.add(winFrame);
 
@@ -358,10 +394,11 @@ export function createRoom(assets: SceneAssets): SceneInstance {
   const hit = new Mesh(new BoxGeometry(2.2, 1.7, 1.2), new MeshBasicMaterial({ visible: false }));
   hit.position.set(1.5, 2.6, -5.4);
   group.add(hit);
-  const hint = textSprite(
-    [{ text: 'click the screen', color: '#7fd4ff', size: 25 }],
-    { worldWidth: 3.6, width: 440, opacity: 0.92 },
-  );
+  const hint = textSprite([{ text: 'click the screen', color: '#7fd4ff', size: 25 }], {
+    worldWidth: 3.6,
+    width: 440,
+    opacity: 0.92,
+  });
   hint.position.set(1.5, 1.55, -4.9);
   group.add(hint);
   const hotspots: Hotspot3D[] = [
@@ -393,7 +430,9 @@ export function createRoom(assets: SceneAssets): SceneInstance {
     },
     setQuality(q) {
       quality = q;
-      bulbs.forEach((bulb, index) => { bulb.visible = q !== 'low' || index % 2 === 0; });
+      bulbs.forEach((bulb, index) => {
+        bulb.visible = q !== 'low' || index % 2 === 0;
+      });
     },
     dispose() {
       group.traverse((o) => {

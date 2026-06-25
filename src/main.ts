@@ -32,13 +32,13 @@ document.body.dataset.browserEngine = device.isWebKit ? 'webkit' : 'other';
 document.body.dataset.inputMode = device.isCoarsePointer ? 'touch' : 'pointer';
 document.body.dataset.postfx = device.disablePostFx ? 'off' : device.softenPostFx ? 'soft' : 'full';
 
-// --- WebGL2 gate: this is a WebGL universe; everyone else gets the plain site ---
+// --- WebGL2 gate: this is a WebGL universe; everyone else gets the quick portfolio ---
 if (!webgl2Available()) {
   const note = document.createElement('div');
   note.className = 'webgl-fallback';
   note.innerHTML = `
     <p>This site is a 3D universe and needs WebGL.</p>
-    <p><a href="/about.html">Visit the plain version instead →</a></p>`;
+    <p><a href="/about.html">Open the quick portfolio instead →</a></p>`;
   document.body.appendChild(note);
   canvas.remove();
   throw new Error('WebGL2 unavailable');
@@ -69,10 +69,13 @@ const loader = new SceneLoader(
   },
 );
 const world = new World(CHAIN3D, loader);
-const fx = device.disablePostFx ? null : new FxPipeline(renderer, world.root, world.camera, { soft: device.softenPostFx });
+const fx = device.disablePostFx
+  ? null
+  : new FxPipeline(renderer, world.root, world.camera, { soft: device.softenPostFx });
 fx?.setSize(vp.w, vp.h);
 const quality = new QualityMonitor();
-const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? (device.lowPowerGpu ? 4 : 8);
+const deviceMemory =
+  (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? (device.lowPowerGpu ? 4 : 8);
 quality.configureDevice(vp.w * vp.h * (window.devicePixelRatio || 1) ** 2, deviceMemory, device);
 const jump = new JumpController(camera, reduced);
 const ambient = new AmbientSound();
@@ -95,9 +98,9 @@ window.addEventListener('universe:navigate', (event) => {
 
 let pendingPanel: { scene: number; id: string } | null = null;
 
-const openPanel = (id: string, sceneIndex: number) => {
+const openPanel = (id: string, sceneIndex: number, syncRoute = true) => {
   panel.open(id);
-  router.push(sceneIndex, id);
+  if (syncRoute) router.push(sceneIndex, id);
   if (id === 'am-cvn') {
     import('./ui/chirp').then(({ playChirp }) => playChirp());
   }
@@ -130,6 +133,10 @@ const hud = new Hud(
       driftMode = !driftMode;
       document.body.dataset.driftMode = driftMode ? 'on' : 'off';
       return driftMode;
+    },
+    onOpenPanel: (id) => {
+      tour.cancel();
+      openPanel(id, Math.round(camera.depth));
     },
   },
 );
@@ -182,7 +189,8 @@ const SCENE_HINTS = [
 
 const OBSERVATIONS: Record<string, string> = {
   galaxy: 'The Milky Way scene uses layered procedural stars, dust, and research beacons.',
-  solar: 'Planet positions come from checked-in JPL ephemeris data; the scale toggle changes visual body size only.',
+  solar:
+    'Planet positions come from checked-in JPL ephemeris data; the scale toggle changes visual body size only.',
   earth: 'Earth uses a live terminator so day and night follow the selected time.',
   stanford: 'The Stanford scene is the handoff from planet scale into a lived-in campus scale.',
   room: 'The dorm-room hop uses the lit monitor as a physical portal into BaileyOS.',
@@ -190,8 +198,10 @@ const OBSERVATIONS: Record<string, string> = {
 };
 
 const HOTSPOT_OBSERVATIONS: Record<string, string> = {
-  'am-cvn': 'AM CVn systems are helium-transferring compact binaries; the model shows a disk, stream, and hot spot.',
-  research: 'The pulsar marker gathers the particle, neutrino, and collider-ML side of the portfolio.',
+  'am-cvn':
+    'AM CVn systems are helium-transferring compact binaries; the model shows a disk, stream, and hot spot.',
+  research:
+    'The pulsar marker gathers the particle, neutrino, and collider-ML side of the portfolio.',
 };
 
 const SCREEN_INDEX = CHAIN3D.length - 1;
@@ -224,7 +234,11 @@ const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => 
   tour.cancel();
   hud.hideHint();
   if (h.action.type === 'panel') {
-    hud.addObservation(h.action.panelId, h.label, HOTSPOT_OBSERVATIONS[h.action.panelId] ?? 'Opened a research note from the 3D scene.');
+    hud.addObservation(
+      h.action.panelId,
+      h.label,
+      HOTSPOT_OBSERVATIONS[h.action.panelId] ?? 'Opened a research note from the 3D scene.',
+    );
     openPanel(h.action.panelId, world.baseIndex());
   } else if (h.action.type === 'navigate') {
     requestDestination(h.action.index);
@@ -276,12 +290,15 @@ function syncScreenUi(settled: number | null): void {
 }
 
 const router = new Router(CHAIN3D, (state) => {
+  tour.cancel();
   panel.close();
   pendingPanel = state.panel ? { scene: state.scene, id: state.panel } : null;
   if (Math.abs(state.scene - camera.depth) > 1e-6) {
-    tour.cancel();
     requestDestination(state.scene);
     jump.go(state.scene, now());
+  } else if (pendingPanel && camera.settledIndex === state.scene) {
+    openPanel(pendingPanel.id, state.scene, false);
+    pendingPanel = null;
   }
 });
 
@@ -411,8 +428,14 @@ function frame(): void {
     if (driftMode) {
       const sceneIndex = Math.round(Math.min(Math.max(camera.depth, 0), CHAIN3D.length - 1));
       const driftAmp = CHAIN3D[sceneIndex].restPose.frameWidth * 0.028 * dockFade;
-      vDriftRight.set(1, 0, 0).applyQuaternion(world.camera.quaternion).multiplyScalar(parallax.x * driftAmp);
-      vDriftUp.set(0, 1, 0).applyQuaternion(world.camera.quaternion).multiplyScalar(-parallax.y * driftAmp);
+      vDriftRight
+        .set(1, 0, 0)
+        .applyQuaternion(world.camera.quaternion)
+        .multiplyScalar(parallax.x * driftAmp);
+      vDriftUp
+        .set(0, 1, 0)
+        .applyQuaternion(world.camera.quaternion)
+        .multiplyScalar(-parallax.y * driftAmp);
       world.camera.position.add(vDriftRight).add(vDriftUp);
     }
   }
@@ -448,11 +471,15 @@ function frame(): void {
     if (settled !== null) {
       quality.setScene(CHAIN3D[settled].id);
       hud.announce(CHAIN3D[settled].label);
-      hud.addObservation(CHAIN3D[settled].id, CHAIN3D[settled].label, OBSERVATIONS[CHAIN3D[settled].id]);
+      hud.addObservation(
+        CHAIN3D[settled].id,
+        CHAIN3D[settled].label,
+        OBSERVATIONS[CHAIN3D[settled].id],
+      );
       if (!tour.active) hud.showHint(SCENE_HINTS[settled]);
       if (!panel.isOpen) router.replace(settled);
       if (pendingPanel && pendingPanel.scene === settled) {
-        openPanel(pendingPanel.id, settled);
+        openPanel(pendingPanel.id, settled, false);
         pendingPanel = null;
       }
       for (let offset = -2; offset <= 2; offset++) loader.request(settled + offset);

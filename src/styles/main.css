@@ -10,8 +10,8 @@
   --ink: #eef2ff;
   --ink-dim: #9aa3c7;
   --cardinal: #8c1515;
-  --font-ui: "Avenir Next", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --font-ui: 'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, monospace;
 }
 * {
   box-sizing: border-box;
@@ -23,7 +23,12 @@ body {
   height: 100%;
   min-height: var(--app-height, 100dvh);
   overflow: hidden;
-  background: radial-gradient(120% 90% at 50% 40%, var(--space-2) 0%, var(--space-1) 55%, var(--space-0) 100%);
+  background: radial-gradient(
+    120% 90% at 50% 40%,
+    var(--space-2) 0%,
+    var(--space-1) 55%,
+    var(--space-0) 100%
+  );
   color: var(--ink);
   font-family: var(--font-ui);
 }
@@ -119,6 +124,19 @@ body {
   color: var(--cyan);
 }
 
+.loading-portfolio {
+  justify-self: center;
+  color: var(--cyan);
+  font: 12px var(--font-mono);
+  text-decoration: none;
+}
+
+.loading-portfolio:hover,
+.loading-portfolio:focus-visible {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
 /* ---------- scientific scene overlays ---------- */
 
 .solar-overlay {
@@ -130,7 +148,9 @@ body {
   transition: opacity 0.2s ease;
 }
 
-.solar-overlay.active { opacity: 1; }
+.solar-overlay.active {
+  opacity: 1;
+}
 
 .solar-controls {
   position: absolute;
@@ -164,7 +184,11 @@ body {
   padding: 6px 10px;
 }
 
-.solar-status { color: var(--cyan); padding: 0 6px; white-space: nowrap; }
+.solar-status {
+  color: var(--cyan);
+  padding: 0 6px;
+  white-space: nowrap;
+}
 
 .solar-controls button:focus-visible,
 .solar-controls select:focus-visible,
@@ -207,23 +231,34 @@ body {
   border-radius: 50%;
   background: rgba(5, 10, 28, 0.1);
   box-shadow: 0 0 7px rgba(127, 212, 255, 0.2);
-  transition: inset 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
+  transition:
+    inset 0.15s ease,
+    border-color 0.15s ease,
+    opacity 0.15s ease;
 }
-.solar-overlay[data-scale-mode="cinematic"] .planet-reticle::before {
+.solar-overlay[data-scale-mode='cinematic'] .planet-reticle::before {
   opacity: 0;
 }
-.solar-overlay[data-scale-mode="cinematic"] .planet-reticle:hover::before,
-.solar-overlay[data-scale-mode="cinematic"] .planet-reticle:focus-visible::before,
-.solar-overlay[data-scale-mode="cinematic"] .planet-reticle.selected::before {
+.solar-overlay[data-scale-mode='cinematic'] .planet-reticle:hover::before,
+.solar-overlay[data-scale-mode='cinematic'] .planet-reticle:focus-visible::before,
+.solar-overlay[data-scale-mode='cinematic'] .planet-reticle.selected::before {
   opacity: 1;
 }
-.solar-overlay[data-scale-mode="cinematic"] .planet-reticle i {
+.solar-overlay[data-scale-mode='cinematic'] .planet-reticle i {
   opacity: 0;
 }
-.planet-reticle[data-body="earth"]::before { border-color: var(--gold); }
-.planet-reticle.selected { z-index: 4; }
-.planet-reticle[data-body="moon"] { z-index: 2; }
-.planet-reticle[data-body="earth"] { z-index: 6; }
+.planet-reticle[data-body='earth']::before {
+  border-color: var(--gold);
+}
+.planet-reticle.selected {
+  z-index: 4;
+}
+.planet-reticle[data-body='moon'] {
+  z-index: 2;
+}
+.planet-reticle[data-body='earth'] {
+  z-index: 6;
+}
 .planet-reticle.selected::before,
 .planet-reticle:hover::before,
 .planet-reticle:focus-visible::before {
@@ -241,9 +276,9 @@ body {
   box-shadow: 0 0 6px currentColor;
   transition: opacity 0.15s ease;
 }
-.solar-overlay[data-scale-mode="cinematic"] .planet-reticle:hover i,
-.solar-overlay[data-scale-mode="cinematic"] .planet-reticle:focus-visible i,
-.solar-overlay[data-scale-mode="cinematic"] .planet-reticle.selected i {
+.solar-overlay[data-scale-mode='cinematic'] .planet-reticle:hover i,
+.solar-overlay[data-scale-mode='cinematic'] .planet-reticle:focus-visible i,
+.solar-overlay[data-scale-mode='cinematic'] .planet-reticle.selected i {
   opacity: 1;
 }
 .planet-reticle::after {
@@ -274,13 +309,18 @@ body {
   opacity: 0;
   transition: opacity 0.15s ease;
 }
-.planet-reticle.left-label span { left: auto; right: 50px; }
+.planet-reticle.left-label span {
+  left: auto;
+  right: 50px;
+}
 .planet-reticle:hover span,
 .planet-reticle:focus-visible span,
 .planet-reticle.selected span,
 .planet-reticle:hover::after,
 .planet-reticle:focus-visible::after,
-.planet-reticle.selected::after { opacity: 1; }
+.planet-reticle.selected::after {
+  opacity: 1;
+}
 
 .earth-explore-trigger {
   position: fixed;
@@ -300,8 +340,13 @@ body {
   background: var(--space-0);
 }
 
-.earth-explorer.active { display: block; }
-.earth-explorer-canvas { position: absolute; inset: 0; }
+.earth-explorer.active {
+  display: block;
+}
+.earth-explorer-canvas {
+  position: absolute;
+  inset: 0;
+}
 .earth-explorer-toolbar {
   position: absolute;
   z-index: 2;
@@ -313,7 +358,9 @@ body {
   gap: 8px;
   pointer-events: none;
 }
-.earth-explorer-toolbar > * { pointer-events: auto; }
+.earth-explorer-toolbar > * {
+  pointer-events: auto;
+}
 .earth-explorer-toolbar output {
   margin-right: auto;
   padding: 8px 12px;
@@ -335,10 +382,21 @@ body {
 }
 
 @media (max-width: 600px) {
-  .solar-controls { top: 58px; width: calc(100% - 24px); overflow-x: auto; justify-content: flex-start; }
-  .solar-status { display: none; }
-  .planet-reticle span { font-size: 10px; }
-  .earth-explorer-toolbar { flex-wrap: wrap; }
+  .solar-controls {
+    top: 58px;
+    width: calc(100% - 24px);
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+  .solar-status {
+    display: none;
+  }
+  .planet-reticle span {
+    font-size: 10px;
+  }
+  .earth-explorer-toolbar {
+    flex-wrap: wrap;
+  }
 }
 
 .loading-overlay {
@@ -348,7 +406,12 @@ body {
   display: grid;
   place-content: center;
   gap: 18px;
-  background: radial-gradient(120% 90% at 50% 40%, var(--space-2) 0%, var(--space-1) 55%, var(--space-0) 100%);
+  background: radial-gradient(
+    120% 90% at 50% 40%,
+    var(--space-2) 0%,
+    var(--space-1) 55%,
+    var(--space-0) 100%
+  );
   transition: opacity 0.5s ease;
 }
 
@@ -433,7 +496,14 @@ body {
   position: absolute;
   left: 22px;
   bottom: 18px;
+  max-width: min(360px, calc(100vw - 120px));
+  padding: 13px 15px 12px;
+  border: 1px solid rgba(127, 212, 255, 0.18);
+  border-radius: 14px;
+  background: rgba(7, 10, 28, 0.66);
   line-height: 1.25;
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
 }
 
 .hud-name strong {
@@ -444,8 +514,42 @@ body {
 .hud-name span {
   display: block;
   font-size: 12px;
-  color: var(--ink-dim);
+  color: var(--ink);
   font-family: var(--font-mono);
+}
+
+.hud-name em {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink-dim);
+  font: normal 11px/1.4 var(--font-mono);
+}
+
+.hud-credentials {
+  display: flex;
+  gap: 6px;
+  margin-top: 9px;
+  pointer-events: auto;
+}
+
+.hud-credentials a,
+.hud-credentials button {
+  border: 1px solid rgba(154, 163, 199, 0.35);
+  border-radius: 999px;
+  background: rgba(42, 35, 86, 0.58);
+  color: var(--ink);
+  cursor: pointer;
+  font: 11px var(--font-mono);
+  padding: 5px 9px;
+  text-decoration: none;
+}
+
+.hud-credentials a:hover,
+.hud-credentials a:focus-visible,
+.hud-credentials button:hover,
+.hud-credentials button:focus-visible {
+  border-color: var(--cyan);
+  outline: none;
 }
 
 .hud-plain {
@@ -584,6 +688,10 @@ body {
   pointer-events: auto;
 }
 
+.hud-tools-toggle {
+  display: none;
+}
+
 .hud-tools button {
   border: 1px solid rgba(154, 163, 199, 0.35);
   border-radius: 999px;
@@ -621,7 +729,9 @@ body {
   opacity: 0;
   transform: translateY(-6px);
   pointer-events: none;
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
 
 .observation-log.open {
@@ -722,6 +832,7 @@ body {
 #hud[data-mode='computer'] .hud-hint,
 #hud[data-mode='computer'] .hud-journey,
 #hud[data-mode='computer'] .hud-tools,
+#hud[data-mode='computer'] .hud-tools-toggle,
 #hud[data-mode='computer'] .hud-touch-nav,
 #hud[data-mode='computer'] .observation-log,
 #hud[data-mode='computer'] .tour-caption,
@@ -778,27 +889,29 @@ body {
 /* WebKit can blur text and borders when a translucent interactive element is
    promoted into a backdrop-filter layer. The slightly more opaque fallback
    reads the same while keeping Safari's controls pixel-sharp. */
-body[data-browser-engine='webkit'] :is(
-  .solar-controls,
-  .hud-plain,
-  .hud-zoom button,
-  .hud-touch-nav button,
-  .hud-tools button,
-  .hud-journey
-) {
+body[data-browser-engine='webkit']
+  :is(
+    .solar-controls,
+    .hud-plain,
+    .hud-zoom button,
+    .hud-touch-nav button,
+    .hud-tools button,
+    .hud-journey
+  ) {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
   -webkit-font-smoothing: antialiased;
 }
 
-body[data-browser-engine='webkit'] :is(
-  .solar-controls,
-  .hud-plain,
-  .hud-zoom button,
-  .hud-touch-nav button,
-  .hud-tools button,
-  .hud-journey
-) {
+body[data-browser-engine='webkit']
+  :is(
+    .solar-controls,
+    .hud-plain,
+    .hud-zoom button,
+    .hud-touch-nav button,
+    .hud-tools button,
+    .hud-journey
+  ) {
   background-color: rgba(11, 16, 38, 0.9);
 }
 
@@ -841,6 +954,10 @@ body[data-browser-engine='webkit'] :is(
     transform 0.5s ease;
 }
 
+.tour-caption[hidden] {
+  display: none;
+}
+
 .tour-caption.on {
   opacity: 1;
   transform: translateX(-50%) translateY(0);
@@ -865,31 +982,59 @@ body[data-browser-engine='webkit'] :is(
   color: var(--ink);
 }
 
-.tour-skip {
+.tour-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin-top: 4px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: var(--ink-dim);
-  background: none;
-  border: none;
-  border-bottom: 1px solid transparent;
-  padding: 0 0 1px;
-  cursor: pointer;
 }
 
-.tour-skip:hover,
-.tour-skip:focus-visible {
+.tour-pause,
+.tour-portfolio {
+  border: none;
+  border-bottom: 1px solid transparent;
+  background: none;
+  color: var(--ink-dim);
+  cursor: pointer;
+  font: 11px var(--font-mono);
+  padding: 0 0 1px;
+  text-decoration: none;
+}
+
+.tour-pause:hover,
+.tour-pause:focus-visible,
+.tour-portfolio:hover,
+.tour-portfolio:focus-visible {
   color: var(--ink);
   border-bottom-color: var(--ink-dim);
   outline: none;
 }
 
 @media (max-width: 760px) {
-  .hud-tools {
+  .hud-tools-toggle {
+    position: absolute;
     top: 104px;
     left: 12px;
+    display: block;
+    pointer-events: auto;
+    border: 1px solid rgba(154, 163, 199, 0.35);
+    border-radius: 999px;
+    background: rgba(11, 16, 38, 0.82);
+    color: var(--ink);
+    font: 11px var(--font-mono);
+    padding: 7px 12px;
+  }
+
+  .hud-tools {
+    top: 143px;
+    left: 12px;
     right: 12px;
+    display: none;
     overflow-x: auto;
+  }
+
+  .hud-tools.mobile-open {
+    display: flex;
   }
 
   .hud-tools button {
@@ -897,7 +1042,7 @@ body[data-browser-engine='webkit'] :is(
   }
 
   .observation-log {
-    top: 148px;
+    top: 184px;
     left: 12px;
     width: calc(100vw - 24px);
   }
@@ -1200,7 +1345,9 @@ dialog.panel::backdrop {
   min-height: 0;
 }
 
-.os-window.minimized > :not(.os-titlebar) { display: none; }
+.os-window.minimized > :not(.os-titlebar) {
+  display: none;
+}
 
 .os-resize-handle {
   position: absolute;
@@ -1210,7 +1357,14 @@ dialog.panel::backdrop {
   height: 20px;
   cursor: nwse-resize;
   touch-action: none;
-  background: linear-gradient(135deg, transparent 45%, rgba(127, 212, 255, 0.35) 46% 54%, transparent 55% 66%, rgba(127, 212, 255, 0.65) 67% 75%, transparent 76%);
+  background: linear-gradient(
+    135deg,
+    transparent 45%,
+    rgba(127, 212, 255, 0.35) 46% 54%,
+    transparent 55% 66%,
+    rgba(127, 212, 255, 0.65) 67% 75%,
+    transparent 76%
+  );
 }
 
 .os-resize-handle:focus-visible {
@@ -1258,10 +1412,18 @@ dialog.panel::backdrop {
   background: #e25555;
 }
 
-.os-minimize { background: #d6a83e; }
-.os-maximize { background: #4f9f65; }
-.os-minimize:hover { background: #f1c45a; }
-.os-maximize:hover { background: #68bd7d; }
+.os-minimize {
+  background: #d6a83e;
+}
+.os-maximize {
+  background: #4f9f65;
+}
+.os-minimize:hover {
+  background: #f1c45a;
+}
+.os-maximize:hover {
+  background: #68bd7d;
+}
 
 .os-doc {
   max-height: 300px;
@@ -1349,7 +1511,9 @@ body[data-hud-mode='computer'] .os-dock {
   font-size: 10px;
   text-decoration: none;
   cursor: pointer;
-  transition: transform 0.12s ease, background 0.12s ease;
+  transition:
+    transform 0.12s ease,
+    background 0.12s ease;
 }
 
 .os-dock-item:hover,
@@ -1536,7 +1700,10 @@ body[data-hud-mode='computer'] .os-dock {
   background: rgba(17, 16, 42, 0.7);
   color: var(--ink);
   text-decoration: none;
-  transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+  transition:
+    transform 0.14s ease,
+    border-color 0.14s ease,
+    background 0.14s ease;
 }
 
 .os-video-card:hover,
@@ -1666,8 +1833,29 @@ body[data-hud-mode='computer'] .os-dock {
 
 @media (max-width: 760px) {
   .hud-name {
-    left: 18px;
-    bottom: 14px;
+    left: 12px;
+    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100vw - 88px);
+    padding: 10px 11px;
+  }
+
+  .hud-name strong {
+    font-size: 15px;
+  }
+
+  .hud-name em {
+    display: none;
+  }
+
+  .hud-credentials {
+    margin-top: 7px;
+  }
+
+  .hud-credentials a,
+  .hud-credentials button {
+    min-height: 34px;
+    display: inline-flex;
+    align-items: center;
   }
 
   .hud-dots {
@@ -1711,7 +1899,9 @@ body[data-hud-mode='computer'] .os-dock {
     min-width: 0;
   }
 
-  .os-window.mobile-inactive { display: none; }
+  .os-window.mobile-inactive {
+    display: none;
+  }
 
   .os-window.maximized {
     left: 0 !important;
@@ -1720,7 +1910,9 @@ body[data-hud-mode='computer'] .os-dock {
     height: 100% !important;
   }
 
-  .os-resize-handle { display: none; }
+  .os-resize-handle {
+    display: none;
+  }
 
   .os-titlebar {
     cursor: default;

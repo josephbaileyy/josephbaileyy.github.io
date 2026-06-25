@@ -8,10 +8,13 @@ import {
   Texture,
 } from 'three';
 import type { SceneAssets, SceneInstance } from '../engine/types3d';
-import { loadTexture } from './lib/assets';
+import { loadTextureWithFallback } from './lib/assets';
 
 export async function loadScreen(onProgress?: (p: number) => void): Promise<SceneAssets> {
-  const wallpaper = await loadTexture('/tex/baileyos-wallpaper.png');
+  const wallpaper = await loadTextureWithFallback(
+    '/tex/baileyos-wallpaper.webp',
+    '/tex/baileyos-wallpaper.png',
+  );
   wallpaper.repeat.set(1, 0.9375);
   wallpaper.offset.y = 0.03125;
   onProgress?.(1);

@@ -19,39 +19,71 @@
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="A visual journey from the Milky Way through the solar system and Earth to a computer." />
+    <meta
+      property="og:image:alt"
+      content="A visual journey from the Milky Way through the solar system and Earth to a computer."
+    />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#070a1c" />
     <link rel="canonical" href="https://josephbaileyy.github.io/" />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='16' r='7' fill='%23eef2ff'/%3E%3Ccircle cx='24' cy='13' r='4' fill='%23ffd479'/%3E%3C/svg%3E" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='16' r='7' fill='%23eef2ff'/%3E%3Ccircle cx='24' cy='13' r='4' fill='%23ffd479'/%3E%3C/svg%3E"
+    />
     <script type="application/ld+json">
-      {"@context":"https://schema.org","@type":"Person","name":"Joseph Bailey","url":"https://josephbaileyy.github.io/","alumniOf":{"@type":"CollegeOrUniversity","name":"Stanford University"},"sameAs":["https://github.com/josephbaileyy","https://linkedin.com/in/baileyjosephr"],"knowsAbout":["Machine learning for fundamental physics","Particle physics","Astrophysics","Computer science"]}
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Joseph Bailey",
+        "url": "https://josephbaileyy.github.io/",
+        "affiliation": { "@type": "CollegeOrUniversity", "name": "Stanford University" },
+        "hasOccupation": {
+          "@type": "Occupation",
+          "name": "Physics and Computer Science student",
+          "occupationLocation": { "@type": "City", "name": "Stanford, California" }
+        },
+        "sameAs": ["https://github.com/josephbaileyy", "https://linkedin.com/in/baileyjosephr"],
+        "knowsAbout": [
+          "Machine learning for fundamental physics",
+          "Particle physics",
+          "Astrophysics",
+          "Computer science"
+        ]
+      }
     </script>
   </head>
   <body>
-    <a class="skip-link" href="/about.html">Skip the universe — plain version of this site</a>
+    <a class="skip-link" href="/about.html">Skip the universe — quick portfolio</a>
 
     <header class="sr-only">
       <h1>Joseph Bailey</h1>
       <p>
         I'm a coterminal Physics B.S. and Computer Science M.S. student at Stanford working on
-        machine learning for fundamental physics. This site is an interactive zoom from the galaxy
-        — past an AM Canum Venaticorum binary I studied — into the solar system, down to Earth,
-        Stanford, my room, and finally my computer screen, where you can find my research,
-        projects, and CV. Prefer a normal webpage? Visit the
-        <a href="/about.html">plain version</a>.
+        machine learning for fundamental physics. This site is an interactive zoom from the galaxy —
+        past an AM Canum Venaticorum binary I studied — into the solar system, down to Earth,
+        Stanford, my room, and finally my computer screen, where you can find my research, projects,
+        and CV. Prefer a normal webpage? Visit the
+        <a href="/about.html">quick portfolio</a>.
       </p>
     </header>
 
     <noscript>
       <div class="noscript-note">
         This experience needs JavaScript. The good news: there's a
-        <a href="/about.html">plain version with everything on it</a>.
+        <a href="/about.html">quick portfolio with everything on it</a>.
       </div>
     </noscript>
 
-    <canvas id="universe" role="img" aria-label="Zoomable 3D universe" aria-describedby="universe-description"></canvas>
-    <p id="universe-description" class="sr-only">Scroll, pinch, use the arrow keys, or choose a zoom level to travel. Select glowing objects to open research and project details.</p>
+    <canvas
+      id="universe"
+      role="img"
+      aria-label="Zoomable 3D universe"
+      aria-describedby="universe-description"
+    ></canvas>
+    <p id="universe-description" class="sr-only">
+      Scroll, pinch, use the arrow keys, or choose a zoom level to travel. Select glowing objects to
+      open research and project details.
+    </p>
     <div id="a11y-layer"></div>
     <div id="hud"></div>
 

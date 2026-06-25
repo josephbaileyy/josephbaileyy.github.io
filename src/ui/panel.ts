@@ -3,6 +3,7 @@ import { PANELS } from '../content/panels';
 export class PanelHost {
   private dialog: HTMLDialogElement;
   private currentId: string | null = null;
+  private returnFocus: HTMLElement | null = null;
   onClose: (() => void) | null = null;
 
   constructor() {
@@ -13,6 +14,11 @@ export class PanelHost {
     this.dialog.addEventListener('close', () => {
       this.currentId = null;
       this.onClose?.();
+      const target = this.returnFocus;
+      this.returnFocus = null;
+      if (target?.isConnected) {
+        target.focus();
+      }
     });
     // Backdrop click closes: the dialog element itself is only hit outside the content.
     this.dialog.addEventListener('click', (e) => {
@@ -31,6 +37,9 @@ export class PanelHost {
   open(panelId: string): void {
     const content = PANELS[panelId];
     if (!content) return;
+    if (!this.dialog.open && document.activeElement instanceof HTMLElement) {
+      this.returnFocus = document.activeElement;
+    }
     this.currentId = panelId;
     this.dialog.setAttribute('aria-labelledby', 'panel-title');
     this.dialog.innerHTML = `

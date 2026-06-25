@@ -12,7 +12,10 @@
     { "label": "LinkedIn", "href": "https://linkedin.com/in/baileyjosephr" },
     { "label": "Email", "href": "mailto:jrbailey555@gmail.com" },
     { "label": "Stanford", "href": "mailto:josephrb@stanford.edu" },
-    { "label": "Track profile", "href": "https://gostanford.com/sports/track-field/roster/player/joseph-bailey" }
+    {
+      "label": "Track profile",
+      "href": "https://gostanford.com/sports/track-field/roster/player/joseph-bailey"
+    }
   ],
   "research": [
     {
@@ -47,6 +50,18 @@
       "description": "Supported simulation, testing, and preparation of suspension elements, and conducted laser-beam interferometry experiments with Python analysis.",
       "meta": "Caltech LIGO Lab · 2023",
       "links": [{ "label": "Report (PDF)", "href": "/papers/ligo-caltech-report.pdf" }]
+    }
+  ],
+  "experience": [
+    {
+      "title": "Product Management Intern — WisdomTree Digital Movement",
+      "description": "Supporting product management, market research, internal documentation, and product-development discussions for digital-asset financial products, connecting technical work in blockchain with financial markets and client-focused strategy.",
+      "meta": "Digital Assets Team · New York, NY · June 2026–present"
+    },
+    {
+      "title": "Engineering Intern — Polytec",
+      "description": "Designed Python, MATLAB, and Octave statistical tools for customers analyzing vibration data, and modeled and 3D-printed laboratory tools to streamline operations.",
+      "meta": "Pasadena, CA · June–September 2023"
     }
   ],
   "projects": [

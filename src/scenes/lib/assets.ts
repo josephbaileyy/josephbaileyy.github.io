@@ -15,14 +15,29 @@ const cache = new Map<string, Promise<Texture>>();
 export function loadTexture(url: string, srgb = true): Promise<Texture> {
   let p = cache.get(url);
   if (!p) {
-    p = loader.loadAsync(url).then((tex) => {
-      if (srgb) tex.colorSpace = SRGBColorSpace;
-      tex.anisotropy = 4;
-      return tex;
-    });
+    p = loader
+      .loadAsync(url)
+      .then((tex) => {
+        if (srgb) tex.colorSpace = SRGBColorSpace;
+        tex.anisotropy = 4;
+        return tex;
+      })
+      .catch((error) => {
+        cache.delete(url);
+        throw error;
+      });
     cache.set(url, p);
   }
   return p;
+}
+
+/** Prefer a smaller modern texture while retaining an older-format fallback. */
+export function loadTextureWithFallback(
+  preferredUrl: string,
+  fallbackUrl: string,
+  srgb = true,
+): Promise<Texture> {
+  return loadTexture(preferredUrl, srgb).catch(() => loadTexture(fallbackUrl, srgb));
 }
 
 export interface StarData {
@@ -131,7 +146,9 @@ export function textSprite(lines: TextSpriteLine[], options: TextSpriteOptions):
   const padding = options.padding ?? 20;
   const gap = options.gap ?? 8;
   const heights = lines.map((line) => (line.size ?? 28) * 1.25);
-  const height = Math.ceil(padding * 2 + heights.reduce((sum, value) => sum + value, 0) + gap * (lines.length - 1));
+  const height = Math.ceil(
+    padding * 2 + heights.reduce((sum, value) => sum + value, 0) + gap * (lines.length - 1),
+  );
   const tex = canvasTexture(
     width,
     height,

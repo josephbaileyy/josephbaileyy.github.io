@@ -249,6 +249,16 @@ export function buildFakeOs(): HTMLElement {
       w: 410,
       h: 350,
     });
+  const openExperience = () =>
+    wm.open({
+      id: 'experience',
+      title: 'experience.md — product & engineering',
+      body: panelBody('experience'),
+      x: 34,
+      y: 10,
+      w: 430,
+      h: 330,
+    });
   const openProfile = () =>
     wm.open({
       id: 'profile',
@@ -293,6 +303,7 @@ export function buildFakeOs(): HTMLElement {
   const items: Array<[string | HTMLElement, string, (() => void) | string]> = [
     ['🖥', 'terminal', openTerminal],
     ['🔬', 'research', openResearch],
+    ['🛰️', 'experience', openExperience],
     ['📄', 'cv.pdf', () => openPdf('/resume.pdf', 'cv.pdf')],
     ['🧑‍🚀', 'about', openProfile],
     [playIcon('os-dock-icon'), 'videos', openVideos],

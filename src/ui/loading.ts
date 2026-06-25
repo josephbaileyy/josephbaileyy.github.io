@@ -10,6 +10,7 @@ export class LoadingOverlay {
   private text: HTMLDivElement;
   private bar: HTMLDivElement;
   private retry: HTMLButtonElement;
+  private quickPortfolio: HTMLAnchorElement;
   private phrase = 0;
   private timer: ReturnType<typeof setInterval> | null = null;
 
@@ -27,9 +28,14 @@ export class LoadingOverlay {
     this.retry.type = 'button';
     this.retry.textContent = 'Try again';
     this.retry.hidden = true;
+    this.quickPortfolio = document.createElement('a');
+    this.quickPortfolio.className = 'loading-portfolio';
+    this.quickPortfolio.href = '/about.html';
+    this.quickPortfolio.textContent = 'Open the quick portfolio instead →';
     this.el.setAttribute('role', 'status');
     this.el.setAttribute('aria-live', 'polite');
-    this.el.append(this.text, this.bar, this.retry);
+    this.el.setAttribute('aria-hidden', 'false');
+    this.el.append(this.text, this.bar, this.retry, this.quickPortfolio);
     document.body.appendChild(this.el);
     this.timer = setInterval(() => {
       this.phrase = (this.phrase + 1) % PHRASES.length;
@@ -59,12 +65,16 @@ export class LoadingOverlay {
 
   show(): void {
     this.el.classList.remove('done');
+    this.el.setAttribute('aria-hidden', 'false');
+    this.quickPortfolio.tabIndex = 0;
   }
 
   hide(): void {
     if (this.timer) clearInterval(this.timer);
     this.timer = null;
     this.el.classList.add('done');
+    this.el.setAttribute('aria-hidden', 'true');
+    this.quickPortfolio.tabIndex = -1;
     this.retry.hidden = true;
   }
 
