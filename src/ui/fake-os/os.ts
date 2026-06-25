@@ -383,16 +383,18 @@ export function buildFakeOs(): HTMLElement {
     } else {
       el.addEventListener('click', () => {
         el.blur();
-        action();
         requestAnimationFrame(() => {
-          const active = document.activeElement;
-          if (
-            window.matchMedia('(max-width: 760px)').matches &&
-            active instanceof HTMLInputElement &&
-            active.closest('.os-terminal')
-          ) {
-            active.blur();
-          }
+          action();
+          requestAnimationFrame(() => {
+            const active = document.activeElement;
+            if (
+              window.matchMedia('(max-width: 760px)').matches &&
+              active instanceof HTMLInputElement &&
+              active.closest('.os-terminal')
+            ) {
+              active.blur();
+            }
+          });
         });
       });
     }
