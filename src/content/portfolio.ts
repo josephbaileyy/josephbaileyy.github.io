@@ -4,6 +4,11 @@ export interface PortfolioItem {
   title: string;
   description: string;
   meta?: string;
+  featured?: boolean;
+  challenge?: string;
+  contribution?: string;
+  outcome?: string;
+  tools?: string[];
   href?: string;
   linkLabel?: string;
   /** Extra links (posters, reports, papers) shown alongside the primary one. */
@@ -62,7 +67,11 @@ export const renderItems = (items: PortfolioItem[]): string =>
         )
         .join('');
       const meta = item.meta ? `<span class="panel-meta">${escapeHtml(item.meta)}</span>` : '';
-      return `<li><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.description)}${links}</p>${meta}</li>`;
+      const showcase =
+        item.featured && item.challenge && item.contribution && item.outcome
+          ? `<dl class="project-evidence"><div><dt>Signal</dt><dd>${escapeHtml(item.challenge)}</dd></div><div><dt>Work</dt><dd>${escapeHtml(item.contribution)}</dd></div><div><dt>Evidence</dt><dd>${escapeHtml(item.outcome)}</dd></div></dl>${item.tools?.length ? `<span class="project-tools">${item.tools.map(escapeHtml).join(' · ')}</span>` : ''}`
+          : '';
+      return `<li${item.featured ? ' class="featured-item"' : ''}><strong>${escapeHtml(item.title)}</strong><p>${escapeHtml(item.description)}${links}</p>${showcase}${meta}</li>`;
     })
     .join('')}</ul>`;
 

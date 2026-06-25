@@ -1,3 +1,9 @@
+export type ObservationDestination =
+  | { type: 'panel'; panelId: string; label: string }
+  | { type: 'scene'; index: number; label: string }
+  | { type: 'app'; appId: string; label: string }
+  | { type: 'url'; href: string; label: string };
+
 export class Hud {
   private dots: HTMLButtonElement[] = [];
   private live: HTMLDivElement;
@@ -11,7 +17,11 @@ export class Hud {
   private logToggle: HTMLButtonElement;
   private logPanel: HTMLDivElement;
   private logList: HTMLUListElement;
-  private observations = new Map<string, { title: string; body: string }>();
+  private onOpenDestination?: (destination: ObservationDestination) => void;
+  private observations = new Map<
+    string,
+    { title: string; body: string; destination?: ObservationDestination }
+  >();
 
   constructor(
     private root: HTMLElement,
@@ -24,8 +34,10 @@ export class Hud {
       onAmbientToggle?: () => Promise<boolean> | boolean;
       onDriftToggle?: () => boolean;
       onOpenPanel?: (panelId: string) => void;
+      onOpenDestination?: (destination: ObservationDestination) => void;
     } = {},
   ) {
+    this.onOpenDestination = options.onOpenDestination;
     const name = document.createElement('div');
     name.className = 'hud-name';
     name.innerHTML = `
@@ -163,8 +175,8 @@ export class Hud {
     });
     this.logToggle = document.createElement('button');
     this.logToggle.type = 'button';
-    this.logToggle.textContent = 'log';
-    this.logToggle.setAttribute('aria-label', 'Open observation log');
+    this.logToggle.textContent = 'field log';
+    this.logToggle.setAttribute('aria-label', 'Open field log');
     this.logToggle.setAttribute('aria-expanded', 'false');
     this.logToggle.setAttribute('aria-controls', 'observation-log');
     this.logToggle.addEventListener('click', () => {
@@ -179,7 +191,7 @@ export class Hud {
     this.logPanel.id = 'observation-log';
     this.logPanel.className = 'observation-log';
     this.logPanel.innerHTML =
-      '<strong>Observation log</strong><p>Travel through the universe to collect notes.</p>';
+      '<strong>Field log</strong><p>Travel through the universe to collect signals and routes.</p>';
     this.logList = document.createElement('ul');
     this.logPanel.appendChild(this.logList);
     root.appendChild(this.logPanel);
@@ -233,11 +245,42 @@ export class Hud {
     this.live.textContent = `Now viewing: ${label}`;
   }
 
-  addObservation(id: string, title: string, body: string): void {
+  addObservation(
+    id: string,
+    title: string,
+    body: string,
+    destination?: ObservationDestination,
+  ): void {
     if (this.observations.has(id)) return;
-    this.observations.set(id, { title, body });
+    this.observations.set(id, { title, body, destination });
     const item = document.createElement('li');
-    item.innerHTML = `<strong>${escapeHtml(title)}</strong><span>${escapeHtml(body)}</span>`;
+    const heading = document.createElement('strong');
+    heading.textContent = title;
+    const copy = document.createElement('span');
+    copy.textContent = body;
+    item.append(heading, copy);
+    if (destination) {
+      const action =
+        destination.type === 'url' ? document.createElement('a') : document.createElement('button');
+      action.className = 'observation-route';
+      action.textContent = `${destination.label} →`;
+      if (destination.type === 'url') {
+        const link = action as HTMLAnchorElement;
+        link.href = destination.href;
+        if (destination.href.startsWith('http') || destination.href.endsWith('.pdf')) {
+          link.target = '_blank';
+          link.rel = 'noopener';
+        }
+      } else {
+        action.type = 'button';
+        action.addEventListener('click', () => {
+          this.logPanel.classList.remove('open');
+          this.logToggle.setAttribute('aria-expanded', 'false');
+          this.onOpenDestination?.(destination);
+        });
+      }
+      item.appendChild(action);
+    }
     this.logList.appendChild(item);
     this.logPanel.classList.add('has-items');
   }
@@ -250,18 +293,4 @@ export class Hud {
   hideHint(): void {
     this.hint.classList.add('hidden');
   }
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(
-    /[&<>"']/g,
-    (char) =>
-      ({
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;',
-      })[char]!,
-  );
 }

@@ -68,12 +68,22 @@
     {
       "title": "This website",
       "description": "A Powers-of-Ten-style zoom from the Milky Way to my desk, built with TypeScript and Three.js with a real star catalog, live Earth terminator, and animated AM CVn binary.",
+      "featured": true,
+      "challenge": "Present research, engineering, and personality without flattening them into a conventional project grid.",
+      "contribution": "Designed and built the universe-scale navigation, BaileyOS desktop, accessible quick portfolio, scene loading, and responsive interaction system.",
+      "outcome": "One portfolio with an immersive WebGL route and a fast conventional route, sharing the same structured content and downloadable evidence.",
+      "tools": ["TypeScript", "Three.js", "WebGL", "Playwright", "Vitest"],
       "href": "https://github.com/josephbaileyy/josephbaileyy.github.io",
       "linkLabel": "Source"
     },
     {
       "title": "MINERvA-OmniFold",
       "description": "An implementation and evaluation pipeline for unbinned machine-learning unfolding of neutrino cross-sections.",
+      "featured": true,
+      "challenge": "Test whether high-dimensional unbinned unfolding can reduce structural model bias in few-GeV neutrino measurements.",
+      "contribution": "Implemented the OmniFold workflow and an evaluation program spanning closure tests, generator stress tests, bootstrap resampling, and bias–variance analysis.",
+      "outcome": "A reproducible research pipeline and paper that compare machine-learning unfolding with iterative Bayesian unfolding under controlled uncertainty tests.",
+      "tools": ["Python", "OmniFold", "statistical inference", "MINERvA"],
       "href": "https://github.com/josephbaileyy/MINERvA-OmniFold",
       "linkLabel": "GitHub",
       "links": [{ "label": "Paper (PDF)", "href": "/papers/neutrino-unfolding.pdf" }]
@@ -81,6 +91,11 @@
     {
       "title": "SPLoRA — parameter-efficient GPT-2",
       "description": "LoRA fine-tuning of GPT-2 for paraphrase detection and Shakespearean sonnet generation: 0.888 development accuracy while training about 1% of parameters, with 41.94 chrF.",
+      "featured": true,
+      "challenge": "Adapt GPT-2 to discriminative and generative tasks without the cost of full-model fine-tuning.",
+      "contribution": "Built LoRA-based training and evaluation paths for paraphrase detection and Shakespearean sonnet generation.",
+      "outcome": "Reached 0.888 development accuracy while training about 1% of parameters, with 41.94 chrF on generation.",
+      "tools": ["PyTorch", "GPT-2", "LoRA", "NLP"],
       "href": "https://github.com/josephbaileyy/splora",
       "linkLabel": "GitHub",
       "links": [
@@ -103,6 +118,11 @@
     {
       "title": "Soccer action prediction with graph neural networks",
       "description": "Modeled soccer possessions as heterogeneous graphs using GraphSAGE and a Relational Graph Transformer with PyG and RelBench to predict the best next action.",
+      "featured": true,
+      "challenge": "Represent the relational and temporal structure of a soccer possession well enough to predict the best next action.",
+      "contribution": "Modeled possessions as heterogeneous graphs and evaluated GraphSAGE and a Relational Graph Transformer.",
+      "outcome": "Produced a reproducible graph-learning project with public code and a technical explanation of the modeling approach.",
+      "tools": ["PyTorch Geometric", "RelBench", "GraphSAGE", "RGT"],
       "href": "https://github.com/josephbaileyy/cs-224w-project",
       "linkLabel": "GitHub",
       "links": [

@@ -26,4 +26,24 @@ describe('portfolio content', () => {
       ),
     ).toBe(true);
   });
+
+  it('keeps featured project evidence complete across shared renderers', () => {
+    const featured = PORTFOLIO.projects.filter((project) => project.featured);
+    expect(featured.map((project) => project.title)).toEqual(
+      expect.arrayContaining([
+        'This website',
+        'MINERvA-OmniFold',
+        'SPLoRA — parameter-efficient GPT-2',
+        'Soccer action prediction with graph neural networks',
+      ]),
+    );
+    for (const project of featured) {
+      expect(project.challenge).toBeTruthy();
+      expect(project.contribution).toBeTruthy();
+      expect(project.outcome).toBeTruthy();
+      expect(project.tools?.length).toBeGreaterThan(0);
+    }
+    expect(PANELS.projects.html).toContain('project-evidence');
+    expect(PANELS.projects.html).toContain('Signal');
+  });
 });

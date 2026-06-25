@@ -92,6 +92,30 @@ function projectBody(
     meta.textContent = project.meta;
     div.appendChild(meta);
   }
+  if (project.featured && project.challenge && project.contribution && project.outcome) {
+    const evidence = document.createElement('dl');
+    evidence.className = 'os-project-evidence';
+    for (const [label, value] of [
+      ['Signal', project.challenge],
+      ['Work', project.contribution],
+      ['Evidence', project.outcome],
+    ]) {
+      const row = document.createElement('div');
+      const term = document.createElement('dt');
+      term.textContent = label;
+      const detail = document.createElement('dd');
+      detail.textContent = value;
+      row.append(term, detail);
+      evidence.appendChild(row);
+    }
+    div.appendChild(evidence);
+    if (project.tools?.length) {
+      const tools = document.createElement('span');
+      tools.className = 'os-project-tools';
+      tools.textContent = project.tools.join(' · ');
+      div.appendChild(tools);
+    }
+  }
   const actions = document.createElement('div');
   actions.className = 'os-project-actions';
   for (const link of itemLinks(project)) {
@@ -202,20 +226,31 @@ export function buildFakeOs(): HTMLElement {
 
   const menubar = document.createElement('div');
   menubar.className = 'os-menubar';
+  const identity = document.createElement('span');
+  identity.innerHTML =
+    '⬡ <strong>BaileyOS</strong> · mission desktop · windows remember their layout';
+  const actions = document.createElement('div');
+  actions.className = 'os-menubar-actions';
+  const arrange = document.createElement('button');
+  arrange.type = 'button';
+  arrange.className = 'os-arrange';
+  arrange.textContent = 'arrange windows';
+  arrange.setAttribute('aria-label', 'Arrange BaileyOS windows');
   const clock = document.createElement('span');
   const tickClock = () => {
     clock.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   tickClock();
   setInterval(tickClock, 10000);
-  menubar.innerHTML = `<span>⬡ <strong>BaileyOS</strong> · dock & desktop icons open apps · windows save automatically</span>`;
-  menubar.appendChild(clock);
+  actions.append(arrange, clock);
+  menubar.append(identity, actions);
   root.appendChild(menubar);
 
   const desktop = document.createElement('div');
   desktop.className = 'os-desktop';
   root.appendChild(desktop);
   const wm = new WindowManager(desktop);
+  arrange.addEventListener('click', () => wm.arrange());
 
   const openPdf = (href: string, title: string) =>
     wm.open({ id: `pdf:${href}`, title, body: pdfBody(href, title), x: 12, y: 6, w: 560, h: 460 });
@@ -280,6 +315,22 @@ export function buildFakeOs(): HTMLElement {
       h: 450,
     });
   const launchJourney = () => window.dispatchEvent(new CustomEvent('universe:tour'));
+  const appActions = new Map<string, () => void>([
+    ['terminal', openTerminal],
+    ['research', openResearch],
+    ['experience', openExperience],
+    ['cv', () => openPdf('/resume.pdf', 'cv.pdf')],
+    ['profile', openProfile],
+    ['videos', openVideos],
+  ]);
+  for (const project of APP_PROJECTS) {
+    appActions.set(`project:${project.app!.short}`, () => openProject(project));
+  }
+  const openApp = (event: Event) => {
+    const id = (event as CustomEvent<string>).detail;
+    appActions.get(id)?.();
+  };
+  window.addEventListener('universe:open-app', openApp);
 
   // ---- desktop icons (projects deliberately live here, not in the dock) ----
   const icons = document.createElement('div');
@@ -300,22 +351,24 @@ export function buildFakeOs(): HTMLElement {
   // ---- dock ----
   const dock = document.createElement('div');
   dock.className = 'os-dock';
-  const items: Array<[string | HTMLElement, string, (() => void) | string]> = [
-    ['🖥', 'terminal', openTerminal],
-    ['🔬', 'research', openResearch],
-    ['🛰️', 'experience', openExperience],
-    ['📄', 'cv.pdf', () => openPdf('/resume.pdf', 'cv.pdf')],
-    ['🧑‍🚀', 'about', openProfile],
-    [playIcon('os-dock-icon'), 'videos', openVideos],
-    ['🌌', 'journey', launchJourney],
-    ['💻', 'github', 'https://github.com/josephbaileyy'],
-    ['🔗', 'linkedin', 'https://linkedin.com/in/baileyjosephr'],
-    ['✉️', 'email', 'mailto:jrbailey555@gmail.com'],
+  const items: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
+    ['terminal', '🖥', 'terminal', openTerminal],
+    ['research', '🔬', 'research', openResearch],
+    ['experience', '🛰️', 'experience', openExperience],
+    ['cv', '📄', 'cv.pdf', () => openPdf('/resume.pdf', 'cv.pdf')],
+    ['profile', '🧑‍🚀', 'about', openProfile],
+    ['videos', playIcon('os-dock-icon'), 'videos', openVideos],
+    ['journey', '🌌', 'journey', launchJourney],
+    ['github', '💻', 'github', 'https://github.com/josephbaileyy'],
+    ['linkedin', '🔗', 'linkedin', 'https://linkedin.com/in/baileyjosephr'],
+    ['email', '✉️', 'email', 'mailto:jrbailey555@gmail.com'],
   ];
-  for (const [icon, label, action] of items) {
+  const dockApps = new Map<string, HTMLElement>();
+  for (const [appId, icon, label, action] of items) {
     const el =
       typeof action === 'string' ? document.createElement('a') : document.createElement('button');
     el.className = 'os-dock-item';
+    el.dataset.appId = appId;
     const iconElement = typeof icon === 'string' ? document.createElement('span') : icon;
     if (typeof icon === 'string') {
       iconElement.className = 'os-dock-icon';
@@ -334,9 +387,34 @@ export function buildFakeOs(): HTMLElement {
       }
     } else {
       el.addEventListener('click', action);
+      if (appId === 'journey') {
+        el.setAttribute('aria-label', 'Launch guided journey');
+      } else {
+        el.setAttribute('aria-pressed', 'false');
+        dockApps.set(appId, el);
+      }
     }
     dock.appendChild(el);
   }
+  wm.subscribe((states) => {
+    const byId = new Map(states.map((state) => [state.id, state]));
+    for (const [appId, el] of dockApps) {
+      const state = byId.get(appId === 'cv' ? 'pdf:/resume.pdf' : appId);
+      el.classList.toggle('open', Boolean(state));
+      el.classList.toggle('active', Boolean(state?.active));
+      el.classList.toggle('minimized', Boolean(state?.minimized));
+      el.setAttribute('aria-pressed', String(Boolean(state?.active)));
+      const label = el.querySelector('.os-dock-label')?.textContent ?? appId;
+      const status = state?.minimized
+        ? 'minimized'
+        : state?.active
+          ? 'active'
+          : state
+            ? 'open'
+            : 'closed';
+      el.setAttribute('aria-label', `${label} — ${status}`);
+    }
+  });
   root.appendChild(dock);
 
   // a welcoming window on first dock

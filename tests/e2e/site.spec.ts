@@ -158,6 +158,13 @@ test('BaileyOS keeps projects on the desktop and videos in the dock', async ({ p
   ).toHaveAttribute('src', '/icons/league-of-legends.png');
 
   await page.getByRole('button', { name: 'Close terminal — zsh' }).click();
+  await page.locator('.os-desktop-icon').filter({ hasText: 'SPLoRA' }).click();
+  const featuredProject = page
+    .locator('.os-window')
+    .filter({ hasText: '0.888 development accuracy' });
+  await expect(featuredProject).toContainText('Signal');
+  await expect(featuredProject).toContainText('Evidence');
+  await page.getByLabel('Close SPLoRA — project').click();
   await page.locator('.os-desktop-icon').filter({ hasText: 'league' }).click();
   await expect(page.locator('.os-window').filter({ hasText: 'League of Legends' })).toBeVisible();
 
@@ -300,6 +307,11 @@ test('quick portfolio provides current-work navigation and experience', async ({
   await expect(
     experience.getByRole('heading', { name: /Engineering Intern — Polytec/ }),
   ).toBeVisible();
+  const projects = page.locator('#projects');
+  await expect(projects.locator('.card.featured')).toHaveCount(4);
+  await expect(projects).toContainText('Signal');
+  await expect(projects).toContainText('Evidence');
+  await expect(projects).toContainText('TypeScript · Three.js · WebGL');
   await expect(page.locator('script[type="application/ld+json"]')).not.toContainText('alumniOf');
 });
 
@@ -393,8 +405,10 @@ test('immersive HUD controls toggle scale, drift, and the observation log', asyn
     'drift: on',
   );
 
-  await page.getByRole('button', { name: 'Open observation log' }).click();
+  await page.getByRole('button', { name: 'Open field log' }).click();
   await expect(page.locator('.observation-log.open')).toContainText('The Solar System');
+  await page.getByRole('button', { name: 'Continue to Earth →' }).click();
+  await expect(page).toHaveURL(/#\/earth$/);
 });
 
 test('stage navigation stays pixel-aligned for Safari', async ({ page }) => {
@@ -507,6 +521,50 @@ test('BaileyOS windows resize with accessible controls', async ({ page }, testIn
   await expect(window).toHaveClass(/minimized/);
   await page.locator('.os-dock-item').filter({ hasText: 'terminal' }).click();
   await expect(window).not.toHaveClass(/minimized/);
+});
+
+test('BaileyOS terminal activation keeps every window control cluster reachable', async ({
+  page,
+}, testInfo) => {
+  test.skip(isMobileProject(testInfo.project.name), 'desktop window cascade contract');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  await expect(page.getByLabel('terminal input')).toBeVisible();
+  for (const app of ['research', 'experience', 'about']) {
+    await page.locator(`.os-dock-item[data-app-id="${app === 'about' ? 'profile' : app}"]`).click();
+  }
+  const terminalDock = page.locator('.os-dock-item[data-app-id="terminal"]');
+  await terminalDock.click();
+  await expect(terminalDock).toHaveAttribute('aria-pressed', 'true');
+  await expect(terminalDock).toHaveAttribute('aria-label', /active/);
+
+  const reachable = await page.locator('.os-window').evaluateAll((windows) =>
+    windows.map((window) => {
+      const control = window.querySelector<HTMLButtonElement>('.os-window-controls button');
+      if (!control) return false;
+      const box = control.getBoundingClientRect();
+      const top = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+      return top === control || control.contains(top);
+    }),
+  );
+  expect(reachable.every(Boolean)).toBe(true);
+
+  await page.getByRole('button', { name: 'Arrange BaileyOS windows' }).click();
+  await expect(page.locator('.os-window.active')).toHaveCount(1);
+});
+
+test('BaileyOS dock reports open and minimized app state', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  await expect(page.getByLabel('terminal input')).toBeVisible();
+  const terminalDock = page.locator('.os-dock-item[data-app-id="terminal"]');
+  await expect(terminalDock).toHaveClass(/open/);
+  await page.getByLabel('Minimize terminal — zsh').click();
+  await expect(terminalDock).toHaveClass(/minimized/);
+  await expect(terminalDock).toHaveAttribute('aria-label', /minimized/);
+  await terminalDock.click();
+  await expect(terminalDock).toHaveClass(/active/);
+  await expect(terminalDock).toHaveAttribute('aria-pressed', 'true');
 });
 
 test('BaileyOS keeps one active app window on mobile', async ({ page }, testInfo) => {

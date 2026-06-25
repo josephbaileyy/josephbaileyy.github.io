@@ -777,6 +777,26 @@ body {
   font: 11px/1.45 var(--font-mono);
 }
 
+.observation-route {
+  display: inline-flex;
+  margin-top: 7px;
+  border: 0;
+  background: transparent;
+  color: var(--cyan);
+  cursor: pointer;
+  font: 10px/1.4 var(--font-mono);
+  padding: 0;
+  text-decoration: none;
+}
+
+.observation-route:hover,
+.observation-route:focus-visible {
+  color: var(--gold);
+  outline: none;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .hud-zoom button:focus-visible,
 .loading-retry:focus-visible,
 .panel-close:focus-visible,
@@ -1302,6 +1322,33 @@ dialog.panel::backdrop {
   border-bottom: 1px solid rgba(127, 212, 255, 0.15);
 }
 
+body[data-hud-mode='computer'] .os-menubar {
+  padding-right: 175px;
+}
+
+.os-menubar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.os-arrange {
+  border: 1px solid rgba(127, 212, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(70, 54, 160, 0.22);
+  color: var(--ink-dim);
+  cursor: pointer;
+  font: 10px var(--font-mono);
+  padding: 4px 9px;
+}
+
+.os-arrange:hover,
+.os-arrange:focus-visible {
+  border-color: var(--cyan);
+  color: var(--ink);
+  outline: none;
+}
+
 .os-desktop {
   position: relative;
   flex: 1;
@@ -1320,6 +1367,13 @@ dialog.panel::backdrop {
   min-height: 180px;
   display: flex;
   flex-direction: column;
+}
+
+.os-window.active {
+  border-color: rgba(127, 212, 255, 0.52);
+  box-shadow:
+    0 18px 54px rgba(0, 0, 0, 0.62),
+    0 0 0 1px rgba(127, 212, 255, 0.08);
 }
 
 .os-window > .os-doc,
@@ -1491,6 +1545,7 @@ dialog.panel::backdrop {
 
 .os-dock-item {
   flex: 0 0 auto;
+  position: relative;
 }
 
 body[data-hud-mode='computer'] .os-dock {
@@ -1521,6 +1576,27 @@ body[data-hud-mode='computer'] .os-dock {
   transform: translateY(-4px) scale(1.08);
   background: rgba(70, 54, 160, 0.4);
   color: var(--ink);
+}
+
+.os-dock-item.open::after {
+  position: absolute;
+  bottom: 1px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ink-dim);
+  content: '';
+}
+
+.os-dock-item.active::after {
+  width: 14px;
+  border-radius: 999px;
+  background: var(--cyan);
+  box-shadow: 0 0 8px rgba(127, 212, 255, 0.65);
+}
+
+.os-dock-item.minimized::after {
+  background: var(--gold);
 }
 
 .os-dock-icon {
@@ -1627,6 +1703,49 @@ body[data-hud-mode='computer'] .os-dock {
   margin-bottom: 12px;
   font: 11px/1.5 var(--font-mono);
   color: var(--ink-dim);
+}
+
+.os-project-evidence,
+.project-evidence {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.os-project-evidence div,
+.project-evidence div {
+  display: grid;
+  grid-template-columns: 68px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.os-project-evidence dt,
+.project-evidence dt {
+  color: var(--gold);
+  font: 10px/1.5 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.os-project-evidence dd,
+.project-evidence dd {
+  margin: 0;
+  color: #d4daf2;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.os-project-tools,
+.project-tools {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--cyan);
+  font: 10px/1.5 var(--font-mono);
+}
+
+.panel-list .featured-item {
+  border-left: 2px solid rgba(255, 212, 121, 0.62);
+  padding-left: 12px;
 }
 
 .os-project-actions {
@@ -1883,6 +2002,25 @@ body[data-hud-mode='computer'] .os-dock {
   .os-menubar {
     padding: 7px 10px;
     font-size: 11px;
+  }
+
+  body[data-hud-mode='computer'] .os-menubar {
+    padding-right: 112px;
+  }
+
+  .os-menubar > span:first-child {
+    max-width: 42%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .os-menubar-actions {
+    gap: 7px;
+  }
+
+  .os-arrange {
+    padding-inline: 7px;
   }
 
   .os-desktop {

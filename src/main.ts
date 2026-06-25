@@ -12,7 +12,7 @@ import { fxAt, JumpController } from './engine/transitions';
 import { World } from './engine/world';
 import { SceneLoader } from './engine/loader';
 import { CHAIN3D } from './scenes/registry';
-import { Hud } from './ui/hud';
+import { Hud, type ObservationDestination } from './ui/hud';
 import { LoadingOverlay } from './ui/loading';
 import { PanelHost } from './ui/panel';
 import { ScaleRibbon } from './ui/scale-ribbon';
@@ -81,6 +81,8 @@ const jump = new JumpController(camera, reduced);
 const ambient = new AmbientSound();
 let scaleMode: 'cinematic' | 'real' = 'cinematic';
 let driftMode = false;
+let pendingOsApp: string | null = null;
+let osBuilt = false;
 document.body.dataset.scaleMode = scaleMode;
 const requestDestination = (index: number): void => {
   loader.request(index);
@@ -138,6 +140,21 @@ const hud = new Hud(
       tour.cancel();
       openPanel(id, Math.round(camera.depth));
     },
+    onOpenDestination: (destination: ObservationDestination) => {
+      tour.cancel();
+      if (destination.type === 'panel') {
+        openPanel(destination.panelId, Math.round(camera.depth));
+      } else if (destination.type === 'scene') {
+        navigateTo(destination.index);
+      } else if (destination.type === 'app') {
+        if (osBuilt && Math.round(camera.depth) === CHAIN3D.length - 1) {
+          window.dispatchEvent(new CustomEvent('universe:open-app', { detail: destination.appId }));
+        } else {
+          pendingOsApp = destination.appId;
+          navigateTo(CHAIN3D.length - 1);
+        }
+      }
+    },
   },
 );
 
@@ -187,27 +204,48 @@ const SCENE_HINTS = [
   'use the dock · drag, resize, minimize, or maximize windows',
 ] as const;
 
-const OBSERVATIONS: Record<string, string> = {
-  galaxy: 'The Milky Way scene uses layered procedural stars, dust, and research beacons.',
-  solar:
-    'Planet positions come from checked-in JPL ephemeris data; the scale toggle changes visual body size only.',
-  earth: 'Earth uses a live terminator so day and night follow the selected time.',
-  stanford: 'The Stanford scene is the handoff from planet scale into a lived-in campus scale.',
-  room: 'The dorm-room hop uses the lit monitor as a physical portal into BaileyOS.',
-  screen: 'BaileyOS is a DOM desktop projected onto the monitor inside the 3D universe.',
+const OBSERVATIONS: Record<string, { body: string; destination?: ObservationDestination }> = {
+  galaxy: {
+    body: 'The Milky Way scene uses layered procedural stars, dust, and research beacons.',
+    destination: { type: 'panel', panelId: 'research', label: 'Open research signals' },
+  },
+  solar: {
+    body: 'Planet positions come from checked-in JPL ephemeris data; the scale toggle changes visual body size only.',
+    destination: { type: 'scene', index: 2, label: 'Continue to Earth' },
+  },
+  earth: {
+    body: 'Earth uses a live terminator so day and night follow the selected time.',
+    destination: { type: 'scene', index: 3, label: 'Locate Stanford' },
+  },
+  stanford: {
+    body: 'The Stanford scene is the handoff from planet scale into a lived-in campus scale.',
+    destination: { type: 'scene', index: 4, label: 'Enter the room' },
+  },
+  room: {
+    body: 'The dorm-room hop uses the lit monitor as a physical portal into BaileyOS.',
+    destination: { type: 'scene', index: 5, label: 'Dock at BaileyOS' },
+  },
+  screen: {
+    body: 'BaileyOS is a DOM mission desktop projected onto the monitor inside the 3D universe.',
+    destination: { type: 'app', appId: 'profile', label: 'Open the profile app' },
+  },
 };
 
-const HOTSPOT_OBSERVATIONS: Record<string, string> = {
-  'am-cvn':
-    'AM CVn systems are helium-transferring compact binaries; the model shows a disk, stream, and hot spot.',
-  research:
-    'The pulsar marker gathers the particle, neutrino, and collider-ML side of the portfolio.',
-};
+const HOTSPOT_OBSERVATIONS: Record<string, { body: string; destination?: ObservationDestination }> =
+  {
+    'am-cvn': {
+      body: 'AM CVn systems are helium-transferring compact binaries; the model shows a disk, stream, and hot spot.',
+      destination: { type: 'panel', panelId: 'am-cvn', label: 'Reopen observation note' },
+    },
+    research: {
+      body: 'The pulsar marker gathers the particle, neutrino, and collider-ML side of the portfolio.',
+      destination: { type: 'panel', panelId: 'research', label: 'Open research dossier' },
+    },
+  };
 
 const SCREEN_INDEX = CHAIN3D.length - 1;
 const a11yLayer = document.getElementById('a11y-layer')!;
 const screenUi = new ScreenUi((id) => openPanel(id, SCREEN_INDEX));
-let osBuilt = false;
 let earthExplorer: import('./ui/earth-explorer').EarthExplorer | null = null;
 let earthExplorerJob: Promise<void> | null = null;
 const syncEarthExplorer = (settled: number | null) => {
@@ -226,6 +264,10 @@ const ensureFakeOs = () => {
     if (!osBuilt) {
       screenUi.setContent(buildFakeOs());
       osBuilt = true;
+      if (pendingOsApp) {
+        window.dispatchEvent(new CustomEvent('universe:open-app', { detail: pendingOsApp }));
+        pendingOsApp = null;
+      }
     }
   });
 };
@@ -234,10 +276,12 @@ const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => 
   tour.cancel();
   hud.hideHint();
   if (h.action.type === 'panel') {
+    const observation = HOTSPOT_OBSERVATIONS[h.action.panelId];
     hud.addObservation(
       h.action.panelId,
       h.label,
-      HOTSPOT_OBSERVATIONS[h.action.panelId] ?? 'Opened a research note from the 3D scene.',
+      observation?.body ?? 'Opened a research note from the 3D scene.',
+      observation?.destination,
     );
     openPanel(h.action.panelId, world.baseIndex());
   } else if (h.action.type === 'navigate') {
@@ -471,10 +515,12 @@ function frame(): void {
     if (settled !== null) {
       quality.setScene(CHAIN3D[settled].id);
       hud.announce(CHAIN3D[settled].label);
+      const observation = OBSERVATIONS[CHAIN3D[settled].id];
       hud.addObservation(
         CHAIN3D[settled].id,
         CHAIN3D[settled].label,
-        OBSERVATIONS[CHAIN3D[settled].id],
+        observation.body,
+        observation.destination,
       );
       if (!tour.active) hud.showHint(SCENE_HINTS[settled]);
       if (!panel.isOpen) router.replace(settled);
