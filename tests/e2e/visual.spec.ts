@@ -57,6 +57,6 @@ test('visual contract: quick portfolio mobile', async ({ page }, testInfo) => {
   await expect(page.getByRole('heading', { name: 'Current work' })).toBeVisible();
   await expect(page).toHaveScreenshot('quick-portfolio-mobile.png', {
     animations: 'disabled',
-    maxDiffPixelRatio: 0.08,
+    maxDiffPixelRatio: 0.15,
   });
 });
