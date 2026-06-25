@@ -1600,19 +1600,20 @@ body[data-hud-mode='computer'] .os-dock {
 }
 
 .os-dock-icon {
+  display: grid;
+  width: 30px;
+  height: 28px;
+  place-items: center;
   font-size: 21px;
   font-family: var(--font-ui);
+  line-height: 1;
 }
 
 .os-play-app-icon {
   position: relative;
-  display: inline-block;
-  width: 28px;
-  height: 20px;
-  margin-block: 4px;
-  border-radius: 6px;
-  background: #ff3141;
-  box-shadow: 0 2px 8px rgba(255, 49, 65, 0.3);
+  display: block;
+  width: 30px;
+  height: 28px;
 }
 
 .os-mobile-home,
@@ -1622,18 +1623,26 @@ body[data-hud-mode='computer'] .os-dock {
   display: none;
 }
 
+.os-play-app-icon::before {
+  content: '';
+  position: absolute;
+  left: 1px;
+  top: 4px;
+  width: 28px;
+  height: 20px;
+  border-radius: 6px;
+  background: #ff3141;
+  box-shadow: 0 2px 8px rgba(255, 49, 65, 0.3);
+}
+
 .os-play-app-icon::after {
   content: '';
   position: absolute;
-  left: 11px;
-  top: 6px;
+  left: 12px;
+  top: 10px;
   border-top: 4px solid transparent;
   border-bottom: 4px solid transparent;
   border-left: 7px solid white;
-}
-
-.os-dock .os-play-app-icon {
-  transform: translateY(1.5px);
 }
 
 /* ---- desktop icons (the CS projects) ---- */
@@ -2218,6 +2227,15 @@ body[data-hud-mode='computer'] .os-dock {
     height: 24px;
     margin: 0;
     border-radius: 7px;
+  }
+
+  .os-mobile-app-icon .os-play-app-icon::before {
+    display: none;
+  }
+
+  .os-mobile-app-icon .os-play-app-icon::after {
+    left: 14px;
+    top: 8px;
   }
 
   .os-mobile-icon-terminal {
