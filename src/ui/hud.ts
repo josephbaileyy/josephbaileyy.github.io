@@ -270,6 +270,7 @@ export class Hud {
   /** Hide the journey button while the guided tour is running. */
   setTouring(active: boolean): void {
     this.journey.classList.toggle('hidden', active);
+    document.body.dataset.tour = active ? 'active' : 'idle';
     if (active) this.stopPulse();
   }
 

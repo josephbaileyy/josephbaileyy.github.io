@@ -525,12 +525,14 @@ test('solar UI is removed when returning to the Milky Way', async ({ page }) => 
   await expect(overlay).not.toHaveClass(/active/);
 });
 
-test('Earth offers explicit exploration without replacing universe navigation', async ({
-  page,
-}) => {
+test('Earth offers direct globe controls with optional terrain mode', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/earth');
-  await expect(page.getByRole('button', { name: 'explore Earth' })).toBeVisible();
+  await expect(page.getByText(/drag Earth/)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'terrain mode' })).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Stanford / SLAC coordinate evidence' }),
+  ).toBeVisible();
   await expect(page).toHaveURL(/#\/earth$/);
 });
 

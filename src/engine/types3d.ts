@@ -5,7 +5,7 @@ export type QualityTier = 'high' | 'med' | 'low';
 
 export type HotspotAction =
   | { type: 'panel'; panelId: string }
-  | { type: 'signal'; signalId: string }
+  | { type: 'signal'; signalId: string; route?: boolean }
   | { type: 'zoom'; dir: 'in' | 'out' }
   | { type: 'navigate'; index: number };
 

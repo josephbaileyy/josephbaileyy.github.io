@@ -125,9 +125,8 @@
       "id": "earth-pasadena",
       "scene": "earth",
       "title": "Pasadena",
-      "body": "Caltech LIGO Lab work and Polytec engineering both sit here: interferometry, vibration data, Python/MATLAB analysis, and lab tooling.",
+      "body": "Caltech LIGO Lab and Pasadena-area Polytec engineering: interferometry, vibration data, Python/MATLAB analysis, and lab tooling.",
       "category": "evidence",
-      "destination": { "type": "panel", "panelId": "experience", "label": "Open experience" },
       "links": [{ "label": "LIGO report", "href": "/papers/ligo-caltech-report.pdf" }]
     },
     {
@@ -143,9 +142,8 @@
       "id": "earth-nyc",
       "scene": "earth",
       "title": "New York City",
-      "body": "WisdomTree Digital Movement connects technical work in blockchain and digital assets with financial products and client-focused strategy.",
-      "category": "evidence",
-      "destination": { "type": "panel", "panelId": "experience", "label": "Open experience" }
+      "body": "WisdomTree Digital Movement: blockchain and digital-asset engineering work in the context of financial products and client-focused strategy.",
+      "category": "evidence"
     },
     {
       "id": "stanford-physics",

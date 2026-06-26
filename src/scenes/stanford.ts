@@ -17,6 +17,7 @@ import {
   PointLight,
   Points,
   PointsMaterial,
+  RingGeometry,
   Shape,
   SphereGeometry,
   Vector3,
@@ -24,9 +25,79 @@ import {
 import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
 import { canvasTexture, textSprite } from './lib/assets';
 
-const SANDSTONE = 0x8f7f63;
-const ROOF = 0x7e2424;
+const SANDSTONE = 0xa89570;
+const ROOF = 0x963030;
 const DARKWOOD = 0x3a2f26;
+const PATH = 0xb7a57a;
+const TURF = 0x263f28;
+
+const roofTexture = canvasTexture(256, 256, (ctx) => {
+  ctx.fillStyle = '#782323';
+  ctx.fillRect(0, 0, 256, 256);
+  ctx.strokeStyle = 'rgba(255, 206, 145, 0.18)';
+  ctx.lineWidth = 2;
+  for (let y = 8; y < 256; y += 16) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(256, y + 4);
+    ctx.stroke();
+  }
+  ctx.strokeStyle = 'rgba(42, 16, 16, 0.35)';
+  ctx.lineWidth = 1;
+  for (let x = 0; x < 256; x += 18) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x + 8, 256);
+    ctx.stroke();
+  }
+});
+
+const sandstoneTexture = canvasTexture(256, 256, (ctx) => {
+  const g = ctx.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, '#a89773');
+  g.addColorStop(1, '#6f6048');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 900; i++) {
+    const alpha = 0.04 + (((i * 37) % 97) / 97) * 0.08;
+    ctx.fillStyle = `rgba(255,255,230,${alpha})`;
+    ctx.fillRect((i * 47) % 256, (i * 83) % 256, 1.2, 1.2);
+  }
+});
+
+function campusGroundTexture(): ReturnType<typeof canvasTexture> {
+  return canvasTexture(1024, 1024, (ctx) => {
+    const g = ctx.createRadialGradient(520, 520, 40, 520, 520, 700);
+    g.addColorStop(0, '#4f733d');
+    g.addColorStop(0.55, '#315432');
+    g.addColorStop(1, '#1d2b2a');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 1024, 1024);
+    ctx.strokeStyle = 'rgba(196, 176, 122, 0.34)';
+    ctx.lineWidth = 12;
+    for (const y of [330, 470, 610, 760]) {
+      ctx.beginPath();
+      ctx.moveTo(90, y);
+      ctx.bezierCurveTo(310, y - 45, 660, y + 55, 940, y - 10);
+      ctx.stroke();
+    }
+    ctx.strokeStyle = 'rgba(230, 210, 158, 0.45)';
+    ctx.lineWidth = 18;
+    ctx.beginPath();
+    ctx.ellipse(555, 720, 130, 76, -0.12, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(16, 20, 28, 0.45)';
+    ctx.lineWidth = 34;
+    ctx.beginPath();
+    ctx.moveTo(555, 720);
+    ctx.lineTo(555, 1010);
+    ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    for (let i = 0; i < 1400; i++) {
+      ctx.fillRect((i * 113) % 1024, (i * 251) % 1024, 1, 1);
+    }
+  });
+}
 
 function rng(seed: number): () => number {
   let a = seed;
@@ -71,7 +142,11 @@ function palm(rand: () => number): Group {
 
 function archBuilding(width: number, arches: number): Group {
   const g = new Group();
-  const wallMat = new MeshStandardMaterial({ color: SANDSTONE, roughness: 0.95 });
+  const wallMat = new MeshStandardMaterial({
+    color: SANDSTONE,
+    map: sandstoneTexture,
+    roughness: 0.95,
+  });
   const wall = new Mesh(new BoxGeometry(width, 2.8, 1.6), wallMat);
   wall.position.y = 1.4 + 0.8;
   wall.castShadow = true;
@@ -110,7 +185,7 @@ function archBuilding(width: number, arches: number): Group {
   roofShape.closePath();
   const roof = new Mesh(
     new ExtrudeGeometry(roofShape, { depth: width, bevelEnabled: false }),
-    new MeshStandardMaterial({ color: ROOF, roughness: 0.9 }),
+    new MeshStandardMaterial({ color: ROOF, map: roofTexture, roughness: 0.9 }),
   );
   roof.rotation.y = Math.PI / 2;
   roof.position.set(-width / 2, 4.2 - 1.0 + 0.8, 0);
@@ -119,15 +194,81 @@ function archBuilding(width: number, arches: number): Group {
   return g;
 }
 
+function path(width: number, length: number, color = PATH): Mesh {
+  const mesh = new Mesh(
+    new PlaneGeometry(width, length),
+    new MeshStandardMaterial({ color, roughness: 0.96 }),
+  );
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.y = 0.03;
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
+function rectBuilding(width: number, height: number, depth: number, lit = false): Group {
+  const g = new Group();
+  const wall = new Mesh(
+    new BoxGeometry(width, height, depth),
+    new MeshStandardMaterial({ color: SANDSTONE, map: sandstoneTexture, roughness: 0.96 }),
+  );
+  wall.position.y = height / 2;
+  wall.castShadow = true;
+  wall.receiveShadow = true;
+  g.add(wall);
+  const roofShape = new Shape();
+  roofShape.moveTo(-width / 2 - 0.25, 0);
+  roofShape.lineTo(width / 2 + 0.25, 0);
+  roofShape.lineTo(0, 0.75);
+  roofShape.closePath();
+  const roof = new Mesh(
+    new ExtrudeGeometry(roofShape, { depth: depth + 0.35, bevelEnabled: false }),
+    new MeshStandardMaterial({ color: ROOF, map: roofTexture, roughness: 0.9 }),
+  );
+  roof.position.set(0, height, -depth / 2 - 0.17);
+  roof.castShadow = true;
+  g.add(roof);
+  const winMat = new MeshBasicMaterial({
+    color: lit ? 0xffc98a : 0x1a1830,
+    transparent: true,
+    opacity: lit ? 0.78 : 0.72,
+  });
+  for (let x = -width / 2 + 0.55; x < width / 2; x += 0.95) {
+    for (let y = 0.8; y < height - 0.25; y += 0.85) {
+      const win = new Mesh(new PlaneGeometry(0.34, 0.34), winMat);
+      win.position.set(x, y, depth / 2 + 0.011);
+      g.add(win);
+    }
+  }
+  return g;
+}
+
+function cypress(height: number): Group {
+  const g = new Group();
+  const trunk = new Mesh(
+    new CylinderGeometry(0.045, 0.07, height * 0.72, 6),
+    new MeshStandardMaterial({ color: 0x35261d, roughness: 1 }),
+  );
+  trunk.position.y = height * 0.36;
+  g.add(trunk);
+  const crown = new Mesh(
+    new SphereGeometry(0.35, 10, 8),
+    new MeshStandardMaterial({ color: 0x173723, roughness: 1 }),
+  );
+  crown.scale.set(0.58, height, 0.58);
+  crown.position.y = height * 0.72;
+  g.add(crown);
+  return g;
+}
+
 export function createStanford(_assets: SceneAssets): SceneInstance {
   const group = new Group();
   const rand = rng(1885);
 
-  // ---- floating base slab (the #1 miniature cue: a visible thick rim) ----
+  // ---- grounded campus board: still miniature, less toy-like ----
   const slab = new Group();
   const top = new Mesh(
     new BoxGeometry(40, 0.5, 40),
-    new MeshStandardMaterial({ color: 0x35462e, roughness: 1 }),
+    new MeshStandardMaterial({ color: TURF, roughness: 1 }),
   );
   top.position.y = -0.25;
   top.receiveShadow = true;
@@ -138,24 +279,38 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   );
   rim.position.y = -1.3;
   slab.add(rim);
+  const ground = new Mesh(
+    new PlaneGeometry(39.4, 39.4),
+    new MeshStandardMaterial({ map: campusGroundTexture(), color: 0xffffff, roughness: 0.98 }),
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.position.y = 0.018;
+  ground.receiveShadow = true;
+  slab.add(ground);
   group.add(slab);
 
   // ---- lighting: moonlight + warm lamps ----
-  group.add(new HemisphereLight(0x5a6eb0, 0x1a1528, 2.2));
-  group.add(new AmbientLight(0x6777a8, 1.15));
-  const moon = new DirectionalLight(0xa8c4ff, 3.0);
+  group.add(new HemisphereLight(0x93a7df, 0x20182a, 3.15));
+  group.add(new AmbientLight(0x8a96c8, 1.7));
+  const moon = new DirectionalLight(0xd1dcff, 4.4);
   moon.position.set(18, 30, 12);
   // Real-time shadow maps become unstable while this entire diorama is
   // nested, rotated, and scaled on Earth's surface. Directional shading keeps
   // the miniature dimensional without the transition-time shadow crawl.
   moon.castShadow = false;
   group.add(moon);
-  const lamp1 = new PointLight(0xffb36b, 30, 14, 2);
+  const cameraFill = new DirectionalLight(0xffd2a6, 1.2);
+  cameraFill.position.set(-12, 12, 24);
+  group.add(cameraFill);
+  const lamp1 = new PointLight(0xffb36b, 48, 16, 2);
   lamp1.position.set(-4, 2.6, 6);
   group.add(lamp1);
-  const lamp2 = new PointLight(0xffb36b, 22, 12, 2);
+  const lamp2 = new PointLight(0xffb36b, 36, 14, 2);
   lamp2.position.set(6, 2.6, -2);
   group.add(lamp2);
+  const duskGlow = new PointLight(0xffd49a, 42, 28, 2);
+  duskGlow.position.set(1, 5, 9);
+  group.add(duskGlow);
 
   // ---- Main Quad ----
   const quad = archBuilding(16, 9);
@@ -165,6 +320,17 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   wing.position.set(-14, 0, -4);
   wing.rotation.y = Math.PI / 2;
   group.add(wing);
+  const eastWing = archBuilding(9, 5);
+  eastWing.position.set(1.7, 0, -5.8);
+  eastWing.rotation.y = Math.PI / 2;
+  group.add(eastWing);
+  const quadPath = path(2.0, 18);
+  quadPath.position.set(-6, 0, 7);
+  group.add(quadPath);
+  const crossPath = path(1.4, 20);
+  crossPath.rotation.z = Math.PI / 2;
+  crossPath.position.set(-5, 0, 1.2);
+  group.add(crossPath);
 
   // Memorial Church facade
   const church = new Group();
@@ -190,7 +356,7 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   });
   const churchBody = new Mesh(
     new BoxGeometry(4.6, 3.6, 3),
-    new MeshStandardMaterial({ color: SANDSTONE, roughness: 0.95 }),
+    new MeshStandardMaterial({ color: SANDSTONE, map: sandstoneTexture, roughness: 0.95 }),
   );
   churchBody.position.y = 1.8 + 0.0;
   churchBody.castShadow = true;
@@ -213,7 +379,7 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   gableShape.closePath();
   const gable = new Mesh(
     new ExtrudeGeometry(gableShape, { depth: 3, bevelEnabled: false }),
-    new MeshStandardMaterial({ color: ROOF, roughness: 0.9 }),
+    new MeshStandardMaterial({ color: ROOF, map: roofTexture, roughness: 0.9 }),
   );
   gable.position.set(0, 3.6, -1.5);
   gable.castShadow = true;
@@ -225,7 +391,7 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   const hoover = new Group();
   const shaft = new Mesh(
     new BoxGeometry(2.4, 9, 2.4),
-    new MeshStandardMaterial({ color: 0x9c8c6e, roughness: 0.95 }),
+    new MeshStandardMaterial({ color: 0x9c8c6e, map: sandstoneTexture, roughness: 0.95 }),
   );
   shaft.position.y = 4.5;
   shaft.castShadow = true;
@@ -250,13 +416,13 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   hoover.add(clock);
   const drum = new Mesh(
     new CylinderGeometry(1.0, 1.0, 0.9, 16),
-    new MeshStandardMaterial({ color: 0x9c8c6e, roughness: 0.95 }),
+    new MeshStandardMaterial({ color: 0x9c8c6e, map: sandstoneTexture, roughness: 0.95 }),
   );
   drum.position.y = 9.45;
   hoover.add(drum);
   const dome = new Mesh(
     new SphereGeometry(1.0, 16, 8, 0, Math.PI * 2, 0, Math.PI / 2),
-    new MeshStandardMaterial({ color: ROOF, roughness: 0.85 }),
+    new MeshStandardMaterial({ color: ROOF, map: roofTexture, roughness: 0.85 }),
   );
   dome.position.y = 9.9;
   hoover.add(dome);
@@ -269,34 +435,18 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   hoover.position.set(3, 0, -8);
   group.add(hoover);
 
-  // ---- generic red-roof buildings ----
-  for (let i = 0; i < 6; i++) {
+  // ---- surrounding campus massing: lightweight but more literal silhouettes ----
+  for (let i = 0; i < 12; i++) {
     const w = 3 + rand() * 4;
     const h = 1.6 + rand() * 1.6;
     const d = 2.5 + rand() * 2;
-    const b = new Mesh(
-      new BoxGeometry(w, h, d),
-      new MeshStandardMaterial({ color: SANDSTONE, roughness: 1 }),
-    );
-    const x = -16 + rand() * 22;
-    const z = -14 + rand() * 10;
+    const b = rectBuilding(w, h, d, rand() > 0.68);
+    const x = -17 + rand() * 28;
+    const z = -15 + rand() * 13;
     if (Math.hypot(x - 3, z + 8) < 4 || Math.hypot(x + 6, z - 2) < 5) continue;
-    b.position.set(x, h / 2, z);
-    b.castShadow = true;
-    b.receiveShadow = true;
+    b.position.set(x, 0, z);
+    b.rotation.y = (rand() - 0.5) * 0.28;
     group.add(b);
-    const roofShape = new Shape();
-    roofShape.moveTo(-w / 2 - 0.2, 0);
-    roofShape.lineTo(w / 2 + 0.2, 0);
-    roofShape.lineTo(0, 0.4 + rand() * 0.5);
-    roofShape.closePath();
-    const roof = new Mesh(
-      new ExtrudeGeometry(roofShape, { depth: d + 0.3, bevelEnabled: false }),
-      new MeshStandardMaterial({ color: ROOF, roughness: 0.9 }),
-    );
-    roof.position.set(x, h, z - d / 2 - 0.15);
-    roof.castShadow = true;
-    group.add(roof);
   }
 
   // ---- palms ----
@@ -310,6 +460,12 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
     group.add(p);
     palms.push(p);
   }
+  for (let i = 0; i < 18; i++) {
+    const tree = cypress(0.9 + rand() * 0.75);
+    tree.position.set(-18 + rand() * 35, 0, -14 + rand() * 29);
+    if (Math.hypot(tree.position.x - 2, tree.position.z - 10) < 5) continue;
+    group.add(tree);
+  }
 
   // ---- the Oval + Palm Drive hint ----
   const oval = new Mesh(
@@ -321,6 +477,14 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   oval.position.set(2, 0.01, 10);
   oval.receiveShadow = true;
   group.add(oval);
+  const ovalTrack = new Mesh(
+    new RingGeometry(3.45, 4.15, 48),
+    new MeshStandardMaterial({ color: ROOF, roughness: 0.94, side: DoubleSide }),
+  );
+  ovalTrack.rotation.x = -Math.PI / 2;
+  ovalTrack.scale.y = 0.62;
+  ovalTrack.position.set(2, 0.018, 10);
+  group.add(ovalTrack);
   const drive = new Mesh(
     new PlaneGeometry(1.4, 9),
     new MeshStandardMaterial({ color: 0x2c2a33, roughness: 1 }),
@@ -328,9 +492,12 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   drive.rotation.x = -Math.PI / 2;
   drive.position.set(2, 0.012, 16);
   group.add(drive);
+  const driveLine = path(0.08, 8.5, 0xe8d9a2);
+  driveLine.position.set(2, 0, 16);
+  group.add(driveLine);
 
   // ---- foothills + the Dish ----
-  const hillMat = new MeshStandardMaterial({ color: 0x141021, roughness: 1 });
+  const hillMat = new MeshStandardMaterial({ color: 0x18152a, roughness: 1 });
   for (const [hx, hz, hr] of [
     [-24, -16, 9],
     [-14, -20, 11],
@@ -352,7 +519,11 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   // ---- the dorm with the lit window (anchor at (9, 3.0, -7), normal (0.48,0,0.87)) ----
   const v = new Vector3(0.48, 0, 0.87).normalize();
   const dorm = new Group();
-  const dormWallMat = new MeshStandardMaterial({ color: 0x6e6250, roughness: 1 });
+  const dormWallMat = new MeshStandardMaterial({
+    color: 0x6e6250,
+    map: sandstoneTexture,
+    roughness: 1,
+  });
   const addDormWall = (geometry: BoxGeometry, x: number, y: number, z: number): void => {
     const wall = new Mesh(geometry, dormWallMat);
     wall.position.set(x, y, z);
@@ -376,7 +547,7 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   dormRoofShape.closePath();
   const dormRoof = new Mesh(
     new ExtrudeGeometry(dormRoofShape, { depth: 4.4, bevelEnabled: false }),
-    new MeshStandardMaterial({ color: ROOF, roughness: 0.9 }),
+    new MeshStandardMaterial({ color: ROOF, map: roofTexture, roughness: 0.9 }),
   );
   dormRoof.position.set(0, 3, -2.2);
   dormRoof.castShadow = true;

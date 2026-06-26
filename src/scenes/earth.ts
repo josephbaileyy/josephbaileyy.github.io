@@ -7,6 +7,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshLambertMaterial,
+  Quaternion,
   RingGeometry,
   ShaderMaterial,
   SphereGeometry,
@@ -16,7 +17,8 @@ import {
   Uniform,
   Vector3,
 } from 'three';
-import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
+import type { AnchorSpec, Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
+import { EarthOverlay, type EarthPinProjection } from '../ui/earth-overlay';
 import {
   canvasTexture,
   loadStars,
@@ -51,6 +53,27 @@ const COORDINATE_SIGNALS = [
   { id: 'earth-nyc', label: 'New York City', lat: 40.7128, lon: -74.006, color: 0x7fd4ff },
 ] as const;
 
+const DEFAULT_ANCHOR_SCALE = 0.04;
+const MIN_ZOOM = 0.78;
+const MAX_ZOOM = 1.5;
+const FRONT_NORMAL = latLonToVec3(STANFORD_LAT, STANFORD_LON, 1).normalize();
+const STANFORD_QUAT = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), FRONT_NORMAL);
+const INTERACTIVE = 'input, textarea, select, button, a, [contenteditable="true"]';
+
+export interface EarthViewState {
+  zoom: number;
+  targetZoom: number;
+}
+
+export function clampEarthZoom(value: number): number {
+  return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, value));
+}
+
+export function earthWheelZoom(state: EarthViewState, deltaY: number): EarthViewState {
+  const factor = Math.exp(-deltaY * 0.0012);
+  return { ...state, targetZoom: clampEarthZoom(state.targetZoom * factor) };
+}
+
 export async function loadEarth(onProgress?: (p: number) => void): Promise<SceneAssets> {
   let done = 0;
   const tick = <T>(p: Promise<T>): Promise<T> =>
@@ -83,6 +106,8 @@ function sunGlowTexture(): Texture {
 
 export function createEarth(assets: SceneAssets): SceneInstance {
   const group = new Group();
+  const surface = new Group();
+  group.add(surface);
   const day = assets.day as Texture;
   const night = assets.night as Texture;
   const clouds = assets.clouds as Texture;
@@ -90,7 +115,7 @@ export function createEarth(assets: SceneAssets): SceneInstance {
   // ---- the globe: day/night/city-lights/ocean-glint shader ----
   const uSunDir = new Uniform(new Vector3(1, 0, 0));
   const globe = new Mesh(new SphereGeometry(R, 96, 64), earthGlobeMaterial(day, night, uSunDir));
-  group.add(globe);
+  surface.add(globe);
 
   // ---- cloud layer ----
   const cloudMesh = new Mesh(
@@ -103,7 +128,7 @@ export function createEarth(assets: SceneAssets): SceneInstance {
       opacity: 0.92,
     }),
   );
-  group.add(cloudMesh);
+  surface.add(cloudMesh);
 
   // ---- atmosphere rim ----
   const atmosphere = new Mesh(
@@ -138,7 +163,7 @@ export function createEarth(assets: SceneAssets): SceneInstance {
       depthWrite: false,
     }),
   );
-  group.add(atmosphere);
+  surface.add(atmosphere);
 
   // ---- lighting for the Lambert layers (clouds, moon) ----
   const sunLight = new DirectionalLight(0xffffff, 2.4);
@@ -190,21 +215,22 @@ export function createEarth(assets: SceneAssets): SceneInstance {
   );
   ring.rotation.x = -Math.PI / 2;
   beacon.add(ring);
-  group.add(beacon);
+  surface.add(beacon);
 
   const label = textSprite(
     [
       { text: 'stanford, california', color: '#f5f8ff', size: 34 },
       { text: 'click to visit', color: '#9fddff', size: 25 },
     ],
-    { worldWidth: 8, width: 640 },
+    { worldWidth: 5.8, width: 560, opacity: 0 },
   );
-  label.position.copy(beaconPos).addScaledVector(beaconNormal, 1.9);
-  group.add(label);
+  label.position.copy(beaconPos).addScaledVector(beaconNormal, 1.45);
+  surface.add(label);
 
   // ---- coordinate signal layer ----
   const signalHotspots: Hotspot3D[] = [];
-  for (const signal of COORDINATE_SIGNALS) {
+  const pinObjects: EarthPinProjection[] = [];
+  for (const [priority, signal] of COORDINATE_SIGNALS.entries()) {
     const normal = latLonToVec3(signal.lat, signal.lon, 1).normalize();
     const pos = normal.clone().multiplyScalar(R * 1.018);
     const pin = new Group();
@@ -227,28 +253,19 @@ export function createEarth(assets: SceneAssets): SceneInstance {
     );
     glow.scale.setScalar(1.1);
     pin.add(glow);
-    group.add(pin);
-    const signalLabel = textSprite(
-      [
-        { text: signal.label, color: signal.color === 0xffd479 ? '#ffd479' : '#7fd4ff', size: 25 },
-        { text: 'collect coordinate', color: '#eef2ff', size: 17 },
-      ],
-      { worldWidth: 5.8, width: 520, opacity: 0.62 },
-    );
-    signalLabel.position.copy(pos).addScaledVector(normal, 1.25);
-    group.add(signalLabel);
+    surface.add(pin);
     const signalHit = new Mesh(
       new SphereGeometry(0.72, 8, 6),
       new MeshBasicMaterial({ visible: false }),
     );
     signalHit.position.copy(pos);
-    group.add(signalHit);
+    surface.add(signalHit);
+    pinObjects.push({ id: signal.id, object: pin, priority });
     signalHotspots.push({
       object: signalHit,
       label: `${signal.label} coordinate signal`,
-      action: { type: 'signal', signalId: signal.id },
+      action: { type: 'signal', signalId: signal.id, route: false },
       setHover(on) {
-        signalLabel.material.opacity = on ? 1 : 0.62;
         glow.material.opacity = on ? 0.78 : 0.34;
         dot.scale.setScalar(on ? 1.8 : 1);
       },
@@ -258,7 +275,7 @@ export function createEarth(assets: SceneAssets): SceneInstance {
   // ---- hotspot ----
   const hit = new Mesh(new SphereGeometry(1.5, 8, 6), new MeshBasicMaterial({ visible: false }));
   hit.position.copy(beaconPos);
-  group.add(hit);
+  surface.add(hit);
   const hotspots: Hotspot3D[] = [
     ...signalHotspots,
     {
@@ -267,7 +284,7 @@ export function createEarth(assets: SceneAssets): SceneInstance {
       action: { type: 'zoom', dir: 'in' },
       setHover(on) {
         pillar.material.opacity = on ? 1 : 0.8;
-        label.material.opacity = on ? 1 : 0.85;
+        label.material.opacity = on ? 0.95 : 0;
       },
     },
   ];
@@ -284,16 +301,138 @@ export function createEarth(assets: SceneAssets): SceneInstance {
   const moonHelio = new Vector3();
   const earthHelio = new Vector3();
   const stateVelocity = new Vector3();
+  const rotatedSunDir = new Vector3();
+  const stanfordWorldNormal = new Vector3();
+  const stanfordWorldQuat = new Quaternion();
+  const dragYaw = new Quaternion();
+  const dragPitch = new Quaternion();
+  const childAnchor: AnchorSpec = {
+    position: [beaconPos.x, beaconPos.y, beaconPos.z],
+    quaternion: [STANFORD_QUAT.x, STANFORD_QUAT.y, STANFORD_QUAT.z, STANFORD_QUAT.w],
+    scale: DEFAULT_ANCHOR_SCALE,
+  };
   let cloudSpin = 0;
+  let overlayActive = false;
+  let dragging = false;
+  let pointerMoved = false;
+  let lastX = 0;
+  let lastY = 0;
+  let yawVelocity = 0;
+  let pitchVelocity = 0;
+  let focusQuat: Quaternion | null = null;
+  const viewState: EarthViewState = { zoom: 1, targetZoom: 1 };
+  const canvas = document.getElementById('universe') as HTMLCanvasElement | null;
+  const overlay = new EarthOverlay(
+    undefined,
+    (id) => {
+      const signal = COORDINATE_SIGNALS.find((candidate) => candidate.id === id);
+      if (!signal) return;
+      const normal = latLonToVec3(signal.lat, signal.lon, 1).normalize();
+      const current = normal.clone().applyQuaternion(surface.quaternion).normalize();
+      const delta = new Quaternion().setFromUnitVectors(current, FRONT_NORMAL);
+      focusQuat = delta.multiply(surface.quaternion.clone()).normalize();
+    },
+    () => resetGlobe(),
+  );
+
+  function applyDrag(dx: number, dy: number): void {
+    focusQuat = null;
+    dragYaw.setFromAxisAngle(new Vector3(0, 1, 0), dx * 0.006);
+    dragPitch.setFromAxisAngle(new Vector3(1, 0, 0), dy * 0.0038);
+    surface.quaternion.premultiply(dragYaw).premultiply(dragPitch).normalize();
+    yawVelocity = dx * 0.006;
+    pitchVelocity = dy * 0.0038;
+  }
+
+  function resetGlobe(): void {
+    focusQuat = new Quaternion();
+    viewState.targetZoom = 1;
+    yawVelocity = 0;
+    pitchVelocity = 0;
+    overlay.select('earth-stanford-slac', false);
+  }
+
+  const onPointerDown = (event: PointerEvent) => {
+    if (!overlayActive || event.button !== 0) return;
+    const target = event.target;
+    if (!(target instanceof Element) || target.closest(INTERACTIVE)) return;
+    dragging = true;
+    pointerMoved = false;
+    lastX = event.clientX;
+    lastY = event.clientY;
+    canvas?.setPointerCapture?.(event.pointerId);
+  };
+  const onPointerMove = (event: PointerEvent) => {
+    if (!dragging) return;
+    event.preventDefault();
+    const dx = event.clientX - lastX;
+    const dy = event.clientY - lastY;
+    if (Math.hypot(dx, dy) > 1) pointerMoved = true;
+    applyDrag(dx, dy);
+    lastX = event.clientX;
+    lastY = event.clientY;
+  };
+  const onPointerUp = (event: PointerEvent) => {
+    if (!dragging) return;
+    dragging = false;
+    canvas?.releasePointerCapture?.(event.pointerId);
+    if (pointerMoved) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+  const onWheel = (event: WheelEvent) => {
+    if (!overlayActive || event.ctrlKey || event.metaKey) return;
+    const target = event.target;
+    if (!(target instanceof Element) || !target.closest('#universe')) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const next = earthWheelZoom(viewState, event.deltaY);
+    viewState.targetZoom = next.targetZoom;
+  };
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (!overlayActive) return;
+    const target = event.target;
+    if (target instanceof Element && target.closest(INTERACTIVE)) return;
+    const keyMap: Record<string, [number, number] | undefined> = {
+      ArrowLeft: [-22, 0],
+      ArrowRight: [22, 0],
+      ArrowUp: [0, -22],
+      ArrowDown: [0, 22],
+    };
+    const drag = keyMap[event.key];
+    if (drag) {
+      event.preventDefault();
+      applyDrag(drag[0], drag[1]);
+    } else if (event.key === '+' || event.key === '=') {
+      event.preventDefault();
+      viewState.targetZoom = clampEarthZoom(viewState.targetZoom * 1.1);
+    } else if (event.key === '-' || event.key === '_') {
+      event.preventDefault();
+      viewState.targetZoom = clampEarthZoom(viewState.targetZoom / 1.1);
+    } else if (event.key === '0') {
+      event.preventDefault();
+      resetGlobe();
+    }
+  };
+  canvas?.addEventListener('pointerdown', onPointerDown);
+  window.addEventListener('pointermove', onPointerMove, { passive: false });
+  window.addEventListener('pointerup', onPointerUp, { capture: true });
+  window.addEventListener('pointercancel', onPointerUp, { capture: true });
+  window.addEventListener('wheel', onWheel, { capture: true, passive: false });
+  window.addEventListener('keydown', onKeyDown, { capture: true });
+  overlay.select('earth-stanford-slac', false);
 
   return {
     group,
     hotspots,
+    childAnchor,
     childProxy: beacon,
     update(ctx) {
       sunDirection(ctx.utcMs, sunDir);
-      uSunDir.value.copy(sunDir);
-      sunLight.position.copy(sunDir).multiplyScalar(100);
+      rotatedSunDir.copy(sunDir).applyQuaternion(surface.quaternion);
+      uSunDir.value.copy(rotatedSunDir);
+      sunLight.position.copy(rotatedSunDir).multiplyScalar(100);
       sunSprite.position.copy(sunDir).multiplyScalar(750);
 
       if (!ephemeris.hasDate(ctx.utcMs) && ephemeris.status !== 'loading')
@@ -304,6 +443,34 @@ export function createEarth(assets: SceneAssets): SceneInstance {
       const gmstDeg = (280.46061837 + 360.98564736629 * daysSinceJ2000(ctx.utcMs)) % 360;
       sky.rotation.y = (-gmstDeg * Math.PI) / 180;
       setSkyOpacity(sky, skyTransitionOpacity(ctx.localT));
+      overlayActive = Math.abs(ctx.localT) < 0.02;
+      if (focusQuat)
+        surface.quaternion.slerp(focusQuat, ctx.reducedMotion ? 1 : Math.min(1, ctx.dt * 4.5));
+      if (!ctx.reducedMotion && !dragging && !focusQuat) {
+        const speed = Math.abs(yawVelocity) + Math.abs(pitchVelocity);
+        if (speed > 0.0001) {
+          dragYaw.setFromAxisAngle(new Vector3(0, 1, 0), yawVelocity);
+          dragPitch.setFromAxisAngle(new Vector3(1, 0, 0), pitchVelocity);
+          surface.quaternion.premultiply(dragYaw).premultiply(dragPitch).normalize();
+          yawVelocity *= 0.91;
+          pitchVelocity *= 0.91;
+        }
+      }
+      viewState.zoom +=
+        (viewState.targetZoom - viewState.zoom) * (ctx.reducedMotion ? 1 : Math.min(1, ctx.dt * 6));
+      surface.scale.setScalar(viewState.zoom);
+      stanfordWorldNormal.copy(beaconNormal).applyQuaternion(surface.quaternion).normalize();
+      childAnchor.position[0] = stanfordWorldNormal.x * R * 1.002 * viewState.zoom;
+      childAnchor.position[1] = stanfordWorldNormal.y * R * 1.002 * viewState.zoom;
+      childAnchor.position[2] = stanfordWorldNormal.z * R * 1.002 * viewState.zoom;
+      stanfordWorldQuat.copy(surface.quaternion).multiply(STANFORD_QUAT).normalize();
+      childAnchor.quaternion = [
+        stanfordWorldQuat.x,
+        stanfordWorldQuat.y,
+        stanfordWorldQuat.z,
+        stanfordWorldQuat.w,
+      ];
+      childAnchor.scale = DEFAULT_ANCHOR_SCALE * viewState.zoom;
 
       if (!ctx.reducedMotion) {
         cloudSpin += ctx.dt * 0.004;
@@ -313,8 +480,22 @@ export function createEarth(assets: SceneAssets): SceneInstance {
         (ring.material as MeshBasicMaterial).opacity = 0.85 * (1 - pulse);
       }
     },
+    syncUi(camera, viewport) {
+      overlay.sync(camera, viewport, overlayActive, pinObjects, viewState.zoom);
+    },
+    hideUi() {
+      overlayActive = false;
+      overlay.hide();
+    },
     setQuality() {},
     dispose() {
+      overlay.dispose();
+      canvas?.removeEventListener('pointerdown', onPointerDown);
+      window.removeEventListener('pointermove', onPointerMove);
+      window.removeEventListener('pointerup', onPointerUp, { capture: true });
+      window.removeEventListener('pointercancel', onPointerUp, { capture: true });
+      window.removeEventListener('wheel', onWheel, { capture: true });
+      window.removeEventListener('keydown', onKeyDown, { capture: true });
       group.traverse((o) => {
         const m = o as Mesh;
         m.geometry?.dispose?.();

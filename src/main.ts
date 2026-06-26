@@ -198,7 +198,7 @@ const ribbon = new ScaleRibbon(hudEl);
 const SCENE_HINTS = [
   'select a glowing research object · scroll inward to travel',
   'choose a planet to focus · adjust UTC and playback above',
-  'explore the globe · select Stanford to continue inward',
+  'drag the globe · select a coordinate · choose Stanford to continue inward',
   'select the illuminated dorm window',
   'click the monitor to enter BaileyOS',
   'use the dock · drag, resize, minimize, or maximize windows',
@@ -280,7 +280,7 @@ const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => 
     if (!signal) return;
     const destination = toHudDestination(signal.destination);
     hud.collectSignal(signal.id, signal.title, signal.body, destination);
-    if (destination) performDestination(destination);
+    if (h.action.route !== false && destination) performDestination(destination);
   } else if (h.action.type === 'panel') {
     const observation = HOTSPOT_OBSERVATIONS[h.action.panelId];
     hud.collectSignal(

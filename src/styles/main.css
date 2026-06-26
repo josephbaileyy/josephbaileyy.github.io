@@ -420,11 +420,218 @@ body {
 .earth-explore-trigger {
   position: fixed;
   z-index: 12;
-  left: 50%;
+  left: calc(50% + 240px);
   bottom: 92px;
   transform: translateX(-50%);
   pointer-events: auto;
   border-color: rgba(127, 212, 255, 0.7);
+}
+
+.earth-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 11;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.earth-overlay.active {
+  opacity: 1;
+}
+
+body[data-tour='active'] .earth-overlay,
+body[data-tour='active'] .earth-explore-trigger {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body[data-tour='active'] .earth-overlay * {
+  pointer-events: none;
+}
+
+.earth-globe-toolbar {
+  position: absolute;
+  left: 50%;
+  bottom: 92px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.earth-globe-toolbar button,
+.earth-card-actions button,
+.earth-card-actions a {
+  min-height: 36px;
+  border: 1px solid rgba(154, 163, 199, 0.4);
+  border-radius: 8px;
+  background: rgba(42, 35, 86, 0.82);
+  color: var(--ink);
+  font: 12px var(--font-mono);
+  padding: 6px 10px;
+  text-decoration: none;
+}
+
+.earth-card-actions a {
+  display: inline-grid;
+  place-items: center;
+}
+
+.earth-globe-toolbar button:hover,
+.earth-globe-toolbar button:focus-visible,
+.earth-card-actions button:hover,
+.earth-card-actions button:focus-visible,
+.earth-card-actions a:hover,
+.earth-card-actions a:focus-visible {
+  border-color: var(--gold);
+  outline: none;
+}
+
+.earth-globe-readout {
+  padding: 8px 12px;
+  border: 1px solid rgba(127, 212, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(5, 10, 28, 0.76);
+  color: var(--cyan);
+  font: 12px var(--font-mono);
+  white-space: nowrap;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+.earth-evidence-card {
+  position: absolute;
+  right: 20px;
+  top: 72px;
+  width: min(330px, calc(100vw - 40px));
+  padding: 14px 15px;
+  border: 1px solid rgba(127, 212, 255, 0.26);
+  border-radius: 16px;
+  background:
+    linear-gradient(140deg, rgba(42, 35, 86, 0.62), rgba(5, 10, 28, 0.82)), rgba(5, 10, 28, 0.78);
+  color: var(--ink-dim);
+  font: 12px/1.55 var(--font-mono);
+  pointer-events: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.earth-evidence-card span {
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.earth-evidence-card strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink);
+  font: 700 17px/1.25 var(--font-ui);
+}
+
+.earth-evidence-card p {
+  margin: 8px 0 0;
+}
+
+.earth-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.earth-pin {
+  --label-shift-y: 0px;
+  --leader-length: 30px;
+  --leader-angle: 0rad;
+  position: absolute;
+  top: -22px;
+  left: -22px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cyan);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.earth-pin[data-signal='earth-stanford-slac'] {
+  color: var(--gold);
+}
+
+.earth-pin i {
+  position: absolute;
+  inset: 17px;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow:
+    0 0 10px currentColor,
+    0 0 24px rgba(127, 212, 255, 0.18);
+}
+
+.earth-pin::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  opacity: 0.75;
+  transition:
+    inset 0.16s ease,
+    opacity 0.16s ease;
+}
+
+.earth-pin::after {
+  content: '';
+  position: absolute;
+  left: 22px;
+  top: 22px;
+  width: var(--leader-length);
+  height: 1px;
+  transform: rotate(var(--leader-angle));
+  transform-origin: 0 50%;
+  background: currentColor;
+  opacity: 0.48;
+  pointer-events: none;
+}
+
+.earth-pin span {
+  position: absolute;
+  left: 52px;
+  top: 12px;
+  max-width: 170px;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, currentColor 42%, transparent);
+  border-radius: 8px;
+  background: rgba(5, 10, 28, 0.84);
+  color: var(--ink);
+  font: 11px var(--font-mono);
+  white-space: nowrap;
+  transform: translateY(var(--label-shift-y));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+}
+
+.earth-pin.left-label span {
+  left: auto;
+  right: 52px;
+}
+
+.earth-pin:hover::before,
+.earth-pin:focus-visible::before,
+.earth-pin.selected::before {
+  inset: 8px;
+  opacity: 1;
+}
+
+.earth-pin:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 4px;
 }
 
 .earth-explorer {
@@ -545,6 +752,33 @@ body {
   .planet-reticle span {
     font-size: 10px;
   }
+  .earth-globe-toolbar {
+    left: 12px;
+    right: 12px;
+    bottom: 128px;
+    transform: none;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .earth-explore-trigger {
+    left: 50%;
+    bottom: 86px;
+  }
+  .earth-globe-readout {
+    width: 100%;
+    text-align: center;
+  }
+  .earth-evidence-card {
+    left: 12px;
+    right: 12px;
+    top: auto;
+    bottom: 154px;
+    width: auto;
+  }
+  .earth-pin span {
+    max-width: 136px;
+    font-size: 10px;
+  }
   .earth-explorer-toolbar {
     flex-wrap: wrap;
   }
@@ -647,7 +881,7 @@ body {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 10;
+  z-index: 13;
 }
 
 .hud-name {
@@ -1147,6 +1381,7 @@ body[data-browser-engine='webkit']
 
 .tour-caption {
   position: absolute;
+  z-index: 20;
   left: 50%;
   bottom: 96px;
   transform: translateX(-50%) translateY(6px);

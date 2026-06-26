@@ -21,7 +21,7 @@ export class EarthExplorer {
 
   constructor(private createAdapter: () => Promise<EarthExplorerAdapter> = createCesiumAdapter) {
     this.trigger.className = 'earth-explore-trigger';
-    this.trigger.textContent = 'explore Earth';
+    this.trigger.textContent = 'terrain mode';
     this.trigger.hidden = true;
     this.trigger.addEventListener('click', () => void this.enter());
     document.body.appendChild(this.trigger);

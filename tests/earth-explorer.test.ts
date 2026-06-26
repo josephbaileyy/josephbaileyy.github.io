@@ -2,7 +2,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EarthExplorer, type EarthExplorerAdapter } from '../src/ui/earth-explorer';
 
-afterEach(() => { document.body.replaceChildren(); });
+afterEach(() => {
+  document.body.replaceChildren();
+});
 
 describe('EarthExplorer', () => {
   it('isolates mount and destroy behind explicit enter/exit controls', async () => {
@@ -15,10 +17,13 @@ describe('EarthExplorer', () => {
     explorer.setAvailable(true);
     const trigger = document.querySelector('.earth-explore-trigger') as HTMLButtonElement;
     expect(trigger.hidden).toBe(false);
+    expect(trigger.textContent).toBe('terrain mode');
     trigger.click();
     await vi.waitFor(() => expect(adapter.mount).toHaveBeenCalledOnce());
     expect(document.body.dataset.earthExplore).toBe('true');
-    const exit = [...document.querySelectorAll('button')].find((node) => node.textContent === 'exit Earth')! as HTMLButtonElement;
+    const exit = [...document.querySelectorAll('button')].find(
+      (node) => node.textContent === 'exit Earth',
+    )! as HTMLButtonElement;
     exit.click();
     expect(adapter.destroy).toHaveBeenCalledOnce();
     expect(document.body.dataset.earthExplore).toBeUndefined();
