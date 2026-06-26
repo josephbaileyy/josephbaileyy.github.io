@@ -92,7 +92,8 @@ function buildGalaxyPoints(): { group: Group; materials: ShaderMaterial[] } {
   // spiral arms: r = 4·e^(0.28θ), two strong + two weak
   const arms = makePointLayer(60000, (i, pos, col, size) => {
     const armPick = rand();
-    const offset = armPick < 0.36 ? 0 : armPick < 0.72 ? Math.PI : armPick < 0.86 ? Math.PI / 2 : -Math.PI / 2;
+    const offset =
+      armPick < 0.36 ? 0 : armPick < 0.72 ? Math.PI : armPick < 0.86 ? Math.PI / 2 : -Math.PI / 2;
     const weak = offset === 0 || offset === Math.PI ? 1 : 0.55;
     const r = 3 + 52 * Math.pow(rand(), 1.45);
     const theta = Math.log(Math.max(r, 4) / 4) / 0.28 + offset;
@@ -219,7 +220,12 @@ function buildTravelStreaks(): { streaks: LineSegments; material: LineBasicMater
   }
   const geo = new BufferGeometry();
   geo.setAttribute('position', new BufferAttribute(pos, 3));
-  const material = new LineBasicMaterial({ color: 0x9fd4ff, transparent: true, opacity: 0, blending: AdditiveBlending });
+  const material = new LineBasicMaterial({
+    color: 0x9fd4ff,
+    transparent: true,
+    opacity: 0,
+    blending: AdditiveBlending,
+  });
   return { streaks: new LineSegments(geo, material), material };
 }
 
@@ -337,7 +343,12 @@ function buildBinary(): {
     ctx.fillRect(0, 0, 64, 64);
   });
   const hotSpot = new Sprite(
-    new SpriteMaterial({ map: hotTex, transparent: true, depthWrite: false, blending: AdditiveBlending }),
+    new SpriteMaterial({
+      map: hotTex,
+      transparent: true,
+      depthWrite: false,
+      blending: AdditiveBlending,
+    }),
   );
   hotSpot.scale.setScalar(0.5);
   hotSpot.position.set(0.6 + 0.82 * Math.cos(3.67), 0, 0.82 * Math.sin(3.67));
@@ -345,7 +356,12 @@ function buildBinary(): {
 
   // always-on beacon glint so the binary beckons from across the galaxy
   const glint = new Sprite(
-    new SpriteMaterial({ map: hotTex, transparent: true, depthWrite: false, blending: AdditiveBlending }),
+    new SpriteMaterial({
+      map: hotTex,
+      transparent: true,
+      depthWrite: false,
+      blending: AdditiveBlending,
+    }),
   );
   glint.scale.setScalar(2.6);
   group.add(glint);
@@ -374,7 +390,11 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
         opacity: 0.16,
       }),
     );
-    sprite.position.set((nebulaRand() - 0.5) * 78, (nebulaRand() - 0.5) * 9, (nebulaRand() - 0.5) * 78);
+    sprite.position.set(
+      (nebulaRand() - 0.5) * 78,
+      (nebulaRand() - 0.5) * 9,
+      (nebulaRand() - 0.5) * 78,
+    );
     sprite.scale.set(18 + nebulaRand() * 24, 8 + nebulaRand() * 16, 1);
     nebulae.add(sprite);
   }
@@ -395,7 +415,12 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
   const rand = mulberry32(777);
   for (let i = 0; i < 220; i++) {
     const s = new Sprite(
-      new SpriteMaterial({ map: blobTex, transparent: true, depthWrite: false, opacity: 0.12 + rand() * 0.3 }),
+      new SpriteMaterial({
+        map: blobTex,
+        transparent: true,
+        depthWrite: false,
+        opacity: 0.12 + rand() * 0.3,
+      }),
     );
     const u = rand() * 2 - 1;
     const phi = rand() * Math.PI * 2;
@@ -415,12 +440,16 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
     ['observational project — click', '#9aa3c7', 22],
   ]);
   binaryLabel.position.copy(binary.group.position).add(new Vector3(0, -4.2, 0));
+  binaryLabel.material.opacity = 0.46;
   group.add(binaryLabel);
 
   // ---- pulsar → particle & neutrino physics research ----
   const pulsar = new Group();
   pulsar.position.set(-16, 16, -5);
-  const pulsarStar = new Mesh(new SphereGeometry(0.25, 12, 8), new MeshBasicMaterial({ color: 0x9fd4ff }));
+  const pulsarStar = new Mesh(
+    new SphereGeometry(0.25, 12, 8),
+    new MeshBasicMaterial({ color: 0x9fd4ff }),
+  );
   pulsar.add(pulsarStar);
   const beamTex = canvasTexture(32, 128, (ctx) => {
     const g = ctx.createLinearGradient(0, 0, 0, 128);
@@ -432,7 +461,13 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
   });
   const beams = new Mesh(
     new PlaneGeometry(0.5, 9),
-    new MeshBasicMaterial({ map: beamTex, transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide }),
+    new MeshBasicMaterial({
+      map: beamTex,
+      transparent: true,
+      blending: AdditiveBlending,
+      depthWrite: false,
+      side: DoubleSide,
+    }),
   );
   pulsar.add(beams);
   group.add(pulsar);
@@ -441,6 +476,7 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
     ['my research — click', '#9aa3c7', 22],
   ]);
   pulsarLabel.position.copy(pulsar.position).add(new Vector3(0, -3.4, 0));
+  pulsarLabel.material.opacity = 0.4;
   group.add(pulsarLabel);
 
   // ---- black hole → ML, systems & security projects ----
@@ -506,6 +542,7 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
     ['dive in — click', '#9aa3c7', 22],
   ]);
   bhLabel.position.copy(bh.position).add(new Vector3(0, -3.2, 0));
+  bhLabel.material.opacity = 0.44;
   group.add(bhLabel);
 
   // ---- the Sun: gateway anchor ----
@@ -520,7 +557,14 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, 64, 64);
   });
-  const sunGlow = new Sprite(new SpriteMaterial({ map: sunTex, transparent: true, depthWrite: false, blending: AdditiveBlending }));
+  const sunGlow = new Sprite(
+    new SpriteMaterial({
+      map: sunTex,
+      transparent: true,
+      depthWrite: false,
+      blending: AdditiveBlending,
+    }),
+  );
   sunGlow.scale.setScalar(3.2);
   sunMarker.add(sunGlow);
   const sunRing = new Mesh(
@@ -554,44 +598,53 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
   group.add(sunLabel);
 
   // ---- hotspots ----
-  const binaryHit = new Mesh(new SphereGeometry(5, 8, 6), new MeshBasicMaterial({ visible: false }));
+  const binaryHit = new Mesh(
+    new SphereGeometry(5, 8, 6),
+    new MeshBasicMaterial({ visible: false }),
+  );
   binaryHit.position.copy(binary.group.position);
   group.add(binaryHit);
   const sunHit = new Mesh(new SphereGeometry(4, 8, 6), new MeshBasicMaterial({ visible: false }));
   sunHit.position.copy(sunPos);
   group.add(sunHit);
-  const pulsarHit = new Mesh(new SphereGeometry(4, 8, 6), new MeshBasicMaterial({ visible: false }));
+  const pulsarHit = new Mesh(
+    new SphereGeometry(4, 8, 6),
+    new MeshBasicMaterial({ visible: false }),
+  );
   pulsarHit.position.copy(pulsar.position);
   group.add(pulsarHit);
   const bhHit = new Mesh(new SphereGeometry(4, 8, 6), new MeshBasicMaterial({ visible: false }));
   bhHit.position.copy(bh.position);
   group.add(bhHit);
+  let binaryHover = false;
+  let pulsarHover = false;
+  let bhHover = false;
 
   const hotspots: Hotspot3D[] = [
     {
       object: binaryHit,
       label: 'AM CVn — observational photometry project',
-      action: { type: 'panel', panelId: 'am-cvn' },
+      action: { type: 'signal', signalId: 'galaxy-am-cvn' },
       setHover(on) {
-        binaryLabel.material.opacity = on ? 1 : 0.9;
+        binaryHover = on;
         binary.glint.scale.setScalar(on ? 3.4 : 2.6);
       },
     },
     {
       object: pulsarHit,
       label: 'Particle & neutrino physics research',
-      action: { type: 'panel', panelId: 'research' },
+      action: { type: 'signal', signalId: 'galaxy-research-beacon' },
       setHover(on) {
-        pulsarLabel.material.opacity = on ? 1 : 0.9;
+        pulsarHover = on;
         pulsarStar.scale.setScalar(on ? 1.6 : 1);
       },
     },
     {
       object: bhHit,
       label: 'Dive to my computer — projects live in BaileyOS',
-      action: { type: 'navigate', index: 5 },
+      action: { type: 'signal', signalId: 'galaxy-baileyos-route' },
       setHover(on) {
-        bhLabel.material.opacity = on ? 1 : 0.9;
+        bhHover = on;
       },
     },
     {
@@ -618,12 +671,18 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
     update(ctx) {
       const reduced = ctx.reducedMotion;
       if (!reduced) points.rotation.y += ctx.dt * 0.004;
+      const scan = reduced ? 1 : 0.48 + 0.28 * Math.sin(ctx.time * 0.55);
+      binaryLabel.material.opacity = binaryHover ? 1 : scan;
+      pulsarLabel.material.opacity = pulsarHover ? 1 : scan * 0.82;
+      bhLabel.material.opacity = bhHover ? 1 : scan * 0.9;
 
       // dive fade: the galaxy dissolves as the camera plunges into the Sun —
       // this is what covers the 10^9 scale cheat
       const fade = 1 - smoothstep(0.62, 0.96, Math.max(ctx.localT, 0));
       for (const m of pointMats) m.uniforms.uFade.value = fade;
-      travel.material.opacity = ctx.reducedMotion ? 0 : smoothstep(0.18, 0.7, ctx.localT) * (1 - smoothstep(0.78, 0.98, ctx.localT)) * 0.75;
+      travel.material.opacity = ctx.reducedMotion
+        ? 0
+        : smoothstep(0.18, 0.7, ctx.localT) * (1 - smoothstep(0.78, 0.98, ctx.localT)) * 0.75;
       if (!ctx.reducedMotion) nebulae.rotation.y += ctx.dt * 0.0015;
 
       // AM CVn
@@ -644,16 +703,17 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
           .addScaledVector(P2, s * s);
         positions.setXYZ(
           i,
-          tmp.x + (Math.sin(i * 37.3) * 0.02),
-          tmp.y + (Math.cos(i * 51.7) * 0.015),
-          tmp.z + (Math.sin(i * 17.9) * 0.02),
+          tmp.x + Math.sin(i * 37.3) * 0.02,
+          tmp.y + Math.cos(i * 51.7) * 0.015,
+          tmp.z + Math.sin(i * 17.9) * 0.02,
         );
       }
       positions.needsUpdate = true;
 
       // hot spot flickers once per orbit (superhump photometry, basically)
       const orbPhase = (ctx.time % 6) / 6;
-      binary.hotSpot.material.opacity = 0.55 + 0.45 * Math.exp(-Math.pow((orbPhase - 0.5) / 0.12, 2));
+      binary.hotSpot.material.opacity =
+        0.55 + 0.45 * Math.exp(-Math.pow((orbPhase - 0.5) / 0.12, 2));
       binary.glint.material.opacity = 0.6 + 0.4 * Math.sin(ctx.time * 2.1);
 
       // LOD: full detail only when reasonably close
@@ -664,7 +724,7 @@ export function createGalaxy(_assets: SceneAssets): SceneInstance {
       binary.streamMat.uniforms.uDetail.value = detail;
 
       if (!reduced) {
-        beams.rotation.z = ctx.time * (Math.PI * 2) / 1.5;
+        beams.rotation.z = (ctx.time * (Math.PI * 2)) / 1.5;
         (bhDisk.material as ShaderMaterial).uniforms.uTime.value = ctx.time;
         (lens.material as ShaderMaterial).uniforms.uTime.value = ctx.time;
         (sunRing.material as ShaderMaterial).uniforms.uTime.value = ctx.time;

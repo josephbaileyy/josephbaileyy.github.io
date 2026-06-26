@@ -21,6 +21,7 @@ import { Tour } from './ui/tour';
 import { Router } from './router';
 import { simulationClock } from './astronomy/clock';
 import { AmbientSound } from './ui/ambient';
+import { SCENES, SIGNAL_BY_ID, type SceneDestination } from './content/portfolio';
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const now = () => performance.now() / 1000;
@@ -142,18 +143,7 @@ const hud = new Hud(
     },
     onOpenDestination: (destination: ObservationDestination) => {
       tour.cancel();
-      if (destination.type === 'panel') {
-        openPanel(destination.panelId, Math.round(camera.depth));
-      } else if (destination.type === 'scene') {
-        navigateTo(destination.index);
-      } else if (destination.type === 'app') {
-        if (osBuilt && Math.round(camera.depth) === CHAIN3D.length - 1) {
-          window.dispatchEvent(new CustomEvent('universe:open-app', { detail: destination.appId }));
-        } else {
-          pendingOsApp = destination.appId;
-          navigateTo(CHAIN3D.length - 1);
-        }
-      }
+      performDestination(destination);
     },
   },
 );
@@ -193,6 +183,16 @@ if (firstVisit) hud.pulseJourney();
 
 // The BaileyOS terminal command and dock 'journey' icon hand off to the tour.
 window.addEventListener('universe:tour', () => tour.start());
+window.addEventListener('universe:signal', (event) => {
+  const detail = (event as CustomEvent<string | { signalId: string; route?: boolean }>).detail;
+  const signalId = typeof detail === 'string' ? detail : detail.signalId;
+  const shouldRoute = typeof detail === 'string' ? true : detail.route !== false;
+  const signal = SIGNAL_BY_ID.get(signalId);
+  if (!signal) return;
+  const destination = toHudDestination(signal.destination);
+  hud.collectSignal(signal.id, signal.title, signal.body, destination);
+  if (shouldRoute && destination) performDestination(destination);
+});
 
 const ribbon = new ScaleRibbon(hudEl);
 const SCENE_HINTS = [
@@ -227,7 +227,7 @@ const OBSERVATIONS: Record<string, { body: string; destination?: ObservationDest
   },
   screen: {
     body: 'BaileyOS is a DOM mission desktop projected onto the monitor inside the 3D universe.',
-    destination: { type: 'app', appId: 'profile', label: 'Open the profile app' },
+    destination: { type: 'app', appId: 'start', label: 'Open Start Here' },
   },
 };
 
@@ -275,9 +275,15 @@ const ensureFakeOs = () => {
 const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => {
   tour.cancel();
   hud.hideHint();
-  if (h.action.type === 'panel') {
+  if (h.action.type === 'signal') {
+    const signal = SIGNAL_BY_ID.get(h.action.signalId);
+    if (!signal) return;
+    const destination = toHudDestination(signal.destination);
+    hud.collectSignal(signal.id, signal.title, signal.body, destination);
+    if (destination) performDestination(destination);
+  } else if (h.action.type === 'panel') {
     const observation = HOTSPOT_OBSERVATIONS[h.action.panelId];
-    hud.addObservation(
+    hud.collectSignal(
       h.action.panelId,
       h.label,
       observation?.body ?? 'Opened a research note from the 3D scene.',
@@ -293,6 +299,44 @@ const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => 
     camera.tweenTo(target, now());
   }
 });
+
+function performDestination(destination: ObservationDestination): void {
+  if (destination.type === 'panel') {
+    openPanel(destination.panelId, Math.round(camera.depth));
+  } else if (destination.type === 'scene') {
+    navigateTo(destination.index);
+  } else if (destination.type === 'app') {
+    if (osBuilt && Math.round(camera.depth) === CHAIN3D.length - 1) {
+      window.dispatchEvent(new CustomEvent('universe:open-app', { detail: destination.appId }));
+    } else {
+      pendingOsApp = destination.appId;
+      navigateTo(CHAIN3D.length - 1);
+    }
+  } else if (destination.type === 'url') {
+    window.open(
+      destination.href,
+      destination.href.startsWith('http') ? '_blank' : '_self',
+      'noopener',
+    );
+  }
+}
+
+function toHudDestination(destination?: SceneDestination): ObservationDestination | undefined {
+  if (!destination) return undefined;
+  if (destination.type === 'panel' && destination.panelId) {
+    return { type: 'panel', panelId: destination.panelId, label: destination.label };
+  }
+  if (destination.type === 'scene' && typeof destination.index === 'number') {
+    return { type: 'scene', index: destination.index, label: destination.label };
+  }
+  if (destination.type === 'app' && destination.appId) {
+    return { type: 'app', appId: destination.appId, label: destination.label };
+  }
+  if (destination.type === 'url' && destination.href) {
+    return { type: 'url', href: destination.href, label: destination.label };
+  }
+  return undefined;
+}
 
 function projectUiMountRect(uiMount: Object3D): { x: number; y: number; w: number; h: number } {
   uiMount.updateWorldMatrix(true, false);
@@ -524,10 +568,13 @@ function frame(): void {
       quality.setScene(CHAIN3D[settled].id);
       hud.announce(CHAIN3D[settled].label);
       const observation = OBSERVATIONS[CHAIN3D[settled].id];
-      hud.addObservation(
+      const sceneData = SCENES.find((scene) => scene.id === CHAIN3D[settled].id);
+      hud.markSceneVisited(
         CHAIN3D[settled].id,
         CHAIN3D[settled].label,
-        observation.body,
+        sceneData
+          ? `${sceneData.scale} · ${sceneData.meaning} ${sceneData.route}`
+          : observation.body,
         observation.destination,
       );
       if (!tour.active) hud.showHint(SCENE_HINTS[settled]);

@@ -17,6 +17,218 @@
       "href": "https://gostanford.com/sports/track-field/roster/player/joseph-bailey"
     }
   ],
+  "scenes": [
+    {
+      "id": "galaxy",
+      "label": "The Milky Way",
+      "scale": "10²¹ m",
+      "comparison": "A galaxy-scale establishing shot: tens of thousands of light years compressed into one navigable frame.",
+      "meaning": "This is the universe-first thesis: start with wonder, then turn the lights toward evidence.",
+      "route": "Scan for compact binaries, particle-physics beacons, and the amber route home."
+    },
+    {
+      "id": "solar",
+      "label": "The Solar System",
+      "scale": "10¹³ m",
+      "comparison": "Planetary orbits and dates become readable without pretending the bodies are actually this large.",
+      "meaning": "The portfolio becomes an instrument: time, scale, and focus are controllable, not decorative.",
+      "route": "Open the ephemeris, focus Earth, and continue inward."
+    },
+    {
+      "id": "earth",
+      "label": "Earth",
+      "scale": "10⁷ m",
+      "comparison": "A living globe where career coordinates replace a generic map pin.",
+      "meaning": "Research and work are tied to places: Stanford, SLAC, Pasadena, Jefferson Lab, and New York.",
+      "route": "Collect a coordinate or select Stanford to land on campus."
+    },
+    {
+      "id": "stanford",
+      "label": "Stanford University",
+      "scale": "10² m",
+      "comparison": "A campus diorama: academic buildings, track, music, and a lit dorm window.",
+      "meaning": "The story narrows from institutions to lived practice: physics, training, music, and routine.",
+      "route": "Follow the warm window inward."
+    },
+    {
+      "id": "room",
+      "label": "My room",
+      "scale": "10⁰ m",
+      "comparison": "A sparse desk-scale field station where objects point to real work.",
+      "meaning": "The universe lands somewhere human: papers, notebooks, track spikes, music, and a monitor.",
+      "route": "Use the monitor as the amber portal into BaileyOS."
+    },
+    {
+      "id": "screen",
+      "label": "My computer",
+      "scale": "10⁻¹ m",
+      "comparison": "A desktop surface that switches from spectacle to direct evidence.",
+      "meaning": "BaileyOS is the conventional portfolio hidden in plain sight: research, projects, CV, contact, and the mission log.",
+      "route": "Start Here, search with Command-K, or open the field log."
+    }
+  ],
+  "sceneSignals": [
+    {
+      "id": "galaxy-am-cvn",
+      "scene": "galaxy",
+      "title": "AM CVn light curve",
+      "body": "A real Physics 100 photometry result: 138 retained V-band exposures and model overlays around the known 1051-second positive-superhump family.",
+      "category": "research",
+      "destination": { "type": "panel", "panelId": "am-cvn", "label": "Open AM CVn note" },
+      "links": [
+        { "label": "Report", "href": "/papers/am-cvn-report.pdf" },
+        { "label": "Slides", "href": "/papers/am-cvn-presentation.pdf" }
+      ]
+    },
+    {
+      "id": "galaxy-research-beacon",
+      "scene": "galaxy",
+      "title": "Particle + neutrino beacon",
+      "body": "The research beacon groups neutrino unfolding, collider ML, Jefferson Lab bump hunting, and LIGO-related instrumentation.",
+      "category": "research",
+      "destination": { "type": "panel", "panelId": "research", "label": "Open research dossier" }
+    },
+    {
+      "id": "galaxy-baileyos-route",
+      "scene": "galaxy",
+      "title": "Amber route to BaileyOS",
+      "body": "The route beacon skips inward to the project desktop when you want evidence faster than cosmic travel.",
+      "category": "route",
+      "destination": { "type": "scene", "index": 5, "label": "Dock at BaileyOS" }
+    },
+    {
+      "id": "solar-ephemeris",
+      "scene": "solar",
+      "title": "JPL ephemeris layer",
+      "body": "Planet positions are read from checked-in JPL DE440 ephemeris chunks; cinematic scale changes body size only.",
+      "category": "simulation",
+      "destination": { "type": "scene", "index": 2, "label": "Continue to Earth" }
+    },
+    {
+      "id": "solar-earth-route",
+      "scene": "solar",
+      "title": "Earth selected",
+      "body": "Earth is the amber inward destination: a scientific control surface turns into a geographic one.",
+      "category": "route",
+      "destination": { "type": "scene", "index": 2, "label": "Visit Earth" }
+    },
+    {
+      "id": "earth-stanford-slac",
+      "scene": "earth",
+      "title": "Stanford / SLAC",
+      "body": "Coterminal Physics and CS at Stanford, plus collider-ML work with SLAC on γγ collider pileup and di-Higgs detection.",
+      "category": "research",
+      "destination": { "type": "panel", "panelId": "research", "label": "Open research" },
+      "links": [{ "label": "Poster", "href": "/papers/xcc-pileup-poster.pdf" }]
+    },
+    {
+      "id": "earth-pasadena",
+      "scene": "earth",
+      "title": "Pasadena",
+      "body": "Caltech LIGO Lab work and Polytec engineering both sit here: interferometry, vibration data, Python/MATLAB analysis, and lab tooling.",
+      "category": "evidence",
+      "destination": { "type": "panel", "panelId": "experience", "label": "Open experience" },
+      "links": [{ "label": "LIGO report", "href": "/papers/ligo-caltech-report.pdf" }]
+    },
+    {
+      "id": "earth-jefferson-lab",
+      "scene": "earth",
+      "title": "Jefferson Lab",
+      "body": "Gaussian-process bump hunting for the hypothetical X17 particle, presented at APS Far West.",
+      "category": "research",
+      "destination": { "type": "panel", "panelId": "research", "label": "Open research" },
+      "links": [{ "label": "APS talk", "href": "/papers/x17-bump-hunt-apsfws.pdf" }]
+    },
+    {
+      "id": "earth-nyc",
+      "scene": "earth",
+      "title": "New York City",
+      "body": "WisdomTree Digital Movement connects technical work in blockchain and digital assets with financial products and client-focused strategy.",
+      "category": "evidence",
+      "destination": { "type": "panel", "panelId": "experience", "label": "Open experience" }
+    },
+    {
+      "id": "stanford-physics",
+      "scene": "stanford",
+      "title": "Physics / research",
+      "body": "The academic signal points to Physics, CS, and scientific ML work rather than a generic campus flythrough.",
+      "category": "research",
+      "destination": { "type": "panel", "panelId": "research", "label": "Open research" }
+    },
+    {
+      "id": "stanford-track",
+      "scene": "stanford",
+      "title": "Track at the Oval",
+      "body": "NCAA Division I track and field: 400-meter hurdles for Stanford.",
+      "category": "life",
+      "destination": {
+        "type": "url",
+        "href": "https://gostanford.com/sports/track-field/roster/player/joseph-bailey",
+        "label": "Track profile"
+      }
+    },
+    {
+      "id": "stanford-music",
+      "scene": "stanford",
+      "title": "Music / life",
+      "body": "Jazz winds and classical piano stay in the portfolio as practice, texture, and performance evidence.",
+      "category": "life",
+      "destination": { "type": "app", "appId": "videos", "label": "Open performance reel" }
+    },
+    {
+      "id": "room-am-cvn-poster",
+      "scene": "room",
+      "title": "AM CVn poster",
+      "body": "The poster links the dorm-room wall back to the galaxy-scale compact-binary project.",
+      "category": "research",
+      "destination": { "type": "panel", "panelId": "am-cvn", "label": "Open AM CVn note" }
+    },
+    {
+      "id": "room-powers-poster",
+      "scene": "room",
+      "title": "Powers-of-Ten poster",
+      "body": "This website is itself a featured project: one immersive WebGL route and one fast conventional route sharing the same evidence.",
+      "category": "evidence",
+      "destination": { "type": "panel", "panelId": "projects", "label": "Open projects" }
+    },
+    {
+      "id": "room-neutrino-notebook",
+      "scene": "room",
+      "title": "Neutrino notebook",
+      "body": "Current work: OmniFold and uncertainty checks for high-dimensional neutrino cross-section unfolding.",
+      "category": "research",
+      "destination": { "type": "panel", "panelId": "research", "label": "Open research" },
+      "links": [{ "label": "Paper", "href": "/papers/neutrino-unfolding.pdf" }]
+    },
+    {
+      "id": "room-track-spikes",
+      "scene": "room",
+      "title": "Track spikes",
+      "body": "A small object for a large habit: 400-meter hurdles, training blocks, and Stanford Track.",
+      "category": "life",
+      "destination": {
+        "type": "url",
+        "href": "https://gostanford.com/sports/track-field/roster/player/joseph-bailey",
+        "label": "Track profile"
+      }
+    },
+    {
+      "id": "room-music-sheet",
+      "scene": "room",
+      "title": "Music sheet",
+      "body": "Performance reel: marching arts, saxophone solos, and piano/musicianship beyond the lab.",
+      "category": "life",
+      "destination": { "type": "app", "appId": "videos", "label": "Open performance reel" }
+    },
+    {
+      "id": "screen-start-here",
+      "scene": "screen",
+      "title": "Start Here dashboard",
+      "body": "BaileyOS now opens with a dashboard instead of dropping you into a terminal first.",
+      "category": "route",
+      "destination": { "type": "app", "appId": "start", "label": "Open Start Here" }
+    }
+  ],
   "research": [
     {
       "title": "Neutrino cross-section unfolding with machine learning",

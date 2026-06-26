@@ -4,6 +4,21 @@ export type ObservationDestination =
   | { type: 'app'; appId: string; label: string }
   | { type: 'url'; href: string; label: string };
 
+type LogKind = 'scene' | 'signal';
+
+interface ObservationEntry {
+  title: string;
+  body: string;
+  destination?: ObservationDestination;
+}
+
+interface PersistedFieldLog {
+  scenes: Record<string, ObservationEntry>;
+  signals: Record<string, ObservationEntry>;
+}
+
+const FIELD_LOG_KEY = 'jb-field-log-v2';
+
 export class Hud {
   private dots: HTMLButtonElement[] = [];
   private live: HTMLDivElement;
@@ -16,12 +31,11 @@ export class Hud {
   private driftToggle: HTMLButtonElement;
   private logToggle: HTMLButtonElement;
   private logPanel: HTMLDivElement;
-  private logList: HTMLUListElement;
+  private sceneLogList: HTMLUListElement;
+  private signalLogList: HTMLUListElement;
   private onOpenDestination?: (destination: ObservationDestination) => void;
-  private observations = new Map<
-    string,
-    { title: string; body: string; destination?: ObservationDestination }
-  >();
+  private sceneVisits = new Map<string, ObservationEntry>();
+  private signalObservations = new Map<string, ObservationEntry>();
 
   constructor(
     private root: HTMLElement,
@@ -190,11 +204,38 @@ export class Hud {
     this.logPanel = document.createElement('div');
     this.logPanel.id = 'observation-log';
     this.logPanel.className = 'observation-log';
-    this.logPanel.innerHTML =
-      '<strong>Field log</strong><p>Travel through the universe to collect signals and routes.</p>';
-    this.logList = document.createElement('ul');
-    this.logPanel.appendChild(this.logList);
+    const logHead = document.createElement('div');
+    logHead.className = 'observation-log-head';
+    const logTitle = document.createElement('strong');
+    logTitle.textContent = 'Field log';
+    const resetLog = document.createElement('button');
+    resetLog.type = 'button';
+    resetLog.textContent = 'reset';
+    resetLog.setAttribute('aria-label', 'Reset field log progress');
+    resetLog.addEventListener('click', () => this.resetFieldLog());
+    logHead.append(logTitle, resetLog);
+    const intro = document.createElement('p');
+    intro.textContent =
+      'Travel through the universe to collect visited scales and evidence signals.';
+    const sceneTitle = document.createElement('h3');
+    sceneTitle.textContent = 'Visited scales';
+    this.sceneLogList = document.createElement('ul');
+    this.sceneLogList.dataset.kind = 'scene';
+    const signalTitle = document.createElement('h3');
+    signalTitle.textContent = 'Collected signals';
+    this.signalLogList = document.createElement('ul');
+    this.signalLogList.dataset.kind = 'signal';
+    this.logPanel.append(
+      logHead,
+      intro,
+      sceneTitle,
+      this.sceneLogList,
+      signalTitle,
+      this.signalLogList,
+    );
     root.appendChild(this.logPanel);
+    this.restoreFieldLog();
+    this.renderFieldLog();
 
     this.hint = document.createElement('div');
     this.hint.className = 'hud-hint';
@@ -251,15 +292,111 @@ export class Hud {
     body: string,
     destination?: ObservationDestination,
   ): void {
-    if (this.observations.has(id)) return;
-    this.observations.set(id, { title, body, destination });
+    this.collectSignal(id, title, body, destination);
+  }
+
+  markSceneVisited(
+    id: string,
+    title: string,
+    body: string,
+    destination?: ObservationDestination,
+  ): void {
+    this.addLogEntry('scene', id, title, body, destination);
+  }
+
+  collectSignal(
+    id: string,
+    title: string,
+    body: string,
+    destination?: ObservationDestination,
+  ): void {
+    this.addLogEntry('signal', id, title, body, destination);
+  }
+
+  private addLogEntry(
+    kind: LogKind,
+    id: string,
+    title: string,
+    body: string,
+    destination?: ObservationDestination,
+  ): void {
+    const map = kind === 'scene' ? this.sceneVisits : this.signalObservations;
+    if (map.has(id)) return;
+    map.set(id, { title, body, destination });
+    this.persistFieldLog();
+    this.renderFieldLog();
+  }
+
+  private resetFieldLog(): void {
+    this.sceneVisits.clear();
+    this.signalObservations.clear();
+    try {
+      localStorage.removeItem(FIELD_LOG_KEY);
+    } catch {
+      /* private mode: in-memory reset is enough */
+    }
+    this.renderFieldLog();
+    this.live.textContent = 'Field log reset';
+  }
+
+  private restoreFieldLog(): void {
+    try {
+      const raw = localStorage.getItem(FIELD_LOG_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as Partial<PersistedFieldLog>;
+      for (const [id, entry] of Object.entries(parsed.scenes ?? {})) {
+        if (validEntry(entry)) this.sceneVisits.set(id, entry);
+      }
+      for (const [id, entry] of Object.entries(parsed.signals ?? {})) {
+        if (validEntry(entry)) this.signalObservations.set(id, entry);
+      }
+    } catch {
+      /* corrupted/private storage: start fresh */
+    }
+  }
+
+  private persistFieldLog(): void {
+    try {
+      const data: PersistedFieldLog = {
+        scenes: Object.fromEntries(this.sceneVisits),
+        signals: Object.fromEntries(this.signalObservations),
+      };
+      localStorage.setItem(FIELD_LOG_KEY, JSON.stringify(data));
+    } catch {
+      /* private mode: keep the in-memory log */
+    }
+  }
+
+  private renderFieldLog(): void {
+    this.sceneLogList.replaceChildren();
+    this.signalLogList.replaceChildren();
+    for (const entry of this.sceneVisits.values()) {
+      this.sceneLogList.appendChild(this.renderLogItem(entry));
+    }
+    for (const entry of this.signalObservations.values()) {
+      this.signalLogList.appendChild(this.renderLogItem(entry));
+    }
+    const hasItems = this.sceneVisits.size > 0 || this.signalObservations.size > 0;
+    this.logPanel.classList.toggle('has-items', hasItems);
+    this.sceneLogList.classList.toggle('empty', this.sceneVisits.size === 0);
+    this.signalLogList.classList.toggle('empty', this.signalObservations.size === 0);
+    if (this.sceneVisits.size === 0) {
+      this.sceneLogList.appendChild(emptyItem('No scales visited in this browser yet.'));
+    }
+    if (this.signalObservations.size === 0) {
+      this.signalLogList.appendChild(emptyItem('Select a glowing signal to collect evidence.'));
+    }
+  }
+
+  private renderLogItem(entry: ObservationEntry): HTMLLIElement {
     const item = document.createElement('li');
     const heading = document.createElement('strong');
-    heading.textContent = title;
+    heading.textContent = entry.title;
     const copy = document.createElement('span');
-    copy.textContent = body;
+    copy.textContent = entry.body;
     item.append(heading, copy);
-    if (destination) {
+    if (entry.destination) {
+      const destination = entry.destination;
       const action =
         destination.type === 'url' ? document.createElement('a') : document.createElement('button');
       action.className = 'observation-route';
@@ -281,8 +418,7 @@ export class Hud {
       }
       item.appendChild(action);
     }
-    this.logList.appendChild(item);
-    this.logPanel.classList.add('has-items');
+    return item;
   }
 
   showHint(text: string): void {
@@ -293,4 +429,22 @@ export class Hud {
   hideHint(): void {
     this.hint.classList.add('hidden');
   }
+}
+
+function emptyItem(text: string): HTMLLIElement {
+  const item = document.createElement('li');
+  item.className = 'empty';
+  const copy = document.createElement('span');
+  copy.textContent = text;
+  item.appendChild(copy);
+  return item;
+}
+
+function validEntry(value: unknown): value is ObservationEntry {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as ObservationEntry).title === 'string' &&
+    typeof (value as ObservationEntry).body === 'string'
+  );
 }

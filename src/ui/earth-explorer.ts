@@ -1,7 +1,12 @@
 import 'cesium/Build/Cesium/Widgets/widgets.css';
+import { SCENE_SIGNALS } from '../content/portfolio';
 
 export interface EarthExplorerAdapter {
-  mount(container: HTMLElement, onStanford: () => void, onCamera: (text: string) => void): Promise<void>;
+  mount(
+    container: HTMLElement,
+    onStanford: () => void,
+    onCamera: (text: string) => void,
+  ): Promise<void>;
   reset(): void;
   destroy(): void;
 }
@@ -32,7 +37,19 @@ export class EarthExplorer {
     this.readout.textContent = 'loading terrain…';
     this.error.className = 'earth-explorer-error';
     toolbar.append(this.readout, reset, exit);
-    this.root.append(this.canvasHost, toolbar, this.error);
+    const list = document.createElement('div');
+    list.className = 'earth-coordinate-list';
+    list.innerHTML = '<strong>Coordinate layer</strong>';
+    for (const signal of SCENE_SIGNALS.filter((item) => item.scene === 'earth')) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = signal.title;
+      button.addEventListener('click', () => {
+        window.dispatchEvent(new CustomEvent('universe:signal', { detail: signal.id }));
+      });
+      list.appendChild(button);
+    }
+    this.root.append(this.canvasHost, toolbar, list, this.error);
     document.body.appendChild(this.root);
   }
 
@@ -54,11 +71,14 @@ export class EarthExplorer {
           this.exit();
           window.dispatchEvent(new CustomEvent('universe:navigate', { detail: 3 }));
         },
-        (text) => { this.readout.textContent = text; },
+        (text) => {
+          this.readout.textContent = text;
+        },
       );
     } catch (error) {
       console.error('Earth explorer failed', error);
-      this.error.textContent = 'Detailed Earth data is unavailable. The portfolio globe remains active behind this view.';
+      this.error.textContent =
+        'Detailed Earth data is unavailable. The portfolio globe remains active behind this view.';
     }
   }
 
@@ -97,13 +117,20 @@ async function createCesiumAdapter(): Promise<EarthExplorerAdapter> {
         selectionIndicator: false,
         infoBox: false,
       });
-      try { viewer.scene.primitives.add(await C.createOsmBuildingsAsync()); } catch (error) {
+      try {
+        viewer.scene.primitives.add(await C.createOsmBuildingsAsync());
+      } catch (error) {
         console.warn('Cesium OSM buildings unavailable', error);
       }
       const stanford = viewer.entities.add({
         id: 'stanford-marker',
         position: C.Cartesian3.fromDegrees(-122.1697, 37.4275, 40),
-        point: { pixelSize: 14, color: C.Color.fromCssColorString('#ff5a5a'), outlineColor: C.Color.WHITE, outlineWidth: 3 },
+        point: {
+          pixelSize: 14,
+          color: C.Color.fromCssColorString('#ff5a5a'),
+          outlineColor: C.Color.WHITE,
+          outlineWidth: 3,
+        },
         label: {
           text: 'Stanford University\ncontinue the journey',
           font: '600 16px sans-serif',
@@ -113,21 +140,31 @@ async function createCesiumAdapter(): Promise<EarthExplorerAdapter> {
           pixelOffset: new C.Cartesian2(0, -38),
         },
       });
-      viewer.screenSpaceEventHandler.setInputAction((movement: { position: import('cesium').Cartesian2 }) => {
-        const picked = viewer?.scene.pick(movement.position) as { id?: unknown } | undefined;
-        if (picked?.id === stanford) onStanford();
-      }, C.ScreenSpaceEventType.LEFT_CLICK);
+      viewer.screenSpaceEventHandler.setInputAction(
+        (movement: { position: import('cesium').Cartesian2 }) => {
+          const picked = viewer?.scene.pick(movement.position) as { id?: unknown } | undefined;
+          if (picked?.id === stanford) onStanford();
+        },
+        C.ScreenSpaceEventType.LEFT_CLICK,
+      );
       const updateReadout = () => {
         if (!viewer) return;
         const p = viewer.camera.positionCartographic;
-        onCamera(`${C.Math.toDegrees(p.latitude).toFixed(3)}°, ${C.Math.toDegrees(p.longitude).toFixed(3)}° · ${Math.round(p.height / 1000).toLocaleString()} km`);
+        onCamera(
+          `${C.Math.toDegrees(p.latitude).toFixed(3)}°, ${C.Math.toDegrees(p.longitude).toFixed(3)}° · ${Math.round(p.height / 1000).toLocaleString()} km`,
+        );
       };
       viewer.camera.changed.addEventListener(updateReadout);
       viewer.camera.flyTo({ destination: destination(), duration: 0 });
       updateReadout();
     },
-    reset() { viewer?.camera.flyTo({ destination: destination(), duration: 1.2 }); },
-    destroy() { viewer?.destroy(); viewer = null; },
+    reset() {
+      viewer?.camera.flyTo({ destination: destination(), duration: 1.2 });
+    },
+    destroy() {
+      viewer?.destroy();
+      viewer = null;
+    },
   };
 }
 

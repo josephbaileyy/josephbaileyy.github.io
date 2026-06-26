@@ -1,15 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { layoutReticles } from '../src/ui/solar-overlay';
+import { bodyCardModel, layoutReticles } from '../src/ui/solar-overlay';
 import { solarCameraScale } from '../src/scenes/solar';
 
 const el = {} as HTMLButtonElement;
 
 describe('solar reticle layout', () => {
   it('keeps marker centers on their projected body positions', () => {
-    const result = layoutReticles([
-      { el, x: 320.25, y: 410.75, order: 0 },
-      { el, x: 900.5, y: 220.5, order: 1 },
-    ], { w: 1280, h: 800 });
+    const result = layoutReticles(
+      [
+        { el, x: 320.25, y: 410.75, order: 0 },
+        { el, x: 900.5, y: 220.5, order: 1 },
+      ],
+      { w: 1280, h: 800 },
+    );
     expect(result[0].x).toBe(320.25);
     expect(result[0].y).toBe(410.75);
     expect(result[1].x).toBe(900.5);
@@ -17,11 +20,17 @@ describe('solar reticle layout', () => {
   });
 
   it('declutters labels without moving coincident marker centers', () => {
-    const result = layoutReticles([
-      { el, x: 600, y: 400, order: 0 },
-      { el, x: 610, y: 400, order: 2 },
-    ], { w: 1280, h: 800 });
-    expect(result.map(({ x, y }) => [x, y])).toEqual([[600, 400], [610, 400]]);
+    const result = layoutReticles(
+      [
+        { el, x: 600, y: 400, order: 0 },
+        { el, x: 610, y: 400, order: 2 },
+      ],
+      { w: 1280, h: 800 },
+    );
+    expect(result.map(({ x, y }) => [x, y])).toEqual([
+      [600, 400],
+      [610, 400],
+    ]);
     expect(Math.abs(result[1].labelY - result[0].labelY)).toBeGreaterThanOrEqual(26);
   });
 
@@ -33,5 +42,15 @@ describe('solar reticle layout', () => {
     expect(midway).toBeLessThan(joined);
     expect(joined).toBe(1);
     expect(solarCameraScale('earth', -0.1)).toBe(1);
+  });
+
+  it('formats selected-body card details from simulation state', () => {
+    const card = bodyCardModel('earth', 1.0023, Date.UTC(2026, 5, 25), 'real');
+    expect(card.title).toBe('Earth');
+    expect(card.distance).toBe('1.00 AU from Sun');
+    expect(card.radius).toBe('6,371 km');
+    expect(card.date).toBe('2026-06-25');
+    expect(card.scaleMode).toBe('real scale');
+    expect(card.note).toContain('amber route');
   });
 });

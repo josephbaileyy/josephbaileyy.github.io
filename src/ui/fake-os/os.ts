@@ -1,5 +1,13 @@
 import { PANELS } from '../../content/panels';
-import { APP_PROJECTS, itemLinks, isPdfHref, type PortfolioItem } from '../../content/portfolio';
+import {
+  APP_PROJECTS,
+  PORTFOLIO,
+  SCENES,
+  SCENE_SIGNALS,
+  itemLinks,
+  isPdfHref,
+  type PortfolioItem,
+} from '../../content/portfolio';
 import { buildTerminal } from './terminal';
 import { WindowManager } from './wm';
 
@@ -48,6 +56,94 @@ function panelBody(panelId: string): HTMLElement {
   const content = PANELS[panelId];
   div.innerHTML = content ? content.html : 'file not found';
   return div;
+}
+
+function readFieldLog(): { scenes: Record<string, unknown>; signals: Record<string, unknown> } {
+  try {
+    const raw = localStorage.getItem('jb-field-log-v2');
+    if (!raw) return { scenes: {}, signals: {} };
+    const parsed = JSON.parse(raw) as {
+      scenes?: Record<string, unknown>;
+      signals?: Record<string, unknown>;
+    };
+    return { scenes: parsed.scenes ?? {}, signals: parsed.signals ?? {} };
+  } catch {
+    return { scenes: {}, signals: {} };
+  }
+}
+
+function startHereBody(actions: {
+  openResearch: () => void;
+  openProjects: () => void;
+  openFieldLog: () => void;
+  openCv: () => void;
+}): HTMLElement {
+  const wrap = document.createElement('div');
+  wrap.className = 'os-doc os-start';
+  const log = readFieldLog();
+  const visited = new Set(Object.keys(log.scenes));
+  wrap.innerHTML = `
+    <section class="os-start-hero">
+      <span>mission desktop</span>
+      <h2>Start Here</h2>
+      <p>${PORTFOLIO.profile.tagline}</p>
+    </section>
+    <section class="os-start-actions" aria-label="Primary actions"></section>
+    <section>
+      <h3>Featured work</h3>
+      <div class="os-start-grid"></div>
+    </section>
+    <section>
+      <h3>Scene progress</h3>
+      <div class="os-progress-grid"></div>
+    </section>`;
+  const actionBar = wrap.querySelector<HTMLElement>('.os-start-actions')!;
+  for (const [label, action] of [
+    ['Research', actions.openResearch],
+    ['Projects', actions.openProjects],
+    ['CV', actions.openCv],
+    ['Field Log', actions.openFieldLog],
+  ] as const) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = label;
+    button.addEventListener('click', action);
+    actionBar.appendChild(button);
+  }
+  const grid = wrap.querySelector<HTMLElement>('.os-start-grid')!;
+  for (const project of PORTFOLIO.projects.filter((item) => item.featured).slice(0, 4)) {
+    const card = document.createElement('article');
+    card.innerHTML = `<strong>${project.title}</strong><p>${project.outcome ?? project.description}</p>`;
+    grid.appendChild(card);
+  }
+  const progress = wrap.querySelector<HTMLElement>('.os-progress-grid')!;
+  for (const scene of SCENES) {
+    const card = document.createElement('article');
+    card.className = visited.has(scene.id) ? 'visited' : '';
+    card.innerHTML = `<span>${scene.scale}</span><strong>${scene.label}</strong><p>${scene.route}</p>`;
+    progress.appendChild(card);
+  }
+  return wrap;
+}
+
+function fieldLogBody(): HTMLElement {
+  const wrap = document.createElement('div');
+  wrap.className = 'os-doc os-field-log';
+  const log = readFieldLog();
+  const sceneEntries = Object.entries(log.scenes);
+  const signalEntries = Object.entries(log.signals);
+  const renderEntry = ([, value]: [string, unknown]) => {
+    const entry = value as { title?: string; body?: string };
+    return `<li><strong>${entry.title ?? 'Unknown signal'}</strong><span>${entry.body ?? ''}</span></li>`;
+  };
+  wrap.innerHTML = `
+    <h2>Mission Report</h2>
+    <p>Local progress from this browser. Use the HUD field log to reset it.</p>
+    <h3>Visited scales (${sceneEntries.length}/${SCENES.length})</h3>
+    <ul>${sceneEntries.length ? sceneEntries.map(renderEntry).join('') : '<li><span>No visited scales yet.</span></li>'}</ul>
+    <h3>Collected signals (${signalEntries.length}/${SCENE_SIGNALS.length})</h3>
+    <ul>${signalEntries.length ? signalEntries.map(renderEntry).join('') : '<li><span>No collected signals yet.</span></li>'}</ul>`;
+  return wrap;
 }
 
 /** A PDF rendered inside BaileyOS, with escape hatches to a tab or download. */
@@ -237,6 +333,71 @@ function mobileIcon(iconValue: string | HTMLElement, className = ''): HTMLElemen
   return wrap;
 }
 
+interface PaletteCommand {
+  id: string;
+  label: string;
+  detail: string;
+  run: () => void;
+}
+
+function installCommandPalette(root: HTMLElement, commands: PaletteCommand[]): void {
+  const palette = document.createElement('div');
+  palette.className = 'os-command-palette';
+  palette.hidden = true;
+  palette.innerHTML = `
+    <div class="os-command-box" role="dialog" aria-modal="true" aria-label="BaileyOS command palette">
+      <input aria-label="Search BaileyOS commands" placeholder="Search apps, projects, PDFs, signals…" />
+      <ul role="listbox"></ul>
+    </div>`;
+  const input = palette.querySelector('input')!;
+  const list = palette.querySelector('ul')!;
+  let visibleCommands = commands.slice(0, 8);
+  const render = () => {
+    list.replaceChildren();
+    for (const command of visibleCommands) {
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.innerHTML = `<strong>${command.label}</strong><span>${command.detail}</span>`;
+      button.addEventListener('click', () => {
+        palette.hidden = true;
+        command.run();
+      });
+      item.appendChild(button);
+      list.appendChild(item);
+    }
+  };
+  const search = () => {
+    const q = input.value.trim().toLowerCase();
+    visibleCommands = commands
+      .filter((command) => `${command.label} ${command.detail}`.toLowerCase().includes(q))
+      .slice(0, 8);
+    render();
+  };
+  input.addEventListener('input', search);
+  palette.addEventListener('click', (event) => {
+    if (event.target === palette) palette.hidden = true;
+  });
+  root.appendChild(palette);
+  const onKeyDown = (event: KeyboardEvent) => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+      event.preventDefault();
+      palette.hidden = false;
+      input.value = '';
+      visibleCommands = commands.slice(0, 8);
+      render();
+      input.focus();
+    } else if (event.key === 'Escape' && !palette.hidden) {
+      palette.hidden = true;
+    } else if (event.key === 'Enter' && !palette.hidden && document.activeElement === input) {
+      visibleCommands[0]?.run();
+      palette.hidden = true;
+    }
+  };
+  root.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keydown', onKeyDown);
+}
+
 /** The little desktop that lives on the monitor at depth 5. */
 export function buildFakeOs(): HTMLElement {
   const root = document.createElement('div');
@@ -276,7 +437,15 @@ export function buildFakeOs(): HTMLElement {
   arrange.addEventListener('click', () => wm.arrange());
 
   const openPdf = (href: string, title: string) =>
-    wm.open({ id: `pdf:${href}`, title, body: pdfBody(href, title), x: 12, y: 6, w: 560, h: 460 });
+    wm.open({
+      id: `pdf:${href}`,
+      title: `Quick Look — ${title}`,
+      body: pdfBody(href, title),
+      x: 12,
+      y: 6,
+      w: 560,
+      h: 460,
+    });
   const openProject = (project: PortfolioItem) =>
     wm.open({
       id: `project:${project.app?.short ?? project.title}`,
@@ -296,6 +465,21 @@ export function buildFakeOs(): HTMLElement {
       y: 12,
       w: 460,
       h: 320,
+    });
+  const openStart = () =>
+    wm.open({
+      id: 'start',
+      title: 'Start Here — mission dashboard',
+      body: startHereBody({
+        openResearch,
+        openProjects,
+        openFieldLog,
+        openCv: () => openPdf('/resume.pdf', 'cv.pdf'),
+      }),
+      x: 10,
+      y: 6,
+      w: 560,
+      h: 430,
     });
   const openResearch = () =>
     wm.open({
@@ -327,6 +511,26 @@ export function buildFakeOs(): HTMLElement {
       w: 440,
       h: 350,
     });
+  const openProjects = () =>
+    wm.open({
+      id: 'projects',
+      title: 'projects.md — featured work',
+      body: panelBody('projects'),
+      x: 26,
+      y: 9,
+      w: 470,
+      h: 360,
+    });
+  const openFieldLog = () =>
+    wm.open({
+      id: 'field-log',
+      title: 'field-log.md — mission report',
+      body: fieldLogBody(),
+      x: 18,
+      y: 10,
+      w: 450,
+      h: 360,
+    });
   const openVideos = () =>
     wm.open({
       id: 'videos',
@@ -339,16 +543,57 @@ export function buildFakeOs(): HTMLElement {
     });
   const launchJourney = () => window.dispatchEvent(new CustomEvent('universe:tour'));
   const appActions = new Map<string, () => void>([
+    ['start', openStart],
     ['terminal', openTerminal],
     ['research', openResearch],
     ['experience', openExperience],
     ['cv', () => openPdf('/resume.pdf', 'cv.pdf')],
     ['profile', openProfile],
+    ['projects', openProjects],
+    ['field-log', openFieldLog],
     ['videos', openVideos],
   ]);
   for (const project of APP_PROJECTS) {
     appActions.set(`project:${project.app!.short}`, () => openProject(project));
   }
+  const commands: PaletteCommand[] = [
+    { id: 'start', label: 'Start Here', detail: 'mission dashboard', run: openStart },
+    { id: 'research', label: 'Research', detail: 'AI for fundamental physics', run: openResearch },
+    { id: 'projects', label: 'Projects', detail: 'featured work and evidence', run: openProjects },
+    {
+      id: 'experience',
+      label: 'Experience',
+      detail: 'WisdomTree, Polytec, and lab work',
+      run: openExperience,
+    },
+    {
+      id: 'cv',
+      label: 'CV',
+      detail: 'resume.pdf quick look',
+      run: () => openPdf('/resume.pdf', 'cv.pdf'),
+    },
+    {
+      id: 'field-log',
+      label: 'Field Log',
+      detail: 'mission progress and collected signals',
+      run: openFieldLog,
+    },
+    { id: 'terminal', label: 'Terminal', detail: 'BaileyOS shell', run: openTerminal },
+    { id: 'videos', label: 'Performance reel', detail: 'music and marching arts', run: openVideos },
+    ...APP_PROJECTS.map((project) => ({
+      id: `project:${project.app!.short}`,
+      label: project.title,
+      detail: 'project app',
+      run: () => openProject(project),
+    })),
+    ...SCENE_SIGNALS.map((signal) => ({
+      id: `signal:${signal.id}`,
+      label: signal.title,
+      detail: `${signal.scene} signal`,
+      run: () => window.dispatchEvent(new CustomEvent('universe:signal', { detail: signal.id })),
+    })),
+  ];
+  installCommandPalette(root, commands);
   const openApp = (event: Event) => {
     const id = (event as CustomEvent<string>).detail;
     appActions.get(id)?.();
@@ -430,10 +675,12 @@ export function buildFakeOs(): HTMLElement {
       () => openProject(project),
     ]);
   const mobileCoreIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
+    ['start', '✦', 'Start', openStart],
     ['terminal', '⌘', 'Terminal', openTerminal],
     ['research', '🔬', 'Research', openResearch],
     ['experience', '🛰️', 'Experience', openExperience],
     ['cv', '📄', 'CV', () => openPdf('/resume.pdf', 'cv.pdf')],
+    ['field-log', '◎', 'Field Log', openFieldLog],
     ['profile', '🧑‍🚀', 'About', openProfile],
     ['videos', playIcon(''), 'Videos', openVideos],
     ['journey', '🌌', 'Journey', launchJourney],
@@ -464,10 +711,12 @@ export function buildFakeOs(): HTMLElement {
   const dock = document.createElement('div');
   dock.className = 'os-dock';
   const items: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
+    ['start', '✦', 'start', openStart],
     ['terminal', '🖥', 'terminal', openTerminal],
     ['research', '🔬', 'research', openResearch],
     ['experience', '🛰️', 'experience', openExperience],
     ['cv', '📄', 'cv.pdf', () => openPdf('/resume.pdf', 'cv.pdf')],
+    ['field-log', '◎', 'field log', openFieldLog],
     ['profile', '🧑‍🚀', 'about', openProfile],
     ['videos', playIcon('os-dock-icon'), 'videos', openVideos],
     ['journey', '🌌', 'journey', launchJourney],
@@ -533,8 +782,8 @@ export function buildFakeOs(): HTMLElement {
   });
   root.appendChild(dock);
 
-  // Desktop welcomes with the terminal; mobile begins on the app launcher.
-  if (!window.matchMedia('(max-width: 760px)').matches) setTimeout(openTerminal, 450);
+  // Desktop welcomes with a mission dashboard; mobile begins on the app launcher.
+  if (!window.matchMedia('(max-width: 760px)').matches) setTimeout(openStart, 450);
 
   return root;
 }

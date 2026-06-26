@@ -42,7 +42,10 @@ function palm(rand: () => number): Group {
   let y = 0;
   const lean = (rand() - 0.5) * 0.12;
   for (let i = 0; i < 3; i++) {
-    const seg = new Mesh(new CylinderGeometry(0.09 - i * 0.015, 0.11 - i * 0.015, 0.9, 6), trunkMat);
+    const seg = new Mesh(
+      new CylinderGeometry(0.09 - i * 0.015, 0.11 - i * 0.015, 0.9, 6),
+      trunkMat,
+    );
     seg.position.set(lean * i, y + 0.45, 0);
     seg.rotation.z = lean;
     seg.castShadow = true;
@@ -194,7 +197,12 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   church.add(churchBody);
   const facade = new Mesh(
     new PlaneGeometry(4.0, 3.0),
-    new MeshStandardMaterial({ map: facadeTex, emissive: 0xffffff, emissiveMap: facadeTex, emissiveIntensity: 0.32 }),
+    new MeshStandardMaterial({
+      map: facadeTex,
+      emissive: 0xffffff,
+      emissiveMap: facadeTex,
+      emissiveIntensity: 0.32,
+    }),
   );
   facade.position.set(0, 2.0, 1.55);
   church.add(facade);
@@ -252,7 +260,10 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   );
   dome.position.y = 9.9;
   hoover.add(dome);
-  const beaconLight = new Mesh(new SphereGeometry(0.09, 8, 6), new MeshBasicMaterial({ color: 0xff4444 }));
+  const beaconLight = new Mesh(
+    new SphereGeometry(0.09, 8, 6),
+    new MeshBasicMaterial({ color: 0xff4444 }),
+  );
   beaconLight.position.y = 11.05;
   hoover.add(beaconLight);
   hoover.position.set(3, 0, -8);
@@ -263,7 +274,10 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
     const w = 3 + rand() * 4;
     const h = 1.6 + rand() * 1.6;
     const d = 2.5 + rand() * 2;
-    const b = new Mesh(new BoxGeometry(w, h, d), new MeshStandardMaterial({ color: SANDSTONE, roughness: 1 }));
+    const b = new Mesh(
+      new BoxGeometry(w, h, d),
+      new MeshStandardMaterial({ color: SANDSTONE, roughness: 1 }),
+    );
     const x = -16 + rand() * 22;
     const z = -14 + rand() * 10;
     if (Math.hypot(x - 3, z + 8) < 4 || Math.hypot(x + 6, z - 2) < 5) continue;
@@ -409,12 +423,63 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   winGlow.position.copy(windowPos).addScaledVector(v, 0.5);
   group.add(winGlow);
 
-  const label = textSprite(
-    [{ text: "my room — the light's on", color: '#ffd479', size: 28 }],
-    { worldWidth: 8, width: 600 },
-  );
+  const label = textSprite([{ text: "my room — the light's on", color: '#ffd479', size: 28 }], {
+    worldWidth: 8,
+    width: 600,
+  });
   label.position.copy(windowPos).add(new Vector3(0, 2.4, 0));
   group.add(label);
+
+  const campusSignals = [
+    {
+      id: 'stanford-physics',
+      label: 'physics / research',
+      color: '#7fd4ff',
+      position: new Vector3(-13.5, 3.5, -17.2),
+    },
+    {
+      id: 'stanford-track',
+      label: 'track',
+      color: '#ffd479',
+      position: new Vector3(2, 0.45, 10),
+    },
+    {
+      id: 'stanford-music',
+      label: 'music / life',
+      color: '#eef2ff',
+      position: new Vector3(-6, 4.2, -1.0),
+    },
+  ] as const;
+  const signalHotspots: Hotspot3D[] = [];
+  for (const signal of campusSignals) {
+    const beacon = new Mesh(
+      new SphereGeometry(0.18, 12, 8),
+      new MeshBasicMaterial({ color: Number.parseInt(signal.color.slice(1), 16) }),
+    );
+    beacon.position.copy(signal.position);
+    group.add(beacon);
+    const signalLabel = textSprite(
+      [
+        { text: signal.label, color: signal.color, size: 24 },
+        { text: 'collect signal', color: '#cdd4f0', size: 16 },
+      ],
+      { worldWidth: 5.2, width: 460, opacity: 0.72 },
+    );
+    signalLabel.position.copy(signal.position).add(new Vector3(0, 1.2, 0));
+    group.add(signalLabel);
+    const hit = new Mesh(new SphereGeometry(1.0, 8, 6), new MeshBasicMaterial({ visible: false }));
+    hit.position.copy(signal.position);
+    group.add(hit);
+    signalHotspots.push({
+      object: hit,
+      label: `${signal.label} signal`,
+      action: { type: 'signal', signalId: signal.id },
+      setHover(on) {
+        signalLabel.material.opacity = on ? 1 : 0.72;
+        beacon.scale.setScalar(on ? 1.7 : 1);
+      },
+    });
+  }
 
   // ---- a few faint stars so the void isn't empty ----
   const starCount = 260;
@@ -432,7 +497,13 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   starGeo.setAttribute('position', new BufferAttribute(starPos, 3));
   const starField = new Points(
     starGeo,
-    new PointsMaterial({ color: 0xcdd4f0, size: 1.6, sizeAttenuation: false, transparent: true, opacity: 0.6 }),
+    new PointsMaterial({
+      color: 0xcdd4f0,
+      size: 1.6,
+      sizeAttenuation: false,
+      transparent: true,
+      opacity: 0.6,
+    }),
   );
   group.add(starField);
 
@@ -441,6 +512,7 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
   hit.position.copy(windowPos);
   group.add(hit);
   const hotspots: Hotspot3D[] = [
+    ...signalHotspots,
     {
       object: hit,
       label: 'Zoom in to my room',
@@ -471,7 +543,9 @@ export function createStanford(_assets: SceneAssets): SceneInstance {
     },
     setQuality(q) {
       starField.visible = q !== 'low';
-      palms.forEach((tree, index) => { tree.visible = q !== 'low' || index % 2 === 0; });
+      palms.forEach((tree, index) => {
+        tree.visible = q !== 'low' || index % 2 === 0;
+      });
     },
     dispose() {
       group.traverse((o) => {

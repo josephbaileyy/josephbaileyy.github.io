@@ -27,6 +27,47 @@ describe('portfolio content', () => {
     ).toBe(true);
   });
 
+  it('defines a powers-of-ten scene map with routed evidence signals', () => {
+    expect(PORTFOLIO.scenes.map((scene) => scene.id)).toEqual([
+      'galaxy',
+      'solar',
+      'earth',
+      'stanford',
+      'room',
+      'screen',
+    ]);
+    for (const scene of PORTFOLIO.scenes) {
+      expect(scene.scale).toMatch(/10/);
+      expect(scene.comparison).toBeTruthy();
+      expect(scene.meaning).toBeTruthy();
+      expect(scene.route).toBeTruthy();
+      expect(PORTFOLIO.sceneSignals.some((signal) => signal.scene === scene.id)).toBe(true);
+    }
+    const signalIds = new Set(PORTFOLIO.sceneSignals.map((signal) => signal.id));
+    expect(signalIds.size).toBe(PORTFOLIO.sceneSignals.length);
+    expect([...signalIds]).toEqual(
+      expect.arrayContaining([
+        'galaxy-am-cvn',
+        'solar-ephemeris',
+        'earth-stanford-slac',
+        'stanford-track',
+        'room-music-sheet',
+        'screen-start-here',
+      ]),
+    );
+    for (const signal of PORTFOLIO.sceneSignals) {
+      expect(signal.title).toBeTruthy();
+      expect(signal.body).toBeTruthy();
+      if (signal.destination?.type === 'panel') expect(signal.destination.panelId).toBeTruthy();
+      if (signal.destination?.type === 'scene')
+        expect(signal.destination.index).toBeTypeOf('number');
+      if (signal.destination?.type === 'app') expect(signal.destination.appId).toBeTruthy();
+      if (signal.destination?.type === 'url') expect(signal.destination.href).toMatch(/^https?:/);
+    }
+    expect(PANELS.scale.html).toContain('The Milky Way');
+    expect(PANELS['am-cvn'].html).toContain('/img/am-cvn-light-curve.png');
+  });
+
   it('keeps featured project evidence complete across shared renderers', () => {
     const featured = PORTFOLIO.projects.filter((project) => project.featured);
     expect(featured.map((project) => project.title)).toEqual(

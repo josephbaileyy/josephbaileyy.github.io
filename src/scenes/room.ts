@@ -14,6 +14,7 @@ import {
   ShapeGeometry,
   SphereGeometry,
   Texture,
+  Vector3,
 } from 'three';
 import type { Hotspot3D, SceneAssets, SceneInstance } from '../engine/types3d';
 import { canvasTexture, loadTextureWithFallback, textSprite } from './lib/assets';
@@ -390,6 +391,113 @@ export function createRoom(assets: SceneAssets): SceneInstance {
   chair.rotation.y = 0.7;
   group.add(chair);
 
+  // ---- personal evidence objects ----
+  const spikes = new Group();
+  const spikeMat = new MeshStandardMaterial({ color: 0xffd479, roughness: 0.75 });
+  for (const offset of [-0.24, 0.24]) {
+    const shoe = new Mesh(new BoxGeometry(0.62, 0.16, 0.24), spikeMat);
+    shoe.position.set(offset, 0.12, 0);
+    shoe.rotation.y = offset > 0 ? -0.18 : 0.18;
+    spikes.add(shoe);
+    const toe = new Mesh(new CylinderGeometry(0.025, 0.012, 0.18, 6), spikeMat);
+    toe.rotation.x = Math.PI / 2;
+    toe.position.set(offset + 0.2, 0.03, 0.14);
+    spikes.add(toe);
+  }
+  spikes.position.set(-2.4, 0.08, -1.8);
+  spikes.rotation.y = -0.45;
+  group.add(spikes);
+
+  const musicTex = canvasTexture(256, 192, (ctx) => {
+    ctx.fillStyle = '#f4eddc';
+    ctx.fillRect(0, 0, 256, 192);
+    ctx.strokeStyle = '#2a2356';
+    ctx.lineWidth = 2;
+    for (let staff = 0; staff < 3; staff++) {
+      const y0 = 30 + staff * 48;
+      for (let i = 0; i < 5; i++) {
+        ctx.beginPath();
+        ctx.moveTo(24, y0 + i * 5);
+        ctx.lineTo(232, y0 + i * 5);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#2a2356';
+      for (let note = 0; note < 5; note++) {
+        const x = 48 + note * 34;
+        const y = y0 + 7 + ((note + staff) % 4) * 4;
+        ctx.beginPath();
+        ctx.ellipse(x, y, 5, 3.4, -0.4, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillRect(x + 4, y - 22, 2, 22);
+      }
+    }
+  });
+  const musicSheet = new Mesh(
+    new PlaneGeometry(0.92, 0.68),
+    new MeshStandardMaterial({ map: musicTex, roughness: 0.9 }),
+  );
+  musicSheet.rotation.x = -Math.PI / 2;
+  musicSheet.rotation.z = 0.18;
+  musicSheet.position.set(2.65, 2.12, -4.35);
+  group.add(musicSheet);
+
+  const signalTargets = [
+    {
+      id: 'room-am-cvn-poster',
+      label: 'AM CVn poster',
+      position: poster1.position.clone(),
+      size: new Vector3(1.8, 2.4, 0.7),
+    },
+    {
+      id: 'room-powers-poster',
+      label: 'Powers-of-Ten poster',
+      position: poster2.position.clone(),
+      size: new Vector3(1.7, 2.2, 0.7),
+    },
+    {
+      id: 'room-neutrino-notebook',
+      label: 'Neutrino notebook',
+      position: bookStack.position.clone(),
+      size: new Vector3(1.2, 0.8, 1.0),
+    },
+    {
+      id: 'room-track-spikes',
+      label: 'Track spikes',
+      position: spikes.position.clone().add(new Vector3(0, 0.25, 0)),
+      size: new Vector3(1.4, 0.8, 1.0),
+    },
+    {
+      id: 'room-music-sheet',
+      label: 'Music sheet',
+      position: musicSheet.position.clone(),
+      size: new Vector3(1.2, 0.8, 0.9),
+    },
+  ];
+  const signalHotspots: Hotspot3D[] = [];
+  for (const target of signalTargets) {
+    const hit = new Mesh(
+      new BoxGeometry(target.size.x, target.size.y, target.size.z),
+      new MeshBasicMaterial({ visible: false }),
+    );
+    hit.position.copy(target.position);
+    group.add(hit);
+    const tag = textSprite([{ text: target.label, color: '#7fd4ff', size: 21 }], {
+      worldWidth: 3.1,
+      width: 360,
+      opacity: 0.0,
+    });
+    tag.position.copy(target.position).add(new Vector3(0, target.size.y * 0.55 + 0.35, 0.15));
+    group.add(tag);
+    signalHotspots.push({
+      object: hit,
+      label: `${target.label} signal`,
+      action: { type: 'signal', signalId: target.id },
+      setHover(on) {
+        tag.material.opacity = on ? 1 : 0;
+      },
+    });
+  }
+
   // ---- hotspot ----
   const hit = new Mesh(new BoxGeometry(2.2, 1.7, 1.2), new MeshBasicMaterial({ visible: false }));
   hit.position.set(1.5, 2.6, -5.4);
@@ -402,6 +510,7 @@ export function createRoom(assets: SceneAssets): SceneInstance {
   hint.position.set(1.5, 1.55, -4.9);
   group.add(hint);
   const hotspots: Hotspot3D[] = [
+    ...signalHotspots,
     {
       object: hit,
       label: 'Zoom in to my computer screen',

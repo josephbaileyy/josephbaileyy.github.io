@@ -15,7 +15,7 @@ for (const scene of scenes) {
       ),
     ).toBeAttached();
     if (scene === 'screen') {
-      await expect(page.getByLabel('terminal input')).toBeVisible();
+      await expect(page.locator('.os-window').filter({ hasText: 'Start Here' })).toBeVisible();
       await page.locator('.os-menubar > span').evaluateAll((nodes) => {
         nodes.forEach((node) => {
           (node as HTMLElement).style.visibility = 'hidden';

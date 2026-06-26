@@ -32,6 +32,24 @@ import { ephemeris } from '../astronomy/ephemeris';
 import { daysSinceJ2000 } from './lib/astro';
 
 const R = 10;
+const COORDINATE_SIGNALS = [
+  {
+    id: 'earth-stanford-slac',
+    label: 'Stanford / SLAC',
+    lat: 37.4275,
+    lon: -122.1697,
+    color: 0xffd479,
+  },
+  { id: 'earth-pasadena', label: 'Pasadena', lat: 34.1478, lon: -118.1445, color: 0x7fd4ff },
+  {
+    id: 'earth-jefferson-lab',
+    label: 'Jefferson Lab',
+    lat: 37.0871,
+    lon: -76.473,
+    color: 0x7fd4ff,
+  },
+  { id: 'earth-nyc', label: 'New York City', lat: 40.7128, lon: -74.006, color: 0x7fd4ff },
+] as const;
 
 export async function loadEarth(onProgress?: (p: number) => void): Promise<SceneAssets> {
   let done = 0;
@@ -184,11 +202,65 @@ export function createEarth(assets: SceneAssets): SceneInstance {
   label.position.copy(beaconPos).addScaledVector(beaconNormal, 1.9);
   group.add(label);
 
+  // ---- coordinate signal layer ----
+  const signalHotspots: Hotspot3D[] = [];
+  for (const signal of COORDINATE_SIGNALS) {
+    const normal = latLonToVec3(signal.lat, signal.lon, 1).normalize();
+    const pos = normal.clone().multiplyScalar(R * 1.018);
+    const pin = new Group();
+    pin.position.copy(pos);
+    pin.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), normal);
+    const dot = new Mesh(
+      new SphereGeometry(0.055, 10, 8),
+      new MeshBasicMaterial({ color: signal.color }),
+    );
+    pin.add(dot);
+    const glow = new Sprite(
+      new SpriteMaterial({
+        map: sunGlowTexture(),
+        color: signal.color,
+        transparent: true,
+        opacity: 0.34,
+        depthWrite: false,
+        blending: AdditiveBlending,
+      }),
+    );
+    glow.scale.setScalar(1.1);
+    pin.add(glow);
+    group.add(pin);
+    const signalLabel = textSprite(
+      [
+        { text: signal.label, color: signal.color === 0xffd479 ? '#ffd479' : '#7fd4ff', size: 25 },
+        { text: 'collect coordinate', color: '#eef2ff', size: 17 },
+      ],
+      { worldWidth: 5.8, width: 520, opacity: 0.62 },
+    );
+    signalLabel.position.copy(pos).addScaledVector(normal, 1.25);
+    group.add(signalLabel);
+    const signalHit = new Mesh(
+      new SphereGeometry(0.72, 8, 6),
+      new MeshBasicMaterial({ visible: false }),
+    );
+    signalHit.position.copy(pos);
+    group.add(signalHit);
+    signalHotspots.push({
+      object: signalHit,
+      label: `${signal.label} coordinate signal`,
+      action: { type: 'signal', signalId: signal.id },
+      setHover(on) {
+        signalLabel.material.opacity = on ? 1 : 0.62;
+        glow.material.opacity = on ? 0.78 : 0.34;
+        dot.scale.setScalar(on ? 1.8 : 1);
+      },
+    });
+  }
+
   // ---- hotspot ----
   const hit = new Mesh(new SphereGeometry(1.5, 8, 6), new MeshBasicMaterial({ visible: false }));
   hit.position.copy(beaconPos);
   group.add(hit);
   const hotspots: Hotspot3D[] = [
+    ...signalHotspots,
     {
       object: hit,
       label: 'Zoom in to Stanford University',

@@ -2,6 +2,24 @@ import { expect, test } from '@playwright/test';
 
 const isMobileProject = (name: string): boolean => name.includes('mobile');
 
+const openTerminal = async (page: import('@playwright/test').Page, projectName: string) => {
+  if (isMobileProject(projectName)) {
+    await page.locator('.os-mobile-dock-item[data-app-id="terminal"]').click();
+  } else {
+    await page.locator('.os-dock-item[data-app-id="terminal"]').click();
+  }
+  await expect(page.getByLabel('terminal input')).toBeVisible();
+};
+
+const closeStartHere = async (page: import('@playwright/test').Page) => {
+  const close = page.getByLabel('Close Start Here — mission dashboard');
+  await close.waitFor({ state: 'visible', timeout: 2500 }).catch(() => undefined);
+  if (await close.isVisible().catch(() => false)) {
+    await close.click();
+    await expect(page.locator('.os-window[data-window-id="start"]')).toHaveCount(0);
+  }
+};
+
 const scenes = [
   ['galaxy', 'The Milky Way'],
   ['solar', 'The Solar System'],
@@ -39,9 +57,7 @@ test('panels, history, keyboard navigation, and terminal work', async ({ page },
   await expect(page).toHaveURL(/#\/solar$/);
 
   await page.goto('/#/screen');
-  if (isMobileProject(testInfo.project.name)) {
-    await page.locator('.os-mobile-dock-item[data-app-id="terminal"]').click();
-  }
+  await openTerminal(page, testInfo.project.name);
   const terminal = page.getByLabel('terminal input');
   await expect(terminal).toBeVisible();
   await terminal.fill('cat honors.txt');
@@ -133,13 +149,12 @@ test('manual navigation cancels the guided journey', async ({ page }) => {
 test('the terminal `tour` command launches the guided journey', async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
-  if (isMobileProject(testInfo.project.name)) {
-    await page.locator('.os-mobile-dock-item[data-app-id="terminal"]').click();
-  }
+  await openTerminal(page, testInfo.project.name);
   const terminal = page.getByLabel('terminal input');
   await expect(terminal).toBeVisible();
   await terminal.fill('tour');
-  await terminal.press('Enter');
+  await terminal.focus();
+  await page.keyboard.press('Enter');
   await expect(page.locator('.tour-caption')).toHaveClass(/\bon\b/);
 });
 
@@ -151,7 +166,6 @@ test('the dock journey icon replays the guided journey from the desktop', async 
   if (isMobileProject(testInfo.project.name)) {
     await page.locator('.os-mobile-app[data-app-id="journey"]').click();
   } else {
-    await expect(page.getByLabel('terminal input')).toBeVisible();
     await page.locator('.os-dock-item').filter({ hasText: 'journey' }).click();
   }
   await expect(page.locator('.tour-caption')).toHaveClass(/\bon\b/);
@@ -163,7 +177,7 @@ test('BaileyOS keeps projects on the desktop and videos in the dock', async ({
   test.skip(isMobileProject(testInfo.project.name), 'desktop launcher contract');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
-  await expect(page.getByLabel('terminal input')).toBeVisible();
+  await expect(page.locator('.os-window').filter({ hasText: 'Start Here' })).toBeVisible();
 
   await expect(page.locator('.os-dock-item').filter({ hasText: 'league' })).toHaveCount(0);
   await expect(page.locator('.os-dock-item').filter({ hasText: 'SPLoRA' })).toHaveCount(0);
@@ -172,7 +186,7 @@ test('BaileyOS keeps projects on the desktop and videos in the dock', async ({
     page.locator('.os-desktop-icon').filter({ hasText: 'league' }).locator('img'),
   ).toHaveAttribute('src', '/icons/league-of-legends.png');
 
-  await page.getByRole('button', { name: 'Close terminal — zsh' }).click();
+  await closeStartHere(page);
   await page.locator('.os-desktop-icon').filter({ hasText: 'SPLoRA' }).click();
   const featuredProject = page
     .locator('.os-window')
@@ -199,8 +213,7 @@ test('project PDFs open inside BaileyOS with tab/download options', async ({ pag
   if (isMobileProject(testInfo.project.name)) {
     await page.locator('.os-mobile-app[data-app-id="project:league"]').click();
   } else {
-    await expect(page.getByLabel('terminal input')).toBeVisible();
-    await page.getByRole('button', { name: 'Close terminal — zsh' }).click();
+    await closeStartHere(page);
     await page.locator('.os-desktop-icon').filter({ hasText: 'league' }).click();
   }
   const projectWindow = page.locator('.os-window').filter({ hasText: 'League of Legends' });
@@ -222,7 +235,7 @@ test('computer mode is collision-free at the active viewport', async ({ page }, 
   test.skip(isMobileProject(testInfo.project.name), 'desktop HUD collision contract');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
-  await expect(page.getByLabel('terminal input')).toBeVisible();
+  await expect(page.locator('.os-window').filter({ hasText: 'Start Here' })).toBeVisible();
 
   const layout = await page.evaluate(() => {
     const rect = (selector: string) => {
@@ -318,6 +331,9 @@ test('quick portfolio provides current-work navigation and experience', async ({
   await page.goto('/about.html');
   await expect(page.getByRole('navigation', { name: 'Portfolio sections' })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Current work' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Explore by scale' })).toBeVisible();
+  await expect(page.locator('#scale')).toContainText('The Milky Way');
+  await expect(page.locator('#scale')).toContainText('BaileyOS');
   const experience = page.locator('#experience');
   await expect(
     experience.getByRole('heading', { name: /WisdomTree Digital Movement/ }),
@@ -491,11 +507,11 @@ test('solar focus mode expands inner orbits and keeps Earth travel explicit', as
   await expect
     .poll(() => earth.evaluate((node) => getComputedStyle(node, '::before').opacity))
     .toBe('1');
-  await expect(page.getByRole('button', { name: 'visit Earth' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'visit Earth', exact: true })).toBeVisible();
   if (testInfo.project.name === 'chromium') {
     await expect.poll(distance).toBeGreaterThan(overviewDistance * 3);
   }
-  await page.getByRole('button', { name: 'visit Earth' }).click();
+  await page.getByRole('button', { name: 'visit Earth', exact: true }).click();
   await expect(page).toHaveURL(/#\/earth$/);
 });
 
@@ -525,7 +541,7 @@ test('BaileyOS windows resize with accessible controls', async ({ page }, testIn
   );
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
-  await expect(page.getByLabel('terminal input')).toBeVisible();
+  await openTerminal(page, testInfo.project.name);
   const window = page.locator('.os-window').filter({ has: page.getByLabel('terminal input') });
   const before = await window.evaluate((node) => node.getBoundingClientRect().width);
   const handle = page.getByRole('separator', { name: 'Resize terminal — zsh' });
@@ -547,7 +563,7 @@ test('BaileyOS terminal activation keeps every window control cluster reachable'
   test.skip(isMobileProject(testInfo.project.name), 'desktop window cascade contract');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
-  await expect(page.getByLabel('terminal input')).toBeVisible();
+  await closeStartHere(page);
   for (const app of ['research', 'experience', 'about']) {
     await page.locator(`.os-dock-item[data-app-id="${app === 'about' ? 'profile' : app}"]`).click();
   }
@@ -575,8 +591,7 @@ test('opening Terminal does not move existing BaileyOS geometry', async ({ page 
   test.skip(isMobileProject(testInfo.project.name), 'desktop geometry contract');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
-  await expect(page.getByLabel('terminal input')).toBeVisible();
-  await page.getByLabel('Close terminal — zsh').click();
+  await closeStartHere(page);
   for (const appId of ['research', 'experience', 'profile']) {
     await page.locator(`.os-dock-item[data-app-id="${appId}"]`).click();
   }
@@ -606,15 +621,38 @@ test('BaileyOS dock reports open and minimized app state', async ({ page }, test
   test.skip(isMobileProject(testInfo.project.name), 'desktop dock state contract');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
-  await expect(page.getByLabel('terminal input')).toBeVisible();
+  await openTerminal(page, testInfo.project.name);
   const terminalDock = page.locator('.os-dock-item[data-app-id="terminal"]');
   await expect(terminalDock).toHaveClass(/open/);
   await page.getByLabel('Minimize terminal — zsh').click();
   await expect(terminalDock).toHaveClass(/minimized/);
   await expect(terminalDock).toHaveAttribute('aria-label', /minimized/);
   await terminalDock.click();
-  await expect(terminalDock).toHaveClass(/active/);
-  await expect(terminalDock).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.os-window.active')).toHaveAttribute('data-window-id', 'terminal');
+  await expect(terminalDock).toHaveAttribute('aria-label', /active/);
+});
+
+test('BaileyOS starts with dashboard and Command-K opens searchable actions', async ({
+  page,
+}, testInfo) => {
+  test.skip(isMobileProject(testInfo.project.name), 'desktop command palette contract');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  const start = page.locator('.os-window').filter({ hasText: 'Start Here' });
+  await expect(start).toBeVisible();
+  await expect(start).toContainText('Featured work');
+  await expect(start).toContainText('Scene progress');
+  const startDock = page.locator('.os-dock-item[data-app-id="start"]');
+  await expect(startDock).toHaveClass(/open/);
+
+  await page.keyboard.press(process.platform === 'darwin' ? 'Meta+K' : 'Control+K');
+  await expect(page.getByRole('dialog', { name: 'BaileyOS command palette' })).toBeVisible();
+  await page.getByLabel('Search BaileyOS commands').fill('field');
+  await page
+    .getByRole('dialog', { name: 'BaileyOS command palette' })
+    .getByRole('button', { name: /Field Log mission progress/ })
+    .click();
+  await expect(page.locator('.os-window').filter({ hasText: 'Mission Report' })).toBeVisible();
 });
 
 test('BaileyOS keeps one active app window on mobile', async ({ page }, testInfo) => {
@@ -623,7 +661,8 @@ test('BaileyOS keeps one active app window on mobile', async ({ page }, testInfo
   await page.goto('/#/screen');
   await expect(page.locator('.os-mobile-home')).toBeVisible();
   await expect(page.getByLabel('terminal input')).toHaveCount(0);
-  await expect(page.locator('.os-mobile-app')).toHaveCount(15);
+  await expect(page.locator('.os-mobile-app')).toHaveCount(17);
+  await expect(page.locator('.os-mobile-app').first()).toHaveAttribute('data-app-id', 'start');
   await expect(page.locator('.os-mobile-dock-item')).toHaveCount(4);
 
   await page.locator('.os-mobile-dock-item[data-app-id="terminal"]').click();
@@ -650,7 +689,7 @@ test('BaileyOS video dock icon is vertically aligned', async ({ page }, testInfo
   test.skip(isMobileProject(testInfo.project.name), 'desktop dock alignment contract');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
-  await expect(page.getByLabel('terminal input')).toBeVisible();
+  await expect(page.locator('.os-window').filter({ hasText: 'Start Here' })).toBeVisible();
   const centers = await page.locator('.os-dock').evaluate((dock) => {
     const center = (selector: string) => {
       const rect = dock.querySelector(selector)!.getBoundingClientRect();
