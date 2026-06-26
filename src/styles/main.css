@@ -2329,6 +2329,68 @@ body[data-hud-mode='computer'] .os-dock {
   padding: 7px 12px;
 }
 
+.social-grid,
+.os-social-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.social-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.social-card,
+.os-social-card {
+  border: 1px solid rgba(127, 212, 255, 0.16);
+  border-radius: 13px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 212, 121, 0.1), transparent 42%),
+    rgba(7, 10, 28, 0.34);
+}
+
+.social-card {
+  padding: 14px;
+}
+
+.social-card > span,
+.os-social-card > span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--gold);
+  font: 10px/1.4 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.social-card h3,
+.os-social-card h3 {
+  margin: 0 0 4px;
+  color: var(--ink);
+}
+
+.social-card strong,
+.os-social-card strong {
+  display: block;
+  color: var(--cyan);
+  font: 11px/1.45 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+
+.social-card p,
+.os-social-card p {
+  color: #d4daf2;
+}
+
+.social-card code {
+  display: inline-block;
+  color: var(--gold);
+  background: rgba(255, 212, 121, 0.1);
+  border: 1px solid rgba(255, 212, 121, 0.2);
+  border-radius: 999px;
+  font: 11px/1.3 var(--font-mono);
+  padding: 6px 10px;
+}
+
 .os-start h3,
 .os-field-log h3 {
   margin: 16px 0 8px;
@@ -2336,6 +2398,84 @@ body[data-hud-mode='computer'] .os-dock {
   font: 10px/1.4 var(--font-mono);
   letter-spacing: 0.12em;
   text-transform: uppercase;
+}
+
+.os-socials {
+  padding: 17px 18px;
+}
+
+.os-socials-hero {
+  padding: 16px;
+  border: 1px solid rgba(127, 212, 255, 0.22);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(127, 212, 255, 0.18), transparent 38%),
+    radial-gradient(circle at 100% 20%, rgba(255, 212, 121, 0.14), transparent 35%),
+    rgba(17, 16, 42, 0.74);
+}
+
+.os-socials-hero span {
+  color: var(--gold);
+  font: 10px var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.os-socials-hero h2 {
+  margin: 3px 0 6px;
+  color: var(--ink);
+  font: 700 22px/1.15 var(--font-ui);
+}
+
+.os-socials-hero p {
+  margin: 0;
+  color: #d4daf2;
+}
+
+.os-social-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 12px;
+}
+
+.os-social-card {
+  padding: 12px;
+}
+
+.os-social-card.gaming {
+  border-color: rgba(255, 212, 121, 0.22);
+}
+
+.os-social-card p {
+  margin: 8px 0 11px;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.os-social-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.os-social-actions a,
+.os-social-actions button {
+  border: 1px solid rgba(127, 212, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(70, 54, 160, 0.38);
+  color: var(--ink);
+  cursor: pointer;
+  font: 10px/1.4 var(--font-mono);
+  padding: 5px 9px;
+  text-decoration: none;
+}
+
+.os-social-actions a:hover,
+.os-social-actions a:focus-visible,
+.os-social-actions button:hover,
+.os-social-actions button:focus-visible {
+  border-color: var(--cyan);
+  background: rgba(127, 212, 255, 0.18);
+  outline: none;
 }
 
 .os-start-grid,
@@ -2934,6 +3074,10 @@ body[data-hud-mode='computer'] .os-dock {
 
   .os-mobile-icon-field-log {
     background: linear-gradient(145deg, #8f7fff, #2a2356);
+  }
+
+  .os-mobile-icon-socials {
+    background: linear-gradient(145deg, #ff9fd7, #6f3bd8 55%, #2a2356);
   }
 
   .os-mobile-icon-profile {

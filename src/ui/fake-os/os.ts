@@ -4,9 +4,11 @@ import {
   PORTFOLIO,
   SCENES,
   SCENE_SIGNALS,
+  SOCIALS,
   itemLinks,
   isPdfHref,
   type PortfolioItem,
+  type SocialProfile,
 } from '../../content/portfolio';
 import { buildTerminal } from './terminal';
 import { WindowManager } from './wm';
@@ -77,6 +79,7 @@ function startHereBody(actions: {
   openProjects: () => void;
   openFieldLog: () => void;
   openCv: () => void;
+  openSocials: () => void;
 }): HTMLElement {
   const wrap = document.createElement('div');
   wrap.className = 'os-doc os-start';
@@ -103,6 +106,7 @@ function startHereBody(actions: {
     ['Projects', actions.openProjects],
     ['CV', actions.openCv],
     ['Field Log', actions.openFieldLog],
+    ['Socials', actions.openSocials],
   ] as const) {
     const button = document.createElement('button');
     button.type = 'button';
@@ -143,6 +147,62 @@ function fieldLogBody(): HTMLElement {
     <ul>${sceneEntries.length ? sceneEntries.map(renderEntry).join('') : '<li><span>No visited scales yet.</span></li>'}</ul>
     <h3>Collected signals (${signalEntries.length}/${SCENE_SIGNALS.length})</h3>
     <ul>${signalEntries.length ? signalEntries.map(renderEntry).join('') : '<li><span>No collected signals yet.</span></li>'}</ul>`;
+  return wrap;
+}
+
+function socialLinks(social: SocialProfile): HTMLElement {
+  const actions = document.createElement('div');
+  actions.className = 'os-social-actions';
+  for (const link of social.links ?? []) {
+    const a = document.createElement('a');
+    a.href = link.href;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.textContent = `${link.label} ↗`;
+    actions.appendChild(a);
+  }
+  if (social.copyText) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = `copy ${social.handle}`;
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard?.writeText(social.copyText ?? social.handle);
+        button.textContent = 'copied ✓';
+        setTimeout(() => {
+          button.textContent = `copy ${social.handle}`;
+        }, 1300);
+      } catch {
+        button.textContent = social.copyText ?? social.handle;
+      }
+    });
+    actions.appendChild(button);
+  }
+  return actions;
+}
+
+function socialsBody(): HTMLElement {
+  const wrap = document.createElement('div');
+  wrap.className = 'os-doc os-socials';
+  const hero = document.createElement('section');
+  hero.className = 'os-socials-hero';
+  hero.innerHTML = `
+    <span>personal orbit</span>
+    <h2>Socials</h2>
+    <p>Small human signals around the professional work: food, films, books, photos, and games.</p>`;
+  wrap.appendChild(hero);
+
+  const grid = document.createElement('div');
+  grid.className = 'os-social-grid';
+  for (const social of SOCIALS) {
+    const card = document.createElement('article');
+    card.className = `os-social-card ${social.category}`;
+    card.dataset.social = social.id;
+    card.innerHTML = `<span>${social.display}</span><h3>${social.label}</h3><strong>${social.handle}</strong><p>${social.description}</p>`;
+    card.appendChild(socialLinks(social));
+    grid.appendChild(card);
+  }
+  wrap.appendChild(grid);
   return wrap;
 }
 
@@ -475,6 +535,7 @@ export function buildFakeOs(): HTMLElement {
         openProjects,
         openFieldLog,
         openCv: () => openPdf('/resume.pdf', 'cv.pdf'),
+        openSocials,
       }),
       x: 10,
       y: 6,
@@ -531,6 +592,16 @@ export function buildFakeOs(): HTMLElement {
       w: 450,
       h: 360,
     });
+  const openSocials = () =>
+    wm.open({
+      id: 'socials',
+      title: 'socials.md — personal orbit',
+      body: socialsBody(),
+      x: 24,
+      y: 8,
+      w: 540,
+      h: 410,
+    });
   const openVideos = () =>
     wm.open({
       id: 'videos',
@@ -551,6 +622,7 @@ export function buildFakeOs(): HTMLElement {
     ['profile', openProfile],
     ['projects', openProjects],
     ['field-log', openFieldLog],
+    ['socials', openSocials],
     ['videos', openVideos],
   ]);
   for (const project of APP_PROJECTS) {
@@ -577,6 +649,12 @@ export function buildFakeOs(): HTMLElement {
       label: 'Field Log',
       detail: 'mission progress and collected signals',
       run: openFieldLog,
+    },
+    {
+      id: 'socials',
+      label: 'Socials',
+      detail: 'personal orbit, games, books, film, food',
+      run: openSocials,
     },
     { id: 'terminal', label: 'Terminal', detail: 'BaileyOS shell', run: openTerminal },
     { id: 'videos', label: 'Performance reel', detail: 'music and marching arts', run: openVideos },
@@ -681,6 +759,7 @@ export function buildFakeOs(): HTMLElement {
     ['experience', '🛰️', 'Experience', openExperience],
     ['cv', '📄', 'CV', () => openPdf('/resume.pdf', 'cv.pdf')],
     ['field-log', '◎', 'Field Log', openFieldLog],
+    ['socials', '◐', 'Socials', openSocials],
     ['profile', '🧑‍🚀', 'About', openProfile],
     ['videos', playIcon(''), 'Videos', openVideos],
     ['journey', '🌌', 'Journey', launchJourney],
@@ -717,6 +796,7 @@ export function buildFakeOs(): HTMLElement {
     ['experience', '🛰️', 'experience', openExperience],
     ['cv', '📄', 'cv.pdf', () => openPdf('/resume.pdf', 'cv.pdf')],
     ['field-log', '◎', 'field log', openFieldLog],
+    ['socials', '◐', 'socials', openSocials],
     ['profile', '🧑‍🚀', 'about', openProfile],
     ['videos', playIcon('os-dock-icon'), 'videos', openVideos],
     ['journey', '🌌', 'journey', launchJourney],

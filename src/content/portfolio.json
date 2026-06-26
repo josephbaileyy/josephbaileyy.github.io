@@ -17,6 +17,122 @@
       "href": "https://gostanford.com/sports/track-field/roster/player/joseph-bailey"
     }
   ],
+  "socials": [
+    {
+      "id": "instagram",
+      "label": "Instagram",
+      "handle": "@josphbailey",
+      "category": "photo",
+      "display": "photo strip",
+      "description": "A casual visual roll: friends, places, training days, and the non-lab texture around the portfolio.",
+      "roomObject": "photo-strip",
+      "links": [{ "label": "Instagram", "href": "https://instagram.com/josphbailey" }]
+    },
+    {
+      "id": "letterboxd",
+      "label": "Letterboxd",
+      "handle": "@josephbaileyy",
+      "category": "film",
+      "display": "movie ticket",
+      "description": "Film notes and taste as a little ticket stub tucked into the room scene.",
+      "roomObject": "movie-ticket",
+      "links": [{ "label": "Letterboxd", "href": "https://letterboxd.com/josephbaileyy" }]
+    },
+    {
+      "id": "goodreads",
+      "label": "Goodreads",
+      "handle": "Joseph Bailey",
+      "category": "books",
+      "display": "bookplate",
+      "description": "A shelf-side bookplate for the reading list behind the research work.",
+      "roomObject": "bookplate",
+      "links": [
+        {
+          "label": "Goodreads",
+          "href": "https://www.goodreads.com/user/show/177666846-joseph-bailey"
+        }
+      ]
+    },
+    {
+      "id": "beli",
+      "label": "Beli",
+      "handle": "@josephbailey",
+      "category": "food",
+      "display": "restaurant receipt",
+      "description": "A copyable food-map handle for the inevitable post-run/post-lab restaurant discourse.",
+      "roomObject": "receipt",
+      "copyText": "@josephbailey"
+    },
+    {
+      "id": "steam",
+      "label": "Steam",
+      "handle": "NoSkillzJustHaxx",
+      "category": "gaming",
+      "display": "game case",
+      "description": "The main PC gaming identity, surfaced as a little case/controller card rather than a giant widget.",
+      "roomObject": "game-case",
+      "copyText": "NoSkillzJustHaxx",
+      "links": [
+        { "label": "Steam", "href": "https://steamcommunity.com/id/NoSkillzJustHaxx" },
+        {
+          "label": "SteamDB",
+          "href": "https://steamdb.info/calculator/76561198292662393/?cc=us"
+        }
+      ]
+    },
+    {
+      "id": "fortnite",
+      "label": "Fortnite",
+      "handle": "NoSkillzJustHaxx",
+      "category": "gaming",
+      "display": "orange armor poster",
+      "description": "An original orange sci-fi armor poster inspired by the Omega vibe, linked to the public tracker.",
+      "roomObject": "fortnite-poster",
+      "copyText": "NoSkillzJustHaxx",
+      "links": [
+        {
+          "label": "Fortnite Tracker",
+          "href": "https://fortnitetracker.com/profile/all/NoSkillzJustHaxx"
+        }
+      ]
+    },
+    {
+      "id": "league",
+      "label": "League of Legends",
+      "handle": "noskillzjusthaxx#0425",
+      "category": "gaming",
+      "display": "red dagger poster",
+      "description": "A red dual-dagger assassin poster inspired by Katarina energy, linked to OP.GG.",
+      "roomObject": "league-poster",
+      "copyText": "noskillzjusthaxx#0425",
+      "links": [
+        {
+          "label": "OP.GG",
+          "href": "https://op.gg/lol/summoners/na/noskillzjusthaxx-0425"
+        }
+      ]
+    },
+    {
+      "id": "clash-royale",
+      "label": "Clash Royale",
+      "handle": "NoSkillJustHaxx#8VPUOUG9",
+      "category": "gaming",
+      "display": "royal archer poster",
+      "description": "One half of the royal-archer wall poster: copyable Clash Royale tag.",
+      "roomObject": "clash-poster",
+      "copyText": "NoSkillJustHaxx#8VPUOUG9"
+    },
+    {
+      "id": "clash-clans",
+      "label": "Clash of Clans",
+      "handle": "The Newbie #QGCVQP2U",
+      "category": "gaming",
+      "display": "royal archer poster",
+      "description": "The other half of the royal-archer poster: copyable Clash of Clans village tag.",
+      "roomObject": "clash-poster",
+      "copyText": "The Newbie #QGCVQP2U"
+    }
+  ],
   "scenes": [
     {
       "id": "galaxy",
@@ -217,6 +333,105 @@
       "body": "Performance reel: marching arts, saxophone solos, and piano/musicianship beyond the lab.",
       "category": "life",
       "destination": { "type": "app", "appId": "videos", "label": "Open performance reel" }
+    },
+    {
+      "id": "room-socials-board",
+      "scene": "room",
+      "title": "Personal orbit",
+      "body": "A social layer in the room: photos, films, books, restaurants, and games live as small objects instead of a generic footer strip.",
+      "category": "life",
+      "destination": { "type": "app", "appId": "socials", "label": "Open Socials" }
+    },
+    {
+      "id": "room-instagram-strip",
+      "scene": "room",
+      "title": "Instagram photo strip",
+      "body": "A tiny photo strip for @josphbailey: the social feed becomes a physical room object.",
+      "category": "life",
+      "destination": {
+        "type": "url",
+        "href": "https://instagram.com/josphbailey",
+        "label": "Open Instagram"
+      }
+    },
+    {
+      "id": "room-letterboxd-ticket",
+      "scene": "room",
+      "title": "Letterboxd ticket",
+      "body": "A movie-ticket stub points to @josephbaileyy on Letterboxd.",
+      "category": "life",
+      "destination": {
+        "type": "url",
+        "href": "https://letterboxd.com/josephbaileyy",
+        "label": "Open Letterboxd"
+      }
+    },
+    {
+      "id": "room-goodreads-bookplate",
+      "scene": "room",
+      "title": "Goodreads bookplate",
+      "body": "A shelf bookplate links to Joseph's Goodreads profile.",
+      "category": "life",
+      "destination": {
+        "type": "url",
+        "href": "https://www.goodreads.com/user/show/177666846-joseph-bailey",
+        "label": "Open Goodreads"
+      }
+    },
+    {
+      "id": "room-beli-receipt",
+      "scene": "room",
+      "title": "Beli receipt",
+      "body": "A restaurant receipt carries the copyable Beli handle @josephbailey.",
+      "category": "life",
+      "destination": { "type": "app", "appId": "socials", "label": "Open Socials" }
+    },
+    {
+      "id": "room-steam-case",
+      "scene": "room",
+      "title": "Steam game case",
+      "body": "A game case/controller card links NoSkillzJustHaxx to Steam and SteamDB.",
+      "category": "life",
+      "destination": { "type": "app", "appId": "socials", "label": "Open Socials" },
+      "links": [
+        { "label": "Steam", "href": "https://steamcommunity.com/id/NoSkillzJustHaxx" },
+        {
+          "label": "SteamDB",
+          "href": "https://steamdb.info/calculator/76561198292662393/?cc=us"
+        }
+      ]
+    },
+    {
+      "id": "room-fortnite-poster",
+      "scene": "room",
+      "title": "Orange armor poster",
+      "body": "Original sci-fi armor poster inspired by the orange Omega look, linked to Fortnite Tracker.",
+      "category": "life",
+      "destination": {
+        "type": "url",
+        "href": "https://fortnitetracker.com/profile/all/NoSkillzJustHaxx",
+        "label": "Open Fortnite Tracker"
+      }
+    },
+    {
+      "id": "room-league-poster",
+      "scene": "room",
+      "title": "Red dagger poster",
+      "body": "Original red assassin/dagger poster inspired by Katarina energy, linked to OP.GG.",
+      "category": "life",
+      "destination": {
+        "type": "url",
+        "href": "https://op.gg/lol/summoners/na/noskillzjusthaxx-0425",
+        "label": "Open OP.GG"
+      }
+    },
+    {
+      "id": "room-clash-poster",
+      "scene": "room",
+      "title": "Royal archer poster",
+      "body": "Original princess-style archer poster showing Clash Royale and Clash of Clans tags.",
+      "category": "life",
+      "destination": { "type": "app", "appId": "socials", "label": "Open Socials" }
     },
     {
       "id": "screen-start-here",

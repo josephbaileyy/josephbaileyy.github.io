@@ -47,9 +47,24 @@ export interface SceneSignal {
   links?: Array<{ label: string; href: string }>;
 }
 
+export type SocialCategory = 'photo' | 'film' | 'books' | 'food' | 'gaming';
+
+export interface SocialProfile {
+  id: string;
+  label: string;
+  handle: string;
+  category: SocialCategory;
+  display: string;
+  description: string;
+  roomObject: string;
+  copyText?: string;
+  links?: Array<{ label: string; href: string }>;
+}
+
 export interface PortfolioData {
   profile: { name: string; tagline: string; summary: string; location: string; graduation: string };
   links: Array<{ label: string; href: string; kind?: string }>;
+  socials: SocialProfile[];
   scenes: PortfolioScene[];
   sceneSignals: SceneSignal[];
   research: PortfolioItem[];
@@ -68,6 +83,8 @@ export const APP_PROJECTS = PORTFOLIO.projects.filter((p) => p.app);
 export const SCENES = PORTFOLIO.scenes;
 export const SCENE_SIGNALS = PORTFOLIO.sceneSignals;
 export const SIGNAL_BY_ID = new Map(SCENE_SIGNALS.map((signal) => [signal.id, signal]));
+export const SOCIALS = PORTFOLIO.socials;
+export const SOCIAL_BY_ID = new Map(SOCIALS.map((social) => [social.id, social]));
 
 const escapeHtml = (value: string): string =>
   value.replace(
@@ -134,6 +151,20 @@ const renderProfileLinks = (): string =>
     )
     .join('')}</div>`;
 
+export const renderSocials = (): string =>
+  `<div class="social-grid">${SOCIALS.map((social) => {
+    const links = (social.links ?? [])
+      .map(
+        (link) =>
+          `<a href="${escapeHtml(link.href)}"${externalAttrs(link.href)}>${escapeHtml(link.label)}</a>`,
+      )
+      .join('');
+    const copy = social.copyText
+      ? `<code aria-label="${escapeHtml(social.label)} handle">${escapeHtml(social.copyText)}</code>`
+      : '';
+    return `<article class="social-card" data-social="${escapeHtml(social.id)}"><span>${escapeHtml(social.display)}</span><h3>${escapeHtml(social.label)}</h3><p>${escapeHtml(social.description)}</p><strong>${escapeHtml(social.handle)}</strong><div class="panel-links">${links}${copy}</div></article>`;
+  }).join('')}</div>`;
+
 export interface PanelContent {
   kicker: string;
   title: string;
@@ -165,6 +196,11 @@ export const PANELS: Record<string, PanelContent> = {
     kicker: 'projects · ml, systems & security',
     title: 'Things I’ve built',
     html: renderItems(PORTFOLIO.projects),
+  },
+  socials: {
+    kicker: 'personal orbit · socials & games',
+    title: 'Socials',
+    html: renderSocials(),
   },
   scale: {
     kicker: 'powers of ten · scene map',

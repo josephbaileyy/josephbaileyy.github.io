@@ -346,6 +346,13 @@ test('quick portfolio provides current-work navigation and experience', async ({
   await expect(projects).toContainText('Signal');
   await expect(projects).toContainText('Evidence');
   await expect(projects).toContainText('TypeScript · Three.js · WebGL');
+  const socials = page.locator('#socials');
+  await expect(socials).toContainText('@josphbailey');
+  await expect(socials).toContainText('NoSkillzJustHaxx');
+  await expect(socials.getByRole('link', { name: 'OP.GG' })).toHaveAttribute(
+    'href',
+    'https://op.gg/lol/summoners/na/noskillzjusthaxx-0425',
+  );
   await expect(page.locator('script[type="application/ld+json"]')).not.toContainText('alumniOf');
 });
 
@@ -657,13 +664,42 @@ test('BaileyOS starts with dashboard and Command-K opens searchable actions', as
   await expect(page.locator('.os-window').filter({ hasText: 'Mission Report' })).toBeVisible();
 });
 
+test('BaileyOS exposes the personal orbit socials app', async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  if (isMobileProject(testInfo.project.name)) {
+    await page.locator('.os-mobile-app[data-app-id="socials"]').click();
+  } else {
+    await page.locator('.os-dock-item[data-app-id="socials"]').click();
+  }
+  const socials = page.locator('.os-window').filter({ hasText: 'personal orbit' });
+  await expect(socials).toBeVisible();
+  await expect(socials).toContainText('@josephbailey');
+  await expect(socials).toContainText('NoSkillJustHaxx#8VPUOUG9');
+  await expect(socials.getByRole('link', { name: /Fortnite Tracker/ })).toHaveAttribute(
+    'href',
+    'https://fortnitetracker.com/profile/all/NoSkillzJustHaxx',
+  );
+});
+
+test('room exposes social posters and desk objects as signal hotspots', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/room');
+  await expect(page.getByRole('button', { name: 'Fortnite poster signal' })).toBeAttached({
+    timeout: 20_000,
+  });
+  await expect(page.getByRole('button', { name: 'League poster signal' })).toBeAttached();
+  await expect(page.getByRole('button', { name: 'Clash poster signal' })).toBeAttached();
+  await expect(page.getByRole('button', { name: 'Beli receipt signal' })).toBeAttached();
+});
+
 test('BaileyOS keeps one active app window on mobile', async ({ page }, testInfo) => {
   test.skip(!isMobileProject(testInfo.project.name), 'mobile window-management contract');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
   await expect(page.locator('.os-mobile-home')).toBeVisible();
   await expect(page.getByLabel('terminal input')).toHaveCount(0);
-  await expect(page.locator('.os-mobile-app')).toHaveCount(17);
+  await expect(page.locator('.os-mobile-app')).toHaveCount(18);
   await expect(page.locator('.os-mobile-app').first()).toHaveAttribute('data-app-id', 'start');
   await expect(page.locator('.os-mobile-dock-item')).toHaveCount(4);
 

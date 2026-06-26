@@ -4,7 +4,14 @@ import { PANELS, PORTFOLIO } from '../src/content/portfolio';
 describe('portfolio content', () => {
   it('keeps every major section available inside the interactive site', () => {
     expect(Object.keys(PANELS)).toEqual(
-      expect.arrayContaining(['profile', 'research', 'experience', 'projects', 'am-cvn']),
+      expect.arrayContaining([
+        'profile',
+        'research',
+        'experience',
+        'projects',
+        'socials',
+        'am-cvn',
+      ]),
     );
     expect(PORTFOLIO.research.length).toBeGreaterThanOrEqual(5);
     expect(PORTFOLIO.experience).toHaveLength(2);
@@ -13,6 +20,32 @@ describe('portfolio content', () => {
     expect(PORTFOLIO.projects.length).toBeGreaterThanOrEqual(6);
     expect(PORTFOLIO.education.length).toBeGreaterThan(0);
     expect(PORTFOLIO.honors.length).toBeGreaterThan(0);
+  });
+
+  it('keeps approved social handles structured and room-mapped', () => {
+    expect(PORTFOLIO.socials.map((social) => social.id)).toEqual(
+      expect.arrayContaining([
+        'instagram',
+        'letterboxd',
+        'goodreads',
+        'beli',
+        'steam',
+        'fortnite',
+        'league',
+        'clash-royale',
+        'clash-clans',
+      ]),
+    );
+    const ids = new Set(PORTFOLIO.socials.map((social) => social.id));
+    expect(ids.size).toBe(PORTFOLIO.socials.length);
+    for (const social of PORTFOLIO.socials) {
+      expect(social.handle).toBeTruthy();
+      expect(social.roomObject).toBeTruthy();
+      for (const link of social.links ?? []) expect(link.href).toMatch(/^https:\/\//);
+      if (!social.links?.length) expect(social.copyText).toBeTruthy();
+    }
+    expect(PANELS.socials.html).toContain('@josphbailey');
+    expect(PANELS.socials.html).toContain('NoSkillzJustHaxx');
   });
 
   it('includes valid primary profile links', () => {
@@ -52,6 +85,10 @@ describe('portfolio content', () => {
         'earth-stanford-slac',
         'stanford-track',
         'room-music-sheet',
+        'room-socials-board',
+        'room-fortnite-poster',
+        'room-league-poster',
+        'room-clash-poster',
         'screen-start-here',
       ]),
     );

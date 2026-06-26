@@ -20,6 +20,7 @@ const FILES: Record<string, () => string> = {
   'research.txt': () => stripHtml(PANELS['research'].html),
   'experience.txt': () => stripHtml(PANELS['experience'].html),
   'projects.txt': () => stripHtml(PANELS['projects'].html),
+  'socials.txt': () => stripHtml(PANELS['socials'].html),
   'education.txt': () =>
     PORTFOLIO.education.map((item) => `${item.title}\n${item.description}`).join('\n\n'),
   'honors.txt': () => PORTFOLIO.honors.map((item) => `· ${item}`).join('\n'),
@@ -58,12 +59,12 @@ export function buildTerminal(): HTMLElement {
 
   const COMMANDS: Record<string, (args: string[]) => string | null> = {
     help: () =>
-      'commands: whoami · ls · cat <file> · open <resume|github|linkedin|about> · neofetch · echo · date · clear · help',
+      'commands: whoami · ls · cat <file> · open <resume|github|linkedin|about|socials> · neofetch · echo · date · clear · help',
     whoami: () => 'joseph — coterm physics + cs (ai) @ stanford · ml for fundamental physics',
     ls: (args) =>
       args[0] === 'projects' || args[0] === 'projects/'
         ? 'neutrino-unfolding/   splora/   lord/   soccer-gnn/   eth-wallet/   this-website/'
-        : 'resume.pdf   about.txt   research.txt   experience.txt   projects.txt   education.txt   honors.txt   amcvn.txt   projects/',
+        : 'resume.pdf   about.txt   research.txt   experience.txt   projects.txt   socials.txt   education.txt   honors.txt   amcvn.txt   projects/',
     cat: (args) => {
       if (!args[0]) return 'usage: cat <file>';
       const f = FILES[args[0]];
@@ -83,8 +84,11 @@ export function buildTerminal(): HTMLElement {
         case 'about':
           window.location.href = '/about.html';
           return 'navigating…';
+        case 'socials':
+          window.dispatchEvent(new CustomEvent('universe:open-app', { detail: 'socials' }));
+          return 'opening personal orbit…';
         default:
-          return 'usage: open <resume|github|linkedin|about>';
+          return 'usage: open <resume|github|linkedin|about|socials>';
       }
     },
     echo: (args) => args.join(' '),
