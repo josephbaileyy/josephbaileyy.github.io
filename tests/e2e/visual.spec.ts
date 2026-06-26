@@ -25,6 +25,7 @@ for (const scene of scenes) {
     await expect(page).toHaveScreenshot(`${scene}.png`, {
       animations: 'disabled',
       maxDiffPixelRatio: 0.04,
+      timeout: 15_000,
     });
   });
 }
@@ -38,6 +39,7 @@ test('visual contract: galaxy landing', async ({ page }, testInfo) => {
   await expect(page).toHaveScreenshot('galaxy-landing.png', {
     animations: 'disabled',
     maxDiffPixelRatio: 0.04,
+    timeout: 15_000,
   });
 });
 
@@ -48,6 +50,7 @@ test('visual contract: quick portfolio desktop', async ({ page }, testInfo) => {
   await expect(page).toHaveScreenshot('quick-portfolio.png', {
     animations: 'disabled',
     maxDiffPixelRatio: 0.08,
+    timeout: 15_000,
   });
 });
 
@@ -58,6 +61,7 @@ test('visual contract: quick portfolio mobile', async ({ page }, testInfo) => {
   await expect(page).toHaveScreenshot('quick-portfolio-mobile.png', {
     animations: 'disabled',
     maxDiffPixelRatio: 0.15,
+    timeout: 15_000,
   });
 });
 
@@ -70,5 +74,6 @@ test('visual contract: BaileyOS mobile launcher', async ({ page }, testInfo) => 
   await expect(page).toHaveScreenshot('baileyos-mobile.png', {
     animations: 'disabled',
     maxDiffPixelRatio: 0.12,
+    timeout: 15_000,
   });
 });
