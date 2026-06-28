@@ -86,3 +86,8 @@ Solar System Scope (CC BY 4.0) · star catalog: HYG Database (CC BY-SA 4.0) ·
 Earth day/night imagery: NASA.
 Planet and Moon ephemerides: NASA/JPL DE440s via NAIF SPICE · detailed globe:
 CesiumJS, Cesium World Terrain/imagery, and OpenStreetMap buildings with runtime attribution.
+Room social marks and game artwork: Instagram/Meta brand resources · Letterboxd
+brand resources · Fortnite Omega art © Epic Games · Katarina splash art © Riot
+Games · Clash Royale Princess Evolution art © Supercell. This personal fan
+portfolio is not affiliated with or endorsed by those companies. Exact source
+URLs are recorded in [ASSET_SOURCES.md](ASSET_SOURCES.md).

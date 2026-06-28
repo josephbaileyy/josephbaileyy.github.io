@@ -46,6 +46,10 @@ describe('portfolio content', () => {
     }
     expect(PANELS.socials.html).toContain('@josphbailey');
     expect(PANELS.socials.html).toContain('NoSkillzJustHaxx');
+    expect(PANELS.socials.html).toContain('official Fortnite Omega');
+    expect(PORTFOLIO.socials.find((social) => social.id === 'league')?.description).toContain(
+      "Riot's official Katarina",
+    );
   });
 
   it('includes valid primary profile links', () => {

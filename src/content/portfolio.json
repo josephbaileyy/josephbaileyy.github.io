@@ -23,9 +23,9 @@
       "label": "Instagram",
       "handle": "@josphbailey",
       "category": "photo",
-      "display": "photo strip",
-      "description": "A casual visual roll: friends, places, training days, and the non-lab texture around the portfolio.",
-      "roomObject": "photo-strip",
+      "display": "profile widget",
+      "description": "A compact Instagram-style profile widget using the official glyph, linking to the casual visual roll around the portfolio.",
+      "roomObject": "instagram-widget",
       "links": [{ "label": "Instagram", "href": "https://instagram.com/josphbailey" }]
     },
     {
@@ -33,9 +33,9 @@
       "label": "Letterboxd",
       "handle": "@josephbaileyy",
       "category": "film",
-      "display": "movie ticket",
-      "description": "Film notes and taste as a little ticket stub tucked into the room scene.",
-      "roomObject": "movie-ticket",
+      "display": "film diary widget",
+      "description": "A Letterboxd-style film diary card using the platform's official dots device.",
+      "roomObject": "letterboxd-widget",
       "links": [{ "label": "Letterboxd", "href": "https://letterboxd.com/josephbaileyy" }]
     },
     {
@@ -85,8 +85,8 @@
       "label": "Fortnite",
       "handle": "NoSkillzJustHaxx",
       "category": "gaming",
-      "display": "orange armor poster",
-      "description": "An original orange sci-fi armor poster inspired by the Omega vibe, linked to the public tracker.",
+      "display": "Omega poster",
+      "description": "A room poster built around official Fortnite Omega outfit art, linked to the public tracker.",
       "roomObject": "fortnite-poster",
       "copyText": "NoSkillzJustHaxx",
       "links": [
@@ -101,8 +101,8 @@
       "label": "League of Legends",
       "handle": "noskillzjusthaxx#0425",
       "category": "gaming",
-      "display": "red dagger poster",
-      "description": "A red dual-dagger assassin poster inspired by Katarina energy, linked to OP.GG.",
+      "display": "Katarina poster",
+      "description": "A room poster using Riot's official Katarina splash art, linked to OP.GG.",
       "roomObject": "league-poster",
       "copyText": "noskillzjusthaxx#0425",
       "links": [
@@ -117,8 +117,8 @@
       "label": "Clash Royale",
       "handle": "NoSkillJustHaxx#8VPUOUG9",
       "category": "gaming",
-      "display": "royal archer poster",
-      "description": "One half of the royal-archer wall poster: copyable Clash Royale tag.",
+      "display": "Princess poster",
+      "description": "One half of a poster using official Clash Royale Princess Evolution art: copyable Clash Royale tag.",
       "roomObject": "clash-poster",
       "copyText": "NoSkillJustHaxx#8VPUOUG9"
     },
@@ -127,8 +127,8 @@
       "label": "Clash of Clans",
       "handle": "The Newbie #QGCVQP2U",
       "category": "gaming",
-      "display": "royal archer poster",
-      "description": "The other half of the royal-archer poster: copyable Clash of Clans village tag.",
+      "display": "Princess poster",
+      "description": "The other half of the official-art Clash poster: copyable Clash of Clans village tag.",
       "roomObject": "clash-poster",
       "copyText": "The Newbie #QGCVQP2U"
     }
@@ -345,8 +345,8 @@
     {
       "id": "room-instagram-strip",
       "scene": "room",
-      "title": "Instagram photo strip",
-      "body": "A tiny photo strip for @josphbailey: the social feed becomes a physical room object.",
+      "title": "Instagram profile widget",
+      "body": "A compact profile card for @josphbailey, built with Instagram's official glyph and brand gradient.",
       "category": "life",
       "destination": {
         "type": "url",
@@ -357,8 +357,8 @@
     {
       "id": "room-letterboxd-ticket",
       "scene": "room",
-      "title": "Letterboxd ticket",
-      "body": "A movie-ticket stub points to @josephbaileyy on Letterboxd.",
+      "title": "Letterboxd film diary",
+      "body": "A small film-diary widget for @josephbaileyy using Letterboxd's official dots device.",
       "category": "life",
       "destination": {
         "type": "url",
@@ -404,34 +404,47 @@
     {
       "id": "room-fortnite-poster",
       "scene": "room",
-      "title": "Orange armor poster",
-      "body": "Original sci-fi armor poster inspired by the orange Omega look, linked to Fortnite Tracker.",
+      "title": "Fortnite Omega poster",
+      "body": "Official Omega outfit art gives the orange Fortnite poster a real in-game identity, linked to Fortnite Tracker.",
       "category": "life",
       "destination": {
         "type": "url",
         "href": "https://fortnitetracker.com/profile/all/NoSkillzJustHaxx",
         "label": "Open Fortnite Tracker"
-      }
+      },
+      "links": [{ "label": "Fortnite", "href": "https://www.fortnite.com/" }]
     },
     {
       "id": "room-league-poster",
       "scene": "room",
-      "title": "Red dagger poster",
-      "body": "Original red assassin/dagger poster inspired by Katarina energy, linked to OP.GG.",
+      "title": "League Katarina poster",
+      "body": "Riot's official Katarina splash art anchors the League poster, linked to OP.GG.",
       "category": "life",
       "destination": {
         "type": "url",
         "href": "https://op.gg/lol/summoners/na/noskillzjusthaxx-0425",
         "label": "Open OP.GG"
-      }
+      },
+      "links": [
+        {
+          "label": "Official Katarina page",
+          "href": "https://www.leagueoflegends.com/en-us/champions/katarina/"
+        }
+      ]
     },
     {
       "id": "room-clash-poster",
       "scene": "room",
-      "title": "Royal archer poster",
-      "body": "Original princess-style archer poster showing Clash Royale and Clash of Clans tags.",
+      "title": "Clash Princess poster",
+      "body": "Official Clash Royale Princess Evolution art frames both the Clash Royale and Clash of Clans tags.",
       "category": "life",
-      "destination": { "type": "app", "appId": "socials", "label": "Open Socials" }
+      "destination": { "type": "app", "appId": "socials", "label": "Open Socials" },
+      "links": [
+        {
+          "label": "Official Princess update",
+          "href": "https://supercell.com/en/games/clashroyale/blog/release-notes/june-update-2026/"
+        }
+      ]
     },
     {
       "id": "screen-start-here",

@@ -21,14 +21,28 @@ import { canvasTexture, loadTextureWithFallback, textSprite } from './lib/assets
 const BOOK_COLORS = [0xb83a3a, 0x7fd4ff, 0xffd479, 0x56a06b, 0x5a78e6, 0xcdd4f0, 0x8c5e9e];
 
 export async function loadRoom(onProgress?: (p: number) => void): Promise<SceneAssets> {
-  const wallpaper = await loadTextureWithFallback(
-    '/tex/baileyos-wallpaper.webp',
-    '/tex/baileyos-wallpaper.png',
-  );
+  const sources = [
+    ['/tex/baileyos-wallpaper.webp', '/tex/baileyos-wallpaper.png'],
+    ['/tex/room-socials/fortnite-omega.webp', '/tex/room-socials/fortnite-omega.png'],
+    ['/tex/room-socials/league-katarina.webp', '/tex/room-socials/league-katarina.jpg'],
+    ['/tex/room-socials/clash-princess.webp', '/tex/room-socials/clash-princess.png'],
+    ['/tex/room-socials/instagram-glyph.webp', '/tex/room-socials/instagram-glyph.png'],
+    ['/tex/room-socials/letterboxd-dots.webp', '/tex/room-socials/letterboxd-dots.png'],
+  ] as const;
+  let loaded = 0;
+  const [wallpaper, fortniteArt, leagueArt, clashArt, instagramMark, letterboxdMark] =
+    await Promise.all(
+      sources.map(([preferred, fallback]) =>
+        loadTextureWithFallback(preferred, fallback).then((texture) => {
+          loaded += 1;
+          onProgress?.(loaded / sources.length);
+          return texture;
+        }),
+      ),
+    );
   wallpaper.repeat.set(1, 0.9375);
   wallpaper.offset.y = 0.03125;
-  onProgress?.(1);
-  return { wallpaper };
+  return { wallpaper, fortniteArt, leagueArt, clashArt, instagramMark, letterboxdMark };
 }
 
 function amcvnPoster(): ReturnType<typeof canvasTexture> {
@@ -214,128 +228,142 @@ function pennantTexture(): ReturnType<typeof canvasTexture> {
 
 type PosterKind = 'fortnite' | 'league' | 'clash';
 
-function gamingPoster(kind: PosterKind): ReturnType<typeof canvasTexture> {
+function drawCover(
+  ctx: CanvasRenderingContext2D,
+  image: HTMLImageElement,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  focusX = 0.5,
+): void {
+  const scale = Math.max(width / image.naturalWidth, height / image.naturalHeight);
+  const sourceWidth = width / scale;
+  const sourceHeight = height / scale;
+  const sourceX = Math.max(
+    0,
+    Math.min(image.naturalWidth - sourceWidth, image.naturalWidth * focusX - sourceWidth / 2),
+  );
+  const sourceY = Math.max(0, (image.naturalHeight - sourceHeight) / 2);
+  ctx.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, x, y, width, height);
+}
+
+function officialGamingPoster(kind: PosterKind, art: Texture): ReturnType<typeof canvasTexture> {
   return canvasTexture(
     512,
     704,
     (ctx) => {
+      const image = art.image as HTMLImageElement;
       const palette =
         kind === 'fortnite'
-          ? { bg: '#1a1630', a: '#ff8a1c', b: '#ffd479', title: 'ORANGE\nOMEGA' }
+          ? { bg: '#21152a', accent: '#ff7a16', title: 'FORTNITE · OMEGA' }
           : kind === 'league'
-            ? { bg: '#230912', a: '#df2f42', b: '#ffd1dc', title: 'RED\nDAGGER' }
-            : { bg: '#171842', a: '#8fd9ff', b: '#ffd479', title: 'ROYAL\nARCHER' };
-      const gradient = ctx.createLinearGradient(0, 0, 512, 704);
+            ? { bg: '#18070d', accent: '#cf3344', title: 'LEAGUE · KATARINA' }
+            : { bg: '#15214d', accent: '#5fcfff', title: 'CLASH · PRINCESS' };
+      const gradient = ctx.createLinearGradient(0, 0, 0, 704);
       gradient.addColorStop(0, palette.bg);
-      gradient.addColorStop(1, '#050816');
+      gradient.addColorStop(1, '#060712');
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, 512, 704);
-      ctx.strokeStyle = palette.a;
-      ctx.lineWidth = 8;
-      ctx.strokeRect(20, 20, 472, 664);
 
       ctx.save();
-      ctx.translate(256, 310);
-      if (kind === 'fortnite') {
-        ctx.fillStyle = '#101322';
-        ctx.beginPath();
-        ctx.moveTo(-98, -120);
-        ctx.lineTo(98, -120);
-        ctx.lineTo(136, -28);
-        ctx.lineTo(76, 102);
-        ctx.lineTo(-76, 102);
-        ctx.lineTo(-136, -28);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = palette.a;
-        ctx.lineWidth = 15;
-        ctx.stroke();
-        ctx.fillStyle = palette.a;
-        ctx.fillRect(-74, -36, 148, 14);
-        ctx.fillStyle = '#ffd479';
-        ctx.fillRect(-58, -68, 116, 18);
-        for (const sx of [-1, 1]) {
-          ctx.strokeStyle = palette.a;
-          ctx.lineWidth = 11;
-          ctx.beginPath();
-          ctx.moveTo(sx * 34, 112);
-          ctx.lineTo(sx * 86, 190);
-          ctx.stroke();
-        }
-      } else if (kind === 'league') {
-        for (const sx of [-1, 1]) {
-          ctx.save();
-          ctx.scale(sx, 1);
-          ctx.rotate(-0.42);
-          ctx.fillStyle = '#f1d4d9';
-          ctx.fillRect(38, -190, 22, 330);
-          ctx.fillStyle = palette.a;
-          ctx.beginPath();
-          ctx.moveTo(49, -250);
-          ctx.lineTo(80, -180);
-          ctx.lineTo(49, -122);
-          ctx.lineTo(18, -180);
-          ctx.closePath();
-          ctx.fill();
-          ctx.restore();
-        }
-        ctx.fillStyle = '#2b0b18';
-        ctx.beginPath();
-        ctx.arc(0, -42, 88, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = palette.a;
-        ctx.lineWidth = 10;
-        ctx.beginPath();
-        ctx.moveTo(-120, 72);
-        ctx.bezierCurveTo(-40, 10, 40, 10, 120, 72);
-        ctx.stroke();
+      ctx.beginPath();
+      ctx.roundRect(18, 18, 476, 552, 18);
+      ctx.clip();
+      if (kind === 'league') {
+        drawCover(ctx, image, 18, 18, 476, 552, 0.43);
       } else {
-        ctx.fillStyle = '#20245d';
-        ctx.beginPath();
-        ctx.arc(0, -40, 92, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = palette.b;
-        ctx.beginPath();
-        ctx.moveTo(-84, -128);
-        ctx.lineTo(-22, -90);
-        ctx.lineTo(0, -152);
-        ctx.lineTo(22, -90);
-        ctx.lineTo(84, -128);
-        ctx.lineTo(50, -60);
-        ctx.lineTo(-50, -60);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = palette.a;
-        ctx.lineWidth = 12;
-        ctx.beginPath();
-        ctx.arc(0, 42, 132, -1.1, 1.1);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(-118, -12);
-        ctx.lineTo(118, 100);
-        ctx.stroke();
+        const inset = kind === 'fortnite' ? 0 : 24;
+        ctx.drawImage(image, 18 + inset, 28, 476 - inset * 2, 532);
       }
+      const shade = ctx.createLinearGradient(0, 380, 0, 570);
+      shade.addColorStop(0, 'rgba(6,7,18,0)');
+      shade.addColorStop(1, 'rgba(6,7,18,.82)');
+      ctx.fillStyle = shade;
+      ctx.fillRect(18, 360, 476, 210);
       ctx.restore();
 
+      ctx.strokeStyle = palette.accent;
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.roundRect(18, 18, 476, 668, 18);
+      ctx.stroke();
       ctx.fillStyle = '#eef2ff';
-      ctx.textAlign = 'center';
-      ctx.font = '900 50px Avenir Next, system-ui, sans-serif';
-      const [top, bottom] = palette.title.split('\n');
-      ctx.fillText(top, 256, 92);
-      ctx.fillText(bottom, 256, 150);
-      ctx.fillStyle = palette.b;
-      ctx.font = '24px ui-monospace, Menlo, monospace';
-      ctx.fillText(kind === 'league' ? 'noskillzjusthaxx#0425' : 'NoSkillzJustHaxx', 256, 614);
+      ctx.font = '900 31px Avenir Next, system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(palette.title, 40, 615);
+      ctx.fillStyle = palette.accent;
+      ctx.font = '700 19px ui-monospace, Menlo, monospace';
+      ctx.fillText(kind === 'league' ? 'noskillzjusthaxx#0425' : 'NoSkillzJustHaxx', 40, 650);
       if (kind === 'clash') {
-        ctx.font = '20px ui-monospace, Menlo, monospace';
-        ctx.fillText('The Newbie #QGCVQP2U', 256, 646);
+        ctx.font = '16px ui-monospace, Menlo, monospace';
+        ctx.fillText('The Newbie #QGCVQP2U', 40, 676);
+      } else {
+        ctx.fillStyle = 'rgba(238,242,255,.6)';
+        ctx.font = '13px ui-monospace, Menlo, monospace';
+        ctx.fillText('OFFICIAL GAME ART', 318, 676);
       }
     },
     2,
   );
 }
 
-type SocialCardKind = 'instagram' | 'letterboxd' | 'goodreads' | 'beli' | 'steam';
+type SocialCardKind = 'goodreads' | 'beli' | 'steam';
+
+function brandedSocialTexture(
+  kind: 'instagram' | 'letterboxd',
+  officialMark: Texture,
+): ReturnType<typeof canvasTexture> {
+  return canvasTexture(
+    384,
+    256,
+    (ctx) => {
+      const image = officialMark.image as HTMLImageElement;
+      if (kind === 'instagram') {
+        drawCover(ctx, image, 0, 0, 384, 256, 0.58);
+        ctx.fillStyle = 'rgba(18, 8, 34, .72)';
+        ctx.beginPath();
+        ctx.roundRect(18, 22, 224, 212, 22);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.font = '800 29px Avenir Next, system-ui, sans-serif';
+        ctx.fillText('Instagram', 38, 76);
+        ctx.font = '700 24px ui-monospace, Menlo, monospace';
+        ctx.fillText('@josphbailey', 38, 122);
+        ctx.fillStyle = 'rgba(255,255,255,.78)';
+        ctx.font = '17px Avenir Next, system-ui, sans-serif';
+        ctx.fillText('open profile  ↗', 38, 202);
+      } else {
+        ctx.fillStyle = '#14181c';
+        ctx.fillRect(0, 0, 384, 256);
+        ctx.drawImage(image, 26, 26, 92, 92);
+        ctx.fillStyle = '#fff';
+        ctx.font = '900 30px Avenir Next, system-ui, sans-serif';
+        ctx.fillText('Letterboxd', 136, 68);
+        ctx.fillStyle = '#9ab';
+        ctx.font = '700 20px ui-monospace, Menlo, monospace';
+        ctx.fillText('@josephbaileyy', 136, 103);
+        ctx.strokeStyle = '#44515c';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(26, 146);
+        ctx.lineTo(358, 146);
+        ctx.stroke();
+        ctx.fillStyle = '#00e054';
+        ctx.font = '800 17px Avenir Next, system-ui, sans-serif';
+        ctx.fillText('films', 28, 190);
+        ctx.fillStyle = '#40bcf4';
+        ctx.fillText('diary', 132, 190);
+        ctx.fillStyle = '#ff8000';
+        ctx.fillText('lists', 234, 190);
+        ctx.fillStyle = '#9ab';
+        ctx.font = '16px Avenir Next, system-ui, sans-serif';
+        ctx.fillText('view profile  ↗', 28, 224);
+      }
+    },
+    2,
+  );
+}
 
 function socialObjectTexture(kind: SocialCardKind): ReturnType<typeof canvasTexture> {
   return canvasTexture(
@@ -346,8 +374,6 @@ function socialObjectTexture(kind: SocialCardKind): ReturnType<typeof canvasText
         SocialCardKind,
         { bg: string; fg: string; title: string; body: string }
       > = {
-        instagram: { bg: '#2c225d', fg: '#ff9fd7', title: 'PHOTO STRIP', body: '@josphbailey' },
-        letterboxd: { bg: '#12222d', fg: '#40bc74', title: 'MOVIE TICKET', body: '@josephbaileyy' },
         goodreads: { bg: '#efe3c9', fg: '#5a3825', title: 'BOOKPLATE', body: 'GOODREADS' },
         beli: { bg: '#f7eddf', fg: '#2f2945', title: 'BELI RECEIPT', body: '@josephbailey' },
         steam: { bg: '#111827', fg: '#7fd4ff', title: 'GAME CASE', body: 'NoSkillzJustHaxx' },
@@ -363,31 +389,7 @@ function socialObjectTexture(kind: SocialCardKind): ReturnType<typeof canvasText
       ctx.fillText(style.title, 30, 54);
       ctx.font = '700 26px ui-monospace, Menlo, monospace';
       ctx.fillText(style.body, 30, 220);
-      if (kind === 'instagram') {
-        for (let i = 0; i < 4; i++) {
-          ctx.fillStyle = ['#ffd479', '#7fd4ff', '#ff9fd7', '#8f7fff'][i];
-          ctx.fillRect(36 + i * 78, 86, 58, 74);
-          ctx.fillStyle = 'rgba(0,0,0,.28)';
-          ctx.beginPath();
-          ctx.arc(65 + i * 78, 123, 14, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      } else if (kind === 'letterboxd') {
-        for (let i = 0; i < 9; i++) {
-          ctx.beginPath();
-          ctx.arc(42 + i * 36, 102, 7, 0, Math.PI * 2);
-          ctx.arc(42 + i * 36, 166, 7, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.fillStyle = '#ff7a45';
-        ctx.beginPath();
-        ctx.arc(168, 135, 34, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#40bc74';
-        ctx.beginPath();
-        ctx.arc(210, 135, 34, 0, Math.PI * 2);
-        ctx.fill();
-      } else if (kind === 'goodreads') {
+      if (kind === 'goodreads') {
         ctx.strokeStyle = style.fg;
         ctx.lineWidth = 3;
         ctx.beginPath();
@@ -711,11 +713,41 @@ export function createRoom(assets: SceneAssets): SceneInstance {
     return card;
   };
 
-  const clashPoster = makeWallCard(gamingPoster('clash'), 0.88, 1.22, 3.35, 4.33);
-  const fortnitePoster = makeWallCard(gamingPoster('fortnite'), 0.88, 1.22, 4.52, 4.33);
-  const leaguePoster = makeWallCard(gamingPoster('league'), 0.88, 1.22, 5.69, 4.33);
-  const instagramCard = makeWallCard(socialObjectTexture('instagram'), 1.0, 0.66, 6.55, 5.5);
-  const letterboxdCard = makeWallCard(socialObjectTexture('letterboxd'), 1.0, 0.66, 6.55, 4.73);
+  const clashPoster = makeWallCard(
+    officialGamingPoster('clash', assets.clashArt as Texture),
+    0.88,
+    1.22,
+    3.35,
+    4.33,
+  );
+  const fortnitePoster = makeWallCard(
+    officialGamingPoster('fortnite', assets.fortniteArt as Texture),
+    0.88,
+    1.22,
+    4.52,
+    4.33,
+  );
+  const leaguePoster = makeWallCard(
+    officialGamingPoster('league', assets.leagueArt as Texture),
+    0.88,
+    1.22,
+    5.69,
+    4.33,
+  );
+  const instagramCard = makeWallCard(
+    brandedSocialTexture('instagram', assets.instagramMark as Texture),
+    1.0,
+    0.66,
+    6.55,
+    5.5,
+  );
+  const letterboxdCard = makeWallCard(
+    brandedSocialTexture('letterboxd', assets.letterboxdMark as Texture),
+    1.0,
+    0.66,
+    6.55,
+    4.73,
+  );
 
   const goodreadsCard = new Mesh(
     new PlaneGeometry(0.88, 0.58),
@@ -944,13 +976,13 @@ export function createRoom(assets: SceneAssets): SceneInstance {
     },
     {
       id: 'room-instagram-strip',
-      label: 'Instagram strip',
+      label: 'Instagram widget',
       position: instagramCard.position.clone(),
       size: new Vector3(1.1, 0.8, 0.7),
     },
     {
       id: 'room-letterboxd-ticket',
-      label: 'Letterboxd ticket',
+      label: 'Letterboxd widget',
       position: letterboxdCard.position.clone(),
       size: new Vector3(1.1, 0.8, 0.7),
     },
@@ -1067,7 +1099,6 @@ export function createRoom(assets: SceneAssets): SceneInstance {
         m.geometry?.dispose?.();
         (m.material as MeshStandardMaterial | undefined)?.dispose?.();
       });
-      (assets.wallpaper as Texture).dispose();
     },
   };
 }

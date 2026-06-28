@@ -156,7 +156,7 @@ const html = `<!doctype html>
       <section id="honors" aria-labelledby="honors-title"><h2 id="honors-title">Honors</h2>${bullets(portfolio.honors)}</section>
       <section id="beyond" aria-labelledby="beyond-title"><h2 id="beyond-title">Beyond research</h2>${bullets(portfolio.beyond)}</section>
       <div class="universe-invite"><p style="margin:0 0 10px">Prefer the scenic route?</p><a href="/">Zoom through the universe</a></div>
-      <footer>© Joseph Bailey · josephbaileyy.github.io<br /><small>Imagery: Milky Way panorama © ESO/S. Brunier (CC BY 4.0) · planet textures © Solar System Scope (CC BY 4.0) · star catalog from HYG (CC BY-SA 4.0) · Earth night lights: NASA</small></footer>
+      <footer>© Joseph Bailey · josephbaileyy.github.io<br /><small>Imagery: Milky Way panorama © ESO/S. Brunier (CC BY 4.0) · planet textures © Solar System Scope (CC BY 4.0) · star catalog from HYG (CC BY-SA 4.0) · Earth night lights: NASA. Social marks and game artwork belong to Instagram/Meta, Letterboxd, Epic Games, Riot Games, and Supercell. This personal fan portfolio is not affiliated with or endorsed by those companies.</small></footer>
     </main>
   </body>
 </html>\n`;
