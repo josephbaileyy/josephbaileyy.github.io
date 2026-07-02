@@ -374,7 +374,7 @@ export class Hud {
     this.resetLog.setAttribute('aria-label', 'Confirm reset field log progress');
     this.live.textContent = 'Press confirm reset to clear saved field log progress';
     if (this.resetConfirmTimer) clearTimeout(this.resetConfirmTimer);
-    this.resetConfirmTimer = setTimeout(() => this.cancelFieldLogReset(), 5000);
+    this.resetConfirmTimer = setTimeout(() => this.cancelFieldLogReset(), 10_000);
   }
 
   private cancelFieldLogReset(): void {

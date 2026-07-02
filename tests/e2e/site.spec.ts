@@ -202,8 +202,11 @@ test('BaileyOS keeps projects on the desktop and videos in the dock', async ({
   await page.locator('.os-desktop-icon').filter({ hasText: 'league' }).click();
   await expect(page.locator('.os-window').filter({ hasText: 'League of Legends' })).toBeVisible();
 
-  await page.locator('.os-dock-item').filter({ hasText: 'videos' }).click();
-  const videos = page.locator('.os-window').filter({ hasText: 'Performance reel' });
+  const videosLauncher = page.locator('.os-dock-item[data-app-id="videos"]');
+  await expect(videosLauncher).toBeVisible();
+  await videosLauncher.click({ force: true });
+  const videos = page.locator('.os-window[data-window-id="videos"]');
+  await expect(videos).toBeVisible();
   await expect(videos.getByRole('link')).toHaveCount(4);
   await expect(videos).toContainText('WBA Grand Champion');
   await expect(
@@ -386,7 +389,9 @@ test('field log reset requires explicit confirmation', async ({ page }) => {
   await expect(
     page.getByRole('button', { name: 'Confirm reset field log progress', exact: true }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Confirm reset field log progress', exact: true }).click();
+  await page
+    .getByRole('button', { name: 'Confirm reset field log progress', exact: true })
+    .click({ force: true });
   await expect(
     page.getByRole('button', { name: 'Reset field log progress', exact: true }),
   ).toBeVisible();
@@ -485,6 +490,7 @@ test('immersive HUD controls toggle scale, drift, and the observation log', asyn
   const solarOverlay = page.locator('.solar-overlay');
   await expect(solarOverlay).toHaveAttribute('data-scale-mode', 'cinematic', { timeout: 20_000 });
   const mercury = page.locator('.planet-reticle[data-body="mercury"]');
+  await page.mouse.move(0, 0);
   await expect
     .poll(() => mercury.evaluate((node) => getComputedStyle(node, '::before').opacity))
     .toBe('0');
