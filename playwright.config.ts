@@ -3,6 +3,9 @@ import { defineConfig, devices } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: true,
+  // Each scenario boots a WebGL-heavy scene. GitHub's two-core runner becomes
+  // timing-starved when two browsers render the universe at once.
+  workers: process.env.CI ? 1 : undefined,
   timeout: 60_000,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'github' : 'list',
