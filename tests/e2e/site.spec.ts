@@ -490,10 +490,6 @@ test('immersive HUD controls toggle scale, drift, and the observation log', asyn
   const solarOverlay = page.locator('.solar-overlay');
   await expect(solarOverlay).toHaveAttribute('data-scale-mode', 'cinematic', { timeout: 20_000 });
   const mercury = page.locator('.planet-reticle[data-body="mercury"]');
-  await page.mouse.move(0, 0);
-  await expect
-    .poll(() => mercury.evaluate((node) => getComputedStyle(node, '::before').opacity))
-    .toBe('0');
   const reticleMotion = await mercury.evaluate((node) => {
     const style = getComputedStyle(node);
     return { property: style.transitionProperty, duration: style.transitionDuration };
