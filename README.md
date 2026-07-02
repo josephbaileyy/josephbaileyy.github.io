@@ -44,6 +44,11 @@ plays a synthesized gravitational-wave chirp with the real
 f ∝ (1−t/tc)^(−3/8) law; the monitor at depth 5 runs a little draggable-window
 OS with a working toy terminal.
 
+BaileyOS also includes three hands-on showcase apps: an educational OmniFold
+unfolding visual, a keyboard-accessible WebAudio piano/sax studio, and a
+Stanford 400-meter-hurdles progression log. The matching notebook, music sheet,
+and track spikes in the room route directly to those apps.
+
 ## Editing content
 
 - **Portfolio content** — edit `src/content/portfolio.json`. Panels, BaileyOS,

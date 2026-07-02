@@ -273,12 +273,12 @@
       "id": "stanford-track",
       "scene": "stanford",
       "title": "Track at the Oval",
-      "body": "NCAA Division I track and field: 400-meter hurdles for Stanford.",
+      "body": "NCAA Division I track and field: 400-meter hurdles for Stanford, with a 52.17 personal best at the 2025 ACC Championships.",
       "category": "life",
       "destination": {
-        "type": "url",
-        "href": "https://gostanford.com/sports/track-field/roster/player/joseph-bailey",
-        "label": "Track profile"
+        "type": "app",
+        "appId": "athletics",
+        "label": "Open race log"
       }
     },
     {
@@ -287,7 +287,7 @@
       "title": "Music / life",
       "body": "Jazz winds and classical piano stay in the portfolio as practice, texture, and performance evidence.",
       "category": "life",
-      "destination": { "type": "app", "appId": "videos", "label": "Open performance reel" }
+      "destination": { "type": "app", "appId": "music", "label": "Open music studio" }
     },
     {
       "id": "room-am-cvn-poster",
@@ -309,30 +309,30 @@
       "id": "room-neutrino-notebook",
       "scene": "room",
       "title": "Neutrino notebook",
-      "body": "Current work: OmniFold and uncertainty checks for high-dimensional neutrino cross-section unfolding.",
+      "body": "Current work: benchmarking OmniFold against iterative Bayesian unfolding on MINERvA open data, with closure, generator, bootstrap, and covariance tests.",
       "category": "research",
-      "destination": { "type": "panel", "panelId": "research", "label": "Open research" },
+      "destination": { "type": "app", "appId": "unfolding-lab", "label": "Open unfolding lab" },
       "links": [{ "label": "Paper", "href": "/papers/neutrino-unfolding.pdf" }]
     },
     {
       "id": "room-track-spikes",
       "scene": "room",
       "title": "Track spikes",
-      "body": "A small object for a large habit: 400-meter hurdles, training blocks, and Stanford Track.",
+      "body": "A small object for a large habit: Stanford 400-meter hurdles, from 54.65 in 2024 to 52.17 at the 2025 ACC Championships.",
       "category": "life",
       "destination": {
-        "type": "url",
-        "href": "https://gostanford.com/sports/track-field/roster/player/joseph-bailey",
-        "label": "Track profile"
+        "type": "app",
+        "appId": "athletics",
+        "label": "Open race log"
       }
     },
     {
       "id": "room-music-sheet",
       "scene": "room",
       "title": "Music sheet",
-      "body": "Performance reel: marching arts, saxophone solos, and piano/musicianship beyond the lab.",
+      "body": "A playable practice room for classical piano and jazz alto sax, plus performance evidence beyond the lab.",
       "category": "life",
-      "destination": { "type": "app", "appId": "videos", "label": "Open performance reel" }
+      "destination": { "type": "app", "appId": "music", "label": "Open music studio" }
     },
     {
       "id": "room-socials-board",

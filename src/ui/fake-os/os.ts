@@ -14,6 +14,7 @@ import { LIVE } from '../../content/live';
 import { NOTES, type Note } from '../../content/notes';
 import { buildTerminal } from './terminal';
 import { WindowManager } from './wm';
+import { athleticsBody, musicStudioBody, unfoldingLabBody } from './showcase-apps';
 
 interface PerformanceVideo {
   id: string;
@@ -79,6 +80,9 @@ function readFieldLog(): { scenes: Record<string, unknown>; signals: Record<stri
 function startHereBody(actions: {
   openResearch: () => void;
   openProjects: () => void;
+  openLab: () => void;
+  openMusic: () => void;
+  openAthletics: () => void;
   openFieldLog: () => void;
   openCv: () => void;
   openSocials: () => void;
@@ -111,6 +115,9 @@ function startHereBody(actions: {
   for (const [label, action] of [
     ['Research', actions.openResearch],
     ['Projects', actions.openProjects],
+    ['Unfolding Lab', actions.openLab],
+    ['Music Studio', actions.openMusic],
+    ['Track', actions.openAthletics],
     ['CV', actions.openCv],
     ['Field Log', actions.openFieldLog],
     ['Socials', actions.openSocials],
@@ -630,6 +637,9 @@ export function buildFakeOs(): HTMLElement {
       body: startHereBody({
         openResearch,
         openProjects,
+        openLab,
+        openMusic,
+        openAthletics,
         openFieldLog,
         openCv: () => openPdf('/resume.pdf', 'cv.pdf'),
         openSocials,
@@ -729,6 +739,36 @@ export function buildFakeOs(): HTMLElement {
       w: 620,
       h: 450,
     });
+  const openLab = () =>
+    wm.open({
+      id: 'unfolding-lab',
+      title: 'unfolding-lab.py — OmniFold',
+      body: unfoldingLabBody(),
+      x: 15,
+      y: 5,
+      w: 640,
+      h: 520,
+    });
+  const openMusic = () =>
+    wm.open({
+      id: 'music',
+      title: 'music-studio — WebAudio',
+      body: musicStudioBody(),
+      x: 20,
+      y: 8,
+      w: 570,
+      h: 470,
+    });
+  const openAthletics = () =>
+    wm.open({
+      id: 'athletics',
+      title: 'race-log — 400H',
+      body: athleticsBody(),
+      x: 22,
+      y: 6,
+      w: 560,
+      h: 500,
+    });
   const launchJourney = () => window.dispatchEvent(new CustomEvent('universe:tour'));
   const appActions = new Map<string, () => void>([
     ['start', openStart],
@@ -742,6 +782,9 @@ export function buildFakeOs(): HTMLElement {
     ['socials', openSocials],
     ['videos', openVideos],
     ['notes', openNotes],
+    ['unfolding-lab', openLab],
+    ['music', openMusic],
+    ['athletics', openAthletics],
   ]);
   for (const project of APP_PROJECTS) {
     appActions.set(`project:${project.app!.short}`, () => openProject(project));
@@ -749,6 +792,19 @@ export function buildFakeOs(): HTMLElement {
   const commands: PaletteCommand[] = [
     { id: 'start', label: 'Start Here', detail: 'mission dashboard', run: openStart },
     { id: 'research', label: 'Research', detail: 'AI for fundamental physics', run: openResearch },
+    {
+      id: 'unfolding-lab',
+      label: 'Unfolding Lab',
+      detail: 'interactive OmniFold explainer',
+      run: openLab,
+    },
+    { id: 'music', label: 'Music Studio', detail: 'play piano and alto sax', run: openMusic },
+    {
+      id: 'athletics',
+      label: 'Athletics',
+      detail: 'Stanford 400-meter hurdles progression',
+      run: openAthletics,
+    },
     { id: 'projects', label: 'Projects', detail: 'featured work and evidence', run: openProjects },
     {
       id: 'experience',
@@ -864,6 +920,24 @@ export function buildFakeOs(): HTMLElement {
   }
   desktop.appendChild(icons);
 
+  const showcaseIcons: Array<[string, string, string, () => void]> = [
+    ['unfolding-lab', '∿', 'unfolding-lab', openLab],
+    ['music', '♬', 'music-studio', openMusic],
+    ['athletics', '◫', 'race-log', openAthletics],
+  ];
+  for (const [appId, glyph, text, action] of showcaseIcons) {
+    const icon = document.createElement('button');
+    icon.className = 'os-desktop-icon os-showcase-icon';
+    icon.dataset.appId = appId;
+    icon.setAttribute('aria-label', `Open ${text}`);
+    const label = document.createElement('span');
+    label.className = 'os-desktop-icon-label';
+    label.textContent = text;
+    icon.append(projectIcon(glyph), label);
+    icon.addEventListener('click', action);
+    icons.appendChild(icon);
+  }
+
   // Mobile turns BaileyOS into a focused launcher rather than shrinking the desktop metaphor.
   const mobileHome = document.createElement('div');
   mobileHome.className = 'os-mobile-home';
@@ -882,6 +956,7 @@ export function buildFakeOs(): HTMLElement {
     ['experience', '🛰️', 'Experience', openExperience],
     ['cv', '📄', 'CV', () => openPdf('/resume.pdf', 'cv.pdf')],
     ['notes', '✎', 'Notes', openNotes],
+    ['unfolding-lab', '∿', 'Unfolding', openLab],
   ];
   const exploreIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
     ['terminal', '⌘', 'Terminal', openTerminal],
@@ -892,6 +967,8 @@ export function buildFakeOs(): HTMLElement {
     ['profile', '🧑‍🚀', 'About', openProfile],
     ['socials', '◐', 'Socials', openSocials],
     ['videos', playIcon(''), 'Videos', openVideos],
+    ['music', '♬', 'Music', openMusic],
+    ['athletics', '◫', 'Track', openAthletics],
   ];
   const connectIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
     ['github', '⌨', 'GitHub', 'https://github.com/josephbaileyy'],
@@ -950,6 +1027,9 @@ export function buildFakeOs(): HTMLElement {
     ['profile', '🧑‍🚀', 'about', openProfile],
     ['notes', '✎', 'notes', openNotes],
     ['videos', playIcon('os-dock-icon'), 'videos', openVideos],
+    ['unfolding-lab', '∿', 'unfolding', openLab],
+    ['music', '♬', 'music', openMusic],
+    ['athletics', '◫', 'track', openAthletics],
     ['journey', '🌌', 'journey', launchJourney],
     ['github', '💻', 'github', 'https://github.com/josephbaileyy'],
     ['linkedin', '🔗', 'linkedin', 'https://linkedin.com/in/baileyjosephr'],
