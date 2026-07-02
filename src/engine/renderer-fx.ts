@@ -22,8 +22,17 @@ export class FxPipeline {
   private bloom: BloomEffect;
   private cinematic: ShaderMaterial;
 
-  constructor(r3d: Renderer3D, scene: Scene, camera: PerspectiveCamera, private options: FxOptions = {}) {
-    this.composer = new EffectComposer(r3d.gl);
+  constructor(
+    r3d: Renderer3D,
+    scene: Scene,
+    camera: PerspectiveCamera,
+    private options: FxOptions = {},
+  ) {
+    // WebGL2 is guaranteed by the entry gate, so multisampled render targets
+    // are available: 4× MSAA on full quality, 2× on softened (WebKit/mobile)
+    // profiles. Without this, geometry edges alias badly whenever the DPR cap
+    // drops below the display's native ratio.
+    this.composer = new EffectComposer(r3d.gl, { multisampling: options.soft ? 2 : 4 });
     this.composer.addPass(new RenderPass(scene, camera));
 
     this.bloom = new BloomEffect({

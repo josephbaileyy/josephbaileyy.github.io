@@ -4,6 +4,10 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    # Weekly redeploy so the GitHub/Letterboxd live widgets stay fresh
+    # even without a code push.
+    - cron: '0 12 * * 1'
 
 permissions:
   contents: read
@@ -29,6 +33,10 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      # Refresh GitHub/Letterboxd widgets at deploy time; a failed fetch keeps
+      # the committed snapshot, so this never blocks a deploy.
+      - run: npm run fetch:live
+        continue-on-error: true
       - run: npm run build
         env:
           VITE_CESIUM_ION_TOKEN: ${{ secrets.VITE_CESIUM_ION_TOKEN }}

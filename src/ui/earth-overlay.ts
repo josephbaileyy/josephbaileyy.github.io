@@ -73,11 +73,14 @@ export class EarthOverlay {
   private pins = new Map<string, HTMLButtonElement>();
   private world = new Vector3();
   private selectedId = 'earth-stanford-slac';
+  private locateBtn: HTMLButtonElement | null = null;
+  private locationNote: HTMLSpanElement | null = null;
 
   constructor(
     private readonly signals: SceneSignal[] = EARTH_SIGNALS,
     private readonly onFocus: (id: string) => void,
     private readonly onReset: () => void,
+    onLocate?: () => void,
   ) {
     this.root.className = 'earth-overlay';
     this.root.setAttribute('aria-label', 'Earth coordinate evidence layer');
@@ -86,7 +89,19 @@ export class EarthOverlay {
     this.readout.className = 'earth-globe-readout';
     this.readout.textContent = 'drag Earth · wheel to inspect';
     const reset = button('reset globe', () => this.onReset());
-    toolbar.append(this.readout, reset);
+    if (onLocate) {
+      this.locateBtn = button('locate me', onLocate);
+      this.locateBtn.setAttribute(
+        'aria-label',
+        'Locate me on the globe (asks for browser location permission)',
+      );
+      this.locationNote = document.createElement('span');
+      this.locationNote.className = 'earth-location-note';
+      this.locationNote.textContent = 'browser location · stays on this device';
+      toolbar.append(this.readout, this.locateBtn, reset, this.locationNote);
+    } else {
+      toolbar.append(this.readout, reset);
+    }
     this.root.append(toolbar, this.card);
 
     for (const signal of this.signals) {
@@ -159,6 +174,19 @@ export class EarthOverlay {
       placement.el.style.setProperty('--leader-angle', `${leaderAngle.toFixed(4)}rad`);
       placement.el.style.transform = `translate(${Math.round(placement.x)}px, ${Math.round(placement.y)}px)`;
     }
+  }
+
+  setLocateState(options: {
+    label: string;
+    ariaLabel?: string;
+    message?: string;
+    disabled?: boolean;
+  }): void {
+    if (!this.locateBtn) return;
+    this.locateBtn.textContent = options.label;
+    this.locateBtn.setAttribute('aria-label', options.ariaLabel ?? options.label);
+    this.locateBtn.disabled = options.disabled ?? false;
+    if (this.locationNote && options.message) this.locationNote.textContent = options.message;
   }
 
   hide(): void {

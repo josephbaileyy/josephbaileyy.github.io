@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { NOTES } from '../src/content/notes';
 import { PANELS, PORTFOLIO } from '../src/content/portfolio';
 
 describe('portfolio content', () => {
@@ -127,5 +128,13 @@ describe('portfolio content', () => {
     }
     expect(PANELS.projects.html).toContain('project-evidence');
     expect(PANELS.projects.html).toContain('Signal');
+  });
+
+  it('renders note frontmatter without leaking source quotes into titles', () => {
+    expect(NOTES.length).toBeGreaterThan(0);
+    for (const note of NOTES) {
+      expect(note.title).not.toMatch(/^(['"]).*\1$/);
+      expect(note.title).toBe(note.title.trim());
+    }
   });
 });

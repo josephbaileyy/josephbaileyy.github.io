@@ -48,8 +48,16 @@ OS with a working toy terminal.
 
 - **Portfolio content** — edit `src/content/portfolio.json`. Panels, BaileyOS,
   terminal files, and the plain page all consume this source.
+- **Notes / writing** — add a markdown file to `src/content/notes/` with
+  `title`, `date`, and `summary` frontmatter. `npm run generate:notes` renders
+  static pages to `public/notes/`, the BaileyOS Notes app data
+  (`src/content/notes.json`), and `public/sitemap.xml`; dev and production
+  builds run this automatically.
 - **Plain page** — `npm run generate:about` regenerates `about.html`; dev and
   production builds run this automatically.
+- **Live widgets** — `npm run fetch:live` refreshes `src/content/live.json`
+  (public GitHub activity + Letterboxd RSS; keyless). CI runs it before every
+  deploy and on a weekly cron; a failed fetch keeps the committed snapshot.
 - **Resume** — replace `public/resume.pdf`.
 - **Terminal behavior** — `src/ui/fake-os/terminal.ts`.
 
@@ -78,6 +86,12 @@ and `naif0012.tls` kernels to `/tmp` and installing SpiceyPy.
 
 Deep links: `/#/stanford`, `/#/galaxy/am-cvn`, etc. `/about.html` is the
 plain fallback (also shown to no-WebGL visitors).
+
+Analytics are GoatCounter (cookieless; skipped on localhost and in automated
+browsers): pageviews plus events for depth milestones, tour starts, panel
+opens, and the Earth "you are here" button. One-time setup: register the site
+code `josephbaileyy` at goatcounter.com. Moving to a custom domain someday:
+see [docs/CUSTOM_DOMAIN.md](docs/CUSTOM_DOMAIN.md).
 
 ## Credits
 

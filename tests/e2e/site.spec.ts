@@ -103,9 +103,14 @@ test('guided journey can pause and resume accessibly', async ({ page }) => {
   );
 });
 
-test('credential shortcuts expose research, CV, and contact immediately', async ({ page }) => {
+test('credential shortcuts expose research, CV, and contact without leaving the universe', async ({
+  page,
+}, testInfo) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/galaxy');
+  if (isMobileProject(testInfo.project.name)) {
+    await page.getByRole('button', { name: 'Travel inward one level' }).click();
+  }
   const research = page.getByRole('button', { name: 'Research', exact: true });
   await research.focus();
   await research.press('Enter');
@@ -315,16 +320,79 @@ test('mobile tap controls navigate without requiring pinch or hover', async ({
   await expect(page).toHaveURL(/#\/galaxy$/, { timeout: 20_000 });
 });
 
+test('mobile HUD keeps guidance readable and navigation targets touch-sized', async ({
+  page,
+}, testInfo) => {
+  test.skip(!isMobileProject(testInfo.project.name), 'mobile layout contract');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/galaxy');
+  await expect(page.locator('.loading-overlay')).toHaveClass(/done/, { timeout: 20_000 });
+
+  const layout = await page.evaluate(() => {
+    const box = (selector: string) => {
+      const node = document.querySelector(selector);
+      if (!(node instanceof HTMLElement)) return null;
+      const rect = node.getBoundingClientRect();
+      return {
+        left: rect.left,
+        right: rect.right,
+        top: rect.top,
+        bottom: rect.bottom,
+        width: rect.width,
+        height: rect.height,
+      };
+    };
+    return {
+      width: innerWidth,
+      name: box('.hud-name'),
+      hint: box('.hud-hint'),
+      scale: box('.scale-ribbon'),
+      inward: box('.hud-touch-nav button:last-child'),
+      dot: box('.hud-dot'),
+      step: box('.hud-step-label'),
+    };
+  });
+
+  expect(layout.hint!.left).toBeGreaterThanOrEqual(0);
+  expect(layout.hint!.right).toBeLessThanOrEqual(layout.width);
+  expect(layout.name!.bottom).toBeLessThanOrEqual(layout.hint!.top);
+  expect(layout.hint!.bottom).toBeLessThanOrEqual(layout.scale!.top);
+  expect(layout.inward!.height).toBeGreaterThanOrEqual(44);
+  expect(layout.dot!.width).toBeGreaterThanOrEqual(44);
+  expect(layout.dot!.height).toBeGreaterThanOrEqual(44);
+  expect(layout.step!.right).toBeLessThanOrEqual(layout.width);
+  await expect(page.locator('.hud-step-label')).toContainText('1 of 6');
+});
+
 test('mobile secondary tools are collapsed until requested', async ({ page }, testInfo) => {
   test.skip(!isMobileProject(testInfo.project.name), 'mobile tools contract');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/galaxy');
-  const tools = page.getByRole('button', { name: 'tools', exact: true });
+  const tools = page.getByRole('button', { name: 'Open help and universe tools', exact: true });
   await expect(tools).toHaveAttribute('aria-expanded', 'false');
   await tools.click();
   await expect(tools).toHaveAttribute('aria-expanded', 'true');
   await expect(page.getByRole('button', { name: 'Toggle ambient space audio' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Toggle Solar System scale mode' })).toBeHidden();
+});
+
+test('field log reset requires explicit confirmation', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/galaxy');
+  await page.getByRole('button', { name: 'Open help and universe tools', exact: true }).click();
+  await page.getByRole('button', { name: 'Open field log', exact: true }).click();
+  const reset = page.getByRole('button', { name: 'Reset field log progress', exact: true });
+  await reset.click();
+  await expect(
+    page.getByRole('button', { name: 'Confirm reset field log progress', exact: true }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: 'Confirm reset field log progress', exact: true }).click();
+  await expect(
+    page.getByRole('button', { name: 'Reset field log progress', exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: 'Confirm reset field log progress', exact: true }),
+  ).toHaveCount(0);
 });
 
 test('quick portfolio provides current-work navigation and experience', async ({ page }) => {
@@ -354,6 +422,22 @@ test('quick portfolio provides current-work navigation and experience', async ({
     'https://op.gg/lol/summoners/na/noskillzjusthaxx-0425',
   );
   await expect(page.locator('script[type="application/ld+json"]')).not.toContainText('alumniOf');
+  await expect(page.locator('.section-nav a[href="#current"]')).toHaveAttribute(
+    'aria-current',
+    'location',
+  );
+  await expect(page.getByRole('heading', { name: 'Writing' })).toBeVisible();
+});
+
+test('generated notes render clean titles and reading breadcrumbs', async ({ page }) => {
+  await page.goto('/notes/how-this-site-works.html');
+  const title = page.getByRole('heading', {
+    level: 1,
+    name: 'How this site works: one number from the galaxy to my desk',
+  });
+  await expect(title).toBeVisible();
+  await expect(title).not.toContainText(/^'/);
+  await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toContainText('notes');
 });
 
 test('true-scale solar system keeps every tracked body discoverable on mobile', async ({
@@ -391,14 +475,10 @@ test('true-scale solar system keeps every tracked body discoverable on mobile', 
   }
 });
 
-test('immersive HUD controls toggle scale, drift, and the observation log', async ({
-  page,
-}, testInfo) => {
+test('immersive HUD controls toggle scale, drift, and the observation log', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/solar');
-  if (isMobileProject(testInfo.project.name)) {
-    await page.getByRole('button', { name: 'tools', exact: true }).click();
-  }
+  await page.getByRole('button', { name: 'Open help and universe tools', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Toggle Solar System scale mode' })).toBeVisible({
     timeout: 20_000,
   });
@@ -458,9 +538,11 @@ test('stage navigation stays pixel-aligned for Safari', async ({ page }) => {
   await expect(dot).toBeVisible({ timeout: 20_000 });
   const style = await dot.evaluate((node) => {
     const computed = getComputedStyle(node);
+    const marker = getComputedStyle(node, '::before');
     const parent = getComputedStyle(node.parentElement!);
     return {
-      borderWidth: computed.borderTopWidth,
+      borderWidth:
+        computed.borderTopWidth === '0px' ? marker.borderTopWidth : computed.borderTopWidth,
       transform: parent.transform,
     };
   });
@@ -699,7 +781,7 @@ test('BaileyOS keeps one active app window on mobile', async ({ page }, testInfo
   await page.goto('/#/screen');
   await expect(page.locator('.os-mobile-home')).toBeVisible();
   await expect(page.getByLabel('terminal input')).toHaveCount(0);
-  await expect(page.locator('.os-mobile-app')).toHaveCount(18);
+  await expect(page.locator('.os-mobile-app')).toHaveCount(19);
   await expect(page.locator('.os-mobile-app').first()).toHaveAttribute('data-app-id', 'start');
   await expect(page.locator('.os-mobile-dock-item')).toHaveCount(4);
 

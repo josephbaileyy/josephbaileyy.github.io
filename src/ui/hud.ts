@@ -23,6 +23,7 @@ export class Hud {
   private dots: HTMLButtonElement[] = [];
   private live: HTMLDivElement;
   private hint: HTMLDivElement;
+  private stepLabel: HTMLDivElement;
   private journey: HTMLButtonElement;
   private tools: HTMLDivElement;
   private toolsToggle: HTMLButtonElement;
@@ -33,6 +34,8 @@ export class Hud {
   private logPanel: HTMLDivElement;
   private sceneLogList: HTMLUListElement;
   private signalLogList: HTMLUListElement;
+  private resetLog: HTMLButtonElement;
+  private resetConfirmTimer: ReturnType<typeof setTimeout> | null = null;
   private onOpenDestination?: (destination: ObservationDestination) => void;
   private sceneVisits = new Map<string, ObservationEntry>();
   private signalObservations = new Map<string, ObservationEntry>();
@@ -81,7 +84,7 @@ export class Hud {
     this.journey.innerHTML = '<span aria-hidden="true">▶</span> take the journey';
     this.journey.setAttribute('aria-label', 'Take the guided journey from the galaxy to my desk');
     this.journey.addEventListener('click', () => {
-      this.stopPulse();
+      this.engage();
       onTour();
     });
     root.appendChild(this.journey);
@@ -94,22 +97,36 @@ export class Hud {
       dot.className = 'hud-dot';
       dot.dataset.label = scene.label;
       dot.setAttribute('aria-label', `Go to ${scene.label}`);
-      dot.addEventListener('click', () => onNavigate(i));
+      dot.addEventListener('click', () => {
+        this.engage();
+        onNavigate(i);
+      });
       dots.appendChild(dot);
       this.dots.push(dot);
     });
     root.appendChild(dots);
+
+    this.stepLabel = document.createElement('div');
+    this.stepLabel.className = 'hud-step-label';
+    this.stepLabel.setAttribute('aria-hidden', 'true');
+    root.appendChild(this.stepLabel);
 
     const zoom = document.createElement('div');
     zoom.className = 'hud-zoom';
     const zin = document.createElement('button');
     zin.textContent = '+';
     zin.setAttribute('aria-label', 'Zoom in');
-    zin.addEventListener('click', () => onZoomStep(1));
+    zin.addEventListener('click', () => {
+      this.engage();
+      onZoomStep(1);
+    });
     const zout = document.createElement('button');
     zout.textContent = '−';
     zout.setAttribute('aria-label', 'Zoom out');
-    zout.addEventListener('click', () => onZoomStep(-1));
+    zout.addEventListener('click', () => {
+      this.engage();
+      onZoomStep(-1);
+    });
     zoom.append(zin, zout);
     root.appendChild(zoom);
 
@@ -117,21 +134,28 @@ export class Hud {
     touchNav.className = 'hud-touch-nav';
     const outward = document.createElement('button');
     outward.type = 'button';
-    outward.textContent = 'out';
+    outward.textContent = 'zoom out';
     outward.setAttribute('aria-label', 'Travel outward one level');
-    outward.addEventListener('click', () => onZoomStep(-1));
+    outward.addEventListener('click', () => {
+      this.engage();
+      onZoomStep(-1);
+    });
     const inward = document.createElement('button');
     inward.type = 'button';
-    inward.textContent = 'in';
+    inward.textContent = 'zoom in';
     inward.setAttribute('aria-label', 'Travel inward one level');
-    inward.addEventListener('click', () => onZoomStep(1));
+    inward.addEventListener('click', () => {
+      this.engage();
+      onZoomStep(1);
+    });
     touchNav.append(outward, inward);
     root.appendChild(touchNav);
 
     this.toolsToggle = document.createElement('button');
     this.toolsToggle.type = 'button';
     this.toolsToggle.className = 'hud-tools-toggle';
-    this.toolsToggle.textContent = 'tools';
+    this.toolsToggle.textContent = 'help & tools';
+    this.toolsToggle.setAttribute('aria-label', 'Open help and universe tools');
     this.toolsToggle.setAttribute('aria-controls', 'universe-tools');
     this.toolsToggle.setAttribute('aria-expanded', 'false');
     this.toolsToggle.addEventListener('click', () => {
@@ -144,6 +168,10 @@ export class Hud {
     this.tools = document.createElement('div');
     this.tools.id = 'universe-tools';
     this.tools.className = 'hud-tools';
+    const toolsHelp = document.createElement('p');
+    toolsHelp.className = 'hud-tools-help';
+    toolsHelp.textContent =
+      'Travel: scroll, pinch, arrows, or scene steps. Field log = saved progress. Drift = free camera.';
     this.scaleToggle = document.createElement('button');
     this.scaleToggle.type = 'button';
     this.scaleToggle.textContent = 'scale: cinematic';
@@ -198,7 +226,13 @@ export class Hud {
       this.logPanel.classList.toggle('open', open);
       this.logToggle.setAttribute('aria-expanded', String(open));
     });
-    this.tools.append(this.scaleToggle, this.ambientToggle, this.driftToggle, this.logToggle);
+    this.tools.append(
+      toolsHelp,
+      this.scaleToggle,
+      this.ambientToggle,
+      this.driftToggle,
+      this.logToggle,
+    );
     root.appendChild(this.tools);
 
     this.logPanel = document.createElement('div');
@@ -208,12 +242,12 @@ export class Hud {
     logHead.className = 'observation-log-head';
     const logTitle = document.createElement('strong');
     logTitle.textContent = 'Field log';
-    const resetLog = document.createElement('button');
-    resetLog.type = 'button';
-    resetLog.textContent = 'reset';
-    resetLog.setAttribute('aria-label', 'Reset field log progress');
-    resetLog.addEventListener('click', () => this.resetFieldLog());
-    logHead.append(logTitle, resetLog);
+    this.resetLog = document.createElement('button');
+    this.resetLog.type = 'button';
+    this.resetLog.textContent = 'reset';
+    this.resetLog.setAttribute('aria-label', 'Reset field log progress');
+    this.resetLog.addEventListener('click', () => this.requestFieldLogReset());
+    logHead.append(logTitle, this.resetLog);
     const intro = document.createElement('p');
     intro.textContent =
       'Travel through the universe to collect visited scales and evidence signals.';
@@ -255,6 +289,8 @@ export class Hud {
       if (active) d.setAttribute('aria-current', 'step');
       else d.removeAttribute('aria-current');
     });
+    const label = this.dots[index]?.dataset.label ?? `Scene ${index + 1}`;
+    this.stepLabel.textContent = `${label} · ${index + 1} of ${this.dots.length}`;
     this.root.dataset.scene = String(index);
     this.scaleToggle.hidden = index !== 1;
     if (index !== 1 && this.scaleToggle === document.activeElement) {
@@ -328,7 +364,29 @@ export class Hud {
     this.renderFieldLog();
   }
 
+  private requestFieldLogReset(): void {
+    if (this.resetLog.dataset.confirming === 'true') {
+      this.resetFieldLog();
+      return;
+    }
+    this.resetLog.dataset.confirming = 'true';
+    this.resetLog.textContent = 'confirm reset';
+    this.resetLog.setAttribute('aria-label', 'Confirm reset field log progress');
+    this.live.textContent = 'Press confirm reset to clear saved field log progress';
+    if (this.resetConfirmTimer) clearTimeout(this.resetConfirmTimer);
+    this.resetConfirmTimer = setTimeout(() => this.cancelFieldLogReset(), 5000);
+  }
+
+  private cancelFieldLogReset(): void {
+    if (this.resetConfirmTimer) clearTimeout(this.resetConfirmTimer);
+    this.resetConfirmTimer = null;
+    delete this.resetLog.dataset.confirming;
+    this.resetLog.textContent = 'reset';
+    this.resetLog.setAttribute('aria-label', 'Reset field log progress');
+  }
+
   private resetFieldLog(): void {
+    this.cancelFieldLogReset();
     this.sceneVisits.clear();
     this.signalObservations.clear();
     try {
@@ -429,6 +487,11 @@ export class Hud {
 
   hideHint(): void {
     this.hint.classList.add('hidden');
+  }
+
+  private engage(): void {
+    this.root.dataset.engaged = 'true';
+    this.stopPulse();
   }
 }
 

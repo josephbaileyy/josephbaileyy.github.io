@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 — lost in space · Joseph Bailey</title>
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#070a1c" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='16' r='7' fill='%23eef2ff'/%3E%3Ccircle cx='24' cy='13' r='4' fill='%23ffd479'/%3E%3C/svg%3E"
+    />
+    <style>
+      :root {
+        --bg: #0b1026;
+        --ink: #eef2ff;
+        --dim: #aeb7d9;
+        --gold: #ffd479;
+        --cyan: #7fd4ff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: radial-gradient(circle at 50% -20%, #1b1740 0, var(--bg) 38%);
+        color: var(--ink);
+        font-family: 'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif;
+        line-height: 1.7;
+        text-align: center;
+        padding: 24px;
+      }
+      main {
+        max-width: 480px;
+      }
+      .code {
+        font: 700 15px ui-monospace, Menlo, monospace;
+        letter-spacing: 0.2em;
+        color: var(--gold);
+        text-transform: uppercase;
+      }
+      h1 {
+        font-size: clamp(28px, 6vw, 40px);
+        margin: 8px 0 12px;
+        line-height: 1.15;
+      }
+      p {
+        color: var(--dim);
+        margin: 0 0 28px;
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: center;
+      }
+      nav a {
+        text-decoration: none;
+        border: 1px solid rgb(174 183 217 / 0.4);
+        border-radius: 999px;
+        padding: 10px 18px;
+        font-size: 14px;
+        color: var(--ink);
+        background: #131a3a;
+      }
+      nav a:hover,
+      nav a:focus-visible {
+        border-color: var(--cyan);
+      }
+      nav a.primary {
+        background: var(--gold);
+        color: #1a1430;
+        border-color: var(--gold);
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="code">404 · signal lost</p>
+      <h1>This page drifted out of the observable universe.</h1>
+      <p>The address doesn't match anything here — but everything worth finding is one hop away.</p>
+      <nav aria-label="Recovery links">
+        <a class="primary" href="/">Zoom through the universe</a>
+        <a href="/about.html">Quick portfolio</a>
+        <a href="/notes/">Notes</a>
+      </nav>
+    </main>
+  </body>
+</html>

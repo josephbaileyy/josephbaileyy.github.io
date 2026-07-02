@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>How this site works: one number from the galaxy to my desk · Joseph Bailey</title>
+    <meta name="description" content="The whole zoomable universe is driven by a single scalar. Here&#039;s the camera math that keeps 21 orders of magnitude numerically honest — and why nothing on this site accumulates." />
+    <link rel="canonical" href="https://josephbaileyy.github.io/notes/how-this-site-works.html" />
+    <meta property="og:title" content="How this site works: one number from the galaxy to my desk · Joseph Bailey" />
+    <meta property="og:description" content="The whole zoomable universe is driven by a single scalar. Here&#039;s the camera math that keeps 21 orders of magnitude numerically honest — and why nothing on this site accumulates." />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://josephbaileyy.github.io/notes/how-this-site-works.html" />
+    <meta property="og:image" content="https://josephbaileyy.github.io/og-preview.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0b1026" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='12' cy='16' r='7' fill='%23eef2ff'/%3E%3Ccircle cx='24' cy='13' r='4' fill='%23ffd479'/%3E%3C/svg%3E" />
+    <style>
+      :root{--bg:#0b1026;--panel:#131a3a;--ink:#eef2ff;--dim:#aeb7d9;--gold:#ffd479;--cyan:#7fd4ff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -20%,#1b1740 0,var(--bg) 38%);color:var(--ink);font-family:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;line-height:1.75}main{max-width:720px;margin:0 auto;padding:48px 24px 96px}a{color:var(--cyan)}.crumbs{font:13px ui-monospace,Menlo,monospace;color:var(--dim)}.crumbs a{text-decoration:none}h1{font-size:clamp(30px,5.5vw,42px);line-height:1.15;margin:14px 0 6px}h2{font-size:22px;margin:40px 0 10px;color:var(--gold)}h3{font-size:18px;margin:28px 0 8px}.note-meta{color:var(--dim);font:13px ui-monospace,Menlo,monospace;margin:0 0 28px}p{margin:0 0 18px;color:#d9dff4}pre{background:#0a0e24;border:1px solid rgb(127 212 255/.18);border-radius:12px;padding:16px 18px;overflow-x:auto;margin:0 0 18px}code{font:0.92em ui-monospace,Menlo,monospace;color:var(--cyan)}p code,li code{background:rgb(127 212 255/.1);border-radius:5px;padding:1px 5px}ul{margin:0 0 18px;padding-left:24px;color:#d9dff4}blockquote{margin:0 0 18px;padding:2px 18px;border-left:3px solid var(--gold);color:var(--dim)}.note-card{display:block;background:linear-gradient(145deg,#171f46,var(--panel));border:1px solid rgb(174 183 217/.2);border-radius:14px;padding:20px 22px;margin:0 0 14px;text-decoration:none;color:var(--ink)}.note-card:hover,.note-card:focus-visible{border-color:var(--cyan)}.note-card h2{margin:2px 0 8px;font-size:19px;color:var(--ink)}.note-card p{margin:0;color:var(--dim);font-size:15px}.note-card span{color:var(--gold);font:11px ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase}footer{margin-top:56px;color:var(--dim);font:13px/1.6 ui-monospace,Menlo,monospace}@media(max-width:620px){main{padding:36px 20px 72px}}</style>
+  </head>
+  <body>
+    <main>
+      <nav class="crumbs" aria-label="Breadcrumb"><a href="/notes/">← notes</a></nav>
+      <article>
+        <h1>How this site works: one number from the galaxy to my desk</h1>
+        <p class="note-meta">2026-07-01 · Joseph Bailey</p>
+        <p>This site zooms from the Milky Way down to the monitor on my desk — about 21 orders of magnitude. The obvious way to build that is a camera that flies through one giant scene graph, and the obvious way fails: 32-bit floats run out of precision long before you get from galactic scale to desk scale, and everything starts to jitter.</p>
+<p>The fix is that the entire camera is <strong>one number</strong>: <code>depth ∈ [0, 5]</code>. Galaxy is 0, solar system is 1, Earth 2, Stanford 3, my room 4, the screen 5. Every frame, everything — camera pose, which scenes are mounted, effects, even the scale ribbon in the corner — is recomputed as a pure function of that number. Nothing accumulates, so nothing drifts.</p>
+<h2>Nesting instead of flying</h2>
+<p>At any moment, at most two scenes exist. The scene at <code>floor(depth)</code> is mounted at the world origin at unit scale. The next scene nests inside it at that scene&#039;s <strong>anchor</strong> — a position, orientation, and scale that says &quot;the solar system lives <em>here</em> inside the galaxy, this small.&quot; When you cross an integer boundary, the child becomes the new base, mounted at identity, and the old parent is dropped. The coordinates the GPU sees are always modest numbers in the base scene&#039;s local space, no matter how deep you are.</p>
+<p>The camera rail between a scene&#039;s rest pose and its child&#039;s rest pose is where the actual math lives. Linear interpolation of position feels wrong across scale — you&#039;d spend 99% of the flight at the far end. Instead the distance to the anchor is interpolated <strong>geometrically</strong>:</p>
+<pre><code>D(t) = dS^(1-t) · dE^t</code></pre>
+<p>where <code>dS</code> and <code>dE</code> are the start and end distances from the anchor point. That&#039;s a constant <em>ratio</em> per unit time, which is what a zoom perceptually is. Direction is slerped on the unit sphere, orientation is a quaternion slerp, and field of view is lerped in log-tan space so the zoom rate stays perceptually constant even when two scenes are authored with different FOVs.</p>
+<h2>The seam theorem</h2>
+<p>The part that has to be exactly right is the boundary crossing. At <code>depth = 1.999…</code> the camera pose is expressed in the galaxy&#039;s coordinates; at <code>depth = 2.000…1</code> it&#039;s expressed in the solar system&#039;s. Those are different coordinate systems related by the anchor transform, and the two expressions must agree to the pixel or every scene handoff visibly pops.</p>
+<p>That agreement is a small theorem about the rig functions, and it&#039;s the one piece of the site covered by property-style unit tests: evaluate the pose just below and just above each integer boundary, map one through the anchor transform, and assert they match to tolerance — for every seam in the chain, at many viewport aspect ratios. When a test fails here, the site is unshippable; everything else is polish.</p>
+<h2>Feel</h2>
+<p>The scroll wheel doesn&#039;t set depth, it adds <em>velocity</em>, which decays exponentially and then a magnetic snap pulls you onto the nearest integer once input goes quiet. That&#039;s the difference between &quot;scrubbing a slider&quot; and &quot;traveling.&quot; Long jumps (say, screen back to galaxy) don&#039;t force-load every scene en route — the camera ramps a streak effect, teleports to just above the target, and dives in, which reads as continuous motion but only ever loads two scenes.</p>
+<p>A rolling frame-time monitor watches the render budget per scene and demotes quality — pixel ratio, post-processing, scene LODs — after a sustained overrun, then quietly probes a promotion after a clean stretch. Reduced-motion preferences swap the flight for instant cuts.</p>
+<h2>The honest parts</h2>
+<p>Two hops cheat, and I&#039;d rather document than hide them. The galaxy→solar transition covers a scale gap too large even for geometric interpolation to feel right, so the galaxy fades itself out on the way in. And Stanford→room flies through a conveniently lit dorm window. Everything else is genuine flight.</p>
+<p>The rest of the site tries to be similarly literal: the background stars are the real naked-eye HYG catalog packed into a 30 KB binary, so the constellations are correct; planet and Moon positions come from NASA/JPL DE440s ephemerides, valid 1950–2050, at literal AU scale; Earth&#039;s terminator and city lights follow the selected UTC time; and the AM CVn binary in the galaxy scene — a system I actually studied — plays a synthesized gravitational-wave chirp with the real <code>f ∝ (1−t/tc)^(−3/8)</code> frequency law.</p>
+<p>If you want the details, the rig math is in <a href="https://github.com/josephbaileyy/josephbaileyy.github.io/blob/main/src/engine/rig.ts" target="_blank" rel="noopener"><code>src/engine/rig.ts</code></a> and the seam tests in <a href="https://github.com/josephbaileyy/josephbaileyy.github.io/blob/main/tests/rig.test.ts" target="_blank" rel="noopener"><code>tests/rig.test.ts</code></a>.</p>
+      </article>
+      <footer>© Joseph Bailey · <a href="/">the universe</a> · <a href="/about.html">quick portfolio</a></footer>
+    </main>
+    <script data-goatcounter="https://josephbaileyy.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+  </body>
+</html>

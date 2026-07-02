@@ -32,6 +32,7 @@ import { earthGlobeMaterial } from './lib/earth-globe';
 import { makeSky, setSkyOpacity, skyTransitionOpacity } from './lib/sky';
 import { ephemeris } from '../astronomy/ephemeris';
 import { daysSinceJ2000 } from './lib/astro';
+import { trackEvent } from '../analytics';
 
 const R = 10;
 const COORDINATE_SIGNALS = [
@@ -333,7 +334,107 @@ export function createEarth(assets: SceneAssets): SceneInstance {
       focusQuat = delta.multiply(surface.quaternion.clone()).normalize();
     },
     () => resetGlobe(),
+    () => locateVisitor(),
   );
+
+  // ---- "you are here": opt-in geolocation marker ----
+  // Only ever triggered by the toolbar button (browser permission prompt);
+  // the coordinates stay on this device — nothing is stored or sent anywhere.
+  const hereMarker = new Group();
+  const hereDot = new Mesh(
+    new SphereGeometry(0.06, 12, 8),
+    new MeshBasicMaterial({ color: 0x8dffb8 }),
+  );
+  hereMarker.add(hereDot);
+  const hereGlow = new Sprite(
+    new SpriteMaterial({
+      map: sunGlowTexture(),
+      color: 0x8dffb8,
+      transparent: true,
+      opacity: 0.55,
+      depthWrite: false,
+      blending: AdditiveBlending,
+    }),
+  );
+  hereGlow.scale.setScalar(1.2);
+  hereMarker.add(hereGlow);
+  const hereLabel = textSprite([{ text: 'you are here', color: '#c9ffe0', size: 30 }], {
+    worldWidth: 3.6,
+    width: 380,
+    opacity: 0.95,
+  });
+  hereLabel.position.set(0, 1.05, 0);
+  hereMarker.add(hereLabel);
+  hereMarker.visible = false;
+  surface.add(hereMarker);
+  let locating = false;
+
+  function locateVisitor(): void {
+    if (locating) return;
+    if (hereMarker.visible) {
+      hereMarker.visible = false;
+      overlay.setLocateState({
+        label: 'locate me',
+        ariaLabel: 'Locate me on the globe (asks for browser location permission)',
+        message: 'location cleared · coordinates were not stored',
+      });
+      return;
+    }
+    if (!('geolocation' in navigator)) {
+      overlay.setLocateState({
+        label: 'location unsupported',
+        message: 'this browser does not provide geolocation',
+        disabled: true,
+      });
+      return;
+    }
+    locating = true;
+    overlay.setLocateState({
+      label: 'locating…',
+      message: 'waiting for browser permission · stays on this device',
+      disabled: true,
+    });
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        locating = false;
+        const normal = latLonToVec3(
+          position.coords.latitude,
+          position.coords.longitude,
+          1,
+        ).normalize();
+        hereMarker.position.copy(normal).multiplyScalar(R * 1.015);
+        hereMarker.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), normal);
+        hereMarker.visible = true;
+        // Rotate the globe so the visitor's dot faces the camera.
+        const current = normal.clone().applyQuaternion(surface.quaternion).normalize();
+        focusQuat = new Quaternion()
+          .setFromUnitVectors(current, FRONT_NORMAL)
+          .multiply(surface.quaternion.clone())
+          .normalize();
+        overlay.setLocateState({
+          label: 'clear location',
+          ariaLabel: 'Clear my location marker from the globe',
+          message: 'marker shown locally · coordinates were not stored',
+        });
+        trackEvent('you-are-here');
+      },
+      (error) => {
+        locating = false;
+        const message =
+          error.code === error.PERMISSION_DENIED
+            ? 'permission denied · change browser settings to allow location'
+            : error.code === error.TIMEOUT
+              ? 'location timed out · try again'
+              : 'location unavailable · try again';
+        overlay.setLocateState({
+          label: 'retry location',
+          ariaLabel: 'Retry locating me on the globe',
+          message,
+        });
+      },
+      { enableHighAccuracy: false, timeout: 12000, maximumAge: 600000 },
+    );
+  }
 
   function applyDrag(dx: number, dy: number): void {
     focusQuat = null;

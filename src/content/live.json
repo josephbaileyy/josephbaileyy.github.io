@@ -1,0 +1,42 @@
+{
+  "fetchedAt": "2026-07-02",
+  "github": [
+    {
+      "kind": "pr",
+      "repo": "MINERvA-OmniFold",
+      "url": "https://github.com/josephbaileyy/MINERvA-OmniFold",
+      "date": "2026-06-14",
+      "summary": "opened a pull request"
+    }
+  ],
+  "films": [
+    {
+      "title": "How to Lose a Guy in 10 Days",
+      "year": "2003",
+      "rating": "4.0",
+      "watched": "2026-06-18",
+      "url": "https://letterboxd.com/josephbaileyy/film/how-to-lose-a-guy-in-10-days/"
+    },
+    {
+      "title": "Backrooms",
+      "year": "2026",
+      "rating": "1.5",
+      "watched": "2026-06-02",
+      "url": "https://letterboxd.com/josephbaileyy/film/backrooms-2026/"
+    },
+    {
+      "title": "Dune",
+      "year": "2021",
+      "rating": "2.5",
+      "watched": "2026-04-12",
+      "url": "https://letterboxd.com/josephbaileyy/film/dune-2021/"
+    },
+    {
+      "title": "The Drama",
+      "year": "2026",
+      "rating": "3.5",
+      "watched": "2026-04-05",
+      "url": "https://letterboxd.com/josephbaileyy/film/the-drama/"
+    }
+  ]
+}

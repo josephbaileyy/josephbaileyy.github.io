@@ -501,6 +501,12 @@ body[data-tour='active'] .earth-overlay * {
   backdrop-filter: blur(8px);
 }
 
+.earth-location-note {
+  color: var(--ink-dim);
+  font: 10px/1.35 var(--font-mono);
+  white-space: nowrap;
+}
+
 .earth-evidence-card {
   position: absolute;
   right: 20px;
@@ -768,6 +774,11 @@ body[data-tour='active'] .earth-overlay * {
     width: 100%;
     text-align: center;
   }
+  .earth-location-note {
+    width: 100%;
+    text-align: center;
+    white-space: normal;
+  }
   .earth-evidence-card {
     left: 12px;
     right: 12px;
@@ -980,6 +991,10 @@ body[data-tour='active'] .earth-overlay * {
   pointer-events: auto;
 }
 
+.hud-step-label {
+  display: none;
+}
+
 .hud-dot {
   position: relative;
   width: 14px;
@@ -1058,7 +1073,7 @@ body[data-tour='active'] .earth-overlay * {
 }
 
 .hud-touch-nav button {
-  min-width: 72px;
+  min-width: 92px;
   min-height: 44px;
   border: 1px solid rgba(255, 212, 121, 0.45);
   border-radius: 999px;
@@ -1074,14 +1089,44 @@ body[data-tour='active'] .earth-overlay * {
 .hud-tools {
   position: absolute;
   left: 20px;
-  top: 76px;
-  display: flex;
+  top: 118px;
+  display: none;
+  align-items: center;
   gap: 7px;
   pointer-events: auto;
 }
 
 .hud-tools-toggle {
-  display: none;
+  position: absolute;
+  top: 76px;
+  left: 20px;
+  display: block;
+  pointer-events: auto;
+  border: 1px solid rgba(154, 163, 199, 0.35);
+  border-radius: 999px;
+  background: rgba(11, 16, 38, 0.72);
+  color: var(--ink-dim);
+  cursor: pointer;
+  font: 11px var(--font-mono);
+  padding: 7px 11px;
+}
+
+.hud-tools.mobile-open {
+  display: flex;
+}
+
+.hud-tools-help {
+  max-width: 330px;
+  margin: 0;
+  color: var(--ink-dim);
+  font: 10px/1.45 var(--font-mono);
+}
+
+.hud-tools-toggle:hover,
+.hud-tools-toggle:focus-visible {
+  color: var(--ink);
+  border-color: var(--cyan);
+  outline: none;
 }
 
 .hud-tools button {
@@ -1106,7 +1151,7 @@ body[data-tour='active'] .earth-overlay * {
 .observation-log {
   position: absolute;
   left: 20px;
-  top: 118px;
+  top: 168px;
   width: min(320px, calc(100vw - 40px));
   max-height: min(440px, calc(100vh - 140px));
   overflow-y: auto;
@@ -1253,7 +1298,18 @@ body[data-tour='active'] .earth-overlay * {
 
 @media (max-width: 760px) {
   .hud-hint {
-    bottom: 84px;
+    bottom: calc(86px + env(safe-area-inset-bottom, 0px));
+    width: calc(100vw - 24px);
+    max-width: 390px;
+    padding: 5px 9px;
+    font-size: 11px;
+    line-height: 1.35;
+    text-align: center;
+    white-space: normal;
+  }
+
+  .scale-ribbon {
+    bottom: calc(68px + env(safe-area-inset-bottom, 0px));
     font-size: 12px;
   }
 }
@@ -1268,7 +1324,7 @@ body[data-tour='active'] .earth-overlay * {
   }
 
   .hud-hint {
-    bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(86px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -1278,6 +1334,7 @@ body[data-tour='active'] .earth-overlay * {
 
 #hud[data-mode='computer'] .hud-name,
 #hud[data-mode='computer'] .hud-dots,
+#hud[data-mode='computer'] .hud-step-label,
 #hud[data-mode='computer'] .hud-hint,
 #hud[data-mode='computer'] .hud-journey,
 #hud[data-mode='computer'] .hud-tools,
@@ -1462,16 +1519,10 @@ body[data-browser-engine='webkit']
 
 @media (max-width: 760px) {
   .hud-tools-toggle {
-    position: absolute;
     top: 104px;
     left: 12px;
-    display: block;
-    pointer-events: auto;
-    border: 1px solid rgba(154, 163, 199, 0.35);
-    border-radius: 999px;
     background: rgba(11, 16, 38, 0.82);
     color: var(--ink);
-    font: 11px var(--font-mono);
     padding: 7px 12px;
   }
 
@@ -1483,8 +1534,12 @@ body[data-browser-engine='webkit']
     overflow-x: auto;
   }
 
-  .hud-tools.mobile-open {
-    display: flex;
+  .hud-tools-help {
+    flex: 0 0 min(280px, calc(100vw - 48px));
+    padding: 7px 10px;
+    border: 1px solid rgba(127, 212, 255, 0.2);
+    border-radius: 10px;
+    background: rgba(11, 16, 38, 0.9);
   }
 
   .hud-tools button {
@@ -2478,6 +2533,121 @@ body[data-hud-mode='computer'] .os-dock {
   outline: none;
 }
 
+/* ---- Live signals (deploy-time GitHub + Letterboxd snapshot) ---- */
+.os-live-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+
+.os-live-list li {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.os-live-meta {
+  margin: -2px 0 9px;
+  color: var(--dim);
+  font: 10px/1.45 var(--font-mono);
+}
+
+.os-live-list li > span {
+  color: var(--gold);
+  font: 10px/1.4 var(--font-mono);
+  margin-right: 6px;
+}
+
+.os-live-list a,
+.os-film-diary a {
+  color: inherit;
+  text-decoration-color: rgba(127, 212, 255, 0.45);
+  text-underline-offset: 3px;
+}
+
+.os-live-list a:hover,
+.os-live-list a:focus-visible,
+.os-film-diary a:hover,
+.os-film-diary a:focus-visible {
+  color: var(--gold);
+  outline: none;
+}
+
+.os-live-list li.empty {
+  color: var(--dim);
+}
+
+.os-film-diary {
+  margin: 0 0 10px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 3px;
+}
+
+.os-film-diary li {
+  font: 11px/1.5 var(--font-mono);
+  color: var(--cyan);
+}
+
+/* ---- Notes app ---- */
+.os-notes-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 11px;
+}
+
+.os-note-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  border: 1px solid rgba(127, 212, 255, 0.16);
+  border-radius: 11px;
+  background: rgba(7, 10, 28, 0.36);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+}
+
+.os-note-card:hover,
+.os-note-card:focus-visible {
+  border-color: var(--cyan);
+  outline: none;
+}
+
+.os-note-card > span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--gold);
+  font: 10px/1.4 var(--font-mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.os-note-card p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--dim);
+}
+
+.os-note .os-note-meta {
+  color: var(--dim);
+  font: 10px/1.4 var(--font-mono);
+  letter-spacing: 0.1em;
+}
+
+.os-note pre {
+  border: 1px solid rgba(127, 212, 255, 0.18);
+  border-radius: 9px;
+  background: rgba(7, 10, 28, 0.55);
+  padding: 10px 12px;
+  overflow-x: auto;
+}
+
 .os-start-grid,
 .os-progress-grid {
   display: grid;
@@ -2771,6 +2941,7 @@ body[data-hud-mode='computer'] .os-dock {
 @media (max-width: 760px) {
   #hud[data-mode='computer'] .hud-name,
   #hud[data-mode='computer'] .hud-dots,
+  #hud[data-mode='computer'] .hud-step-label,
   #hud[data-mode='computer'] .hud-hint,
   #hud[data-mode='computer'] .hud-journey,
   #hud[data-mode='computer'] .hud-tools,
@@ -2784,9 +2955,9 @@ body[data-hud-mode='computer'] .os-dock {
 
   .hud-name {
     left: 12px;
-    bottom: calc(76px + env(safe-area-inset-bottom, 0px));
-    max-width: calc(100vw - 88px);
-    padding: 10px 11px;
+    bottom: calc(128px + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100vw - 24px);
+    padding: 9px 11px;
   }
 
   .hud-name strong {
@@ -2797,26 +2968,76 @@ body[data-hud-mode='computer'] .os-dock {
     display: none;
   }
 
+  #hud:not([data-engaged='true']) .hud-credentials {
+    display: none;
+  }
+
   .hud-credentials {
     margin-top: 7px;
   }
 
   .hud-credentials a,
   .hud-credentials button {
-    min-height: 34px;
+    min-height: 44px;
     display: inline-flex;
     align-items: center;
+    padding-inline: 12px;
   }
 
   .hud-dots {
-    right: 18px;
-    gap: 12px;
-    margin-top: -72px;
+    right: 0;
+    gap: 0;
+    margin-top: -132px;
   }
 
   .hud-dot {
-    width: 14px;
-    height: 14px;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .hud-dot::before {
+    content: '';
+    position: absolute;
+    inset: 15px;
+    border: 2px solid var(--ink-dim);
+    border-radius: 50%;
+    background: transparent;
+  }
+
+  .hud-dot.active {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .hud-dot.active::before {
+    border-color: var(--gold);
+    background: var(--gold);
+    box-shadow: 0 0 10px rgba(255, 212, 121, 0.7);
+  }
+
+  .hud-dot::after {
+    display: none;
+  }
+
+  .hud-step-label {
+    position: absolute;
+    right: 43px;
+    top: 50%;
+    display: block;
+    max-width: min(190px, calc(100vw - 92px));
+    transform: translateY(-50%);
+    padding: 6px 9px;
+    border: 1px solid rgba(127, 212, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(11, 16, 38, 0.78);
+    color: var(--ink);
+    font: 11px/1.35 var(--font-mono);
+    text-align: right;
+    pointer-events: none;
   }
 
   #hud[data-mode='computer'] .hud-zoom {
@@ -2975,6 +3196,18 @@ body[data-hud-mode='computer'] .os-dock {
 
   .os-mobile-home::-webkit-scrollbar {
     display: none;
+  }
+
+  .os-mobile-group {
+    grid-column: 1 / -1;
+    margin: 2px 4px -7px;
+    color: rgba(255, 255, 255, 0.7);
+    font:
+      600 11px/1.2 -apple-system,
+      BlinkMacSystemFont,
+      'SF Pro Text',
+      sans-serif;
+    letter-spacing: 0.04em;
   }
 
   .os-mobile-app,

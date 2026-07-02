@@ -10,6 +10,8 @@ import {
   type PortfolioItem,
   type SocialProfile,
 } from '../../content/portfolio';
+import { LIVE } from '../../content/live';
+import { NOTES, type Note } from '../../content/notes';
 import { buildTerminal } from './terminal';
 import { WindowManager } from './wm';
 
@@ -96,6 +98,11 @@ function startHereBody(actions: {
       <h3>Featured work</h3>
       <div class="os-start-grid"></div>
     </section>
+    <section class="os-live">
+      <h3>Recent activity</h3>
+      <p class="os-live-meta"></p>
+      <ul class="os-live-list"></ul>
+    </section>
     <section>
       <h3>Scene progress</h3>
       <div class="os-progress-grid"></div>
@@ -119,6 +126,45 @@ function startHereBody(actions: {
     const card = document.createElement('article');
     card.innerHTML = `<strong>${project.title}</strong><p>${project.outcome ?? project.description}</p>`;
     grid.appendChild(card);
+  }
+  // Recent activity: a transparent deploy-time snapshot rather than a
+  // client-side feed, so visitors can see when it was last refreshed.
+  const liveSection = wrap.querySelector<HTMLElement>('.os-live')!;
+  const liveMeta = liveSection.querySelector<HTMLElement>('.os-live-meta')!;
+  const liveList = liveSection.querySelector<HTMLElement>('.os-live-list')!;
+  liveMeta.textContent = LIVE.fetchedAt
+    ? `Updated ${LIVE.fetchedAt} · public GitHub and Letterboxd activity`
+    : 'Deploy snapshot unavailable in this local build.';
+  const liveLines: Array<{ date: string; text: string; href: string }> = [
+    ...LIVE.github.slice(0, 3).map((item) => ({
+      date: item.date,
+      text: `${item.summary} → ${item.repo}`,
+      href: item.url ?? `https://github.com/josephbaileyy/${encodeURIComponent(item.repo)}`,
+    })),
+    ...LIVE.films.slice(0, 2).map((film) => ({
+      date: film.watched,
+      text: `watched ${film.title}${film.rating ? ` · ${film.rating}★` : ''}`,
+      href: film.url,
+    })),
+  ];
+  if (liveLines.length) {
+    for (const line of liveLines) {
+      const li = document.createElement('li');
+      const date = document.createElement('span');
+      date.textContent = line.date;
+      const link = document.createElement('a');
+      link.href = line.href;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.textContent = line.text;
+      li.append(date, link);
+      liveList.appendChild(li);
+    }
+  } else {
+    const empty = document.createElement('li');
+    empty.className = 'empty';
+    empty.textContent = 'No recent public activity in this snapshot.';
+    liveList.appendChild(empty);
   }
   const progress = wrap.querySelector<HTMLElement>('.os-progress-grid')!;
   for (const scene of SCENES) {
@@ -147,6 +193,42 @@ function fieldLogBody(): HTMLElement {
     <ul>${sceneEntries.length ? sceneEntries.map(renderEntry).join('') : '<li><span>No visited scales yet.</span></li>'}</ul>
     <h3>Collected signals (${signalEntries.length}/${SCENE_SIGNALS.length})</h3>
     <ul>${signalEntries.length ? signalEntries.map(renderEntry).join('') : '<li><span>No collected signals yet.</span></li>'}</ul>`;
+  return wrap;
+}
+
+function noteBody(note: Note): HTMLElement {
+  const wrap = document.createElement('div');
+  wrap.className = 'os-doc os-note';
+  // Generator output from first-party markdown — safe to inject.
+  wrap.innerHTML = `<h2>${note.title}</h2><p class="os-note-meta">${note.date}</p>${note.html}`;
+  const link = document.createElement('p');
+  const a = document.createElement('a');
+  a.href = `/notes/${note.slug}.html`;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  a.textContent = 'open as a page ↗';
+  link.appendChild(a);
+  wrap.appendChild(link);
+  return wrap;
+}
+
+function notesBody(openNote: (note: Note) => void): HTMLElement {
+  const wrap = document.createElement('div');
+  wrap.className = 'os-doc os-notes';
+  const hero = document.createElement('section');
+  hero.innerHTML = `<h2>Notes</h2><p>Short write-ups on physics, ML, and how this universe is built.</p>`;
+  wrap.appendChild(hero);
+  const list = document.createElement('div');
+  list.className = 'os-notes-list';
+  for (const note of NOTES) {
+    const card = document.createElement('button');
+    card.type = 'button';
+    card.className = 'os-note-card';
+    card.innerHTML = `<span>${note.date}</span><strong>${note.title}</strong><p>${note.summary}</p>`;
+    card.addEventListener('click', () => openNote(note));
+    list.appendChild(card);
+  }
+  wrap.appendChild(list);
   return wrap;
 }
 
@@ -199,6 +281,21 @@ function socialsBody(): HTMLElement {
     card.className = `os-social-card ${social.category}`;
     card.dataset.social = social.id;
     card.innerHTML = `<span>${social.display}</span><h3>${social.label}</h3><strong>${social.handle}</strong><p>${social.description}</p>`;
+    if (social.id === 'letterboxd' && LIVE.films.length) {
+      const diary = document.createElement('ul');
+      diary.className = 'os-film-diary';
+      for (const film of LIVE.films.slice(0, 3)) {
+        const li = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = film.url;
+        link.target = '_blank';
+        link.rel = 'noopener';
+        link.textContent = `${film.title}${film.year ? ` (${film.year})` : ''}${film.rating ? ` · ${film.rating}★` : ''}`;
+        li.appendChild(link);
+        diary.appendChild(li);
+      }
+      card.appendChild(diary);
+    }
     card.appendChild(socialLinks(social));
     grid.appendChild(card);
   }
@@ -602,6 +699,26 @@ export function buildFakeOs(): HTMLElement {
       w: 540,
       h: 410,
     });
+  const openNote = (note: Note) =>
+    wm.open({
+      id: `note:${note.slug}`,
+      title: `${note.slug}.md — notes`,
+      body: noteBody(note),
+      x: 28,
+      y: 7,
+      w: 520,
+      h: 420,
+    });
+  const openNotes = () =>
+    wm.open({
+      id: 'notes',
+      title: 'notes — write-ups',
+      body: notesBody(openNote),
+      x: 22,
+      y: 9,
+      w: 480,
+      h: 380,
+    });
   const openVideos = () =>
     wm.open({
       id: 'videos',
@@ -624,6 +741,7 @@ export function buildFakeOs(): HTMLElement {
     ['field-log', openFieldLog],
     ['socials', openSocials],
     ['videos', openVideos],
+    ['notes', openNotes],
   ]);
   for (const project of APP_PROJECTS) {
     appActions.set(`project:${project.app!.short}`, () => openProject(project));
@@ -657,6 +775,12 @@ export function buildFakeOs(): HTMLElement {
       run: openSocials,
     },
     { id: 'terminal', label: 'Terminal', detail: 'BaileyOS shell', run: openTerminal },
+    {
+      id: 'notes',
+      label: 'Notes',
+      detail: 'write-ups on physics, ML, and this site',
+      run: openNotes,
+    },
     { id: 'videos', label: 'Performance reel', detail: 'music and marching arts', run: openVideos },
     ...APP_PROJECTS.map((project) => ({
       id: `project:${project.app!.short}`,
@@ -752,23 +876,43 @@ export function buildFakeOs(): HTMLElement {
       project.app!.short,
       () => openProject(project),
     ]);
-  const mobileCoreIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
+  const portfolioIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
     ['start', '✦', 'Start', openStart],
-    ['terminal', '⌘', 'Terminal', openTerminal],
     ['research', '🔬', 'Research', openResearch],
     ['experience', '🛰️', 'Experience', openExperience],
     ['cv', '📄', 'CV', () => openPdf('/resume.pdf', 'cv.pdf')],
+    ['notes', '✎', 'Notes', openNotes],
+  ];
+  const exploreIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
+    ['terminal', '⌘', 'Terminal', openTerminal],
     ['field-log', '◎', 'Field Log', openFieldLog],
-    ['socials', '◐', 'Socials', openSocials],
-    ['profile', '🧑‍🚀', 'About', openProfile],
-    ['videos', playIcon(''), 'Videos', openVideos],
     ['journey', '🌌', 'Journey', launchJourney],
+  ];
+  const personalIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
+    ['profile', '🧑‍🚀', 'About', openProfile],
+    ['socials', '◐', 'Socials', openSocials],
+    ['videos', playIcon(''), 'Videos', openVideos],
+  ];
+  const connectIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
     ['github', '⌨', 'GitHub', 'https://github.com/josephbaileyy'],
     ['linkedin', 'in', 'LinkedIn', 'https://linkedin.com/in/baileyjosephr'],
     ['email', '✉', 'Mail', 'mailto:jrbailey555@gmail.com'],
   ];
-  for (const [appId, icon, label, action] of [...mobileCoreIcons, ...mobileProjectIcons]) {
-    mobileHome.appendChild(createMobileLauncher(appId, icon, label, action));
+  const mobileGroups = [
+    ['Portfolio', portfolioIcons],
+    ['Explore', exploreIcons],
+    ['Personal', personalIcons],
+    ['Connect', connectIcons],
+    ['Projects', mobileProjectIcons],
+  ] as const;
+  for (const [groupLabel, group] of mobileGroups) {
+    const heading = document.createElement('h2');
+    heading.className = 'os-mobile-group';
+    heading.textContent = groupLabel;
+    mobileHome.appendChild(heading);
+    for (const [appId, icon, label, action] of group) {
+      mobileHome.appendChild(createMobileLauncher(appId, icon, label, action));
+    }
   }
   desktop.appendChild(mobileHome);
 
@@ -776,7 +920,13 @@ export function buildFakeOs(): HTMLElement {
   mobileDock.className = 'os-mobile-dock';
   mobileDock.setAttribute('role', 'navigation');
   mobileDock.setAttribute('aria-label', 'Favorite BaileyOS apps');
-  for (const [appId, icon, label, action] of mobileCoreIcons.slice(0, 4)) {
+  const mobileDockIcons = [
+    portfolioIcons[0],
+    exploreIcons[0],
+    portfolioIcons[1],
+    portfolioIcons[2],
+  ];
+  for (const [appId, icon, label, action] of mobileDockIcons) {
     mobileDock.appendChild(createMobileLauncher(appId, icon, label, action, true));
   }
   root.appendChild(mobileDock);
@@ -798,6 +948,7 @@ export function buildFakeOs(): HTMLElement {
     ['field-log', '◎', 'field log', openFieldLog],
     ['socials', '◐', 'socials', openSocials],
     ['profile', '🧑‍🚀', 'about', openProfile],
+    ['notes', '✎', 'notes', openNotes],
     ['videos', playIcon('os-dock-icon'), 'videos', openVideos],
     ['journey', '🌌', 'journey', launchJourney],
     ['github', '💻', 'github', 'https://github.com/josephbaileyy'],

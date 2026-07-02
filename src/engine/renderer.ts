@@ -28,7 +28,10 @@ export class Renderer3D {
   constructor(canvas: HTMLCanvasElement) {
     this.gl = new WebGLRenderer({
       canvas,
-      antialias: false,
+      // MSAA on the default framebuffer covers the direct path (LOW tier and
+      // post-fx-disabled devices). The composer path gets its own multisampled
+      // render targets in renderer-fx.ts. Nearly free on tiled mobile GPUs.
+      antialias: true,
       stencil: false,
       powerPreference: 'high-performance',
     });

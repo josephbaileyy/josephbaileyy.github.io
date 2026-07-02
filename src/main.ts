@@ -22,6 +22,7 @@ import { Router } from './router';
 import { simulationClock } from './astronomy/clock';
 import { AmbientSound } from './ui/ambient';
 import { SCENES, SIGNAL_BY_ID, type SceneDestination } from './content/portfolio';
+import { initAnalytics, trackEvent } from './analytics';
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const now = () => performance.now() / 1000;
@@ -32,6 +33,7 @@ const device = detectDeviceProfile();
 document.body.dataset.browserEngine = device.isWebKit ? 'webkit' : 'other';
 document.body.dataset.inputMode = device.isCoarsePointer ? 'touch' : 'pointer';
 document.body.dataset.postfx = device.disablePostFx ? 'off' : device.softenPostFx ? 'soft' : 'full';
+initAnalytics();
 
 // --- WebGL2 gate: this is a WebGL universe; everyone else gets the quick portfolio ---
 if (!webgl2Available()) {
@@ -42,6 +44,7 @@ if (!webgl2Available()) {
     <p><a href="/about.html">Open the quick portfolio instead →</a></p>`;
   document.body.appendChild(note);
   canvas.remove();
+  trackEvent('webgl-fallback');
   throw new Error('WebGL2 unavailable');
 }
 
@@ -102,6 +105,7 @@ window.addEventListener('universe:navigate', (event) => {
 let pendingPanel: { scene: number; id: string } | null = null;
 
 const openPanel = (id: string, sceneIndex: number, syncRoute = true) => {
+  trackEvent(`panel-${id}`);
   panel.open(id);
   if (syncRoute) router.push(sceneIndex, id);
   if (id === 'am-cvn') {
@@ -176,7 +180,10 @@ const tour = new Tour(hudEl, {
   reduced,
   onActiveChange: (active) => {
     hud.setTouring(active);
-    if (active) markVisited();
+    if (active) {
+      markVisited();
+      trackEvent('tour-start');
+    }
   },
 });
 if (firstVisit) hud.pulseJourney();
@@ -566,6 +573,8 @@ function frame(): void {
     syncEarthExplorer(settled);
     if (settled !== null) {
       quality.setScene(CHAIN3D[settled].id);
+      // Depth milestones: measure how far into the universe visitors travel.
+      trackEvent(`scene-${settled}-${CHAIN3D[settled].id}`);
       hud.announce(CHAIN3D[settled].label);
       const observation = OBSERVATIONS[CHAIN3D[settled].id];
       const sceneData = SCENES.find((scene) => scene.id === CHAIN3D[settled].id);

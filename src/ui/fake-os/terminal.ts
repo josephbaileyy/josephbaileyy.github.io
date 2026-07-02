@@ -1,3 +1,5 @@
+import { LIVE } from '../../content/live';
+import { NOTES } from '../../content/notes';
 import { PANELS } from '../../content/panels';
 import { PORTFOLIO } from '../../content/portfolio';
 
@@ -26,6 +28,25 @@ const FILES: Record<string, () => string> = {
   'honors.txt': () => PORTFOLIO.honors.map((item) => `· ${item}`).join('\n'),
   'amcvn.txt': () => stripHtml(PANELS['am-cvn'].html),
   'resume.pdf': () => "binary file — try 'open resume'",
+  'notes.txt': () =>
+    NOTES.map((note) => `${note.date}  ${note.title}`).join('\n') +
+    "\n\n(read them: type 'open notes')",
+  'live.txt': () => {
+    if (!LIVE.fetchedAt) return 'no live snapshot in this build — check the deployed site.';
+    const github = LIVE.github.map((item) => `· ${item.date}  ${item.summary} → ${item.repo}`);
+    const films = LIVE.films.map(
+      (film) => `· ${film.watched}  ${film.title}${film.rating ? ` ${film.rating}★` : ''}`,
+    );
+    return [
+      `snapshot: ${LIVE.fetchedAt}`,
+      '',
+      'github:',
+      ...(github.length ? github : ['· (quiet week)']),
+      '',
+      'letterboxd:',
+      ...(films.length ? films : ['· (nothing logged)']),
+    ].join('\n');
+  },
 };
 
 export function buildTerminal(): HTMLElement {
@@ -64,7 +85,7 @@ export function buildTerminal(): HTMLElement {
     ls: (args) =>
       args[0] === 'projects' || args[0] === 'projects/'
         ? 'neutrino-unfolding/   splora/   lord/   soccer-gnn/   eth-wallet/   this-website/'
-        : 'resume.pdf   about.txt   research.txt   experience.txt   projects.txt   socials.txt   education.txt   honors.txt   amcvn.txt   projects/',
+        : 'resume.pdf   about.txt   research.txt   experience.txt   projects.txt   socials.txt   education.txt   honors.txt   amcvn.txt   notes.txt   live.txt   projects/',
     cat: (args) => {
       if (!args[0]) return 'usage: cat <file>';
       const f = FILES[args[0]];
@@ -87,8 +108,11 @@ export function buildTerminal(): HTMLElement {
         case 'socials':
           window.dispatchEvent(new CustomEvent('universe:open-app', { detail: 'socials' }));
           return 'opening personal orbit…';
+        case 'notes':
+          window.dispatchEvent(new CustomEvent('universe:open-app', { detail: 'notes' }));
+          return 'opening notes…';
         default:
-          return 'usage: open <resume|github|linkedin|about|socials>';
+          return 'usage: open <resume|github|linkedin|about|socials|notes>';
       }
     },
     echo: (args) => args.join(' '),
