@@ -5,7 +5,7 @@ import { HotspotManager } from './engine/hotspots';
 import { attachInput } from './engine/input';
 import { QualityMonitor } from './engine/quality';
 import { Renderer3D, webgl2Available } from './engine/renderer';
-import { FxPipeline } from './engine/renderer-fx';
+import type { FxPipeline } from './engine/renderer-fx';
 import { detectDeviceProfile, isKeyboardOnlyViewportResize, viewportSize } from './engine/device';
 import { projectToPx, scaleExponent } from './engine/rig';
 import { fxAt, JumpController } from './engine/transitions';
@@ -73,10 +73,13 @@ const loader = new SceneLoader(
   },
 );
 const world = new World(CHAIN3D, loader);
-const fx = device.disablePostFx
-  ? null
-  : new FxPipeline(renderer, world.root, world.camera, { soft: device.softenPostFx });
-fx?.setSize(vp.w, vp.h);
+let fx: FxPipeline | null = null;
+if (!device.disablePostFx) {
+  void import('./engine/renderer-fx').then(({ FxPipeline: Pipeline }) => {
+    fx = new Pipeline(renderer, world.root, world.camera, { soft: device.softenPostFx });
+    fx.setSize(vp.w, vp.h);
+  });
+}
 const quality = new QualityMonitor();
 const deviceMemory =
   (navigator as Navigator & { deviceMemory?: number }).deviceMemory ?? (device.lowPowerGpu ? 4 : 8);
@@ -88,11 +91,6 @@ let driftMode = false;
 let pendingOsApp: string | null = null;
 let osBuilt = false;
 document.body.dataset.scaleMode = scaleMode;
-const requestDestination = (index: number): void => {
-  loader.request(index);
-  loader.request(index - 1);
-  loader.request(index + 1);
-};
 
 function clampedSceneIndex(index: number): number {
   return Math.min(Math.max(Math.round(index), 0), CHAIN3D.length - 1);
@@ -167,17 +165,13 @@ const hud = new Hud(
 const navigateTo = (index: number, syncRoute = true): void => {
   const target = clampedSceneIndex(index);
   hud.hideHint();
-  if (syncRoute) router.push(target);
-  requestDestination(target);
-  jump.go(target, now());
+  beginTravel(target, { kind: 'jump', syncRoute });
 };
 
 const travelToScene = (index: number, duration = 1.2, syncRoute = true): void => {
   const target = clampedSceneIndex(index);
   hud.hideHint();
-  if (syncRoute) router.push(target);
-  requestDestination(target);
-  camera.tweenTo(target, now(), duration);
+  beginTravel(target, { kind: 'tween', duration, syncRoute });
 };
 
 const markVisited = (): void => {
@@ -421,8 +415,7 @@ const router = new Router(CHAIN3D, (state) => {
     pendingOsApp = null;
   }
   if (Math.abs(state.scene - camera.depth) > 1e-6) {
-    requestDestination(state.scene);
-    jump.go(state.scene, now());
+    beginTravel(state.scene, { kind: 'jump', syncRoute: false });
   } else if (pendingPanel && camera.settledIndex === state.scene) {
     openPanel(pendingPanel.id, state.scene, false);
     pendingPanel = null;
@@ -472,14 +465,19 @@ attachInput(canvas, camera, {
     hud.hideHint();
     hud.stopPulse();
     markVisited();
+    scheduleIntentIdlePrefetch();
   },
   // onSceneIntent fires only on genuine user gestures (wheel/pinch/dblclick/
   // keyboard), so it's the clean signal to bail out of the guided tour.
   onSceneIntent: (index) => {
     tour.cancel();
-    const target = clampedSceneIndex(index);
-    router.push(target);
-    requestDestination(target);
+    const direction = Math.sign(index - Math.round(camera.depth));
+    const routeScene = router.parse()?.scene;
+    const target = clampedSceneIndex(
+      reduced && routeScene !== undefined ? routeScene + direction : index,
+    );
+    beginTravel(target, { kind: 'tween', duration: 0.9, syncRoute: true });
+    return true;
   },
   parallaxTarget,
 });
@@ -508,7 +506,7 @@ window.visualViewport?.addEventListener('resize', handleViewportChange);
 window.visualViewport?.addEventListener('scroll', handleViewportChange);
 
 function applyQuality(): void {
-  const tier = quality.tier;
+  const tier = quality.renderTier;
   world.setQuality(tier);
   const dpr = window.devicePixelRatio || 1;
   renderer.setPixelRatio(Math.min(dpr, device.maxDpr[tier]));
@@ -519,19 +517,143 @@ function applyQuality(): void {
 
 applyQuality();
 
+type TravelOptions =
+  | { kind: 'jump'; syncRoute: boolean }
+  | { kind: 'tween'; duration: number; syncRoute: boolean };
+
+let travelToken = 0;
+let activeTravel:
+  | {
+      token: number;
+      target: number;
+      started: boolean;
+      preparingTimer: number;
+    }
+  | undefined;
+let intentIdleScheduled = false;
+
+function requiredScenesForTravel(target: number): number[] {
+  const inward = target > camera.depth;
+  const indexes = inward ? [target - 1, target] : [target, target + 1];
+  return [...new Set(indexes.filter((index) => index >= 0 && index < CHAIN3D.length))];
+}
+
+function scenesToPrepare(target: number): number[] {
+  const distance = Math.abs(target - camera.depth);
+  if (distance <= 1.5) return [target];
+  const approach = target > camera.depth ? target - 1 : target + 1;
+  return [approach, target].filter((index) => index >= 0 && index < CHAIN3D.length);
+}
+
+function cancelPreparation(token = activeTravel?.token): void {
+  if (!activeTravel || activeTravel.token !== token || activeTravel.started) return;
+  travelToken += 1;
+  clearTimeout(activeTravel.preparingTimer);
+  activeTravel = undefined;
+  jump.cancel();
+  camera.stop();
+  if (quality.endTransition(now())) applyQuality();
+  const current = clampedSceneIndex(camera.depth);
+  router.replace(current);
+  hud.setActive(current);
+  hud.announce(CHAIN3D[current].label);
+}
+
+function beginTravel(target: number, options: TravelOptions): void {
+  target = clampedSceneIndex(target);
+  if (activeTravel?.target === target) return;
+  if (!activeTravel && camera.settledIndex === target) {
+    if (options.syncRoute) router.push(target);
+    hud.announce(CHAIN3D[target].label);
+    return;
+  }
+
+  if (activeTravel && !activeTravel.started) cancelPreparation(activeTravel.token);
+  const token = ++travelToken;
+  jump.cancel();
+  camera.stop();
+  hud.traveling(target);
+  if (options.syncRoute) router.push(target);
+  if (quality.beginTransition()) applyQuality();
+
+  const preparingTimer = window.setTimeout(() => {
+    if (activeTravel?.token === token && !activeTravel.started) {
+      hud.showPreparing(target, () => cancelPreparation(token));
+    }
+  }, 400);
+  activeTravel = { token, target, started: false, preparingTimer };
+  if (reduced) {
+    activeTravel.started = true;
+    clearTimeout(preparingTimer);
+    camera.tweenTo(target, now(), 0);
+  }
+
+  void (async () => {
+    const required = requiredScenesForTravel(target);
+    // Reduced motion uses an instant cut, so there is no visible tween to
+    // protect and no reason to delay arrival on shader preparation.
+    const prepare = reduced ? [] : scenesToPrepare(target);
+    await Promise.all(required.map((index) => loader.ensure(index)));
+    if (reduced) return;
+    if (activeTravel?.token !== token) return;
+    if (required.some((index) => !loader.isReady(index))) {
+      cancelPreparation(token);
+      return;
+    }
+
+    for (const index of prepare) {
+      const instance = loader.get(index);
+      if (instance) {
+        instance.setQuality(quality.renderTier);
+        await renderer.prepare(instance.group, world.camera);
+      }
+      if (activeTravel?.token !== token) return;
+    }
+
+    clearTimeout(preparingTimer);
+    if (!activeTravel || activeTravel.token !== token) return;
+    activeTravel.started = true;
+    hud.traveling(target);
+    const startedAt = now();
+    if (options.kind === 'jump') jump.go(target, startedAt);
+    else camera.tweenTo(target, startedAt, options.duration);
+  })().catch((error) => {
+    console.error(`failed to prepare ${CHAIN3D[target].id}`, error);
+    cancelPreparation(token);
+  });
+}
+
+function scheduleIntentIdlePrefetch(): void {
+  if (intentIdleScheduled) return;
+  intentIdleScheduled = true;
+  const run = () => {
+    intentIdleScheduled = false;
+    const target = Math.min(CHAIN3D.length - 1, Math.round(camera.depth) + 1);
+    if (target !== Math.round(camera.depth)) loader.request(target);
+  };
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(run, { timeout: 3000 });
+  } else {
+    globalThis.setTimeout(run, 1500);
+  }
+}
+
 // --- arrival: deep links start one scene above the target and glide in ---
 const initial = router.parse();
 if (initial) {
   if (initial.panel) pendingPanel = { scene: initial.scene, id: initial.panel };
   if (initial.scene > 0) {
     camera.depth = initial.scene - 1;
-    camera.tweenTo(initial.scene, now() + 0.4, 1.6);
+    window.setTimeout(
+      () => beginTravel(initial.scene, { kind: 'tween', duration: 1.6, syncRoute: false }),
+      400,
+    );
   }
 }
-// Warm only the active scene pair. Every settled scene prefetches its direct
-// neighbours; the world remounts a plan as soon as a delayed instance arrives.
+// Initial paint needs only the visible base. Adjacent JavaScript manifests are
+// cheap to speculate; their texture/ephemeris loaders remain untouched.
 loader.request(Math.floor(camera.depth));
-loader.request(Math.floor(camera.depth) + 1);
+void loader.warmManifest(Math.floor(camera.depth) + 1);
 
 function exposureAt(depth: number): number {
   const n = CHAIN3D.length;
@@ -550,7 +672,8 @@ let lastTime = now();
 
 function frame(): void {
   const t = now();
-  const dt = Math.min(t - lastTime, 0.05);
+  const rawDt = t - lastTime;
+  const dt = Math.min(rawDt, 0.05);
   lastTime = t;
 
   jump.update(t, (target) => {
@@ -562,8 +685,10 @@ function frame(): void {
 
   // Hold a dive just short of an unloaded child. Keep momentum so motion
   // resumes as soon as the adjacent-scene prefetch completes.
-  const maxD = world.maxTravelDepth(camera.depth);
-  if (camera.depth > maxD) camera.depth = maxD;
+  if (camera.isTweening || Math.abs(camera.vel) > 1e-4) {
+    const maxD = world.maxTravelDepth(camera.depth);
+    if (camera.depth > maxD) camera.depth = maxD;
+  }
 
   if (loading.visible && world.isReady(camera.depth)) loading.hide();
   const utcMs = simulationClock.tick(dt);
@@ -604,7 +729,7 @@ function frame(): void {
   world.syncUi(vp);
 
   renderer.setExposure(exposureAt(camera.depth));
-  if (quality.update(dt, t)) applyQuality();
+  if (quality.update(rawDt, t)) applyQuality();
 
   if (quality.tier === 'low' || !fx) {
     renderer.render(world.root, world.camera);
@@ -629,6 +754,11 @@ function frame(): void {
     syncScreenUi(settled);
     syncEarthExplorer(settled);
     if (settled !== null) {
+      if (activeTravel?.started && activeTravel.target === settled) {
+        clearTimeout(activeTravel.preparingTimer);
+        activeTravel = undefined;
+        if (quality.endTransition(t)) applyQuality();
+      }
       quality.setScene(CHAIN3D[settled].id);
       // Depth milestones: measure how far into the universe visitors travel.
       trackEvent(`scene-${settled}-${CHAIN3D[settled].id}`);
@@ -649,10 +779,9 @@ function frame(): void {
         openPanel(pendingPanel.id, settled, false);
         pendingPanel = null;
       }
-      for (let offset = -2; offset <= 2; offset++) loader.request(settled + offset);
-      // Two scenes of headroom keeps rapid wheel/touch travel from outrunning
-      // a dynamic import (most noticeably when returning to Stanford).
-      loader.prune(settled, 2);
+      void loader.warmManifest(settled - 1);
+      void loader.warmManifest(settled + 1);
+      loader.prune(settled, 1);
     }
   }
 

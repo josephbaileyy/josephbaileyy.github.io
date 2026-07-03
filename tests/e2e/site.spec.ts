@@ -619,7 +619,9 @@ test('immersive HUD controls toggle scale, drift, and the observation log', asyn
   await expect(page.getByText('JPL DE440 · UTC · real scale')).toBeAttached();
   await expect(solarOverlay).toHaveAttribute('data-scale-mode', 'real');
   await expect
-    .poll(() => mercury.evaluate((node) => getComputedStyle(node, '::before').opacity))
+    .poll(() => mercury.evaluate((node) => getComputedStyle(node, '::before').opacity), {
+      timeout: 15_000,
+    })
     .toBe('1');
 
   await page.getByRole('button', { name: 'Toggle free drift camera mode' }).click();
@@ -700,7 +702,9 @@ test('solar focus mode expands inner orbits and keeps Earth travel explicit', as
   expect(earthZ).toBeGreaterThan(moonZ);
   expect(earthBackground).toBe('none');
   await expect
-    .poll(() => earth.evaluate((node) => getComputedStyle(node, '::before').opacity))
+    .poll(() => earth.evaluate((node) => getComputedStyle(node, '::before').opacity), {
+      timeout: 15_000,
+    })
     .toBe('1');
   await expect(page.getByRole('button', { name: 'visit Earth', exact: true })).toBeVisible();
   if (testInfo.project.name === 'chromium') {

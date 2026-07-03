@@ -12,6 +12,7 @@ export class SceneLoader implements SceneSource {
   private instances = new Map<number, SceneInstance>();
   private pending = new Map<number, Promise<void>>();
   private modules = new Map<number, SceneModule>();
+  private modulePending = new Map<number, Promise<SceneModule>>();
   private states = new Map<number, SceneLoadStatus>();
   private errors = new Map<number, Error>();
 
@@ -28,11 +29,9 @@ export class SceneLoader implements SceneSource {
   request(index: number): void {
     if (index < 0 || index >= this.defs.length) return;
     if (this.instances.has(index) || this.pending.has(index)) return;
-    const def = this.defs[index];
     this.setStatus(index, 'loading');
     const job = (async () => {
-      const mod = this.modules.get(index) ?? (await def.importScene());
-      this.modules.set(index, mod);
+      const mod = await this.importModule(index);
       const assets = mod.load ? await mod.load((p) => this.onProgress?.(index, p)) : {};
       this.instances.set(index, mod.create(assets));
       this.pending.delete(index);
@@ -43,9 +42,22 @@ export class SceneLoader implements SceneSource {
       const error = err instanceof Error ? err : new Error(String(err));
       this.errors.set(index, error);
       this.setStatus(index, 'failed', error);
-      console.error(`scene ${def.id} failed to load`, error);
+      console.error(`scene ${this.defs[index].id} failed to load`, error);
     });
     this.pending.set(index, job);
+  }
+
+  /**
+   * Fetch and parse a scene module without invoking its asset loader or
+   * creating GPU resources. This is safe for adjacent-scene speculation.
+   */
+  async warmManifest(index: number): Promise<void> {
+    if (index < 0 || index >= this.defs.length) return;
+    try {
+      await this.importModule(index);
+    } catch (err) {
+      console.warn(`scene ${this.defs[index].id} manifest failed to warm`, err);
+    }
   }
 
   async ensure(index: number): Promise<void> {
@@ -70,6 +82,26 @@ export class SceneLoader implements SceneSource {
     this.states.delete(index);
     this.errors.delete(index);
     this.request(index);
+  }
+
+  private importModule(index: number): Promise<SceneModule> {
+    const cached = this.modules.get(index);
+    if (cached) return Promise.resolve(cached);
+    const pending = this.modulePending.get(index);
+    if (pending) return pending;
+    const job = this.defs[index]
+      .importScene()
+      .then((mod) => {
+        this.modules.set(index, mod);
+        this.modulePending.delete(index);
+        return mod;
+      })
+      .catch((err) => {
+        this.modulePending.delete(index);
+        throw err;
+      });
+    this.modulePending.set(index, job);
+    return job;
   }
 
   /** Dispose instances outside the keep-window around the settled scene. */

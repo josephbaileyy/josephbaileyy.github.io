@@ -71,6 +71,10 @@ export class JumpController {
     this.target = target;
   }
 
+  cancel(): void {
+    this.phase = 'idle';
+  }
+
   update(now: number, ready?: (target: number) => boolean): void {
     if (this.phase === 'ramp' && now - this.start >= RAMP) {
       // hold at full streak until the destination scenes are loaded

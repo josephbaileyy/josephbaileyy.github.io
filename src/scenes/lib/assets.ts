@@ -15,8 +15,9 @@ const cache = new Map<string, Promise<Texture>>();
 export function loadTexture(url: string, srgb = true): Promise<Texture> {
   let p = cache.get(url);
   if (!p) {
-    p = loader
-      .loadAsync(url)
+    const constrained =
+      document.body.dataset.quality === 'low' && typeof createImageBitmap === 'function';
+    p = (constrained ? loadConstrainedBitmap(url) : loader.loadAsync(url))
       .then((tex) => {
         if (srgb) tex.colorSpace = SRGBColorSpace;
         tex.anisotropy = 4;
@@ -29,6 +30,30 @@ export function loadTexture(url: string, srgb = true): Promise<Texture> {
     cache.set(url, p);
   }
   return p;
+}
+
+async function loadConstrainedBitmap(url: string): Promise<Texture> {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`texture ${url} returned ${response.status}`);
+  const source = await createImageBitmap(await response.blob(), {
+    imageOrientation: 'flipY',
+    premultiplyAlpha: 'none',
+  });
+  let bitmap = source;
+  const maxDimension = Math.max(source.width, source.height);
+  if (maxDimension > 1024) {
+    const scale = 1024 / maxDimension;
+    bitmap = await createImageBitmap(source, 0, 0, source.width, source.height, {
+      resizeWidth: Math.max(1, Math.round(source.width * scale)),
+      resizeHeight: Math.max(1, Math.round(source.height * scale)),
+      resizeQuality: 'high',
+    });
+    source.close();
+  }
+  const texture = new Texture(bitmap);
+  texture.flipY = false;
+  texture.needsUpdate = true;
+  return texture;
 }
 
 /** Prefer a smaller modern texture while retaining an older-format fallback. */

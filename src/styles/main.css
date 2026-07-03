@@ -999,6 +999,38 @@ body[data-tour='active'] .earth-overlay * {
   display: none;
 }
 
+.hud-step-label[data-traveling='true'] {
+  position: absolute;
+  right: 48px;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transform: translateY(-50%);
+  padding: 6px 9px;
+  border: 1px solid rgba(127, 212, 255, 0.25);
+  border-radius: 8px;
+  background: rgba(11, 16, 38, 0.86);
+  color: var(--ink);
+  font: 11px/1.35 var(--font-mono);
+  pointer-events: none;
+}
+
+.hud-step-label[data-preparing='true'] {
+  pointer-events: auto;
+}
+
+.hud-step-label button {
+  min-height: 30px;
+  border: 1px solid rgba(255, 212, 121, 0.45);
+  border-radius: 999px;
+  padding: 4px 9px;
+  background: rgba(42, 35, 86, 0.85);
+  color: var(--gold);
+  font: inherit;
+  cursor: pointer;
+}
+
 .hud-dot {
   position: relative;
   width: 14px;
@@ -3844,7 +3876,10 @@ body[data-hud-mode='computer'] .os-dock {
     position: absolute;
     right: 43px;
     top: 50%;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 7px;
     max-width: min(190px, calc(100vw - 92px));
     transform: translateY(-50%);
     padding: 6px 9px;
