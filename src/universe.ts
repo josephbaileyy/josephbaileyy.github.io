@@ -520,8 +520,8 @@ function applyQuality(): void {
 applyQuality();
 
 type TravelOptions =
-  | { kind: 'jump'; syncRoute: boolean }
-  | { kind: 'tween'; duration: number; syncRoute: boolean };
+  | { kind: 'jump'; syncRoute: boolean; deferPrepare?: boolean }
+  | { kind: 'tween'; duration: number; syncRoute: boolean; deferPrepare?: boolean };
 
 let travelToken = 0;
 let activeTravel:
@@ -644,7 +644,7 @@ function beginTravel(target: number, options: TravelOptions): void {
     const required = requiredScenesForTravel(target);
     // Reduced motion uses an instant cut, so there is no visible tween to
     // protect and no reason to delay arrival on shader preparation.
-    const prepare = reduced ? [] : scenesToPrepare(target);
+    const prepare = reduced || options.deferPrepare ? [] : scenesToPrepare(target);
     await Promise.all(required.map((index) => loader.ensure(index)));
     if (reduced) return;
     if (activeTravel?.token !== token) return;
@@ -704,7 +704,12 @@ if (initial) {
   if (initial.scene === SCREEN_INDEX) void ensureFakeOs();
   if (initial.scene > 0) {
     camera.depth = reduced ? initial.scene : initial.scene - 1;
-    beginTravel(initial.scene, { kind: 'tween', duration: 0.9, syncRoute: false });
+    beginTravel(initial.scene, {
+      kind: 'tween',
+      duration: 0.9,
+      syncRoute: false,
+      deferPrepare: CHAIN3D[initial.scene].id === 'solar',
+    });
   }
 }
 // Initial paint needs only the visible base. Adjacent JavaScript manifests are

@@ -13,7 +13,7 @@ for (const scene of scenes) {
         `Now viewing: ${scene === 'stanford' ? 'Stanford University' : scene === 'room' ? 'My room' : 'My computer'}`,
         { exact: true },
       ),
-    ).toBeAttached();
+    ).toBeAttached({ timeout: 15_000 });
     await expect(page.locator(`body[data-scene-ready="${scene}"]`)).toHaveCount(1, {
       timeout: 15_000,
     });

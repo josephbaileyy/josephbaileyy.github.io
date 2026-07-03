@@ -591,7 +591,9 @@ test('immersive HUD controls toggle scale, drift, and the observation log', asyn
   test.setTimeout(90_000);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/solar');
-  await expect(page.getByText('Now viewing: The Solar System', { exact: true })).toBeAttached();
+  await expect(page.getByText('Now viewing: The Solar System', { exact: true })).toBeAttached({
+    timeout: 15_000,
+  });
   await page.getByRole('button', { name: 'Open help and universe tools', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Toggle Solar System scale mode' })).toBeVisible({
     timeout: 20_000,

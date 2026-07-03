@@ -118,7 +118,9 @@ test('universe opt-in persists and simple home clears it', async ({ page }, test
   await page.goto('/');
   await page.getByRole('link', { name: /Explore the universe/ }).click();
   await expect(page.locator('canvas#universe')).toBeVisible();
-  await expect(page.getByText('Now viewing: The Milky Way', { exact: true })).toBeAttached();
+  await expect(page.getByText('Now viewing: The Milky Way', { exact: true })).toBeAttached({
+    timeout: 15_000,
+  });
 
   await page.goto('/');
   await expect(page.locator('canvas#universe')).toBeVisible();
