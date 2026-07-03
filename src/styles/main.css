@@ -1345,6 +1345,14 @@ body[data-tour='active'] .earth-overlay * {
 #hud[data-mode='computer'] .scale-ribbon {
   opacity: 0;
   pointer-events: none;
+  visibility: hidden;
+}
+
+/* Keep an active guided journey operable after it reaches BaileyOS. */
+#hud[data-mode='computer'] .tour-caption.on {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
 }
 
 /* ---------- Guided journey ---------- */
@@ -3390,7 +3398,8 @@ body[data-hud-mode='computer'] .os-dock {
 @media (prefers-reduced-motion: reduce) {
   .skip-link,
   .hud-hint,
-  .screen-ui {
+  .screen-ui,
+  .observation-log {
     transition: none;
   }
 }

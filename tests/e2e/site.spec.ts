@@ -186,7 +186,8 @@ test('BaileyOS keeps projects on the desktop and videos in the dock', async ({
 
   await expect(page.locator('.os-dock-item').filter({ hasText: 'league' })).toHaveCount(0);
   await expect(page.locator('.os-dock-item').filter({ hasText: 'SPLoRA' })).toHaveCount(0);
-  await expect(page.locator('.os-desktop-icon')).toHaveCount(5);
+  // 5 projects + 3 showcase apps (unfolding-lab, music, athletics) — see os.ts desktop registry
+  await expect(page.locator('.os-desktop-icon')).toHaveCount(8);
   await expect(
     page.locator('.os-desktop-icon').filter({ hasText: 'league' }).locator('img'),
   ).toHaveAttribute('src', '/icons/league-of-legends.png');
@@ -783,7 +784,8 @@ test('BaileyOS keeps one active app window on mobile', async ({ page }, testInfo
   await page.goto('/#/screen');
   await expect(page.locator('.os-mobile-home')).toBeVisible();
   await expect(page.getByLabel('terminal input')).toHaveCount(0);
-  await expect(page.locator('.os-mobile-app')).toHaveCount(19);
+  // 14 system + 5 projects + 3 showcase apps — see os.ts mobile launcher registry
+  await expect(page.locator('.os-mobile-app')).toHaveCount(22);
   await expect(page.locator('.os-mobile-app').first()).toHaveAttribute('data-app-id', 'start');
   await expect(page.locator('.os-mobile-dock-item')).toHaveCount(4);
 
