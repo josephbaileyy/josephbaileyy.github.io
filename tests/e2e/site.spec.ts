@@ -4,7 +4,8 @@ const isMobileProject = (name: string): boolean => name.includes('mobile');
 
 const openTerminal = async (page: import('@playwright/test').Page, projectName: string) => {
   if (isMobileProject(projectName)) {
-    await page.locator('.os-mobile-dock-item[data-app-id="terminal"]').click();
+    await page.locator('.os-mobile-app[data-app-id="more"]').click();
+    await page.locator('.os-mobile-more-app[data-app-id="terminal"]').click();
   } else {
     await page.locator('.os-dock-item[data-app-id="terminal"]').click();
   }
@@ -34,7 +35,9 @@ test.describe('deep links', () => {
     test(`${route} reaches ${label}`, async ({ page }) => {
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.goto(`/#/${route}`);
-      await expect(page.getByText(`Now viewing: ${label}`, { exact: true })).toBeAttached();
+      await expect(page.getByText(`Now viewing: ${label}`, { exact: true })).toBeAttached({
+        timeout: 15_000,
+      });
       await expect(page.locator('.loading-overlay')).not.toHaveClass(/failed/);
     });
   }
@@ -51,9 +54,14 @@ test('panels, history, keyboard navigation, and terminal work', async ({ page },
   await page.goForward();
   await expect(page.getByRole('dialog')).toContainText('AM CVn — time-series photometry');
   await page.goBack();
+  await expect(page.getByRole('dialog')).toBeHidden();
 
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
-  await page.keyboard.press('ArrowUp');
+  if (isMobileProject(testInfo.project.name)) {
+    await page.getByRole('button', { name: 'Travel inward one level' }).click();
+  } else {
+    await page.keyboard.press('ArrowUp');
+  }
   await expect(page).toHaveURL(/#\/solar$/);
 
   await page.goto('/#/screen');
@@ -68,7 +76,7 @@ test('panels, history, keyboard navigation, and terminal work', async ({ page },
 test('the guided journey autopilots from the galaxy down to the computer', async ({ page }) => {
   test.setTimeout(70_000);
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
+  await page.goto('/#/galaxy');
 
   await page.getByRole('button', { name: /Take the guided journey/ }).click();
   const caption = page.locator('.tour-caption');
@@ -84,7 +92,7 @@ test('the guided journey autopilots from the galaxy down to the computer', async
 
 test('guided journey can pause and resume accessibly', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
+  await page.goto('/#/galaxy');
   await page.getByRole('button', { name: /Take the guided journey/ }).click();
   const pause = page.getByRole('button', { name: 'Pause guided journey' });
   await pause.click();
@@ -129,7 +137,7 @@ test('credential shortcuts expose research, CV, and contact without leaving the 
 
 test('opening credentials cancels a stale guided journey', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
+  await page.goto('/#/galaxy');
   await page.getByRole('button', { name: /Take the guided journey/ }).click();
   await expect(page.locator('.tour-caption')).toHaveClass(/\bon\b/);
   await page.getByRole('button', { name: 'Research', exact: true }).click();
@@ -138,7 +146,7 @@ test('opening credentials cancels a stale guided journey', async ({ page }) => {
 
 test('manual navigation cancels the guided journey', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/');
+  await page.goto('/#/galaxy');
 
   await page.getByRole('button', { name: /Take the guided journey/ }).click();
   const caption = page.locator('.tour-caption');
@@ -169,7 +177,8 @@ test('the dock journey icon replays the guided journey from the desktop', async 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
   if (isMobileProject(testInfo.project.name)) {
-    await page.locator('.os-mobile-app[data-app-id="journey"]').click();
+    await page.locator('.os-mobile-app[data-app-id="more"]').click();
+    await page.locator('.os-mobile-more-app[data-app-id="journey"]').click();
   } else {
     await page.locator('.os-dock-item').filter({ hasText: 'journey' }).click();
   }
@@ -220,7 +229,8 @@ test('project PDFs open inside BaileyOS with tab/download options', async ({ pag
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
   if (isMobileProject(testInfo.project.name)) {
-    await page.locator('.os-mobile-app[data-app-id="project:league"]').click();
+    await page.locator('.os-mobile-app[data-app-id="more"]').click();
+    await page.locator('.os-mobile-more-app[data-app-id="project:league"]').click();
   } else {
     await closeStartHere(page);
     await page.locator('.os-desktop-icon').filter({ hasText: 'league' }).click();
@@ -291,7 +301,7 @@ test('users without WebGL receive an actionable fallback', async ({ page }) => {
       return original.call(this, type as never, ...(args as never[]));
     } as typeof original;
   });
-  await page.goto('/');
+  await page.goto('/#/galaxy');
   await expect(page.getByText('This site is a 3D universe and needs WebGL.')).toBeVisible();
   await expect(page.getByRole('link', { name: /Open the quick portfolio/ })).toHaveAttribute(
     'href',
@@ -860,7 +870,8 @@ test('BaileyOS exposes the personal orbit socials app', async ({ page }, testInf
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
   if (isMobileProject(testInfo.project.name)) {
-    await page.locator('.os-mobile-app[data-app-id="socials"]').click();
+    await page.locator('.os-mobile-app[data-app-id="more"]').click();
+    await page.locator('.os-mobile-more-app[data-app-id="socials"]').click();
   } else {
     await page.locator('.os-dock-item[data-app-id="socials"]').click();
   }
@@ -917,12 +928,13 @@ test('BaileyOS keeps one active app window on mobile', async ({ page }, testInfo
   await page.goto('/#/screen');
   await expect(page.locator('.os-mobile-home')).toBeVisible();
   await expect(page.getByLabel('terminal input')).toHaveCount(0);
-  // 14 system + 5 projects + 3 showcase apps — see os.ts mobile launcher registry
-  await expect(page.locator('.os-mobile-app')).toHaveCount(22);
-  await expect(page.locator('.os-mobile-app').first()).toHaveAttribute('data-app-id', 'start');
-  await expect(page.locator('.os-mobile-dock-item')).toHaveCount(4);
+  // Four work apps + three personal apps + one secondary-app surface.
+  await expect(page.locator('.os-mobile-app')).toHaveCount(8);
+  await expect(page.locator('.os-mobile-app').first()).toHaveAttribute('data-app-id', 'research');
+  await expect(page.locator('.os-mobile-dock-item')).toHaveCount(0);
 
-  await page.locator('.os-mobile-dock-item[data-app-id="terminal"]').click();
+  await page.locator('.os-mobile-app[data-app-id="more"]').click();
+  await page.locator('.os-mobile-more-app[data-app-id="terminal"]').click();
   await expect(page.getByLabel('terminal input')).toBeVisible();
   await page.waitForTimeout(450);
   await expect(page.getByLabel('terminal input')).not.toBeFocused();

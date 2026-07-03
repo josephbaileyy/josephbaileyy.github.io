@@ -16,7 +16,8 @@ export function loadTexture(url: string, srgb = true): Promise<Texture> {
   let p = cache.get(url);
   if (!p) {
     const constrained =
-      document.body.dataset.quality === 'low' && typeof createImageBitmap === 'function';
+      document.body.dataset.textureDecode === 'constrained' &&
+      typeof createImageBitmap === 'function';
     p = (constrained ? loadConstrainedBitmap(url) : loader.loadAsync(url))
       .then((tex) => {
         if (srgb) tex.colorSpace = SRGBColorSpace;
