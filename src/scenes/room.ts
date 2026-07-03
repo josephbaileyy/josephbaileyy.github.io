@@ -561,6 +561,83 @@ export function createRoom(assets: SceneAssets): SceneInstance {
     group.add(notebook);
   }
 
+  // ---- desk cloud chamber: a compact detector vignette ----
+  const chamber = new Group();
+  chamber.position.set(0.08, 2.12, -4.83);
+  const chamberBase = new Mesh(
+    new BoxGeometry(0.92, 0.11, 0.7),
+    new MeshStandardMaterial({
+      color: 0x17152c,
+      roughness: 0.45,
+      emissive: 0x29445a,
+      emissiveIntensity: 0.35,
+    }),
+  );
+  chamberBase.position.y = 0.04;
+  chamber.add(chamberBase);
+  const chamberGlass = new Mesh(
+    new BoxGeometry(0.88, 0.62, 0.66),
+    new MeshStandardMaterial({
+      color: 0x9bdcf0,
+      transparent: true,
+      opacity: 0.16,
+      roughness: 0.08,
+      metalness: 0.05,
+      depthWrite: false,
+    }),
+  );
+  chamberGlass.position.y = 0.4;
+  chamber.add(chamberGlass);
+  const mist: Mesh[] = [];
+  for (let index = 0; index < 7; index++) {
+    const puff = new Mesh(
+      new SphereGeometry(0.08 + (index % 3) * 0.018, 7, 5),
+      new MeshBasicMaterial({
+        color: 0xd9f5ff,
+        transparent: true,
+        opacity: 0.08 + (index % 2) * 0.025,
+        depthWrite: false,
+      }),
+    );
+    puff.position.set(
+      -0.32 + ((index * 0.19) % 0.65),
+      0.18 + (index % 3) * 0.1,
+      -0.23 + ((index * 0.17) % 0.48),
+    );
+    puff.scale.set(1.8, 0.65, 1);
+    chamber.add(puff);
+    mist.push(puff);
+  }
+  const trackMaterials: MeshBasicMaterial[] = [];
+  const makeTrack = (start: Vector3, end: Vector3, radius: number, opacity: number): Mesh => {
+    const direction = end.clone().sub(start);
+    const material = new MeshBasicMaterial({
+      color: radius > 0.012 ? 0xffd479 : 0xdaf8ff,
+      transparent: true,
+      opacity,
+      depthWrite: false,
+    });
+    const track = new Mesh(new CylinderGeometry(radius, radius, direction.length(), 5), material);
+    track.position.copy(start).add(end).multiplyScalar(0.5);
+    track.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), direction.normalize());
+    chamber.add(track);
+    trackMaterials.push(material);
+    return track;
+  };
+  makeTrack(new Vector3(-0.38, 0.24, -0.2), new Vector3(0.38, 0.48, 0.18), 0.007, 0.72);
+  makeTrack(new Vector3(-0.3, 0.49, 0.2), new Vector3(0.32, 0.27, -0.19), 0.006, 0.55);
+  makeTrack(new Vector3(-0.09, 0.2, 0.24), new Vector3(0.04, 0.34, 0.04), 0.025, 0.6);
+  // Two segments share an endpoint to suggest an occasional scattering kink.
+  makeTrack(new Vector3(-0.4, 0.38, 0.02), new Vector3(-0.04, 0.33, 0.01), 0.007, 0.5);
+  makeTrack(new Vector3(-0.04, 0.33, 0.01), new Vector3(0.32, 0.46, -0.08), 0.007, 0.5);
+  group.add(chamber);
+  const chamberTag = textSprite(
+    [{ text: 'cloud chamber — see what a detector sees', color: '#7fd4ff', size: 19 }],
+    { worldWidth: 3.8, width: 520, opacity: 0 },
+  );
+  chamberTag.position.copy(chamber.position).add(new Vector3(0, 1.05, 0.12));
+  group.add(chamberTag);
+
   // ---- lamp: the warm key light ----
   const lampBase = new Mesh(
     new CylinderGeometry(0.3, 0.36, 0.1, 12),
@@ -1062,6 +1139,23 @@ export function createRoom(assets: SceneAssets): SceneInstance {
   const hotspots: Hotspot3D[] = [
     ...signalHotspots,
     {
+      object: (() => {
+        const chamberHit = new Mesh(
+          new BoxGeometry(1.15, 0.9, 0.95),
+          new MeshBasicMaterial({ visible: false }),
+        );
+        chamberHit.position.copy(chamber.position).add(new Vector3(0, 0.38, 0));
+        group.add(chamberHit);
+        return chamberHit;
+      })(),
+      label: 'cloud chamber — see what a detector sees',
+      action: { type: 'app', appId: 'unfolding-lab' },
+      setHover(on) {
+        chamber.scale.setScalar(on ? 1.08 : 1);
+        chamberTag.material.opacity = on ? 1 : 0;
+      },
+    },
+    {
       object: hit,
       label: 'Zoom in to my computer screen',
       action: { type: 'zoom', dir: 'in' },
@@ -1084,6 +1178,21 @@ export function createRoom(assets: SceneAssets): SceneInstance {
           (b.material as MeshBasicMaterial).opacity = 1;
           const tw = 0.75 + 0.25 * Math.sin(ctx.time * 1.7 + i * 1.3);
           b.scale.setScalar(0.9 + tw * 0.25);
+        });
+        mist.forEach((puff, index) => {
+          puff.position.y = 0.2 + ((ctx.time * 0.025 + index * 0.087) % 0.28);
+          puff.position.x += Math.sin(ctx.time * 0.35 + index) * ctx.dt * 0.006;
+        });
+        trackMaterials.forEach((material, index) => {
+          const cycle = (ctx.time * 0.22 + index * 0.31) % 1;
+          material.opacity =
+            index === 2
+              ? cycle > 0.86
+                ? 0.58
+                : 0
+              : cycle > 0.18 && cycle < 0.62
+                ? 0.28 + Math.sin(((cycle - 0.18) / 0.44) * Math.PI) * 0.55
+                : 0;
         });
       }
     },

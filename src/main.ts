@@ -300,6 +300,8 @@ const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => 
   } else if (h.action.type === 'navigate') {
     requestDestination(h.action.index);
     jump.go(h.action.index, now());
+  } else if (h.action.type === 'app') {
+    performDestination({ type: 'app', appId: h.action.appId, label: h.label });
   } else {
     const target = world.baseIndex() + (h.action.dir === 'in' ? 1 : -1);
     requestDestination(target);

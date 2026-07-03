@@ -852,7 +852,9 @@ export function buildFakeOs(): HTMLElement {
     })),
   ];
   installCommandPalette(root, commands);
+  let externalAppOpened = false;
   const openApp = (event: Event) => {
+    externalAppOpened = true;
     const id = (event as CustomEvent<string>).detail;
     appActions.get(id)?.();
   };
@@ -1094,7 +1096,11 @@ export function buildFakeOs(): HTMLElement {
   root.appendChild(dock);
 
   // Desktop welcomes with a mission dashboard; mobile begins on the app launcher.
-  if (!window.matchMedia('(max-width: 760px)').matches) setTimeout(openStart, 450);
+  if (!window.matchMedia('(max-width: 760px)').matches) {
+    setTimeout(() => {
+      if (!externalAppOpened) openStart();
+    }, 450);
+  }
 
   return root;
 }

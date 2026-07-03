@@ -787,6 +787,32 @@ test('room exposes social posters and desk objects as signal hotspots', async ({
   await expect(page.getByRole('button', { name: 'League poster signal' })).toBeAttached();
   await expect(page.getByRole('button', { name: 'Clash poster signal' })).toBeAttached();
   await expect(page.getByRole('button', { name: 'Beli receipt signal' })).toBeAttached();
+  await expect(
+    page.getByRole('button', { name: 'cloud chamber — see what a detector sees' }),
+  ).toBeAttached();
+});
+
+test('cloud chamber routes to the reduced-motion Unfolding Lab end states', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/room');
+  const chamber = page.getByRole('button', {
+    name: 'cloud chamber — see what a detector sees',
+  });
+  await chamber.press('Enter');
+
+  await expect(page).toHaveURL(/#\/screen$/);
+  const lab = page.locator('.os-window[data-window-id="unfolding-lab"]');
+  await expect(lab).toBeVisible();
+  await expect(lab).toContainText('1,000 events fired');
+  await expect(lab).toContainText('Reduced motion · autoplay disabled');
+
+  await lab.getByRole('button', { name: '2 · Try to invert.' }).click();
+  await expect(lab.locator('.inverse-bar')).toHaveCount(10);
+  await expect(lab.locator('.os-cell-demo')).toHaveAttribute('data-cells', '8000');
+
+  await lab.getByRole('button', { name: '3 · Reweight instead.' }).click();
+  await expect(lab.getByLabel('OmniFold iteration')).toHaveValue('6');
+  await expect(lab).toContainText('no unpublished numerical results shown');
 });
 
 test('BaileyOS keeps one active app window on mobile', async ({ page }, testInfo) => {

@@ -1,14 +1,97 @@
-const TRUTH = [0.12, 0.25, 0.51, 0.83, 1, 0.86, 0.58, 0.36, 0.22, 0.14];
-const DETECTOR = [0.24, 0.38, 0.56, 0.7, 0.75, 0.7, 0.59, 0.46, 0.34, 0.25];
+import { trackEvent } from '../../analytics';
 
-function chartPath(values: number[]): string {
+export const UNFOLDING_SEED = 0x51a7e;
+const BIN_COUNT = 10;
+const MAX_ITERATIONS = 6;
+
+export interface ToyEvent {
+  truth: number;
+  reco: number | null;
+}
+
+export type UnfoldingScene = 1 | 2 | 3;
+export type UnfoldingSceneAction = 'next' | 'previous' | 'restart';
+
+function seededRandom(seed = UNFOLDING_SEED): () => number {
+  let state = seed >>> 0;
+  return () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 0x100000000;
+  };
+}
+
+/** A deterministic detector toy. Values are normalized to the displayed observable range. */
+export function seededToyEvents(count: number, smearing = 0.42): ToyEvent[] {
+  const random = seededRandom();
+  const events: ToyEvent[] = [];
+  for (let index = 0; index < count; index++) {
+    const truth = Math.min(0.999, Math.max(0.001, (random() + random() + random() + random()) / 4));
+    const lossProbability = 0.06 + smearing * 0.16;
+    if (random() < lossProbability) {
+      events.push({ truth, reco: null });
+      continue;
+    }
+    const noise = (random() + random() + random() - 1.5) * smearing * 0.5;
+    const reco = Math.min(0.999, Math.max(0.001, truth + 0.04 * smearing + noise));
+    events.push({ truth, reco });
+  }
+  return events;
+}
+
+/** Precomputed-looking ill-conditioned inversion: alternating signs and edge growth. */
+export function naiveInversionBins(): number[] {
+  return [-1.08, 0.78, -0.53, 0.42, -0.31, 0.35, -0.46, 0.61, -0.86, 1.22];
+}
+
+export function nextUnfoldingScene(
+  scene: UnfoldingScene,
+  action: UnfoldingSceneAction,
+): UnfoldingScene {
+  if (action === 'restart') return 1;
+  if (action === 'next') return Math.min(3, scene + 1) as UnfoldingScene;
+  return Math.max(1, scene - 1) as UnfoldingScene;
+}
+
+function binEvents(events: ToyEvent[]): { truth: number[]; reco: number[]; lost: number } {
+  const truth = Array<number>(BIN_COUNT).fill(0);
+  const reco = Array<number>(BIN_COUNT).fill(0);
+  let lost = 0;
+  for (const event of events) {
+    truth[Math.floor(event.truth * BIN_COUNT)]++;
+    if (event.reco === null) lost++;
+    else reco[Math.floor(event.reco * BIN_COUNT)]++;
+  }
+  return { truth, reco, lost };
+}
+
+function histogramBars(values: number[], kind: string, signed = false): string {
+  const maximum = Math.max(1, ...values.map(Math.abs));
   return values
     .map((value, index) => {
-      const x = 38 + (index / (values.length - 1)) * 424;
-      const y = 180 - value * 132;
-      return `${index ? 'L' : 'M'} ${x.toFixed(1)} ${y.toFixed(1)}`;
+      const height = (Math.abs(value) / maximum) * (signed ? 42 : 70);
+      const x = 8 + index * 9.2;
+      const y = signed ? (value >= 0 ? 50 - height : 50) : 88 - height;
+      return `<rect class="${kind} ${value < 0 ? 'negative' : ''}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="7.2" height="${height.toFixed(1)}" />`;
     })
-    .join(' ');
+    .join('');
+}
+
+function eventCloud(): string {
+  const random = seededRandom(UNFOLDING_SEED ^ 0xabc);
+  return Array.from({ length: 30 }, (_, index) => {
+    const truthX = 12 + random() * 33;
+    const truthY = 12 + random() * 76;
+    const recoX = 57 + random() * 32;
+    const recoY = Math.min(88, Math.max(10, truthY + (random() - 0.42) * 27));
+    const targetY = 49 + Math.sin((recoX - 57) * 0.2) * 25 + (random() - 0.5) * 8;
+    return `<g class="os-pair" style="--delay:${(index * 31) % 500}ms">
+      <line x1="${truthX.toFixed(1)}" y1="${truthY.toFixed(1)}" x2="${recoX.toFixed(1)}" y2="${recoY.toFixed(1)}" />
+      <circle class="truth-dot" cx="${truthX.toFixed(1)}" cy="${truthY.toFixed(1)}" r="1.35"
+        data-y="${truthY.toFixed(1)}" data-target-y="${(truthY + (targetY - recoY) * 0.58).toFixed(1)}" />
+      <circle class="reco-dot" cx="${recoX.toFixed(1)}" cy="${recoY.toFixed(1)}" r="1.35"
+        data-y="${recoY.toFixed(1)}" data-target-y="${targetY.toFixed(1)}" />
+    </g>`;
+  }).join('');
 }
 
 /**
@@ -20,89 +103,241 @@ export function unfoldingLabBody(): HTMLElement {
   wrap.className = 'os-doc os-lab';
   wrap.innerHTML = `
     <header class="os-instrument-hero">
-      <span>research instrument · schematic</span>
+      <span>research instrument · schematic — illustrative, not real data</span>
       <h2>Unfolding Lab</h2>
-      <p>Move from a detector-smeared distribution toward particle level by iteratively
-      reweighting simulated events. This illustrates the OmniFold idea; it is not a
-      thesis result.</p>
+      <p>Why detector measurements are hard to reverse — and how paired event weights
+      preserve more information than bins.</p>
     </header>
-    <ol class="os-omnifold-flow" aria-label="OmniFold workflow">
-      <li><b>1</b><span>simulated<br />events</span></li>
-      <li><b>2</b><span>detector-level<br />classifier</span></li>
-      <li><b>3</b><span>event<br />weights</span></li>
-      <li><b>4</b><span>particle-level<br />estimate</span></li>
-    </ol>
-    <figure class="os-unfold-chart">
-      <svg viewBox="0 0 500 210" role="img" aria-labelledby="unfold-title unfold-desc">
-        <title id="unfold-title">Schematic detector and unfolded distributions</title>
-        <desc id="unfold-desc">A broad detector-level curve approaches a sharper reference
-        curve as the number of reweighting passes increases.</desc>
-        <g class="os-chart-grid" aria-hidden="true">
-          <path d="M38 48H462M38 92H462M38 136H462M38 180H462" />
-          <path d="M38 34V180H470" />
-        </g>
-        <text x="250" y="204">reconstructed observable</text>
-        <text x="12" y="112" transform="rotate(-90 12 112)">relative events</text>
-        <path class="os-curve os-curve-truth" d="${chartPath(TRUTH)}" />
-        <path class="os-curve os-curve-detector" d="${chartPath(DETECTOR)}" />
-        <path class="os-curve os-curve-unfolded" />
-      </svg>
-      <figcaption>
-        <span><i class="truth"></i> reference</span>
-        <span><i class="detector"></i> detector-smeared</span>
-        <span><i class="unfolded"></i> reweighted estimate</span>
-      </figcaption>
-    </figure>
-    <div class="os-lab-controls">
-      <label for="omnifold-pass">Reweighting passes <output>3 / 5</output></label>
-      <input id="omnifold-pass" type="range" min="0" max="5" value="3" step="1" />
-      <button type="button">Run iteration</button>
+    <nav class="os-lab-scenes" aria-label="Unfolding demo scenes">
+      <button type="button" data-scene="1" aria-current="step">1 · Shoot.</button>
+      <button type="button" data-scene="2">2 · Try to invert.</button>
+      <button type="button" data-scene="3">3 · Reweight instead.</button>
+    </nav>
+    <section class="os-lab-scene" data-scene-panel="1" aria-labelledby="unfold-scene-1">
+      <div class="os-lab-heading"><span>schematic — illustrative, not real data</span><h3 id="unfold-scene-1">Shoot.</h3></div>
+      <div class="os-gun-layout">
+        <svg class="os-particle-gun" viewBox="0 0 240 105" role="img" aria-label="Particle gun firing through detector planes">
+          <path class="gun" d="M10 45h38l18 8-18 8H10z" />
+          <path class="beam" d="M65 53H224" />
+          <path class="detector-plane" d="M105 12v82M150 12v82M195 12v82" />
+          <circle class="event-tracer" cx="65" cy="53" r="4" />
+          <text x="27" y="80">GUN</text><text x="150" y="103">DETECTOR</text>
+        </svg>
+        <div class="os-hist-pair">
+          <figure><figcaption>TRUTH · clean</figcaption><svg viewBox="0 0 108 96" aria-label="Truth histogram"><g class="truth-bars"></g><path d="M5 5v84h99" /></svg></figure>
+          <figure><figcaption>RECO · smeared + losses</figcaption><svg viewBox="0 0 108 96" aria-label="Reconstructed histogram"><g class="reco-bars"></g><path d="M5 5v84h99" /></svg></figure>
+        </div>
+      </div>
+      <div class="os-lab-controls os-fire-controls">
+        <button type="button" data-fire="1" aria-label="Fire one particle event">fire 1</button>
+        <button type="button" data-fire="1000" aria-label="Fire one thousand particle events">fire 1000</button>
+        <label>Smearing strength <output data-smear-output>42%</output>
+          <input data-smear type="range" min="10" max="90" value="42" aria-label="Detector smearing strength" />
+        </label>
+      </div>
+      <p class="os-lab-status" data-shoot-status role="status" aria-live="polite">Ready. Truth and reconstruction do not share a bin automatically.</p>
+    </section>
+    <section class="os-lab-scene" data-scene-panel="2" aria-labelledby="unfold-scene-2" hidden>
+      <div class="os-lab-heading"><span>schematic — illustrative, not real data</span><h3 id="unfold-scene-2">Try to invert.</h3></div>
+      <div class="os-invert-layout">
+        <figure><figcaption>naive inverse</figcaption><svg viewBox="0 0 108 104" aria-label="Naive matrix inversion histogram"><path d="M5 50h99M5 5v94" /><g class="inverse-bars"></g></svg></figure>
+        <div class="os-cell-demo" data-cells="20" aria-label="20 analysis cells"><span>20 cells</span></div>
+      </div>
+      <div class="os-lab-controls">
+        <button type="button" data-invert>invert the matrix</button>
+        <button type="button" data-observable>add an observable</button>
+      </div>
+      <p class="os-cell-counter" role="status" aria-live="polite">events per cell: <strong>50.0</strong></p>
+      <p class="os-lab-caption">Binned unfolding drowns in dimensions — this is why 3D measurements didn't exist here.</p>
+    </section>
+    <section class="os-lab-scene" data-scene-panel="3" aria-labelledby="unfold-scene-3" hidden>
+      <div class="os-lab-heading"><span>schematic — illustrative, not real data</span><h3 id="unfold-scene-3">Reweight instead.</h3></div>
+      <figure class="os-paired-events">
+        <svg viewBox="0 0 100 100" role="img" aria-label="Paired truth and reconstructed simulation events reweighted toward data">
+          <path class="data-silhouette" d="M55 72C62 65 62 24 72 19s10 38 18 46" />
+          ${eventCloud()}
+          <text x="27" y="97">TRUTH</text><text x="73" y="97">RECO → DATA</text>
+        </svg>
+        <figcaption>The same event weight travels across each truth–reco pairing.</figcaption>
+      </figure>
+      <div class="os-lab-controls os-iterate-controls">
+        <label>Iterate <output data-iteration-output>1 / ${MAX_ITERATIONS}</output>
+          <input data-iteration type="range" min="1" max="${MAX_ITERATIONS}" value="1" step="1" aria-label="OmniFold iteration" />
+        </label>
+      </div>
+      <aside class="os-unfold-end-card">
+        <strong>What the method made possible</strong>
+        <p>This method reproduced a published MINERvA measurement with a fully independent
+        uncertainty budget, then extended it to 3, 4, and 5 simultaneous observables —
+        measurements binned methods couldn't produce.</p>
+        <small>Qualitative research context · no unpublished numerical results shown.</small>
+      </aside>
+    </section>
+    <div class="os-lab-footer">
+      <button type="button" data-previous aria-label="Previous unfolding scene">← previous</button>
+      <span data-scene-count>scene 1 / 3</span>
+      <button type="button" data-next aria-label="Next unfolding scene">next →</button>
     </div>
-    <p class="os-lab-status" role="status" aria-live="polite"></p>
-    <aside class="os-method-note">
-      <strong>What the thesis tests</strong>
-      <p>OmniFold versus iterative Bayesian unfolding on MINERvA open data, using closure
-      tests, generator stress tests, bootstrap resampling, and covariance analysis.</p>
-    </aside>`;
+    <p class="os-attract-status" aria-live="polite">Attract mode · any interaction pauses autoplay</p>`;
 
-  const range = wrap.querySelector<HTMLInputElement>('input[type="range"]')!;
-  const output = wrap.querySelector<HTMLOutputElement>('output')!;
-  const curve = wrap.querySelector<SVGPathElement>('.os-curve-unfolded')!;
-  const status = wrap.querySelector<HTMLElement>('.os-lab-status')!;
-  const button = wrap.querySelector<HTMLButtonElement>('.os-lab-controls button')!;
-  let timer = 0;
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+  const truthBars = wrap.querySelector<SVGGElement>('.truth-bars')!;
+  const recoBars = wrap.querySelector<SVGGElement>('.reco-bars')!;
+  const shootStatus = wrap.querySelector<HTMLElement>('[data-shoot-status]')!;
+  const smear = wrap.querySelector<HTMLInputElement>('[data-smear]')!;
+  const smearOutput = wrap.querySelector<HTMLOutputElement>('[data-smear-output]')!;
+  const inverseBars = wrap.querySelector<SVGGElement>('.inverse-bars')!;
+  const cellDemo = wrap.querySelector<HTMLElement>('.os-cell-demo')!;
+  const cellCounter = wrap.querySelector<HTMLElement>('.os-cell-counter strong')!;
+  const iteration = wrap.querySelector<HTMLInputElement>('[data-iteration]')!;
+  const iterationOutput = wrap.querySelector<HTMLOutputElement>('[data-iteration-output]')!;
+  const attractStatus = wrap.querySelector<HTMLElement>('.os-attract-status')!;
+  let scene: UnfoldingScene = 1;
+  let fired = 0;
+  let autoplay = !reducedMotion;
+  const timers: number[] = [];
 
-  const render = () => {
-    const pass = Number(range.value);
-    const progress = 1 - Math.exp(-pass * 0.7);
-    const estimate = DETECTOR.map((value, index) => value + (TRUTH[index] - value) * progress);
-    curve.setAttribute('d', chartPath(estimate));
-    output.value = `${pass} / 5`;
-    status.textContent =
-      pass === 0
-        ? 'Pass 0: the detector response broadens and shifts the distribution.'
-        : `Pass ${pass}: classifier-derived event weights move the estimate toward particle level.`;
+  const renderEvents = (count: number) => {
+    const events = seededToyEvents(count, Number(smear.value) / 100);
+    const bins = binEvents(events);
+    truthBars.innerHTML = histogramBars(bins.truth, 'truth-bar');
+    recoBars.innerHTML = histogramBars(bins.reco, 'reco-bar');
+    fired = count;
+    const mismatch = events.find(
+      (event) =>
+        event.reco !== null &&
+        Math.floor(event.truth * BIN_COUNT) !== Math.floor(event.reco * BIN_COUNT),
+    );
+    wrap.classList.toggle('tracing-event', Boolean(mismatch) && count < 10 && !reducedMotion);
+    shootStatus.textContent = `${count.toLocaleString()} event${count === 1 ? '' : 's'} fired · ${bins.lost} lost${mismatch ? ' · tracer crossed a bin boundary' : ''}.`;
   };
-  range.addEventListener('input', render);
-  button.addEventListener('click', () => {
-    window.clearInterval(timer);
-    range.value = '0';
-    render();
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      range.value = '5';
-      render();
-      return;
+
+  const renderIteration = () => {
+    const pass = Number(iteration.value);
+    const progress = pass / MAX_ITERATIONS;
+    iterationOutput.value = `${pass} / ${MAX_ITERATIONS}`;
+    for (const dot of wrap.querySelectorAll<SVGCircleElement>('.os-pair circle')) {
+      const start = Number(dot.dataset.y);
+      const target = Number(dot.dataset.targetY);
+      dot.setAttribute('cy', String(start + (target - start) * progress));
+      dot.setAttribute('r', String(1.15 + progress * 0.75));
     }
-    timer = window.setInterval(() => {
-      if (!wrap.isConnected || Number(range.value) >= 5) {
-        window.clearInterval(timer);
-        return;
+    wrap.querySelector('.os-paired-events')?.setAttribute('data-iteration', String(pass));
+  };
+
+  const renderCells = (cells: number) => {
+    cellDemo.dataset.cells = String(cells);
+    cellDemo.setAttribute('aria-label', `${cells.toLocaleString()} analysis cells`);
+    cellDemo.querySelector('span')!.textContent = `${cells.toLocaleString()} cells`;
+    cellCounter.textContent = Math.max(0.01, 1000 / cells).toFixed(cells >= 8000 ? 2 : 1);
+  };
+
+  const enterScene = (next: UnfoldingScene) => {
+    scene = next;
+    for (const panel of wrap.querySelectorAll<HTMLElement>('[data-scene-panel]')) {
+      panel.hidden = Number(panel.dataset.scenePanel) !== scene;
+    }
+    for (const button of wrap.querySelectorAll<HTMLButtonElement>('[data-scene]')) {
+      const current = Number(button.dataset.scene) === scene;
+      button.toggleAttribute('aria-current', current);
+    }
+    wrap.querySelector<HTMLElement>('[data-scene-count]')!.textContent = `scene ${scene} / 3`;
+    trackEvent(`/event/unfolding-lab/scene-${scene}`);
+    if (reducedMotion) {
+      if (scene === 1) renderEvents(1000);
+      if (scene === 2) {
+        inverseBars.innerHTML = histogramBars(naiveInversionBins(), 'inverse-bar', true);
+        renderCells(8000);
       }
-      range.value = String(Number(range.value) + 1);
-      render();
-    }, 430);
+      if (scene === 3) {
+        iteration.value = String(MAX_ITERATIONS);
+        renderIteration();
+      }
+    }
+  };
+
+  const stopAutoplay = () => {
+    if (!autoplay) return;
+    autoplay = false;
+    timers.forEach((timer) => window.clearTimeout(timer));
+    attractStatus.textContent = 'Attract mode paused · explore with the controls';
+  };
+
+  wrap.addEventListener('pointerdown', stopAutoplay);
+  wrap.addEventListener('keydown', stopAutoplay);
+  for (const button of wrap.querySelectorAll<HTMLButtonElement>('[data-scene]')) {
+    button.addEventListener('click', () =>
+      enterScene(Number(button.dataset.scene) as UnfoldingScene),
+    );
+  }
+  wrap
+    .querySelector<HTMLButtonElement>('[data-next]')!
+    .addEventListener('click', () => enterScene(nextUnfoldingScene(scene, 'next')));
+  wrap
+    .querySelector<HTMLButtonElement>('[data-previous]')!
+    .addEventListener('click', () => enterScene(nextUnfoldingScene(scene, 'previous')));
+  for (const button of wrap.querySelectorAll<HTMLButtonElement>('[data-fire]')) {
+    button.addEventListener('click', () => renderEvents(Number(button.dataset.fire)));
+  }
+  smear.addEventListener('input', () => {
+    smearOutput.value = `${smear.value}%`;
+    if (fired) renderEvents(fired);
   });
-  render();
+  wrap.querySelector<HTMLButtonElement>('[data-invert]')!.addEventListener('click', () => {
+    inverseBars.innerHTML = histogramBars(naiveInversionBins(), 'inverse-bar', true);
+    shootStatus.textContent =
+      'The inverse amplifies noise into alternating positive and negative bins.';
+  });
+  wrap.querySelector<HTMLButtonElement>('[data-observable]')!.addEventListener('click', () => {
+    const stages = [20, 400, 8000];
+    stages.forEach((cells, index) => {
+      const update = () => renderCells(cells);
+      if (reducedMotion) update();
+      else timers.push(window.setTimeout(update, index * 520));
+    });
+  });
+  iteration.addEventListener('input', renderIteration);
+
+  inverseBars.innerHTML = '';
+  renderEvents(reducedMotion ? 1000 : 1);
+  renderCells(reducedMotion ? 8000 : 20);
+  renderIteration();
+  enterScene(1);
+  if (autoplay) {
+    const autoplaySteps: Array<[number, () => void]> = [
+      [4500, () => renderEvents(1000)],
+      [15000, () => enterScene(2)],
+      [
+        18500,
+        () => (inverseBars.innerHTML = histogramBars(naiveInversionBins(), 'inverse-bar', true)),
+      ],
+      [22000, () => renderCells(8000)],
+      [30000, () => enterScene(3)],
+      [
+        34000,
+        () => {
+          iteration.value = '3';
+          renderIteration();
+        },
+      ],
+      [
+        41000,
+        () => {
+          iteration.value = String(MAX_ITERATIONS);
+          renderIteration();
+        },
+      ],
+    ];
+    for (const [delay, action] of autoplaySteps) {
+      timers.push(
+        window.setTimeout(() => {
+          if (autoplay && wrap.isConnected) action();
+        }, delay),
+      );
+    }
+  } else {
+    attractStatus.textContent = 'Reduced motion · autoplay disabled; transitions are instant';
+  }
   return wrap;
 }
 

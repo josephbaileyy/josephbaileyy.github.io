@@ -1,20 +1,47 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { athleticsBody, musicStudioBody, unfoldingLabBody } from '../src/ui/fake-os/showcase-apps';
+import {
+  athleticsBody,
+  musicStudioBody,
+  naiveInversionBins,
+  nextUnfoldingScene,
+  seededToyEvents,
+  unfoldingLabBody,
+} from '../src/ui/fake-os/showcase-apps';
 
 describe('interactive showcase apps', () => {
-  it('updates the accessible unfolding explanation with the selected pass', () => {
+  it('uses one deterministic seed for the detector toy', () => {
+    expect(seededToyEvents(8, 0.42)).toEqual(seededToyEvents(8, 0.42));
+    expect(seededToyEvents(8, 0.42)).not.toEqual(seededToyEvents(8, 0.7));
+  });
+
+  it('makes the naive inverse alternate sign while growing at the edges', () => {
+    const bins = naiveInversionBins();
+
+    expect(
+      bins.every((value, index) => index === 0 || Math.sign(value) !== Math.sign(bins[index - 1])),
+    ).toBe(true);
+    expect(Math.abs(bins[0])).toBeGreaterThan(Math.abs(bins[4]));
+    expect(Math.abs(bins.at(-1)!)).toBeGreaterThan(Math.abs(bins[5]));
+  });
+
+  it('moves through the three-scene state machine without overflowing', () => {
+    expect(nextUnfoldingScene(1, 'next')).toBe(2);
+    expect(nextUnfoldingScene(2, 'next')).toBe(3);
+    expect(nextUnfoldingScene(3, 'next')).toBe(3);
+    expect(nextUnfoldingScene(3, 'previous')).toBe(2);
+    expect(nextUnfoldingScene(2, 'restart')).toBe(1);
+  });
+
+  it('exposes keyboard-operable scene transitions and qualitative research context', () => {
     const app = unfoldingLabBody();
-    const range = app.querySelector<HTMLInputElement>('input[type="range"]')!;
-    const curve = app.querySelector<SVGPathElement>('.os-curve-unfolded')!;
-    const initialPath = curve.getAttribute('d');
+    const next = app.querySelector<HTMLButtonElement>('[data-next]')!;
+    next.click();
 
-    range.value = '5';
-    range.dispatchEvent(new Event('input'));
-
-    expect(curve.getAttribute('d')).not.toBe(initialPath);
-    expect(app.querySelector('[role="status"]')?.textContent).toContain('Pass 5');
-    expect(app.textContent).toMatch(/not a\s+thesis result/);
+    expect(app.querySelector<HTMLElement>('[data-scene-panel="1"]')?.hidden).toBe(true);
+    expect(app.querySelector<HTMLElement>('[data-scene-panel="2"]')?.hidden).toBe(false);
+    expect(app.textContent).toContain('schematic — illustrative, not real data');
+    expect(app.textContent).toContain('no unpublished numerical results shown');
   });
 
   it('exposes every playable note as a labeled button', () => {
