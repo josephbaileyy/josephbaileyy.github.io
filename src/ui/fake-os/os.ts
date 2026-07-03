@@ -791,7 +791,7 @@ export function buildFakeOs(): HTMLElement {
   }
   const appWindowId = (appId: string): string => (appId === 'cv' ? 'pdf:/resume.pdf' : appId);
   const notifyAppOpened = (appId: string): void => {
-    if (appId === 'journey') return;
+    if (appId === 'journey' || appId === 'more') return;
     window.dispatchEvent(new CustomEvent('universe:app-opened', { detail: appId }));
   };
   const launchApp = (appId: string, action: () => void): void => {
@@ -877,6 +877,7 @@ export function buildFakeOs(): HTMLElement {
     else wm.closeActive();
   });
   let hadActiveWindow = false;
+  let closeMobileMore = () => {};
 
   const createMobileLauncher = (
     appId: string,
@@ -884,10 +885,15 @@ export function buildFakeOs(): HTMLElement {
     label: string,
     action: (() => void) | string,
     docked = false,
+    secondary = false,
   ): HTMLElement => {
     const el =
       typeof action === 'string' ? document.createElement('a') : document.createElement('button');
-    el.className = docked ? 'os-mobile-dock-item' : 'os-mobile-app';
+    el.className = docked
+      ? 'os-mobile-dock-item'
+      : secondary
+        ? 'os-mobile-more-app'
+        : 'os-mobile-app';
     el.dataset.appId = appId;
     el.setAttribute('aria-label', `${typeof action === 'string' ? 'Open' : 'Launch'} ${label}`);
     el.appendChild(mobileIcon(icon, `os-mobile-icon-${appId.replace(/[^a-z0-9-]/gi, '-')}`));
@@ -899,6 +905,7 @@ export function buildFakeOs(): HTMLElement {
     if (typeof action === 'string') {
       const link = el as HTMLAnchorElement;
       link.href = action;
+      link.addEventListener('click', closeMobileMore);
       if (action.startsWith('http') || action.endsWith('.pdf')) {
         link.target = '_blank';
         link.rel = 'noopener';
@@ -906,6 +913,7 @@ export function buildFakeOs(): HTMLElement {
     } else {
       el.addEventListener('click', () => {
         el.blur();
+        closeMobileMore();
         requestAnimationFrame(() => {
           launchApp(appId, action);
           requestAnimationFrame(() => {
@@ -972,63 +980,89 @@ export function buildFakeOs(): HTMLElement {
       project.app!.short,
       () => openProject(project),
     ]);
-  const portfolioIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
-    ['start', '✦', 'Start', openStart],
+  const workIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
     ['research', '🔬', 'Research', openResearch],
-    ['experience', '🛰️', 'Experience', openExperience],
+    ['projects', '◈', 'Projects', openProjects],
     ['cv', '📄', 'CV', () => openPdf('/resume.pdf', 'cv.pdf')],
-    ['notes', '✎', 'Notes', openNotes],
-    ['unfolding-lab', '∿', 'Unfolding', openLab],
+    ['email', '✉', 'Contact', 'mailto:jrbailey555@gmail.com'],
   ];
-  const exploreIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
+  const personalIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
+    ['music', '♬', 'Music', openMusic],
+    ['athletics', '◫', 'Athletics', openAthletics],
+    ['notes', '✎', 'Notes', openNotes],
+  ];
+  const moreSheet = document.createElement('section');
+  moreSheet.className = 'os-mobile-more-sheet';
+  moreSheet.hidden = true;
+  moreSheet.setAttribute('aria-label', 'More BaileyOS apps');
+  moreSheet.innerHTML = `
+    <header>
+      <h2>More</h2>
+      <button type="button" aria-label="Close more apps">Done</button>
+    </header>`;
+  const closeMoreButton = moreSheet.querySelector<HTMLButtonElement>('button')!;
+  closeMobileMore = () => {
+    moreSheet.hidden = true;
+    mobileHome.removeAttribute('inert');
+  };
+  closeMoreButton.addEventListener('click', closeMobileMore);
+  const openMobileMore = () => {
+    moreSheet.hidden = false;
+    mobileHome.setAttribute('inert', '');
+    closeMoreButton.focus();
+  };
+  const morePrimaryIcon: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
+    ['more', '•••', 'More', openMobileMore],
+  ];
+  const toolsIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
+    ['start', '✦', 'Start', openStart],
+    ['experience', '🛰️', 'Experience', openExperience],
+    ['unfolding-lab', '∿', 'Unfolding', openLab],
+    ['profile', '🧑‍🚀', 'About', openProfile],
+    ['socials', '◐', 'Socials', openSocials],
+    ['videos', playIcon(''), 'Videos', openVideos],
     ['terminal', '⌘', 'Terminal', openTerminal],
     ['field-log', '◎', 'Field Log', openFieldLog],
     ['journey', '🌌', 'Journey', launchJourney],
   ];
-  const personalIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
-    ['profile', '🧑‍🚀', 'About', openProfile],
-    ['socials', '◐', 'Socials', openSocials],
-    ['videos', playIcon(''), 'Videos', openVideos],
-    ['music', '♬', 'Music', openMusic],
-    ['athletics', '◫', 'Track', openAthletics],
-  ];
   const connectIcons: Array<[string, string | HTMLElement, string, (() => void) | string]> = [
     ['github', '⌨', 'GitHub', 'https://github.com/josephbaileyy'],
     ['linkedin', 'in', 'LinkedIn', 'https://linkedin.com/in/baileyjosephr'],
-    ['email', '✉', 'Mail', 'mailto:jrbailey555@gmail.com'],
   ];
   const mobileGroups = [
-    ['Portfolio', portfolioIcons],
-    ['Explore', exploreIcons],
+    ['Work', workIcons],
     ['Personal', personalIcons],
-    ['Connect', connectIcons],
-    ['Projects', mobileProjectIcons],
+    ['', morePrimaryIcon],
   ] as const;
   for (const [groupLabel, group] of mobileGroups) {
-    const heading = document.createElement('h2');
-    heading.className = 'os-mobile-group';
-    heading.textContent = groupLabel;
-    mobileHome.appendChild(heading);
+    if (groupLabel) {
+      const heading = document.createElement('h2');
+      heading.className = 'os-mobile-group';
+      heading.textContent = groupLabel;
+      mobileHome.appendChild(heading);
+    }
     for (const [appId, icon, label, action] of group) {
       mobileHome.appendChild(createMobileLauncher(appId, icon, label, action));
     }
   }
   desktop.appendChild(mobileHome);
 
-  const mobileDock = document.createElement('div');
-  mobileDock.className = 'os-mobile-dock';
-  mobileDock.setAttribute('role', 'navigation');
-  mobileDock.setAttribute('aria-label', 'Favorite BaileyOS apps');
-  const mobileDockIcons = [
-    portfolioIcons[0],
-    exploreIcons[0],
-    portfolioIcons[1],
-    portfolioIcons[2],
-  ];
-  for (const [appId, icon, label, action] of mobileDockIcons) {
-    mobileDock.appendChild(createMobileLauncher(appId, icon, label, action, true));
+  for (const [groupLabel, group] of [
+    ['Tools', toolsIcons],
+    ['Connect', connectIcons],
+    ['Project apps', mobileProjectIcons],
+  ] as const) {
+    const heading = document.createElement('h3');
+    heading.textContent = groupLabel;
+    moreSheet.appendChild(heading);
+    const grid = document.createElement('div');
+    grid.className = 'os-mobile-more-grid';
+    for (const [appId, icon, label, action] of group) {
+      grid.appendChild(createMobileLauncher(appId, icon, label, action, false, true));
+    }
+    moreSheet.appendChild(grid);
   }
-  root.appendChild(mobileDock);
+  root.appendChild(moreSheet);
 
   const homeIndicator = document.createElement('span');
   homeIndicator.className = 'os-home-indicator';

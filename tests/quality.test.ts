@@ -16,6 +16,8 @@ describe('scene-aware quality monitor', () => {
     const desktopSafari = new QualityMonitor();
     desktopSafari.configureDevice(2_000_000, 8, { isWebKit: true });
     expect(desktopSafari.tier).toBe('med');
+    expect(desktopSafari.beginTransition()).toBe(false);
+    expect(desktopSafari.renderTier).toBe('med');
 
     const mobileSafari = new QualityMonitor();
     mobileSafari.configureDevice(2_000_000, 8, {
@@ -33,6 +35,13 @@ describe('scene-aware quality monitor', () => {
     const monitor = new QualityMonitor();
     monitor.setScene('screen');
     for (let frame = 0; frame < 80; frame++) monitor.update(0.05, frame * 0.05);
+    expect(monitor.tier).toBe('med');
+  });
+
+  it('does not use the mobile low tier for desktop-class throttling', () => {
+    const monitor = new QualityMonitor();
+    monitor.configureDevice(2_000_000, 8, { isMobile: false, isWebKit: false });
+    for (let frame = 0; frame < 240; frame++) monitor.update(0.08, frame * 0.08);
     expect(monitor.tier).toBe('med');
   });
 

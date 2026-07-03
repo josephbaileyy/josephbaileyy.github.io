@@ -3,6 +3,7 @@ export interface DeviceProfile {
   isWebKit: boolean;
   isMobile: boolean;
   isCoarsePointer: boolean;
+  constrainedTextureDecode: boolean;
   lowPowerGpu: boolean;
   disablePostFx: boolean;
   softenPostFx: boolean;
@@ -19,11 +20,13 @@ export function detectDeviceProfile(): DeviceProfile {
   const touchPoints = navigator.maxTouchPoints || 0;
   const isIPadOSDesktopMode = platform === 'MacIntel' && touchPoints > 1;
   const isIOS = /iPad|iPhone|iPod/.test(ua) || isIPadOSDesktopMode;
+  const isMobileUa = /Android|Mobi|Mobile|iPad|iPhone|iPod/i.test(ua);
   const isChromiumFamily = /Chrome|Chromium|CriOS|Edg|EdgiOS|OPR|Firefox|FxiOS/.test(ua);
   const isWebKit = isIOS || (/AppleWebKit/.test(ua) && !isChromiumFamily);
   const isCoarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? touchPoints > 0;
-  const isMobile =
-    isIOS || isCoarsePointer || window.matchMedia?.('(max-width: 760px)').matches === true;
+  const isSmallViewport = window.matchMedia?.('(max-width: 760px)').matches === true;
+  const isMobile = isIOS || isMobileUa || isCoarsePointer || isSmallViewport;
+  const constrainedTextureDecode = isIOS || isMobileUa || isCoarsePointer || isSmallViewport;
   const lowPowerGpu = isIOS || (isWebKit && isMobile);
 
   return {
@@ -31,6 +34,7 @@ export function detectDeviceProfile(): DeviceProfile {
     isWebKit,
     isMobile,
     isCoarsePointer,
+    constrainedTextureDecode,
     lowPowerGpu,
     // iOS Safari is much happier without bloom render targets and fullscreen
     // post passes. Desktop Safari keeps the pass, but softened.

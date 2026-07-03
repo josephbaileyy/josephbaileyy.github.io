@@ -63,6 +63,27 @@ body {
   transition: top 0.15s ease;
 }
 
+.simple-home-link {
+  position: fixed;
+  z-index: 10000;
+  top: max(0.75rem, env(safe-area-inset-top));
+  left: 50%;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  background: rgba(5, 9, 24, 0.82);
+  color: #fff;
+  font:
+    700 0.8rem/1 system-ui,
+    sans-serif;
+  text-decoration: none;
+  transform: translateX(-50%);
+  backdrop-filter: blur(12px);
+}
+
 .skip-link:focus {
   top: 16px;
 }
@@ -4032,7 +4053,7 @@ body[data-hud-mode='computer'] .os-dock {
 
   .os-mobile-home {
     position: absolute;
-    inset: 0 0 var(--os-mobile-dock-clearance) 0;
+    inset: 0 0 14px 0;
     z-index: 2;
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -4065,6 +4086,7 @@ body[data-hud-mode='computer'] .os-dock {
   }
 
   .os-mobile-app,
+  .os-mobile-more-app,
   .os-mobile-dock-item {
     display: flex;
     min-width: 0;
@@ -4085,6 +4107,85 @@ body[data-hud-mode='computer'] .os-dock {
     font-size: 10px;
     line-height: 1.15;
     text-align: center;
+  }
+
+  .os-mobile-more-sheet {
+    position: absolute;
+    z-index: 38;
+    inset: 2.9rem 0 0;
+    overflow-y: auto;
+    padding: 1rem 1rem max(1.5rem, env(safe-area-inset-bottom));
+    background: rgba(9, 18, 36, 0.97);
+    color: #fff;
+    backdrop-filter: blur(24px);
+  }
+
+  .os-mobile-more-sheet[hidden] {
+    display: none;
+  }
+
+  .os-mobile-more-sheet > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+  }
+
+  .os-mobile-more-sheet h2,
+  .os-mobile-more-sheet h3 {
+    margin: 0;
+  }
+
+  .os-mobile-more-sheet h3 {
+    margin-top: 1.15rem;
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.76rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .os-mobile-more-sheet header button {
+    min-width: 44px;
+    min-height: 44px;
+    border: 0;
+    background: none;
+    color: #9ed8ff;
+    font: inherit;
+    font-weight: 700;
+  }
+
+  .os-mobile-more-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem 0.45rem;
+    margin-top: 0.75rem;
+  }
+
+  .os-mobile-more-app {
+    display: grid;
+    min-width: 44px;
+    min-height: 76px;
+    place-items: center;
+    gap: 0.3rem;
+    border: 0;
+    background: none;
+    color: #fff;
+    font: inherit;
+    text-align: center;
+    text-decoration: none;
+  }
+
+  .os-mobile-more-app > span:last-child {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 0.68rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .os-mobile-more-app .os-mobile-app-icon {
+    width: 48px;
+    height: 48px;
   }
 
   .os-mobile-app > span:last-child {

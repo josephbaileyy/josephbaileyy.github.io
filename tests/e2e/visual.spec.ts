@@ -14,6 +14,9 @@ for (const scene of scenes) {
         { exact: true },
       ),
     ).toBeAttached();
+    await expect(page.locator(`body[data-scene-ready="${scene}"]`)).toHaveCount(1, {
+      timeout: 15_000,
+    });
     if (scene === 'screen') {
       await expect(page.locator('.os-window').filter({ hasText: 'Start Here' })).toBeVisible();
       await page.locator('.os-menubar > span').evaluateAll((nodes) => {
@@ -36,6 +39,9 @@ test('visual contract: galaxy landing', async ({ page }, testInfo) => {
   await page.goto('/#/galaxy');
   await expect(page.getByRole('button', { name: 'Research', exact: true })).toBeVisible();
   await expect(page.locator('.loading-overlay')).toHaveClass(/done/);
+  await expect(page.locator('body[data-scene-ready="galaxy"]')).toHaveCount(1, {
+    timeout: 15_000,
+  });
   await expect(page).toHaveScreenshot('galaxy-landing.png', {
     animations: 'disabled',
     maxDiffPixelRatio: 0.04,
@@ -70,7 +76,8 @@ test('visual contract: BaileyOS mobile launcher', async ({ page }, testInfo) => 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/screen');
   await expect(page.locator('.os-mobile-home')).toBeVisible();
-  await expect(page.locator('.os-mobile-dock-item')).toHaveCount(4);
+  await expect(page.locator('.os-mobile-app')).toHaveCount(8);
+  await expect(page.locator('.os-mobile-dock-item')).toHaveCount(0);
   await expect(page).toHaveScreenshot('baileyos-mobile.png', {
     animations: 'disabled',
     maxDiffPixelRatio: 0.12,
