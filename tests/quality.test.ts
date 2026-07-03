@@ -35,4 +35,24 @@ describe('scene-aware quality monitor', () => {
     for (let frame = 0; frame < 80; frame++) monitor.update(0.05, frame * 0.05);
     expect(monitor.tier).toBe('med');
   });
+
+  it('demotes on one extreme frame and cumulative burst time', () => {
+    const extreme = new QualityMonitor();
+    expect(extreme.update(0.251, 1)).toBe(true);
+    expect(extreme.tier).toBe('med');
+
+    const cumulative = new QualityMonitor();
+    for (let frame = 0; frame < 7; frame++) cumulative.update(0.05, frame * 0.1);
+    expect(cumulative.tier).toBe('med');
+  });
+
+  it('uses low rendering during constrained-device transitions', () => {
+    const monitor = new QualityMonitor();
+    monitor.configureDevice(2_000_000, 8, { isMobile: true });
+    expect(monitor.tier).toBe('med');
+    expect(monitor.beginTransition()).toBe(true);
+    expect(monitor.renderTier).toBe('low');
+    expect(monitor.endTransition(2)).toBe(true);
+    expect(monitor.renderTier).toBe('med');
+  });
 });

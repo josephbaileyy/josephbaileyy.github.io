@@ -9,7 +9,10 @@ const SCENE_BUDGET_MS: Record<SceneId, number> = {
   room: 18,
   screen: 17,
 };
-const DEMOTE_FRAMES = 60;
+const EXTREME_FRAME_MS = 250;
+const LONG_FRAME_WINDOW_S = 2;
+const CUMULATIVE_EXCESS_MS = 180;
+const DEMOTION_COOLDOWN_S = 6;
 const PROBE_AFTER_S = 12;
 
 /**
@@ -21,16 +24,24 @@ export class QualityMonitor {
   tier: QualityTier = 'high';
   private maxTier: QualityTier = 'high';
   private ema = 16;
-  private over = 0;
   private cleanSince = 0;
   private changed = false;
   private budgetMs = SCENE_BUDGET_MS.galaxy;
+  private constrained = false;
+  private transitionLow = false;
+  private longFrames: Array<{ time: number; excessMs: number }> = [];
+  private lastDemotion = -Infinity;
+
+  get renderTier(): QualityTier {
+    return this.transitionLow ? 'low' : this.tier;
+  }
 
   configureDevice(
     pixelCount: number,
     deviceMemoryGb = 8,
     profile: { isMobile?: boolean; isWebKit?: boolean; lowPowerGpu?: boolean } = {},
   ): void {
+    this.constrained = Boolean(profile.isMobile || profile.isWebKit || profile.lowPowerGpu);
     this.maxTier = profile.lowPowerGpu
       ? 'low'
       : profile.isMobile || profile.isWebKit
@@ -47,26 +58,50 @@ export class QualityMonitor {
 
   setScene(scene: SceneId): void {
     this.budgetMs = SCENE_BUDGET_MS[scene];
-    this.over = 0;
+    this.longFrames = [];
   }
 
   update(dt: number, now: number): boolean {
     this.changed = false;
     const ms = dt * 1000;
     this.ema = this.ema * 0.92 + ms * 0.08;
+    const excessMs = Math.max(0, ms - this.budgetMs);
+    if (excessMs > 0) {
+      this.longFrames.push({ time: now, excessMs });
+      this.cleanSince = now;
+    }
+    this.longFrames = this.longFrames.filter((sample) => now - sample.time <= LONG_FRAME_WINDOW_S);
+    const cumulativeExcess = this.longFrames.reduce((sum, sample) => sum + sample.excessMs, 0);
 
-    if (this.ema > this.budgetMs * 1.4) {
-      this.over++;
-      if (this.over > DEMOTE_FRAMES) {
-        this.shift(1, now);
-      }
-    } else {
-      this.over = Math.max(0, this.over - 2);
-      if (this.ema < this.budgetMs * 0.8 && now - this.cleanSince > PROBE_AFTER_S) {
-        this.shift(-1, now);
-      }
+    if (
+      (ms > EXTREME_FRAME_MS || cumulativeExcess > CUMULATIVE_EXCESS_MS) &&
+      now - this.lastDemotion > DEMOTION_COOLDOWN_S
+    ) {
+      this.shift(1, now);
+      this.lastDemotion = now;
+      this.longFrames = [];
+    } else if (
+      this.longFrames.length === 0 &&
+      this.ema < this.budgetMs * 0.8 &&
+      now - this.cleanSince > PROBE_AFTER_S
+    ) {
+      this.shift(-1, now);
     }
     return this.changed;
+  }
+
+  beginTransition(): boolean {
+    const previous = this.renderTier;
+    this.transitionLow = this.constrained;
+    return previous !== this.renderTier;
+  }
+
+  endTransition(now: number): boolean {
+    const previous = this.renderTier;
+    this.transitionLow = false;
+    this.cleanSince = now;
+    this.longFrames = [];
+    return previous !== this.renderTier;
   }
 
   private shift(dir: 1 | -1, now: number): void {
@@ -81,7 +116,6 @@ export class QualityMonitor {
       return;
     }
     this.tier = next;
-    this.over = 0;
     this.cleanSince = now;
     this.ema = 16;
     this.changed = true;

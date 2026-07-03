@@ -14,7 +14,8 @@ export interface InputOptions {
   isModalOpen: () => boolean;
   onFirstInteraction?: () => void;
   /** Prefetch the scene a gesture is moving toward before the camera arrives. */
-  onSceneIntent?: (index: number) => void;
+  /** Return true when the caller owns preparation and camera movement. */
+  onSceneIntent?: (index: number) => boolean | void;
   /** mutable target written with normalized mouse position for camera parallax */
   parallaxTarget?: { x: number; y: number };
 }
@@ -46,7 +47,7 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
       e.preventDefault();
       markInteracted();
       const px = e.deltaMode === 1 ? e.deltaY * LINE_HEIGHT : e.deltaY;
-      opts.onSceneIntent?.(Math.round(camera.depth) + Math.sign(-px));
+      if (opts.onSceneIntent?.(Math.round(camera.depth) + Math.sign(-px))) return;
       if (opts.reducedMotion) {
         reducedAcc += -px;
         if (Math.abs(reducedAcc) > 140) {
@@ -96,7 +97,10 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
       if (lastSpread > 0 && s > 0) {
         markInteracted();
         const delta = Math.log2(s / lastSpread) * PINCH_GAIN;
-        opts.onSceneIntent?.(Math.round(camera.depth) + Math.sign(delta));
+        if (opts.onSceneIntent?.(Math.round(camera.depth) + Math.sign(delta))) {
+          lastSpread = s;
+          return;
+        }
         camera.dragBy(delta, now());
       }
       lastSpread = s;
@@ -120,7 +124,7 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
     e.preventDefault();
     markInteracted();
     const target = Math.round(camera.depth) + 1;
-    opts.onSceneIntent?.(target);
+    if (opts.onSceneIntent?.(target)) return;
     camera.tweenTo(target, now());
   });
 
@@ -128,12 +132,15 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
   window.addEventListener('keydown', (e) => {
     if (opts.isModalOpen()) return;
     const target = e.target as HTMLElement | null;
-    if (target?.closest(INTERACTIVE)) return;
+    const staleScreenFocus =
+      Boolean(target?.closest('.screen-ui')) && !location.hash.startsWith('#/screen');
+    if (target?.closest(INTERACTIVE) && target.getClientRects().length > 0 && !staleScreenFocus)
+      return;
     const step = (dir: 1 | -1) => {
       e.preventDefault();
       markInteracted();
       const target = Math.round(camera.depth) + dir;
-      opts.onSceneIntent?.(target);
+      if (opts.onSceneIntent?.(target)) return;
       camera.tweenTo(target, now(), 0.9);
     };
     switch (e.key) {

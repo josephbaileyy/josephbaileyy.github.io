@@ -57,6 +57,11 @@ export class Camera {
     return this.tween !== null;
   }
 
+  stop(): void {
+    this.tween = null;
+    this.vel = 0;
+  }
+
   /** Advance the camera; returns true while anything is still moving. */
   update(dt: number, now: number): boolean {
     if (this.tween) {

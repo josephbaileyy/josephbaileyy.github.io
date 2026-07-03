@@ -24,6 +24,11 @@ export class Hud {
   private live: HTMLDivElement;
   private hint: HTMLDivElement;
   private stepLabel: HTMLDivElement;
+  private stepText: HTMLSpanElement;
+  private prepareCancel: HTMLButtonElement;
+  private activeIndex = 0;
+  private travelTarget: number | null = null;
+  private preparing = false;
   private journey: HTMLButtonElement;
   private tools: HTMLDivElement;
   private toolsToggle: HTMLButtonElement;
@@ -108,7 +113,13 @@ export class Hud {
 
     this.stepLabel = document.createElement('div');
     this.stepLabel.className = 'hud-step-label';
-    this.stepLabel.setAttribute('aria-hidden', 'true');
+    this.stepLabel.setAttribute('role', 'status');
+    this.stepText = document.createElement('span');
+    this.prepareCancel = document.createElement('button');
+    this.prepareCancel.type = 'button';
+    this.prepareCancel.textContent = 'cancel';
+    this.prepareCancel.hidden = true;
+    this.stepLabel.append(this.stepText, this.prepareCancel);
     root.appendChild(this.stepLabel);
 
     const zoom = document.createElement('div');
@@ -283,14 +294,14 @@ export class Hud {
   }
 
   setActive(index: number): void {
+    this.activeIndex = index;
     this.dots.forEach((d, i) => {
       const active = i === index;
       d.classList.toggle('active', active);
       if (active) d.setAttribute('aria-current', 'step');
       else d.removeAttribute('aria-current');
     });
-    const label = this.dots[index]?.dataset.label ?? `Scene ${index + 1}`;
-    this.stepLabel.textContent = `${label} · ${index + 1} of ${this.dots.length}`;
+    this.renderStepLabel();
     this.root.dataset.scene = String(index);
     this.scaleToggle.hidden = index !== 1;
     if (index !== 1 && this.scaleToggle === document.activeElement) {
@@ -320,7 +331,44 @@ export class Hud {
   }
 
   announce(label: string): void {
+    this.travelTarget = null;
+    this.preparing = false;
+    this.prepareCancel.hidden = true;
+    this.stepLabel.dataset.traveling = 'false';
+    this.stepLabel.dataset.preparing = 'false';
+    this.renderStepLabel();
     this.live.textContent = `Now viewing: ${label}`;
+  }
+
+  traveling(index: number): void {
+    this.travelTarget = index;
+    this.preparing = false;
+    this.prepareCancel.hidden = true;
+    this.stepLabel.dataset.traveling = 'true';
+    this.stepLabel.dataset.preparing = 'false';
+    this.renderStepLabel();
+    this.live.textContent = `Traveling to ${this.sceneLabel(index)}`;
+  }
+
+  showPreparing(index: number, onCancel: () => void): void {
+    if (this.travelTarget !== index) return;
+    this.preparing = true;
+    this.prepareCancel.hidden = false;
+    this.stepLabel.dataset.preparing = 'true';
+    this.prepareCancel.onclick = onCancel;
+    this.renderStepLabel();
+    this.live.textContent = `Preparing ${this.sceneLabel(index)}`;
+  }
+
+  private renderStepLabel(): void {
+    const index = this.travelTarget ?? this.activeIndex;
+    const prefix =
+      this.travelTarget === null ? 'Now viewing' : this.preparing ? 'Preparing' : 'Traveling to';
+    this.stepText.textContent = `${prefix}: ${this.sceneLabel(index)} · ${index + 1} of ${this.dots.length}`;
+  }
+
+  private sceneLabel(index: number): string {
+    return this.dots[index]?.dataset.label ?? `Scene ${index + 1}`;
   }
 
   addObservation(

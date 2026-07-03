@@ -31,6 +31,26 @@ describe('SceneLoader', () => {
     expect(statuses).toEqual(['loading', 'ready']);
   });
 
+  it('warms a module without loading assets or creating an instance', async () => {
+    const load = vi.fn(async () => ({}));
+    const create = vi.fn(() => instance());
+    const importScene = vi.fn(async () => ({ load, create }));
+    const def = definition('solar', create);
+    def.importScene = importScene;
+    const loader = new SceneLoader([def]);
+
+    await loader.warmManifest(0);
+    expect(importScene).toHaveBeenCalledOnce();
+    expect(load).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
+    expect(loader.status(0)).toBe('idle');
+
+    await loader.ensure(0);
+    expect(importScene).toHaveBeenCalledOnce();
+    expect(load).toHaveBeenCalledOnce();
+    expect(create).toHaveBeenCalledOnce();
+  });
+
   it('reports a failure and supports retry', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => undefined);
     let attempts = 0;
