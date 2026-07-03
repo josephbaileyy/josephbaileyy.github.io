@@ -482,8 +482,14 @@ test('true-scale solar system keeps every tracked body discoverable on mobile', 
 });
 
 test('immersive HUD controls toggle scale, drift, and the observation log', async ({ page }) => {
+  // This scenario keeps the software-WebGL scene rendering while Playwright
+  // exercises several controls. A loaded CI runner can exhaust the default
+  // 60s test budget before the final interaction even though each assertion
+  // succeeds, so budget the complete scenario rather than inflating a locator.
+  test.setTimeout(90_000);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/solar');
+  await expect(page.getByText('Now viewing: The Solar System', { exact: true })).toBeAttached();
   await page.getByRole('button', { name: 'Open help and universe tools', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Toggle Solar System scale mode' })).toBeVisible({
     timeout: 20_000,
@@ -530,8 +536,13 @@ test('immersive HUD controls toggle scale, drift, and the observation log', asyn
   );
 
   await page.getByRole('button', { name: 'Open field log' }).click();
-  await expect(page.locator('.observation-log.open')).toContainText('The Solar System');
-  await page.getByRole('button', { name: 'Continue to Earth →' }).click();
+  const solarLogEntry = page
+    .locator('.observation-log.open li')
+    .filter({ has: page.getByText('The Solar System', { exact: true }) });
+  await expect(solarLogEntry).toContainText('The Solar System');
+  const continueToEarth = solarLogEntry.getByRole('button', { name: 'Continue to Earth →' });
+  await expect(continueToEarth).toBeVisible();
+  await continueToEarth.click();
   await expect(page).toHaveURL(/#\/earth$/);
 });
 
