@@ -94,12 +94,23 @@ const requestDestination = (index: number): void => {
   loader.request(index + 1);
 };
 
+function clampedSceneIndex(index: number): number {
+  return Math.min(Math.max(Math.round(index), 0), CHAIN3D.length - 1);
+}
+
+function requestOsAppOpen(appId: string): void {
+  if (osBuilt && Math.round(camera.depth) === SCREEN_INDEX) {
+    window.dispatchEvent(new CustomEvent('universe:open-app', { detail: appId }));
+  } else {
+    pendingOsApp = appId;
+  }
+}
+
 window.addEventListener('universe:navigate', (event) => {
   const index = (event as CustomEvent<number>).detail;
   if (!Number.isInteger(index) || index < 0 || index >= CHAIN3D.length) return;
   tour.cancel();
-  requestDestination(index);
-  jump.go(index, now());
+  navigateTo(index);
 });
 
 let pendingPanel: { scene: number; id: string } | null = null;
@@ -124,8 +135,7 @@ const hud = new Hud(
     tour.cancel();
     hud.hideHint();
     const target = Math.round(camera.depth) + dir;
-    requestDestination(target);
-    camera.tweenTo(target, now(), 0.9);
+    travelToScene(target, 0.9);
   },
   () => tour.start(),
   {
@@ -154,10 +164,20 @@ const hud = new Hud(
 
 // Shared navigation path (HUD dots + guided tour): prefetch, then fly via the
 // JumpController so multi-level hops ramp/teleport/dive consistently.
-const navigateTo = (index: number): void => {
+const navigateTo = (index: number, syncRoute = true): void => {
+  const target = clampedSceneIndex(index);
   hud.hideHint();
-  requestDestination(index);
-  jump.go(index, now());
+  if (syncRoute) router.push(target);
+  requestDestination(target);
+  jump.go(target, now());
+};
+
+const travelToScene = (index: number, duration = 1.2, syncRoute = true): void => {
+  const target = clampedSceneIndex(index);
+  hud.hideHint();
+  if (syncRoute) router.push(target);
+  requestDestination(target);
+  camera.tweenTo(target, now(), duration);
 };
 
 const markVisited = (): void => {
@@ -272,7 +292,7 @@ const ensureFakeOs = () => {
       screenUi.setContent(buildFakeOs());
       osBuilt = true;
       if (pendingOsApp) {
-        window.dispatchEvent(new CustomEvent('universe:open-app', { detail: pendingOsApp }));
+        requestOsAppOpen(pendingOsApp);
         pendingOsApp = null;
       }
     }
@@ -298,14 +318,12 @@ const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => 
     );
     openPanel(h.action.panelId, world.baseIndex());
   } else if (h.action.type === 'navigate') {
-    requestDestination(h.action.index);
-    jump.go(h.action.index, now());
+    navigateTo(h.action.index);
   } else if (h.action.type === 'app') {
     performDestination({ type: 'app', appId: h.action.appId, label: h.label });
   } else {
     const target = world.baseIndex() + (h.action.dir === 'in' ? 1 : -1);
-    requestDestination(target);
-    camera.tweenTo(target, now());
+    travelToScene(target);
   }
 });
 
@@ -316,7 +334,7 @@ function performDestination(destination: ObservationDestination): void {
     navigateTo(destination.index);
   } else if (destination.type === 'app') {
     if (osBuilt && Math.round(camera.depth) === CHAIN3D.length - 1) {
-      window.dispatchEvent(new CustomEvent('universe:open-app', { detail: destination.appId }));
+      requestOsAppOpen(destination.appId);
     } else {
       pendingOsApp = destination.appId;
       navigateTo(CHAIN3D.length - 1);
@@ -390,18 +408,53 @@ const router = new Router(CHAIN3D, (state) => {
   tour.cancel();
   panel.close();
   pendingPanel = state.panel ? { scene: state.scene, id: state.panel } : null;
+  if (!state.app && activeRouteApp && state.scene === SCREEN_INDEX) {
+    suppressNextAppCloseRoute = true;
+    window.dispatchEvent(new CustomEvent('universe:close-app', { detail: activeRouteApp }));
+    activeRouteApp = null;
+  }
+  if (state.app) {
+    activeRouteApp = state.app;
+    requestOsAppOpen(state.app);
+  } else if (state.scene !== SCREEN_INDEX) {
+    activeRouteApp = null;
+    pendingOsApp = null;
+  }
   if (Math.abs(state.scene - camera.depth) > 1e-6) {
     requestDestination(state.scene);
     jump.go(state.scene, now());
   } else if (pendingPanel && camera.settledIndex === state.scene) {
     openPanel(pendingPanel.id, state.scene, false);
     pendingPanel = null;
+  } else if (state.app && camera.settledIndex === SCREEN_INDEX) {
+    requestOsAppOpen(state.app);
   }
 });
 
 panel.onClose = () => {
   router.replace(Math.round(camera.depth));
 };
+
+let activeRouteApp: string | null = null;
+let suppressNextAppCloseRoute = false;
+
+window.addEventListener('universe:app-opened', (event) => {
+  const appId = (event as CustomEvent<string>).detail;
+  if (!appId || Math.round(camera.depth) !== SCREEN_INDEX) return;
+  activeRouteApp = appId;
+  if (router.parse()?.app === appId) return;
+  router.push(SCREEN_INDEX, undefined, appId);
+});
+
+window.addEventListener('universe:app-closed', () => {
+  if (suppressNextAppCloseRoute) {
+    suppressNextAppCloseRoute = false;
+    return;
+  }
+  if (!activeRouteApp || Math.round(camera.depth) !== SCREEN_INDEX) return;
+  activeRouteApp = null;
+  router.replace(SCREEN_INDEX);
+});
 
 const parallaxTarget = { x: 0, y: 0 };
 const parallax = { x: 0, y: 0 };
@@ -424,7 +477,9 @@ attachInput(canvas, camera, {
   // keyboard), so it's the clean signal to bail out of the guided tour.
   onSceneIntent: (index) => {
     tour.cancel();
-    requestDestination(index);
+    const target = clampedSceneIndex(index);
+    router.push(target);
+    requestDestination(target);
   },
   parallaxTarget,
 });
@@ -589,7 +644,7 @@ function frame(): void {
         observation.destination,
       );
       if (!tour.active) hud.showHint(SCENE_HINTS[settled]);
-      if (!panel.isOpen) router.replace(settled);
+      if (!panel.isOpen && !router.parse()?.app) router.replace(settled);
       if (pendingPanel && pendingPanel.scene === settled) {
         openPanel(pendingPanel.id, settled, false);
         pendingPanel = null;

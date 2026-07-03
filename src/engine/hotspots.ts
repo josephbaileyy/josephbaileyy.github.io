@@ -5,6 +5,48 @@ import type { Hotspot3D, SceneInstance } from './types3d';
 const tmpBox = new Box3();
 const tmpVec = new Vector3();
 const tmpPx = new Vector3();
+const tmpSide = new Vector3();
+
+export const HOTSPOT_PROXY_MIN_PX = 44;
+export const HOTSPOT_PROXY_MAX_PX = 88;
+const HOTSPOT_PROXY_GAP_PX = 4;
+
+export interface HotspotProxyCandidate {
+  x: number;
+  y: number;
+  projectedSize: number;
+}
+
+export interface HotspotProxyRect {
+  left: number;
+  top: number;
+  size: number;
+}
+
+export function clampHotspotProxySize(projectedSize: number): number {
+  if (!Number.isFinite(projectedSize)) return HOTSPOT_PROXY_MIN_PX;
+  return Math.min(HOTSPOT_PROXY_MAX_PX, Math.max(HOTSPOT_PROXY_MIN_PX, Math.abs(projectedSize)));
+}
+
+export function layoutHotspotProxyRects(
+  candidates: readonly HotspotProxyCandidate[],
+  viewport: Viewport,
+): HotspotProxyRect[] {
+  const placed: Array<HotspotProxyRect & { cx: number; cy: number }> = [];
+  for (const candidate of candidates) {
+    const size = clampHotspotProxySize(candidate.projectedSize);
+    const base = clampCenter(candidate.x, candidate.y, size, viewport);
+    const center = firstNonOverlappingCenter(base, size, placed, viewport);
+    placed.push({
+      left: center.x - size / 2,
+      top: center.y - size / 2,
+      size,
+      cx: center.x,
+      cy: center.y,
+    });
+  }
+  return placed.map(({ left, top, size }) => ({ left, top, size }));
+}
 
 /**
  * Pointer picking + keyboard accessibility for 3D hotspots.
@@ -50,29 +92,38 @@ export class HotspotManager {
     if (!this.active) return;
 
     this.camera.updateMatrixWorld();
+    const hotspotData: Array<{ h: Hotspot3D; candidate: HotspotProxyCandidate }> = [];
     for (const h of this.active.hotspots) {
       tmpBox.setFromObject(h.object);
       if (tmpBox.isEmpty()) continue;
-      tmpBox.getCenter(tmpVec);
+      h.object.getWorldPosition(tmpVec);
       const radius = tmpBox.getSize(new Vector3()).length() / 2;
       projectToPx(tmpVec, this.camera, this.vp, tmpPx);
       if (tmpPx.z > 1) continue; // behind camera
 
-      // approximate screen radius: project a point one radius to the side
-      const side = projectToPx(
-        tmpVec.clone().add(new Vector3(radius, 0, 0).applyQuaternion(this.camera.quaternion)),
-        this.camera,
-        this.vp,
-      );
-      const rPx = Math.max(18, Math.hypot(side.x - tmpPx.x, side.y - tmpPx.y));
+      // Approximate visual scale only as an input to the clamp. The final DOM
+      // target stays in a practical touch range, independent of object size.
+      tmpSide.set(radius, 0, 0).applyQuaternion(this.camera.quaternion).add(tmpVec);
+      const side = projectToPx(tmpSide, this.camera, this.vp);
+      const projectedSize = Math.hypot(side.x - tmpPx.x, side.y - tmpPx.y) * 2;
+      hotspotData.push({ h, candidate: { x: tmpPx.x, y: tmpPx.y, projectedSize } });
+    }
 
+    const rects = layoutHotspotProxyRects(
+      hotspotData.map(({ candidate }) => candidate),
+      this.vp,
+    );
+
+    hotspotData.forEach(({ h }, index) => {
+      const rect = rects[index];
       const btn = document.createElement('button');
       btn.className = 'hotspot-proxy';
       btn.setAttribute('aria-label', h.label);
-      btn.style.left = `${tmpPx.x - rPx}px`;
-      btn.style.top = `${tmpPx.y - rPx}px`;
-      btn.style.width = `${rPx * 2}px`;
-      btn.style.height = `${rPx * 2}px`;
+      btn.dataset.hotspotLabel = h.label;
+      btn.style.left = `${rect.left}px`;
+      btn.style.top = `${rect.top}px`;
+      btn.style.width = `${rect.size}px`;
+      btn.style.height = `${rect.size}px`;
       btn.addEventListener('focus', () => h.setHover(true));
       btn.addEventListener('blur', () => h.setHover(false));
       btn.addEventListener('click', (e) => {
@@ -81,7 +132,7 @@ export class HotspotManager {
       });
       this.a11yLayer.appendChild(btn);
       this.proxies.push(btn);
-    }
+    });
   }
 
   /** Per-frame mouse hover via raycast (no-op when unsettled or pointer idle). */
@@ -118,4 +169,67 @@ function isDescendant(parent: { children: unknown[] }, child: { parent: unknown 
     p = (p as { parent: unknown }).parent;
   }
   return false;
+}
+
+function clampCenter(
+  x: number,
+  y: number,
+  size: number,
+  viewport: Viewport,
+): { x: number; y: number } {
+  const half = size / 2;
+  return {
+    x: Math.min(Math.max(x, half), Math.max(half, viewport.w - half)),
+    y: Math.min(Math.max(y, half), Math.max(half, viewport.h - half)),
+  };
+}
+
+function firstNonOverlappingCenter(
+  base: { x: number; y: number },
+  size: number,
+  placed: ReadonlyArray<{ left: number; top: number; size: number; cx: number; cy: number }>,
+  viewport: Viewport,
+): { x: number; y: number } {
+  if (!overlapsAny(base, size, placed)) return base;
+
+  const step = size + HOTSPOT_PROXY_GAP_PX;
+  const angleOffset = placed.length * 0.73;
+  for (let ring = 1; ring <= 6; ring++) {
+    const radius = step * ring;
+    const points = Math.max(8, ring * 8);
+    for (let point = 0; point < points; point++) {
+      const angle = angleOffset + (point / points) * Math.PI * 2;
+      const center = clampCenter(
+        base.x + Math.cos(angle) * radius,
+        base.y + Math.sin(angle) * radius,
+        size,
+        viewport,
+      );
+      if (!overlapsAny(center, size, placed)) return center;
+    }
+  }
+  return base;
+}
+
+function overlapsAny(
+  center: { x: number; y: number },
+  size: number,
+  placed: ReadonlyArray<{ left: number; top: number; size: number }>,
+): boolean {
+  const half = size / 2;
+  const rect = {
+    left: center.x - half,
+    top: center.y - half,
+    right: center.x + half,
+    bottom: center.y + half,
+  };
+  return placed.some((other) => {
+    const gap = HOTSPOT_PROXY_GAP_PX;
+    return (
+      rect.left < other.left + other.size + gap &&
+      rect.right > other.left - gap &&
+      rect.top < other.top + other.size + gap &&
+      rect.bottom > other.top - gap
+    );
+  });
 }
