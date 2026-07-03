@@ -324,6 +324,98 @@ test('mobile tap controls navigate without requiring pinch or hover', async ({
   await expect(page).toHaveURL(/#\/galaxy$/, { timeout: 20_000 });
 });
 
+test('mobile landing exposes credentials before interaction', async ({ page }, testInfo) => {
+  test.skip(!isMobileProject(testInfo.project.name), 'mobile first-paint credential contract');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/galaxy');
+
+  await expect(page.locator('#hud')).not.toHaveAttribute('data-engaged', 'true');
+  await expect(page.getByRole('button', { name: 'Research', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'CV', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Contact', exact: true })).toBeVisible();
+});
+
+test('BaileyOS mobile launcher apps remain center-clickable at 375x667', async ({
+  page,
+}, testInfo) => {
+  test.skip(!isMobileProject(testInfo.project.name), 'mobile launcher clickability contract');
+  await page.setViewportSize({ width: 375, height: 667 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  await expect(page.locator('.os-mobile-home')).toBeVisible();
+
+  const failures = await page.locator('.os-mobile-app').evaluateAll(async (apps) => {
+    const failed: string[] = [];
+    for (const app of apps) {
+      app.scrollIntoView({ block: 'center', inline: 'nearest' });
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const rect = app.getBoundingClientRect();
+      const x = rect.left + rect.width / 2;
+      const y = rect.top + rect.height / 2;
+      const hit = document.elementFromPoint(x, y);
+      if (hit !== app && !app.contains(hit)) {
+        failed.push(`${(app as HTMLElement).dataset.appId ?? 'unknown'} -> ${hit?.className}`);
+      }
+    }
+    return failed;
+  });
+
+  expect(failures).toEqual([]);
+});
+
+test('Earth hotspot proxies stay within the clamped mobile size', async ({ page }, testInfo) => {
+  test.skip(!isMobileProject(testInfo.project.name), 'mobile hotspot size contract');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/earth');
+  await expect(page.getByRole('button', { name: 'Zoom in to Stanford University' })).toBeAttached({
+    timeout: 20_000,
+  });
+
+  const oversized = await page.locator('.hotspot-proxy').evaluateAll((nodes) =>
+    nodes
+      .map((node) => {
+        const rect = node.getBoundingClientRect();
+        return {
+          label: node.getAttribute('aria-label'),
+          width: rect.width,
+          height: rect.height,
+        };
+      })
+      .filter(({ width, height }) => width > 88 || height > 88),
+  );
+  expect(oversized).toEqual([]);
+
+  await page.getByRole('button', { name: 'Zoom in to Stanford University' }).click();
+  await expect(page).toHaveURL(/#\/stanford$/, { timeout: 20_000 });
+});
+
+test('browser Back closes BaileyOS apps and reverses scene depth', async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/screen');
+  if (isMobileProject(testInfo.project.name)) {
+    await page.locator('.os-mobile-app[data-app-id="research"]').click();
+  } else {
+    await closeStartHere(page);
+    await page.locator('.os-dock-item[data-app-id="research"]').click();
+  }
+  await expect(page.locator('.os-window[data-window-id="research"]')).toBeVisible();
+  await expect(page).toHaveURL(/#\/screen\/app\/research$/);
+
+  await page.goBack();
+  await expect(page).toHaveURL(/#\/screen$/);
+  await expect(page.locator('.os-window[data-window-id="research"]')).toHaveCount(0);
+
+  await page.goto('/#/galaxy');
+  if (isMobileProject(testInfo.project.name)) {
+    await page.getByRole('button', { name: 'Travel inward one level' }).click();
+  } else {
+    await page.keyboard.press('ArrowUp');
+  }
+  await expect(page).toHaveURL(/#\/solar$/, { timeout: 20_000 });
+  await page.goBack();
+  await expect(page).toHaveURL(/#\/galaxy$/, { timeout: 20_000 });
+});
+
 test('mobile HUD keeps guidance readable and navigation targets touch-sized', async ({
   page,
 }, testInfo) => {
@@ -800,7 +892,7 @@ test('cloud chamber routes to the reduced-motion Unfolding Lab end states', asyn
   });
   await chamber.press('Enter');
 
-  await expect(page).toHaveURL(/#\/screen$/);
+  await expect(page).toHaveURL(/#\/screen\/app\/unfolding-lab$/);
   const lab = page.locator('.os-window[data-window-id="unfolding-lab"]');
   await expect(lab).toBeVisible();
   await expect(lab).toContainText('1,000 events fired');

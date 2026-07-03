@@ -90,15 +90,7 @@ export class WindowManager {
     resize.setAttribute('aria-orientation', 'horizontal');
     win.appendChild(resize);
 
-    close.addEventListener('click', () => {
-      win.remove();
-      this.windows.delete(spec.id);
-      const remaining = [...this.windows.entries()].sort(
-        (a, b) => Number(b[1].style.zIndex) - Number(a[1].style.zIndex),
-      );
-      if (remaining[0]) this.focus(remaining[0][0], remaining[0][1]);
-      else this.emit();
-    });
+    close.addEventListener('click', () => this.closeWindow(spec.id, win));
     minimize.addEventListener('click', () => {
       win.classList.toggle('minimized');
       win.classList.remove('maximized');
@@ -221,6 +213,22 @@ export class WindowManager {
     else this.emit();
   }
 
+  close(id: string): boolean {
+    const win = this.windows.get(id);
+    if (!win) return false;
+    this.closeWindow(id, win);
+    return true;
+  }
+
+  closeActive(): boolean {
+    const active = [...this.windows.entries()]
+      .filter(([, win]) => !win.classList.contains('minimized'))
+      .sort((a, b) => Number(b[1].style.zIndex) - Number(a[1].style.zIndex))[0];
+    if (!active) return false;
+    this.closeWindow(active[0], active[1]);
+    return true;
+  }
+
   repairAll(): void {
     if (this.isMobile()) return;
     for (const [id, win] of this.windows) {
@@ -257,6 +265,16 @@ export class WindowManager {
     }
     win.classList.remove('mobile-inactive');
     this.emit();
+  }
+
+  private closeWindow(id: string, win: HTMLElement): void {
+    win.remove();
+    this.windows.delete(id);
+    const remaining = [...this.windows.entries()].sort(
+      (a, b) => Number(b[1].style.zIndex) - Number(a[1].style.zIndex),
+    );
+    if (remaining[0]) this.focus(remaining[0][0], remaining[0][1]);
+    else this.emit();
   }
 
   private isMobile(): boolean {

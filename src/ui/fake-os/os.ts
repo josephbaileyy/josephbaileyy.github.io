@@ -789,6 +789,15 @@ export function buildFakeOs(): HTMLElement {
   for (const project of APP_PROJECTS) {
     appActions.set(`project:${project.app!.short}`, () => openProject(project));
   }
+  const appWindowId = (appId: string): string => (appId === 'cv' ? 'pdf:/resume.pdf' : appId);
+  const notifyAppOpened = (appId: string): void => {
+    if (appId === 'journey') return;
+    window.dispatchEvent(new CustomEvent('universe:app-opened', { detail: appId }));
+  };
+  const launchApp = (appId: string, action: () => void): void => {
+    action();
+    notifyAppOpened(appId);
+  };
   const commands: PaletteCommand[] = [
     { id: 'start', label: 'Start Here', detail: 'mission dashboard', run: openStart },
     { id: 'research', label: 'Research', detail: 'AI for fundamental physics', run: openResearch },
@@ -856,9 +865,18 @@ export function buildFakeOs(): HTMLElement {
   const openApp = (event: Event) => {
     externalAppOpened = true;
     const id = (event as CustomEvent<string>).detail;
-    appActions.get(id)?.();
+    const action = appActions.get(id);
+    if (!action) return;
+    action();
+    notifyAppOpened(id);
   };
   window.addEventListener('universe:open-app', openApp);
+  window.addEventListener('universe:close-app', (event) => {
+    const id = (event as CustomEvent<string | undefined>).detail;
+    if (id) wm.close(appWindowId(id));
+    else wm.closeActive();
+  });
+  let hadActiveWindow = false;
 
   const createMobileLauncher = (
     appId: string,
@@ -889,7 +907,7 @@ export function buildFakeOs(): HTMLElement {
       el.addEventListener('click', () => {
         el.blur();
         requestAnimationFrame(() => {
-          action();
+          launchApp(appId, action);
           requestAnimationFrame(() => {
             const active = document.activeElement;
             if (
@@ -917,7 +935,9 @@ export function buildFakeOs(): HTMLElement {
     label.textContent = project.app!.short;
     icon.append(projectIcon(project.app!.icon), label);
     icon.setAttribute('aria-label', `Open ${project.title}`);
-    icon.addEventListener('click', () => openProject(project));
+    icon.addEventListener('click', () =>
+      launchApp(`project:${project.app!.short}`, () => openProject(project)),
+    );
     icons.appendChild(icon);
   }
   desktop.appendChild(icons);
@@ -936,7 +956,7 @@ export function buildFakeOs(): HTMLElement {
     label.className = 'os-desktop-icon-label';
     label.textContent = text;
     icon.append(projectIcon(glyph), label);
-    icon.addEventListener('click', action);
+    icon.addEventListener('click', () => launchApp(appId, action));
     icons.appendChild(icon);
   }
 
@@ -1060,10 +1080,11 @@ export function buildFakeOs(): HTMLElement {
         a.rel = 'noopener';
       }
     } else {
-      el.addEventListener('click', action);
       if (appId === 'journey') {
+        el.addEventListener('click', action);
         el.setAttribute('aria-label', 'Launch guided journey');
       } else {
+        el.addEventListener('click', () => launchApp(appId, action));
         el.setAttribute('aria-pressed', 'false');
         dockApps.set(appId, el);
       }
@@ -1092,6 +1113,11 @@ export function buildFakeOs(): HTMLElement {
       'app-open',
       states.some((state) => state.active),
     );
+    const hasActiveWindow = states.some((state) => state.active);
+    if (hadActiveWindow && !hasActiveWindow) {
+      window.dispatchEvent(new CustomEvent('universe:app-closed'));
+    }
+    hadActiveWindow = hasActiveWindow;
   });
   root.appendChild(dock);
 
