@@ -18,7 +18,11 @@ describe('scene-aware quality monitor', () => {
     expect(desktopSafari.tier).toBe('med');
 
     const mobileSafari = new QualityMonitor();
-    mobileSafari.configureDevice(2_000_000, 8, { isMobile: true, isWebKit: true, lowPowerGpu: true });
+    mobileSafari.configureDevice(2_000_000, 8, {
+      isMobile: true,
+      isWebKit: true,
+      lowPowerGpu: true,
+    });
     expect(mobileSafari.tier).toBe('low');
 
     for (let frame = 0; frame < 900; frame++) mobileSafari.update(0.01, frame * 0.05);

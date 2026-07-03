@@ -82,7 +82,6 @@ export class SceneLoader implements SceneSource {
     }
   }
 
-
   private setStatus(index: number, status: SceneLoadStatus, error?: Error): void {
     this.states.set(index, status);
     this.onStatus?.(index, status, error);

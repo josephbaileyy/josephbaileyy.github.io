@@ -89,10 +89,7 @@ export function makeSky(stars: StarData, opts: SkyOptions = {}): Group {
       opacity: panoramaIntensity,
       depthWrite: false,
     });
-    const pano = new Mesh(
-      new SphereGeometry(R * 1.4, 48, 32),
-      panoramaMaterial,
-    );
+    const pano = new Mesh(new SphereGeometry(R * 1.4, 48, 32), panoramaMaterial);
     // ESO pano is in galactic-ish orientation; tip it so the band crosses the
     // sky plausibly relative to the equatorial star grid.
     pano.rotation.set(1.05, 0.4, 0.0);
@@ -115,7 +112,8 @@ export function setSkyOpacity(sky: Group, opacity: number): void {
   const value = Math.min(1, Math.max(0, opacity));
   const data = sky.userData as SkyUserData;
   if (data.starMaterial) data.starMaterial.uniforms.uOpacity.value = value;
-  if (data.panoramaMaterial) data.panoramaMaterial.opacity = (data.panoramaIntensity ?? 0.5) * value;
+  if (data.panoramaMaterial)
+    data.panoramaMaterial.opacity = (data.panoramaIntensity ?? 0.5) * value;
 }
 
 /**

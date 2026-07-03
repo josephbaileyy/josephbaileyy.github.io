@@ -22,7 +22,9 @@ const definition = (id: SceneDef3D['id'], factory: () => SceneInstance): SceneDe
 describe('SceneLoader', () => {
   it('moves from idle through loading to ready', async () => {
     const statuses: string[] = [];
-    const loader = new SceneLoader([definition('galaxy', instance)], undefined, (_i, status) => statuses.push(status));
+    const loader = new SceneLoader([definition('galaxy', instance)], undefined, (_i, status) =>
+      statuses.push(status),
+    );
     expect(loader.status(0)).toBe('idle');
     await loader.ensure(0);
     expect(loader.isReady(0)).toBe(true);

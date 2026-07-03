@@ -14,7 +14,11 @@ import { CHAIN3D } from '../src/scenes/registry';
 
 const VP = { w: 1280, h: 800 };
 
-function projectToNDC(point: Vector3, pose: { position: Vector3; quaternion: Quaternion; fov: number }, vp: { w: number; h: number }): Vector3 {
+function projectToNDC(
+  point: Vector3,
+  pose: { position: Vector3; quaternion: Quaternion; fov: number },
+  vp: { w: number; h: number },
+): Vector3 {
   const cam = new PerspectiveCamera(pose.fov, vp.w / vp.h, 0.001, 5000);
   cam.position.copy(pose.position);
   cam.quaternion.copy(pose.quaternion);
@@ -55,7 +59,10 @@ describe('restCameraPose', () => {
 
   it('cover-fits the enclosed scenes', () => {
     const def = CHAIN3D[1];
-    for (const vp of [{ w: 2560, h: 1080 }, { w: 390, h: 844 }]) {
+    for (const vp of [
+      { w: 2560, h: 1080 },
+      { w: 390, h: 844 },
+    ]) {
       const pose = restCameraPose(def, vp);
       const W = def.restPose.frameWidth;
       const right = new Vector3(1, 0, 0).applyQuaternion(pose.quaternion);
@@ -189,7 +196,8 @@ describe('anchor sanity (registry)', () => {
       const apparent = CHAIN3D[i + 1].restPose.frameWidth * def.anchor!.scale;
       const K = def.restPose.frameWidth / apparent;
       expect(K).toBeGreaterThan(8);
-      if (def.id === 'solar') expect(K).toBeGreaterThan(100_000); // literal Earth radius in AU
+      if (def.id === 'solar')
+        expect(K).toBeGreaterThan(100_000); // literal Earth radius in AU
       else expect(K).toBeLessThan(32);
     }
   });

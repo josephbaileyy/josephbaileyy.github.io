@@ -4,7 +4,9 @@
  * Zero assets; physically the right curve.
  */
 export function playChirp(): void {
-  const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  const Ctx =
+    window.AudioContext ??
+    (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
   if (!Ctx) return;
   const ctx = new Ctx();
   const osc = ctx.createOscillator();

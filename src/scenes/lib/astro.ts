@@ -62,7 +62,11 @@ export function planetPosition(p: PlanetElements, d: number, out = new Vector3()
 export function latLonToVec3(lat: number, lon: number, R: number, out = new Vector3()): Vector3 {
   const phi = (lat * Math.PI) / 180;
   const lambda = (lon * Math.PI) / 180;
-  return out.set(R * Math.cos(phi) * Math.cos(lambda), R * Math.sin(phi), -R * Math.cos(phi) * Math.sin(lambda));
+  return out.set(
+    R * Math.cos(phi) * Math.cos(lambda),
+    R * Math.sin(phi),
+    -R * Math.cos(phi) * Math.sin(lambda),
+  );
 }
 
 export const STANFORD_LAT = 37.4275;
@@ -77,10 +81,13 @@ export function sunDirection(nowMs: number = Date.now(), out = new Vector3()): V
   const start = Date.UTC(date.getUTCFullYear(), 0, 1);
   const dayOfYear = (nowMs - start) / 86400000 + 1;
   const decl = (-23.44 * Math.cos((2 * Math.PI * (dayOfYear + 10)) / 365.25) * Math.PI) / 180;
-  const utcHours =
-    date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600;
+  const utcHours = date.getUTCHours() + date.getUTCMinutes() / 60 + date.getUTCSeconds() / 3600;
   const subsolarLon = (-15 * (utcHours - 12) * Math.PI) / 180;
   return out
-    .set(Math.cos(decl) * Math.cos(subsolarLon), Math.sin(decl), -Math.cos(decl) * Math.sin(subsolarLon))
+    .set(
+      Math.cos(decl) * Math.cos(subsolarLon),
+      Math.sin(decl),
+      -Math.cos(decl) * Math.sin(subsolarLon),
+    )
     .normalize();
 }

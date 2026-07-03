@@ -49,6 +49,30 @@ const FILES: Record<string, () => string> = {
   },
 };
 
+export const UNFOLD_TERMINAL_OUTPUT = [
+  'UNFOLDING LAB // schematic, not real data',
+  '',
+  '[1] SHOOT',
+  'truth  ▁▂▄▇█▇▄▂▁',
+  'reco   ▁▂▃▅▆▆▅▃▂   (smeared; some events lost)',
+  '             ↘ one event crossed a bin',
+  '',
+  '[2] TRY TO INVERT',
+  'naive  -█ +▆ -▄ +▃ -▂ +▃ -▄ +▅ -▇ +█',
+  'noise amplification: mathematically legal, physically cursed.',
+  'add one observable: 20 → 400 → 8,000 cells',
+  'events / cell:      50 → 2.5 → ~0',
+  '',
+  '[3] REWEIGHT INSTEAD',
+  'reco   ▂▃▄▅▆▅▄▃▂',
+  'iter 1 ▂▃▄▆▆▅▄▂▂',
+  'iter 3 ▁▂▄▇▇▆▄▂▁',
+  'iter N ▁▂▄▇█▇▄▂▁',
+  '       same weights ─────────→ paired truth events',
+  '',
+  'open the Unfolding Lab for the real thing',
+].join('\n');
+
 export function buildTerminal(): HTMLElement {
   const root = document.createElement('div');
   root.className = 'os-terminal';
@@ -80,7 +104,7 @@ export function buildTerminal(): HTMLElement {
 
   const COMMANDS: Record<string, (args: string[]) => string | null> = {
     help: () =>
-      'commands: whoami · ls · cat <file> · open <resume|github|linkedin|about|socials> · neofetch · echo · date · clear · help',
+      'commands: whoami · ls · cat <file> · open <resume|github|linkedin|about|socials> · unfold · neofetch · echo · date · clear · help',
     whoami: () => 'joseph — coterm physics + cs (ai) @ stanford · ml for fundamental physics',
     ls: (args) =>
       args[0] === 'projects' || args[0] === 'projects/'
@@ -128,6 +152,7 @@ export function buildTerminal(): HTMLElement {
         '                  Shell: zsh (allegedly)',
         '                  Theme: deep-space [dark, obviously]',
       ].join('\n'),
+    unfold: () => UNFOLD_TERMINAL_OUTPUT,
     clear: () => {
       scrollback.replaceChildren();
       return null;

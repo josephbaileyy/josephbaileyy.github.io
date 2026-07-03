@@ -36,17 +36,19 @@ const WINDOW_POS = new Vector3(9, 3.0, -7);
 const WINDOW_NORMAL = new Vector3(0.48, 0, 0.87).normalize();
 const WINDOW_QUAT = new Quaternion().setFromUnitVectors(Z, WINDOW_NORMAL);
 
-const lazyScene = <T>(
-  importer: () => Promise<T>,
-  createKey: keyof T,
-  loadKey?: keyof T,
-): SceneDef3D['importScene'] => async () => {
-  const mod = await importer();
-  return {
-    create: mod[createKey] as SceneModule['create'],
-    load: loadKey ? (mod[loadKey] as SceneModule['load']) : undefined,
+const lazyScene =
+  <T>(
+    importer: () => Promise<T>,
+    createKey: keyof T,
+    loadKey?: keyof T,
+  ): SceneDef3D['importScene'] =>
+  async () => {
+    const mod = await importer();
+    return {
+      create: mod[createKey] as SceneModule['create'],
+      load: loadKey ? (mod[loadKey] as SceneModule['load']) : undefined,
+    };
   };
-};
 
 const defs: SceneDef3D[] = [
   {

@@ -6,7 +6,11 @@ import { CHAIN3D } from '../src/scenes/registry';
 import { EARTH_RADIUS_AU } from '../src/scenes/lib/astro';
 
 const scene = (): SceneInstance => ({
-  group: new Group(), hotspots: [], update: vi.fn(), setQuality: vi.fn(), dispose: vi.fn(),
+  group: new Group(),
+  hotspots: [],
+  update: vi.fn(),
+  setQuality: vi.fn(),
+  dispose: vi.fn(),
 });
 
 describe('World physical-scale transitions', () => {
