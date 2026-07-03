@@ -6,9 +6,15 @@ export class SimulationClock extends EventTarget {
   private live = true;
   private rate = 1;
 
-  get utcMs(): number { return this.live ? Date.now() : this.valueMs; }
-  get isLive(): boolean { return this.live; }
-  get speed(): number { return this.rate; }
+  get utcMs(): number {
+    return this.live ? Date.now() : this.valueMs;
+  }
+  get isLive(): boolean {
+    return this.live;
+  }
+  get speed(): number {
+    return this.rate;
+  }
 
   tick(dtSeconds: number): number {
     if (!this.live && this.rate !== 0) {
@@ -45,7 +51,9 @@ export class SimulationClock extends EventTarget {
     this.emit();
   }
 
-  private emit(): void { this.dispatchEvent(new Event('change')); }
+  private emit(): void {
+    this.dispatchEvent(new Event('change'));
+  }
 }
 
 function clampTime(value: number): number {

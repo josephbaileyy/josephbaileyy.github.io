@@ -31,10 +31,15 @@ export class QualityMonitor {
     deviceMemoryGb = 8,
     profile: { isMobile?: boolean; isWebKit?: boolean; lowPowerGpu?: boolean } = {},
   ): void {
-    this.maxTier = profile.lowPowerGpu ? 'low' : profile.isMobile || profile.isWebKit ? 'med' : 'high';
+    this.maxTier = profile.lowPowerGpu
+      ? 'low'
+      : profile.isMobile || profile.isWebKit
+        ? 'med'
+        : 'high';
 
     if (profile.lowPowerGpu) this.tier = 'low';
-    else if (profile.isMobile || profile.isWebKit || deviceMemoryGb <= 4 || pixelCount > 6_000_000) this.tier = 'med';
+    else if (profile.isMobile || profile.isWebKit || deviceMemoryGb <= 4 || pixelCount > 6_000_000)
+      this.tier = 'med';
     else this.tier = 'high';
 
     this.tier = this.clampToMaxTier(this.tier);

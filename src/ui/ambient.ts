@@ -5,7 +5,9 @@ export class AmbientSound {
   private oscillators: OscillatorNode[] = [];
   private on = false;
 
-  get active(): boolean { return this.on; }
+  get active(): boolean {
+    return this.on;
+  }
 
   async toggle(): Promise<boolean> {
     if (this.on) {
@@ -17,7 +19,9 @@ export class AmbientSound {
   }
 
   private async start(): Promise<void> {
-    const AudioCtor = window.AudioContext ?? (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    const AudioCtor =
+      window.AudioContext ??
+      (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioCtor) return;
     this.ctx ??= new AudioCtor();
     if (this.ctx.state === 'suspended') await this.ctx.resume();

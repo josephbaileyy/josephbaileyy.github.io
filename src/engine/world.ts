@@ -1,5 +1,11 @@
 import { PerspectiveCamera, Scene, Vector3 } from 'three';
-import { anchorMatrix, cameraPoseWithAnchors, nextMountPlan, type MountPlan, type Viewport } from './rig';
+import {
+  anchorMatrix,
+  cameraPoseWithAnchors,
+  nextMountPlan,
+  type MountPlan,
+  type Viewport,
+} from './rig';
 import type { FrameCtx, QualityTier, SceneDef3D, SceneInstance } from './types3d';
 
 /**
@@ -62,7 +68,14 @@ export class World {
     return n - 1;
   }
 
-  update(depth: number, vp: Viewport, dt: number, time: number, reducedMotion: boolean, utcMs = Date.now()): void {
+  update(
+    depth: number,
+    vp: Viewport,
+    dt: number,
+    time: number,
+    reducedMotion: boolean,
+    utcMs = Date.now(),
+  ): void {
     const n = this.defs.length;
     const plan = nextMountPlan(this.plan, depth, n);
 

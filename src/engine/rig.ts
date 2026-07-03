@@ -53,9 +53,7 @@ export function restCameraPose(def: SceneDef3D, vp: Viewport): CameraPose {
 }
 
 export function anchorMatrix(anchor: AnchorSpec): Matrix4 {
-  const q = anchor.quaternion
-    ? new Quaternion(...anchor.quaternion).normalize()
-    : new Quaternion();
+  const q = anchor.quaternion ? new Quaternion(...anchor.quaternion).normalize() : new Quaternion();
   return new Matrix4().compose(
     new Vector3(...anchor.position),
     q,
@@ -192,10 +190,7 @@ export function projectToPx(
   vp: Viewport,
   out = new Vector3(),
 ): Vector3 {
-  out
-    .copy(point)
-    .applyMatrix4(camera.matrixWorldInverse)
-    .applyMatrix4(camera.projectionMatrix);
+  out.copy(point).applyMatrix4(camera.matrixWorldInverse).applyMatrix4(camera.projectionMatrix);
   out.x = ((out.x + 1) / 2) * vp.w;
   out.y = ((1 - out.y) / 2) * vp.h;
   return out;

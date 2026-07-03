@@ -19,8 +19,7 @@ export function fxAt(
   const i = Math.min(Math.floor(d), n - 2);
   const t = d - i;
 
-  const flag = (def: SceneDef3D, key: 'bloom'): number =>
-    def.effects?.[key] ? 1 : 0;
+  const flag = (def: SceneDef3D, key: 'bloom'): number => (def.effects?.[key] ? 1 : 0);
   const bloom = flag(defs[i], 'bloom') + (flag(defs[i + 1], 'bloom') - flag(defs[i], 'bloom')) * t;
   return { bloom, streak: jumpStreak, flare: jumpFlare };
 }
@@ -77,7 +76,8 @@ export class JumpController {
       // hold at full streak until the destination scenes are loaded
       if (ready && !ready(this.target)) return;
       const from = this.camera.depth;
-      const approach = this.target > from ? this.target - 0.7 : Math.min(this.target + 0.7, this.camera.max);
+      const approach =
+        this.target > from ? this.target - 0.7 : Math.min(this.target + 0.7, this.camera.max);
       this.camera.depth = Math.max(0, Math.min(approach, this.camera.max));
       this.camera.vel = 0;
       this.camera.tweenTo(this.target, now, 0.9);

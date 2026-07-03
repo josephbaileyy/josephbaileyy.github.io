@@ -82,7 +82,8 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
   window.addEventListener('pointerdown', (e) => {
     const target = e.target;
     if (!(target instanceof Element) || !target.closest('#universe, .screen-ui')) return;
-    if (target.closest(SCROLLABLE) || target.closest(INTERACTIVE) || target.closest('dialog')) return;
+    if (target.closest(SCROLLABLE) || target.closest(INTERACTIVE) || target.closest('dialog'))
+      return;
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.size === 2) lastSpread = spread();
   });
