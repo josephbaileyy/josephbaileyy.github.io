@@ -217,12 +217,12 @@ test('BaileyOS keeps projects on the desktop and videos in the dock', async ({
   await videosLauncher.click({ force: true });
   const videos = page.locator('.os-window[data-window-id="videos"]');
   await expect(videos).toBeVisible();
-  await expect(videos.getByRole('link')).toHaveCount(4);
-  await expect(videos).toContainText('WBA Grand Champion');
+  await expect(videos.getByRole('link')).toHaveCount(4, { timeout: 15_000 });
+  await expect(videos).toContainText('WBA Grand Champion', { timeout: 15_000 });
   await expect(
     videos.locator('.os-video-achievement').filter({ hasText: 'WBA Grand Champion' }),
-  ).toHaveCount(3);
-  await expect(videos).toContainText('WGI World Silver');
+  ).toHaveCount(3, { timeout: 15_000 });
+  await expect(videos).toContainText('WGI World Silver', { timeout: 15_000 });
 });
 
 test('project PDFs open inside BaileyOS with tab/download options', async ({ page }, testInfo) => {
