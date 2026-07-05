@@ -35,7 +35,7 @@ export function createNumiHall(_assets: SceneAssets): SceneInstance {
 
   const detector = new Group();
   detector.position.y = 1.65;
-  const colors = [0x63d7bc, 0x63d7bc, 0x63d7bc, 0xf2cc69, 0xe47865];
+  const colors = [0x719b91, 0x719b91, 0x719b91, 0xa59b70, 0x93706b];
   for (let plane = 0; plane < 24; plane++) {
     const section = plane < 15 ? 0 : plane < 20 ? 3 : 4;
     const slab = new Mesh(
@@ -77,25 +77,25 @@ export function createNumiHall(_assets: SceneAssets): SceneInstance {
 
   const label = textSprite(
     [
-      { text: 'MINERvA', color: '#8ff3df', size: 38 },
-      { text: 'tracker · ECAL · HCAL', color: '#f5d98b', size: 22 },
+      { text: 'MINERvA', color: '#c5d9d4', size: 36 },
+      { text: 'tracker · calorimeters', color: '#c7c2a8', size: 20 },
     ],
-    { worldWidth: 7, width: 620, opacity: 0.88 },
+    { worldWidth: 6.5, width: 590, opacity: 0.68 },
   );
   label.position.set(-4.8, 5.7, 0);
   group.add(label);
   const minosLabel = textSprite(
     [{ text: 'MINOS near detector · muon spectrometer', color: '#a9cfe8', size: 24 }],
-    { worldWidth: 7.6, width: 700, opacity: 0.72 },
+    { worldWidth: 7.2, width: 680, opacity: 0.56 },
   );
   minosLabel.position.set(0, 6.3, -7.7);
   group.add(minosLabel);
 
-  group.add(new AmbientLight(0x7891a4, 1.3));
-  const key = new DirectionalLight(0xc5e4ff, 2.4);
+  group.add(new AmbientLight(0x7891a4, 1.1));
+  const key = new DirectionalLight(0xc5e4ff, 1.85);
   key.position.set(5, 9, 8);
   group.add(key);
-  const work = new PointLight(0x75eaff, 16, 18);
+  const work = new PointLight(0xa8dbe2, 8, 18);
   work.position.set(-5, 5.5, 2);
   group.add(work);
 

@@ -8,6 +8,7 @@ const LINE_HEIGHT = 16; // px per wheel line (deltaMode 1)
 // must NOT zoom the camera (and must keep native scrolling).
 const SCROLLABLE = '.os-term-scrollback, .os-doc';
 const INTERACTIVE = 'input, textarea, select, button, a, [contenteditable="true"]';
+const NATIVE_GESTURE = `${SCROLLABLE}, ${INTERACTIVE}, dialog`;
 
 export interface InputOptions {
   reducedMotion: boolean;
@@ -80,17 +81,38 @@ export function attachInput(stage: HTMLElement, camera: Camera, opts: InputOptio
     return Math.hypot(p1.x - p2.x, p1.y - p2.y);
   };
 
+  // Scene overlays are siblings of the canvas, not descendants of it. Treat
+  // every non-interactive surface in the mounted universe as camera input so
+  // an overlay cannot create a dead zone for pinch gestures.
+  const ownsUniverseGesture = (target: EventTarget | null): target is Element =>
+    target instanceof Element && !target.closest(NATIVE_GESTURE);
+
+  // Safari can claim a two-finger gesture before Pointer Events have moved
+  // when the hit-tested overlay has touch-action:auto. Cancelling the legacy
+  // touch stream keeps those overlay-originated pointers alive. This module is
+  // never mounted on the mobile DOM home, where browser pinch remains native.
+  const preventNativeUniverseGesture = (event: TouchEvent) => {
+    if (ownsUniverseGesture(event.target)) event.preventDefault();
+  };
+  window.addEventListener('touchstart', preventNativeUniverseGesture, {
+    passive: false,
+    capture: true,
+  });
+  window.addEventListener('touchmove', preventNativeUniverseGesture, {
+    passive: false,
+    capture: true,
+  });
+
   window.addEventListener('pointerdown', (e) => {
-    const target = e.target;
-    if (!(target instanceof Element) || !target.closest('#universe, .screen-ui')) return;
-    if (target.closest(SCROLLABLE) || target.closest(INTERACTIVE) || target.closest('dialog'))
-      return;
+    if (!ownsUniverseGesture(e.target)) return;
+    e.preventDefault();
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.size === 2) lastSpread = spread();
   });
 
   window.addEventListener('pointermove', (e) => {
     if (!pointers.has(e.pointerId)) return;
+    e.preventDefault();
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (pointers.size === 2 && !opts.isModalOpen()) {
       const s = spread();

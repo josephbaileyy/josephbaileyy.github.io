@@ -113,6 +113,21 @@ body {
   cursor: grab;
 }
 
+body::after {
+  position: fixed;
+  z-index: 98;
+  inset: 0;
+  background: #050815;
+  content: '';
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+body[data-rerouting]::after {
+  opacity: 1;
+}
+
 #a11y-layer {
   position: fixed;
   inset: 0;

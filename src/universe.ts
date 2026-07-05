@@ -355,7 +355,7 @@ function switchBranch(branch: 'stanford' | 'fermilab', route: string): void {
   hud.announceStatus(`Rerouting: ${place}`);
   document.body.dataset.rerouting = branch;
   history.pushState({ universeBranch: branch }, '', `#/${route}`);
-  window.setTimeout(() => location.reload(), reduced ? 0 : 180);
+  window.setTimeout(() => location.reload(), reduced ? 0 : 220);
 }
 
 window.addEventListener('universe:branch-route', (event) => {

@@ -2,6 +2,30 @@ import { expect, test } from '@playwright/test';
 
 const isMobileProject = (name: string): boolean => name.includes('mobile');
 
+const dispatchPinch = async (
+  page: import('@playwright/test').Page,
+  direction: 'out' | 'in',
+  center: { x: number; y: number },
+) => {
+  const session = await page.context().newCDPSession(page);
+  const startHalf = direction === 'out' ? 24 : 92;
+  const endHalf = direction === 'out' ? 92 : 24;
+  const points = (half: number) => [
+    { x: center.x - half, y: center.y, id: 0, radiusX: 8, radiusY: 8 },
+    { x: center.x + half, y: center.y, id: 1, radiusX: 8, radiusY: 8 },
+  ];
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchStart',
+    touchPoints: points(startHalf),
+  });
+  await session.send('Input.dispatchTouchEvent', {
+    type: 'touchMove',
+    touchPoints: points(endHalf),
+  });
+  await session.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  await session.detach();
+};
+
 const openTerminal = async (page: import('@playwright/test').Page, projectName: string) => {
   if (isMobileProject(projectName)) {
     await page.locator('.os-mobile-app[data-app-id="more"]').click();
@@ -72,6 +96,10 @@ test('event display toggles representations and hands off to the Unfolding Lab',
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/#/event');
   await expect(page.locator('body[data-scene-ready="event"]')).toBeAttached({ timeout: 15_000 });
+  await expect(page.locator('[data-event-hit-map] canvas')).toBeVisible();
+  await expect(page.locator('[data-event-hit-map]')).toContainText(
+    "Arachne, MINERvA's web event viewer",
+  );
   const scalars = page.getByRole('button', { name: 'engineered scalars' });
   await scalars.click();
   await expect(scalars).toHaveAttribute('aria-pressed', 'true');
@@ -84,6 +112,52 @@ test('event display toggles representations and hands off to the Unfolding Lab',
   await expect(page.locator('.os-window[data-window-id="unfolding-lab"]')).toBeVisible({
     timeout: 15_000,
   });
+});
+
+test('mobile two-finger pinch travels through bare canvas and scene overlays', async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== 'mobile', 'CDP touch emulation runs in mobile Chromium');
+  test.setTimeout(90_000);
+
+  await page.goto('/#/galaxy');
+  await expect(page.locator('body[data-scene-ready="galaxy"]')).toBeAttached({ timeout: 15_000 });
+  await dispatchPinch(page, 'out', { x: 100, y: 500 });
+  await expect(page).toHaveURL(/#\/solar$/, { timeout: 15_000 });
+  await expect(page.locator('body[data-scene-ready="solar"]')).toBeAttached({ timeout: 15_000 });
+  await expect(page.locator('.solar-overlay.active')).toBeAttached();
+  await dispatchPinch(page, 'in', { x: 100, y: 500 });
+  await expect(page).toHaveURL(/#\/galaxy$/, { timeout: 15_000 });
+  await expect(page.locator('body[data-scene-ready="galaxy"]')).toBeAttached({ timeout: 15_000 });
+
+  await page.goto('/#/solar');
+  await expect(page.locator('body[data-scene-ready="solar"]')).toBeAttached({ timeout: 15_000 });
+  await expect(page.locator('.solar-overlay.active')).toBeAttached();
+  await dispatchPinch(page, 'out', { x: 100, y: 500 });
+  await expect(page).toHaveURL(/#\/earth$/, { timeout: 15_000 });
+  await expect(page.locator('body[data-scene-ready="earth"]')).toBeAttached({ timeout: 15_000 });
+  await page.goto('/#/solar');
+  await expect(page.locator('body[data-scene-ready="solar"]')).toBeAttached({ timeout: 15_000 });
+  await expect(page.locator('.solar-overlay.active')).toBeAttached();
+  await dispatchPinch(page, 'in', { x: 100, y: 500 });
+  await expect(page).toHaveURL(/#\/galaxy$/, { timeout: 15_000 });
+  await expect(page.locator('body[data-scene-ready="galaxy"]')).toBeAttached({ timeout: 15_000 });
+
+  await page.goto('/#/event');
+  await expect(page.locator('body[data-scene-ready="event"]')).toBeAttached({ timeout: 15_000 });
+  const eventPanel = await page.locator('.event-display-ui').boundingBox();
+  expect(eventPanel).not.toBeNull();
+  await dispatchPinch(page, 'in', {
+    x: eventPanel!.x + eventPanel!.width / 2,
+    y: eventPanel!.y + 140,
+  });
+  await expect(page).toHaveURL(/#\/numi-hall$/, { timeout: 15_000 });
+  await expect(page.locator('body[data-scene-ready="numi-hall"]')).toBeAttached({
+    timeout: 15_000,
+  });
+  await dispatchPinch(page, 'out', { x: 100, y: 500 });
+  await expect(page).toHaveURL(/#\/event$/, { timeout: 15_000 });
+  await expect(page.locator('body[data-scene-ready="event"]')).toBeAttached({ timeout: 15_000 });
 });
 test('panels, history, keyboard navigation, and terminal work', async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });

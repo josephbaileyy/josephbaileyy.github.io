@@ -53,10 +53,11 @@ export function createFermilab(_assets: SceneAssets): SceneInstance {
   ring.position.set(7.5, 0.5, 5.5);
   ring.receiveShadow = true;
   group.add(ring);
-  const ringLabel = textSprite(
-    [{ text: 'MAIN INJECTOR · 3.3 km ring', color: '#dceba9', size: 26 }],
-    { worldWidth: 8, width: 660, opacity: 0.72 },
-  );
+  const ringLabel = textSprite([{ text: 'MAIN INJECTOR · 3.3 km', color: '#cbd7b1', size: 24 }], {
+    worldWidth: 7.2,
+    width: 600,
+    opacity: 0.58,
+  });
   ringLabel.position.set(11, 2.2, 8);
   group.add(ringLabel);
 
@@ -76,23 +77,23 @@ export function createFermilab(_assets: SceneAssets): SceneInstance {
   group.add(shaft);
   const shaftRing = new Mesh(
     new RingGeometry(0.7, 1.05, 28),
-    new MeshBasicMaterial({ color: 0x74e8ff, transparent: true, opacity: 0.72 }),
+    new MeshBasicMaterial({ color: 0xa8d6df, transparent: true, opacity: 0.52 }),
   );
   shaftRing.rotation.x = -Math.PI / 2;
   shaftRing.position.set(5.4, 0.05, -5.8);
   group.add(shaftRing);
   const shaftLabel = textSprite(
     [
-      { text: 'NuMI', color: '#8fefff', size: 31 },
-      { text: '120 m below prairie', color: '#f1f5ff', size: 22 },
+      { text: 'NuMI', color: '#c5e5ea', size: 29 },
+      { text: '120 m underground', color: '#d8dee3', size: 20 },
     ],
-    { worldWidth: 6, width: 520, opacity: 0.86 },
+    { worldWidth: 5.5, width: 500, opacity: 0.7 },
   );
   shaftLabel.position.set(5.4, 2.3, -5.8);
   group.add(shaftLabel);
 
-  group.add(new AmbientLight(0x7690a8, 1.5));
-  const sun = new DirectionalLight(0xffe4bd, 3.2);
+  group.add(new AmbientLight(0x7690a8, 1.25));
+  const sun = new DirectionalLight(0xffe4bd, 2.55);
   sun.position.set(8, 18, 12);
   sun.castShadow = true;
   group.add(sun);
@@ -110,7 +111,7 @@ export function createFermilab(_assets: SceneAssets): SceneInstance {
       action: { type: 'zoom', dir: 'in' },
       setHover(on) {
         shaftRing.scale.setScalar(on ? 1.3 : 1);
-        shaftRing.material.opacity = on ? 1 : 0.72;
+        shaftRing.material.opacity = on ? 0.8 : 0.52;
       },
     },
   ];
