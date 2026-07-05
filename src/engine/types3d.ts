@@ -1,12 +1,23 @@
 import type { Group, Object3D, PerspectiveCamera } from 'three';
 
-export type SceneId = 'galaxy' | 'solar' | 'earth' | 'stanford' | 'room' | 'screen';
+export type SceneId =
+  | 'galaxy'
+  | 'solar'
+  | 'earth'
+  | 'stanford'
+  | 'room'
+  | 'screen'
+  | 'fermilab'
+  | 'numi-hall'
+  | 'event';
+export type UniverseBranch = 'stanford' | 'fermilab';
 export type QualityTier = 'high' | 'med' | 'low';
 
 export type HotspotAction =
   | { type: 'panel'; panelId: string }
   | { type: 'signal'; signalId: string; route?: boolean }
   | { type: 'app'; appId: string }
+  | { type: 'branch'; branch: UniverseBranch; destination: string }
   | { type: 'zoom'; dir: 'in' | 'out' }
   | { type: 'navigate'; index: number };
 

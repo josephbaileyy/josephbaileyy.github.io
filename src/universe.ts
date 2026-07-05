@@ -11,7 +11,7 @@ import { projectToPx, scaleExponent } from './engine/rig';
 import { fxAt, JumpController } from './engine/transitions';
 import { World } from './engine/world';
 import { SceneLoader } from './engine/loader';
-import { CHAIN3D } from './scenes/registry';
+import { branchForHash, chainForBranch } from './scenes/registry';
 import { Hud, type ObservationDestination } from './ui/hud';
 import { LoadingOverlay } from './ui/loading';
 import { PanelHost } from './ui/panel';
@@ -26,6 +26,8 @@ import { initAnalytics, trackEvent } from './analytics';
 
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const now = () => performance.now() / 1000;
+const BRANCH = branchForHash(location.hash);
+const CHAIN3D = chainForBranch(BRANCH);
 
 const canvas = document.getElementById('universe') as HTMLCanvasElement;
 const hudEl = document.getElementById('hud')!;
@@ -219,13 +221,24 @@ window.addEventListener('universe:signal', (event) => {
 
 const ribbon = new ScaleRibbon(hudEl);
 const SCENE_HINTS = [
-  'select a glowing research object · scroll inward to travel',
-  'choose a planet to focus · adjust UTC and playback above',
-  'drag the globe · select a coordinate · choose Stanford to continue inward',
-  'select the illuminated dorm window',
-  'click the monitor to enter BaileyOS',
-  'use the dock · drag, resize, minimize, or maximize windows',
-] as const;
+  ...(BRANCH === 'fermilab'
+    ? [
+        'select a glowing research object · scroll inward to travel',
+        'choose a planet to focus · adjust UTC and playback above',
+        'drag the globe · choose Fermilab or Stanford',
+        'descend from the prairie into the NuMI hall',
+        'enter the MINERvA active volume',
+        'compare raw clusters with engineered scalars',
+      ]
+    : [
+        'select a glowing research object · scroll inward to travel',
+        'choose a planet to focus · adjust UTC and playback above',
+        'drag the globe · select a coordinate · choose Stanford to continue inward',
+        'select the illuminated dorm window',
+        'click the monitor to enter BaileyOS',
+        'use the dock · drag, resize, minimize, or maximize windows',
+      ]),
+];
 
 const OBSERVATIONS: Record<string, { body: string; destination?: ObservationDestination }> = {
   galaxy: {
@@ -252,6 +265,17 @@ const OBSERVATIONS: Record<string, { body: string; destination?: ObservationDest
     body: 'BaileyOS is a DOM mission desktop projected onto the monitor inside the 3D universe.',
     destination: { type: 'app', appId: 'start', label: 'Open Start Here' },
   },
+  fermilab: {
+    body: 'Detour: Batavia, IL — Wilson Hall, the Main Injector, and the source of the MINERvA data.',
+    destination: { type: 'scene', index: 4, label: 'Descend into NuMI' },
+  },
+  'numi-hall': {
+    body: 'Hexagonal MINERvA scintillator planes sit upstream of the MINOS near-detector muon spectrometer.',
+    destination: { type: 'scene', index: 5, label: 'Inspect one interaction' },
+  },
+  event: {
+    body: 'A deterministic synthetic event contrasts engineered summary variables with the raw cluster cloud.',
+  },
 };
 
 const HOTSPOT_OBSERVATIONS: Record<string, { body: string; destination?: ObservationDestination }> =
@@ -266,7 +290,7 @@ const HOTSPOT_OBSERVATIONS: Record<string, { body: string; destination?: Observa
     },
   };
 
-const SCREEN_INDEX = CHAIN3D.length - 1;
+const SCREEN_INDEX = CHAIN3D.findIndex((scene) => scene.id === 'screen');
 const a11yLayer = document.getElementById('a11y-layer')!;
 const screenUi = new ScreenUi((id) => openPanel(id, SCREEN_INDEX));
 let earthExplorer: import('./ui/earth-explorer').EarthExplorer | null = null;
@@ -317,11 +341,39 @@ const hotspots = new HotspotManager(canvas, a11yLayer, world.camera, vp, (h) => 
     navigateTo(h.action.index);
   } else if (h.action.type === 'app') {
     performDestination({ type: 'app', appId: h.action.appId, label: h.label });
+  } else if (h.action.type === 'branch') {
+    switchBranch(h.action.branch, h.action.destination);
   } else {
     const target = world.baseIndex() + (h.action.dir === 'in' ? 1 : -1);
     travelToScene(target);
   }
 });
+
+function switchBranch(branch: 'stanford' | 'fermilab', route: string): void {
+  if (branch === BRANCH) return;
+  const place = branch === 'fermilab' ? 'Batavia, IL' : 'Stanford, CA';
+  hud.announceStatus(`Rerouting: ${place}`);
+  document.body.dataset.rerouting = branch;
+  history.pushState({ universeBranch: branch }, '', `#/${route}`);
+  window.setTimeout(() => location.reload(), reduced ? 0 : 180);
+}
+
+window.addEventListener('universe:branch-route', (event) => {
+  const detail = (event as CustomEvent<{ branch: 'stanford' | 'fermilab'; route: string }>).detail;
+  if (!detail) return;
+  switchBranch(detail.branch, detail.route);
+});
+
+const reloadForCrossBranchHistory = () => {
+  const uniqueIntent = location.hash.match(
+    /^#\/(stanford|room|screen|fermilab|numi-hall|event)(?:\/|$)/,
+  )?.[1];
+  if (!uniqueIntent) return;
+  const intended = /^(fermilab|numi-hall|event)$/.test(uniqueIntent) ? 'fermilab' : 'stanford';
+  if (intended !== BRANCH) location.reload();
+};
+window.addEventListener('hashchange', reloadForCrossBranchHistory);
+window.addEventListener('popstate', reloadForCrossBranchHistory);
 
 function performDestination(destination: ObservationDestination): void {
   if (destination.type === 'panel') {
@@ -329,6 +381,10 @@ function performDestination(destination: ObservationDestination): void {
   } else if (destination.type === 'scene') {
     navigateTo(destination.index);
   } else if (destination.type === 'app') {
+    if (SCREEN_INDEX < 0) {
+      switchBranch('stanford', `screen/app/${encodeURIComponent(destination.appId)}`);
+      return;
+    }
     if (osBuilt && Math.round(camera.depth) === CHAIN3D.length - 1) {
       requestOsAppOpen(destination.appId);
     } else {

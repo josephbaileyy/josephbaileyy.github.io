@@ -2,8 +2,11 @@ import {
   AdditiveBlending,
   AmbientLight,
   BackSide,
+  BufferGeometry,
   DirectionalLight,
   Group,
+  Line,
+  LineDashedMaterial,
   Mesh,
   MeshBasicMaterial,
   MeshLambertMaterial,
@@ -35,6 +38,10 @@ import { daysSinceJ2000 } from './lib/astro';
 import { trackEvent } from '../analytics';
 
 const R = 10;
+const FERMILAB_LAT = 41.8412;
+const FERMILAB_LON = -88.2611;
+const SOUDAN_LAT = 47.82;
+const SOUDAN_LON = -92.24;
 const COORDINATE_SIGNALS = [
   {
     id: 'earth-stanford-slac',
@@ -57,8 +64,7 @@ const COORDINATE_SIGNALS = [
 const DEFAULT_ANCHOR_SCALE = 0.04;
 const MIN_ZOOM = 0.78;
 const MAX_ZOOM = 1.5;
-const FRONT_NORMAL = latLonToVec3(STANFORD_LAT, STANFORD_LON, 1).normalize();
-const STANFORD_QUAT = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), FRONT_NORMAL);
+const STANFORD_FRONT_NORMAL = latLonToVec3(STANFORD_LAT, STANFORD_LON, 1).normalize();
 const INTERACTIVE = 'input, textarea, select, button, a, [contenteditable="true"]';
 
 export interface EarthViewState {
@@ -105,7 +111,15 @@ function sunGlowTexture(): Texture {
   });
 }
 
-export function createEarth(assets: SceneAssets): SceneInstance {
+export function createEarthStanford(assets: SceneAssets): SceneInstance {
+  return createEarth(assets, 'stanford');
+}
+
+export function createEarthFermilab(assets: SceneAssets): SceneInstance {
+  return createEarth(assets, 'fermilab');
+}
+
+function createEarth(assets: SceneAssets, branch: 'stanford' | 'fermilab'): SceneInstance {
   const group = new Group();
   const surface = new Group();
   group.add(surface);
@@ -188,15 +202,7 @@ export function createEarth(assets: SceneAssets): SceneInstance {
   moonPivot.add(moon);
   group.add(moonPivot);
 
-  // ---- Stanford beacon (childProxy: hidden when the diorama mounts) ----
-  const beaconNormal = latLonToVec3(STANFORD_LAT, STANFORD_LON, 1).normalize();
-  const beaconPos = beaconNormal.clone().multiplyScalar(R * 1.002);
-  const beacon = new Group();
-  beacon.position.copy(beaconPos);
-  beacon.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), beaconNormal);
-
-  const dot = new Mesh(new SphereGeometry(0.07, 12, 8), new MeshBasicMaterial({ color: 0xff5a5a }));
-  beacon.add(dot);
+  // ---- Stanford and Fermilab destination beacons ----
   const pillarTex = canvasTexture(32, 128, (ctx) => {
     const g = ctx.createLinearGradient(0, 128, 0, 0);
     g.addColorStop(0, 'rgba(255, 90, 90, 0.85)');
@@ -204,29 +210,88 @@ export function createEarth(assets: SceneAssets): SceneInstance {
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, 32, 128);
   });
-  const pillar = new Sprite(
-    new SpriteMaterial({ map: pillarTex, transparent: true, depthWrite: false }),
+  const makeBeacon = (normal: Vector3, color: number, title: string, subtitle: string) => {
+    const position = normal.clone().multiplyScalar(R * 1.002);
+    const marker = new Group();
+    marker.position.copy(position);
+    marker.quaternion.setFromUnitVectors(new Vector3(0, 1, 0), normal);
+    marker.add(new Mesh(new SphereGeometry(0.07, 12, 8), new MeshBasicMaterial({ color })));
+    const pillar = new Sprite(
+      new SpriteMaterial({ map: pillarTex, color, transparent: true, depthWrite: false }),
+    );
+    pillar.scale.set(0.18, 1.1, 1);
+    pillar.position.y = 0.55;
+    marker.add(pillar);
+    const ring = new Mesh(
+      new RingGeometry(0.12, 0.16, 32),
+      new MeshBasicMaterial({ color, transparent: true, depthWrite: false }),
+    );
+    ring.rotation.x = -Math.PI / 2;
+    marker.add(ring);
+    surface.add(marker);
+    const label = textSprite(
+      [
+        { text: title, color: '#f5f8ff', size: 32 },
+        { text: subtitle, color: '#9fddff', size: 23 },
+      ],
+      { worldWidth: 6.4, width: 620, opacity: 0 },
+    );
+    label.position.copy(position).addScaledVector(normal, 1.45);
+    surface.add(label);
+    return { group: marker, position, pillar, ring, label };
+  };
+  const stanfordNormal = latLonToVec3(STANFORD_LAT, STANFORD_LON, 1).normalize();
+  const fermilabNormal = latLonToVec3(FERMILAB_LAT, FERMILAB_LON, 1).normalize();
+  const stanfordBeacon = makeBeacon(
+    stanfordNormal,
+    0xff5a5a,
+    'stanford, california',
+    'where I study',
   );
-  pillar.scale.set(0.18, 1.1, 1);
-  pillar.position.y = 0.55;
-  beacon.add(pillar);
-  const ring = new Mesh(
-    new RingGeometry(0.12, 0.16, 32),
-    new MeshBasicMaterial({ color: 0xff5a5a, transparent: true, depthWrite: false }),
+  const fermilabBeacon = makeBeacon(
+    fermilabNormal,
+    0x69e6ff,
+    'fermilab · batavia, illinois',
+    'where the data comes from',
   );
-  ring.rotation.x = -Math.PI / 2;
-  beacon.add(ring);
-  surface.add(beacon);
+  const targetBeacon = branch === 'fermilab' ? fermilabBeacon : stanfordBeacon;
+  const beaconNormal = branch === 'fermilab' ? fermilabNormal : stanfordNormal;
+  const beaconPos = targetBeacon.position;
+  const targetQuat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), beaconNormal);
+  const frontNormal = branch === 'fermilab' ? fermilabNormal : STANFORD_FRONT_NORMAL;
 
-  const label = textSprite(
-    [
-      { text: 'stanford, california', color: '#f5f8ff', size: 34 },
-      { text: 'click to visit', color: '#9fddff', size: 25 },
-    ],
-    { worldWidth: 5.8, width: 560, opacity: 0 },
+  // The NuMI baseline is shown as a chord through the crust, not a surface arc.
+  const soudanNormal = latLonToVec3(SOUDAN_LAT, SOUDAN_LON, 1).normalize();
+  const beamline = new Line(
+    new BufferGeometry().setFromPoints([
+      fermilabNormal.clone().multiplyScalar(R * 0.998),
+      soudanNormal.clone().multiplyScalar(R * 0.998),
+    ]),
+    new LineDashedMaterial({
+      color: 0x70e8ff,
+      transparent: true,
+      opacity: 0.42,
+      dashSize: 0.18,
+      gapSize: 0.11,
+      depthTest: false,
+    }),
   );
-  label.position.copy(beaconPos).addScaledVector(beaconNormal, 1.45);
-  surface.add(label);
+  beamline.computeLineDistances();
+  beamline.renderOrder = 4;
+  surface.add(beamline);
+  const beamLabel = textSprite(
+    [
+      { text: 'NuMI → Soudan · 740 km through solid rock', color: '#a9efff', size: 27 },
+      { text: "neutrinos don't care", color: '#f5f8ff', size: 23 },
+    ],
+    { worldWidth: 7.2, width: 700, opacity: 0.58 },
+  );
+  beamLabel.position
+    .copy(fermilabNormal)
+    .add(soudanNormal)
+    .normalize()
+    .multiplyScalar(R * 1.12);
+  surface.add(beamLabel);
 
   // ---- coordinate signal layer ----
   const signalHotspots: Hotspot3D[] = [];
@@ -273,19 +338,43 @@ export function createEarth(assets: SceneAssets): SceneInstance {
     });
   }
 
-  // ---- hotspot ----
-  const hit = new Mesh(new SphereGeometry(1.5, 8, 6), new MeshBasicMaterial({ visible: false }));
-  hit.position.copy(beaconPos);
-  surface.add(hit);
+  // ---- destination hotspots ----
+  const stanfordHit = new Mesh(
+    new SphereGeometry(1.2, 8, 6),
+    new MeshBasicMaterial({ visible: false }),
+  );
+  stanfordHit.position.copy(stanfordBeacon.position);
+  surface.add(stanfordHit);
+  const fermilabHit = new Mesh(
+    new SphereGeometry(1.2, 8, 6),
+    new MeshBasicMaterial({ visible: false }),
+  );
+  fermilabHit.position.copy(fermilabBeacon.position);
+  surface.add(fermilabHit);
   const hotspots: Hotspot3D[] = [
     ...signalHotspots,
     {
-      object: hit,
+      object: stanfordHit,
       label: 'Zoom in to Stanford University',
-      action: { type: 'zoom', dir: 'in' },
+      action:
+        branch === 'stanford'
+          ? { type: 'zoom', dir: 'in' }
+          : { type: 'branch', branch: 'stanford', destination: 'stanford' },
       setHover(on) {
-        pillar.material.opacity = on ? 1 : 0.8;
-        label.material.opacity = on ? 0.95 : 0;
+        stanfordBeacon.pillar.material.opacity = on ? 1 : 0.8;
+        stanfordBeacon.label.material.opacity = on ? 0.95 : 0;
+      },
+    },
+    {
+      object: fermilabHit,
+      label: 'Fermilab — where the data comes from',
+      action:
+        branch === 'fermilab'
+          ? { type: 'zoom', dir: 'in' }
+          : { type: 'branch', branch: 'fermilab', destination: 'fermilab' },
+      setHover(on) {
+        fermilabBeacon.pillar.material.opacity = on ? 1 : 0.8;
+        fermilabBeacon.label.material.opacity = on ? 0.95 : 0;
       },
     },
   ];
@@ -309,7 +398,7 @@ export function createEarth(assets: SceneAssets): SceneInstance {
   const dragPitch = new Quaternion();
   const childAnchor: AnchorSpec = {
     position: [beaconPos.x, beaconPos.y, beaconPos.z],
-    quaternion: [STANFORD_QUAT.x, STANFORD_QUAT.y, STANFORD_QUAT.z, STANFORD_QUAT.w],
+    quaternion: [targetQuat.x, targetQuat.y, targetQuat.z, targetQuat.w],
     scale: DEFAULT_ANCHOR_SCALE,
   };
   let cloudSpin = 0;
@@ -330,7 +419,7 @@ export function createEarth(assets: SceneAssets): SceneInstance {
       if (!signal) return;
       const normal = latLonToVec3(signal.lat, signal.lon, 1).normalize();
       const current = normal.clone().applyQuaternion(surface.quaternion).normalize();
-      const delta = new Quaternion().setFromUnitVectors(current, FRONT_NORMAL);
+      const delta = new Quaternion().setFromUnitVectors(current, frontNormal);
       focusQuat = delta.multiply(surface.quaternion.clone()).normalize();
     },
     () => resetGlobe(),
@@ -408,7 +497,7 @@ export function createEarth(assets: SceneAssets): SceneInstance {
         // Rotate the globe so the visitor's dot faces the camera.
         const current = normal.clone().applyQuaternion(surface.quaternion).normalize();
         focusQuat = new Quaternion()
-          .setFromUnitVectors(current, FRONT_NORMAL)
+          .setFromUnitVectors(current, frontNormal)
           .multiply(surface.quaternion.clone())
           .normalize();
         overlay.setLocateState({
@@ -528,7 +617,7 @@ export function createEarth(assets: SceneAssets): SceneInstance {
     group,
     hotspots,
     childAnchor,
-    childProxy: beacon,
+    childProxy: targetBeacon.group,
     update(ctx) {
       sunDirection(ctx.utcMs, sunDir);
       rotatedSunDir.copy(sunDir).applyQuaternion(surface.quaternion);
@@ -564,7 +653,7 @@ export function createEarth(assets: SceneAssets): SceneInstance {
       childAnchor.position[0] = stanfordWorldNormal.x * R * 1.002 * viewState.zoom;
       childAnchor.position[1] = stanfordWorldNormal.y * R * 1.002 * viewState.zoom;
       childAnchor.position[2] = stanfordWorldNormal.z * R * 1.002 * viewState.zoom;
-      stanfordWorldQuat.copy(surface.quaternion).multiply(STANFORD_QUAT).normalize();
+      stanfordWorldQuat.copy(surface.quaternion).multiply(targetQuat).normalize();
       childAnchor.quaternion = [
         stanfordWorldQuat.x,
         stanfordWorldQuat.y,
@@ -577,8 +666,10 @@ export function createEarth(assets: SceneAssets): SceneInstance {
         cloudSpin += ctx.dt * 0.004;
         cloudMesh.rotation.y = cloudSpin;
         const pulse = (ctx.time % 2.2) / 2.2;
-        ring.scale.setScalar(1 + pulse * 5);
-        (ring.material as MeshBasicMaterial).opacity = 0.85 * (1 - pulse);
+        for (const destination of [stanfordBeacon, fermilabBeacon]) {
+          destination.ring.scale.setScalar(1 + pulse * 5);
+          destination.ring.material.opacity = 0.85 * (1 - pulse);
+        }
       }
     },
     syncUi(camera, viewport) {

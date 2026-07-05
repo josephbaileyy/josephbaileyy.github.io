@@ -1,0 +1,132 @@
+.event-display-ui {
+  position: fixed;
+  z-index: 20;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(22px, env(safe-area-inset-bottom));
+  width: min(390px, calc(100vw - 36px));
+  padding: 16px;
+  border: 1px solid rgba(112, 232, 255, 0.34);
+  border-radius: 16px;
+  background: rgba(5, 10, 24, 0.82);
+  color: #eef7ff;
+  font-family: var(--font-mono);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(12px);
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease;
+  backdrop-filter: blur(14px);
+}
+
+.event-display-ui.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.event-display-heading span {
+  color: #8da5b8;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.event-display-heading h2 {
+  margin: 7px 0 3px;
+  font: 700 18px var(--font-ui);
+}
+
+.event-display-heading p,
+.event-display-caption {
+  margin: 0;
+  color: #a9c2d4;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.event-display-switch,
+.event-display-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.event-display-ui button {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 8px 11px;
+  border: 1px solid rgba(112, 232, 255, 0.34);
+  border-radius: 9px;
+  background: rgba(23, 42, 64, 0.86);
+  color: #dff8ff;
+  font: 600 11px var(--font-mono);
+  cursor: pointer;
+}
+
+.event-display-ui button[aria-pressed='true'] {
+  border-color: #70e8ff;
+  background: rgba(27, 103, 123, 0.75);
+}
+
+.event-display-ui button:focus-visible {
+  outline: 2px solid #ffd479;
+  outline-offset: 2px;
+}
+
+.event-scalar-card {
+  margin-top: 12px;
+}
+
+.event-scalar-card dl {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin: 0;
+}
+
+.event-scalar-card dl div {
+  padding: 7px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.event-scalar-card dt {
+  color: #8da5b8;
+  font-size: 9px;
+  text-transform: uppercase;
+}
+
+.event-scalar-card dd {
+  margin: 3px 0 0;
+  font-size: 12px;
+}
+
+.event-display-caption {
+  margin-top: 11px;
+  color: #ffd479;
+}
+
+.event-display-actions button:last-child {
+  flex: 1;
+}
+
+@media (max-width: 767px) {
+  .event-display-ui {
+    right: 12px;
+    bottom: max(76px, env(safe-area-inset-bottom));
+    width: calc(100vw - 24px);
+    padding: 13px;
+  }
+
+  .event-display-heading p {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .event-display-ui {
+    transition: none;
+  }
+}

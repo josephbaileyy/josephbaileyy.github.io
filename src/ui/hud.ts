@@ -44,6 +44,7 @@ export class Hud {
   private onOpenDestination?: (destination: ObservationDestination) => void;
   private sceneVisits = new Map<string, ObservationEntry>();
   private signalObservations = new Map<string, ObservationEntry>();
+  private statusMessage: string | null = null;
 
   constructor(
     private root: HTMLElement,
@@ -340,6 +341,12 @@ export class Hud {
     this.live.textContent = `Now viewing: ${label}`;
   }
 
+  announceStatus(message: string): void {
+    this.statusMessage = message;
+    this.stepText.textContent = message;
+    this.live.textContent = message;
+  }
+
   traveling(index: number): void {
     this.travelTarget = index;
     this.preparing = false;
@@ -361,6 +368,10 @@ export class Hud {
   }
 
   private renderStepLabel(): void {
+    if (this.statusMessage) {
+      this.stepText.textContent = this.statusMessage;
+      return;
+    }
     const index = this.travelTarget ?? this.activeIndex;
     const prefix =
       this.travelTarget === null ? 'Now viewing' : this.preparing ? 'Preparing' : 'Traveling to';

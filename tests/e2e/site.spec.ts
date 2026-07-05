@@ -41,6 +41,49 @@ test.describe('deep links', () => {
       await expect(page.locator('.loading-overlay')).not.toHaveClass(/failed/);
     });
   }
+  for (const [route, label] of [
+    ['fermilab', 'Fermilab'],
+    ['numi-hall', 'NuMI underground hall'],
+    ['event', 'MINERvA event'],
+  ] as const) {
+    test(`${route} reaches ${label}`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.goto(`/#/${route}`);
+      await expect(page.locator(`body[data-scene-ready="${route}"]`)).toBeAttached({
+        timeout: 15_000,
+      });
+      await expect(page.getByText(`Now viewing: ${label}`, { exact: true })).toBeAttached();
+    });
+  }
+});
+
+test('Earth can reroute from Stanford to the Fermilab branch', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/earth');
+  await expect(page.locator('body[data-scene-ready="earth"]')).toBeAttached({ timeout: 15_000 });
+  await page.getByRole('button', { name: 'Fermilab — where the data comes from' }).click();
+  await expect(page).toHaveURL(/#\/fermilab$/, { timeout: 15_000 });
+  await expect(page.locator('body[data-scene-ready="fermilab"]')).toBeAttached({ timeout: 15_000 });
+});
+
+test('event display toggles representations and hands off to the Unfolding Lab', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/#/event');
+  await expect(page.locator('body[data-scene-ready="event"]')).toBeAttached({ timeout: 15_000 });
+  const scalars = page.getByRole('button', { name: 'engineered scalars' });
+  await scalars.click();
+  await expect(scalars).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-event-scalars]')).toBeVisible();
+  const cloud = page.getByRole('button', { name: 'raw cluster cloud' });
+  await cloud.click();
+  await expect(cloud).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'What did the detector actually see?' }).click();
+  await expect(page).toHaveURL(/#\/screen\/app\/unfolding-lab$/, { timeout: 15_000 });
+  await expect(page.locator('.os-window[data-window-id="unfolding-lab"]')).toBeVisible({
+    timeout: 15_000,
+  });
 });
 test('panels, history, keyboard navigation, and terminal work', async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });

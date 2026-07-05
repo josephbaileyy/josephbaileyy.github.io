@@ -120,6 +120,10 @@ body {
   z-index: 8;
 }
 
+body[data-scene-ready='earth'] #a11y-layer {
+  z-index: 10;
+}
+
 .hotspot-proxy {
   position: absolute;
   pointer-events: auto;
