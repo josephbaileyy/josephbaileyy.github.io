@@ -166,8 +166,8 @@ const fermilabSuffix: SceneDef3D[] = [
     restPose: { focus: [0, 1.6, 0], dir: [0.38, 0.22, 1], frameWidth: 24, fov: 42 },
     // event frame 18 × 0.06 = 1.08 apparent units → K ≈ 22.2
     anchor: { position: [0, 1.65, -2.6], scale: 0.06 },
-    exposure: 1.25,
-    effects: { bloom: true },
+    exposure: 1.1,
+    effects: {},
     importScene: lazyScene(() => import('./numi-hall'), 'createNumiHall'),
   },
   {
@@ -175,8 +175,8 @@ const fermilabSuffix: SceneDef3D[] = [
     label: 'MINERvA event',
     frameWidthMeters: 2,
     restPose: { focus: [0, 0, 0], dir: [0.2, 0.1, 1], frameWidth: 18, fov: 44 },
-    exposure: 1.2,
-    effects: { bloom: true },
+    exposure: 1.05,
+    effects: {},
     importScene: lazyScene(() => import('./event'), 'createEvent'),
   },
 ];

@@ -1,26 +1,19 @@
 import '../styles/event.css';
 import {
-  AdditiveBlending,
-  AmbientLight,
   BufferGeometry,
+  CylinderGeometry,
+  Float32BufferAttribute,
   Group,
   Line,
   LineBasicMaterial,
+  LineSegments,
   Mesh,
   MeshBasicMaterial,
-  SphereGeometry,
+  Points,
+  PointsMaterial,
   Vector3,
 } from 'three';
 import type { QualityTier, SceneAssets, SceneInstance } from '../engine/types3d';
-
-interface EventSummary {
-  eMuon: number;
-  thetaMuon: number;
-  recoil: number;
-  q2: number;
-  visible: number;
-  clusters: number;
-}
 
 function seededRandom(seed: number): () => number {
   let state = seed >>> 0;
@@ -30,124 +23,130 @@ function seededRandom(seed: number): () => number {
   };
 }
 
-function eventSummary(seed: number, count: number): EventSummary {
-  const random = seededRandom(seed ^ 0x51f15e);
-  return {
-    eMuon: 2.2 + random() * 2.8,
-    thetaMuon: 4 + random() * 15,
-    recoil: 0.18 + random() * 0.72,
-    q2: 0.08 + random() * 0.55,
-    visible: 0.45 + random() * 1.25,
-    clusters: count,
-  };
-}
-
-function renderSummary(card: HTMLElement, summary: EventSummary): void {
-  card.innerHTML = `
-    <dl>
-      <div><dt>E<sub>μ</sub></dt><dd>${summary.eMuon.toFixed(2)} GeV</dd></div>
-      <div><dt>θ<sub>μ</sub></dt><dd>${summary.thetaMuon.toFixed(1)}°</dd></div>
-      <div><dt>recoil energy</dt><dd>${summary.recoil.toFixed(2)} GeV</dd></div>
-      <div><dt>Q²</dt><dd>${summary.q2.toFixed(2)} GeV²</dd></div>
-      <div><dt>visible energy</dt><dd>${summary.visible.toFixed(2)} GeV</dd></div>
-      <div><dt>clusters</dt><dd>${summary.clusters}</dd></div>
-    </dl>`;
-}
-
 export function createEvent(_assets: SceneAssets): SceneInstance {
-  const group = new Group();
-  const cloud = new Group();
-  group.add(cloud);
-  group.add(new AmbientLight(0x8bb8d7, 1.4));
-  let seed = 20260705;
+  const seed = 20260705;
   let quality: QualityTier = 'high';
-  let clusterCount = 0;
-
-  const rebuild = () => {
-    cloud.clear();
-    const random = seededRandom(seed);
-    clusterCount = quality === 'low' ? 34 : quality === 'med' ? 46 : 58;
-    for (let i = 0; i < clusterCount; i++) {
-      const alongTrack = i < 17;
-      const energy = 0.15 + random() ** 2 * 0.85;
-      const position = alongTrack
-        ? new Vector3(-4 + i * 0.48, -0.9 + i * 0.095, -0.4 + i * 0.06)
-        : new Vector3((random() - 0.5) * 5.4, (random() - 0.5) * 3.8, (random() - 0.5) * 3.2);
-      if (!alongTrack && i % 3 === 0) position.add(new Vector3(1.2, 0.25, 0.15));
-      const color = alongTrack ? 0x76eaff : energy > 0.62 ? 0xff9b63 : 0xffdf72;
-      const voxel = new Mesh(
-        new SphereGeometry(0.07 + energy * 0.2, 10, 8),
-        new MeshBasicMaterial({
-          color,
-          transparent: true,
-          opacity: 0.48 + energy * 0.5,
-          blending: AdditiveBlending,
-          depthWrite: false,
-        }),
-      );
-      voxel.position.copy(position);
-      voxel.userData.energy = energy;
-      cloud.add(voxel);
-    }
-    const muon = new Line(
-      new BufferGeometry().setFromPoints([
-        new Vector3(-4.6, -1.02, -0.48),
-        new Vector3(5, 0.92, 0.75),
-      ]),
-      new LineBasicMaterial({ color: 0xb6f5ff, transparent: true, opacity: 0.86 }),
-    );
-    muon.name = 'muon-track';
-    cloud.add(muon);
-  };
-  rebuild();
+  let event = new Float32Array();
+  const group = new Group();
+  const data = new Group();
+  const envelope = new Mesh(
+    new CylinderGeometry(2.1, 2.1, 2.5, 6, 1, true),
+    new MeshBasicMaterial({
+      color: 0x7890aa,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.1,
+    }),
+  );
+  envelope.rotation.x = Math.PI / 2;
+  const ticks: number[] = [];
+  for (let x = -3.5; x <= 3.5; x += 0.7) ticks.push(x, -1.72, 0, x, -1.84, 0);
+  const tickGeometry = new BufferGeometry();
+  tickGeometry.setAttribute('position', new Float32BufferAttribute(ticks, 3));
+  group.add(
+    envelope,
+    new LineSegments(
+      tickGeometry,
+      new LineBasicMaterial({ color: 0x7890aa, transparent: true, opacity: 0.12 }),
+    ),
+    data,
+  );
 
   const ui = document.createElement('section');
   ui.className = 'event-display-ui';
   ui.setAttribute('aria-label', 'MINERvA event display');
   ui.innerHTML = `
     <div class="event-display-heading">
-      <span>schematic — illustrative, not real data</span>
+      <span>schematic · illustrative, not real data</span>
       <h2>one neutrino interaction</h2>
-      <p>energy-weighted calorimeter clusters + reconstructed muon track</p>
     </div>
     <div class="event-display-switch" role="group" aria-label="Event representation">
       <button type="button" data-event-mode="cloud" aria-pressed="true">raw cluster cloud</button>
       <button type="button" data-event-mode="scalars" aria-pressed="false">engineered scalars</button>
     </div>
-    <div class="event-scalar-card" data-event-scalars hidden></div>
-    <p class="event-display-caption">the transformer unfolds this directly.</p>
-    <div class="event-display-actions">
-      <button type="button" data-cycle-event aria-label="Cycle to the next synthetic event">cycle event</button>
-      <button type="button" data-unfolding-handoff>What did the detector actually see?</button>
-    </div>`;
+    <div class="event-representation">
+      <figure data-event-hit-map>
+        <canvas role="img" aria-label="X view hit map of module, strip, and deposited energy"></canvas>
+        <figcaption>X view — how physicists scan events (cf. Arachne, MINERvA's web event viewer)</figcaption>
+      </figure>
+      <div class="event-scalar-card" data-event-scalars hidden></div>
+    </div>
+    <p class="event-display-caption">The transformer unfolds the raw event directly.</p>
+    <button class="event-handoff" type="button" data-unfolding-handoff>What did the detector actually see?</button>`;
   document.body.appendChild(ui);
   const scalarCard = ui.querySelector<HTMLElement>('[data-event-scalars]')!;
+  const hitMap = ui.querySelector<HTMLElement>('[data-event-hit-map]')!;
+  const canvas = hitMap.querySelector('canvas')!;
   const caption = ui.querySelector<HTMLElement>('.event-display-caption')!;
-  const modeButtons = ui.querySelectorAll<HTMLButtonElement>('[data-event-mode]');
+  const buttons = ui.querySelectorAll<HTMLButtonElement>('[data-event-mode]');
+
+  const rebuild = () => {
+    data.traverse((object) => {
+      const drawable = object as Points;
+      drawable.geometry?.dispose();
+      if (!Array.isArray(drawable.material)) drawable.material?.dispose();
+    });
+    data.clear();
+    const count = quality === 'low' ? 38 : quality === 'med' ? 52 : 68;
+    event = new Float32Array(count * 6);
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const random = seededRandom(seed);
+    for (let i = 0; i < count; i++) {
+      const muon = i < 22;
+      const module = muon ? 5 + i * 2 : 18 + Math.floor(random() * 29);
+      const strip = muon ? 10 + Math.round(i * 0.55) : 8 + Math.floor(random() * 22);
+      const energy = muon ? 0.22 + random() * 0.3 : 0.15 + random() ** 2 * 0.85;
+      const x = (module - 28) * 0.14;
+      const y = (strip - 18) * 0.1;
+      const z = (random() - 0.5) * (muon ? 0.18 : 1.55);
+      event.set([x, y, z, energy, module, strip], i * 6);
+      positions.set([x, y, z], i * 3);
+      const hot = energy ** 0.72;
+      colors.set([0.09 + hot * 0.91, 0.22 + hot * 0.78, 0.49 + hot * 0.51], i * 3);
+    }
+    const geometry = new BufferGeometry();
+    geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new Float32BufferAttribute(colors, 3));
+    data.add(
+      new Points(
+        geometry,
+        new PointsMaterial({
+          size: quality === 'low' ? 0.13 : 0.16,
+          vertexColors: true,
+        }),
+      ),
+      new Line(
+        new BufferGeometry().setFromPoints([
+          new Vector3(event[0], event[1], event[2]),
+          new Vector3(event[126], event[127], event[128]),
+        ]),
+        new LineBasicMaterial({ color: 0xd8edf5 }),
+      ),
+    );
+    void import('./lib/event-hit-map').then(({ drawEventHitMap, renderEventSummary }) => {
+      drawEventHitMap(canvas, event);
+      renderEventSummary(scalarCard, count);
+    });
+  };
 
   const setMode = (mode: 'cloud' | 'scalars') => {
-    cloud.visible = mode === 'cloud';
+    data.visible = mode === 'cloud';
+    hitMap.hidden = mode !== 'cloud';
     scalarCard.hidden = mode !== 'scalars';
     caption.textContent =
       mode === 'cloud'
-        ? 'the transformer unfolds this directly.'
-        : 'traditional analysis compresses the event before unfolding.';
-    modeButtons.forEach((button) => {
-      button.setAttribute('aria-pressed', String(button.dataset.eventMode === mode));
-    });
-    ui.dataset.mode = mode;
+        ? 'The transformer unfolds the raw event directly.'
+        : 'Traditional analysis compresses the event first.';
+    buttons.forEach((button) =>
+      button.setAttribute('aria-pressed', String(button.dataset.eventMode === mode)),
+    );
   };
-  modeButtons.forEach((button) =>
+  buttons.forEach((button) =>
     button.addEventListener('click', () =>
       setMode(button.dataset.eventMode as 'cloud' | 'scalars'),
     ),
   );
-  ui.querySelector<HTMLButtonElement>('[data-cycle-event]')!.addEventListener('click', () => {
-    seed += 1;
-    rebuild();
-    renderSummary(scalarCard, eventSummary(seed, clusterCount));
-    ui.dataset.seed = String(seed);
-  });
   ui.querySelector<HTMLButtonElement>('[data-unfolding-handoff]')!.addEventListener('click', () => {
     window.dispatchEvent(
       new CustomEvent('universe:branch-route', {
@@ -155,8 +154,7 @@ export function createEvent(_assets: SceneAssets): SceneInstance {
       }),
     );
   });
-  renderSummary(scalarCard, eventSummary(seed, clusterCount));
-  ui.dataset.seed = String(seed);
+  rebuild();
   setMode('cloud');
 
   return {
@@ -164,31 +162,21 @@ export function createEvent(_assets: SceneAssets): SceneInstance {
     hotspots: [],
     update(ctx) {
       ui.classList.toggle('active', Math.abs(ctx.localT) < 0.02);
-      if (!ctx.reducedMotion) {
-        cloud.rotation.y = Math.sin(ctx.time * 0.25) * 0.08;
-        for (const object of cloud.children) {
-          if (!(object instanceof Mesh)) continue;
-          const energy = object.userData.energy as number;
-          object.scale.setScalar(1 + Math.sin(ctx.time * 2.4 + object.id) * 0.08 * energy);
-        }
-      }
+      data.rotation.y = ctx.reducedMotion ? 0 : Math.sin(ctx.time * 0.2) * 0.045;
     },
-    hideUi() {
-      ui.classList.remove('active');
-    },
+    hideUi: () => ui.classList.remove('active'),
     setQuality(next) {
-      if (quality === next) return;
-      quality = next;
-      rebuild();
-      renderSummary(scalarCard, eventSummary(seed, clusterCount));
+      if (quality !== next) {
+        quality = next;
+        rebuild();
+      }
     },
     dispose() {
       ui.remove();
       group.traverse((object) => {
-        const mesh = object as Mesh;
-        mesh.geometry?.dispose();
-        if (Array.isArray(mesh.material)) mesh.material.forEach((material) => material.dispose());
-        else mesh.material?.dispose();
+        const drawable = object as Mesh;
+        drawable.geometry?.dispose();
+        if (!Array.isArray(drawable.material)) drawable.material?.dispose();
       });
     },
   };
