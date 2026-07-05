@@ -8,6 +8,9 @@ const SCENE_BUDGET_MS: Record<SceneId, number> = {
   stanford: 20,
   room: 18,
   screen: 17,
+  fermilab: 20,
+  'numi-hall': 20,
+  event: 18,
 };
 const EXTREME_FRAME_MS = 250;
 const LONG_FRAME_WINDOW_S = 2;

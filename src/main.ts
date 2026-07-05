@@ -15,7 +15,9 @@ function hasUniversePreference(): boolean {
 }
 
 function isExplicitUniverseRoute(): boolean {
-  return /^#\/(galaxy|solar|earth|stanford|room|screen)(?:\/|$)/.test(location.hash);
+  return /^#\/(galaxy|solar|earth|stanford|room|screen|fermilab|numi-hall|event)(?:\/|$)/.test(
+    location.hash,
+  );
 }
 
 function mountUniverseHomeLink(): void {

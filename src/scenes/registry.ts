@@ -30,6 +30,11 @@ const GLOBE_R = 10;
 const STANFORD_NORMAL = latLonToVec3(STANFORD_LAT, STANFORD_LON, 1).normalize();
 const STANFORD_POS = STANFORD_NORMAL.clone().multiplyScalar(GLOBE_R * 1.002);
 const STANFORD_QUAT = new Quaternion().setFromUnitVectors(Y, STANFORD_NORMAL);
+const FERMILAB_LAT = 41.8412;
+const FERMILAB_LON = -88.2611;
+const FERMILAB_NORMAL = latLonToVec3(FERMILAB_LAT, FERMILAB_LON, 1).normalize();
+const FERMILAB_POS = FERMILAB_NORMAL.clone().multiplyScalar(GLOBE_R * 1.002);
+const FERMILAB_QUAT = new Quaternion().setFromUnitVectors(Y, FERMILAB_NORMAL);
 
 // --- stanford: dorm window the camera flies through ---
 const WINDOW_POS = new Vector3(9, 3.0, -7);
@@ -50,7 +55,7 @@ const lazyScene =
     };
   };
 
-const defs: SceneDef3D[] = [
+const prefix = (earthBranch: 'stanford' | 'fermilab'): SceneDef3D[] => [
   {
     id: 'galaxy',
     label: 'The Milky Way',
@@ -95,8 +100,15 @@ const defs: SceneDef3D[] = [
     },
     exposure: 1.1,
     effects: { bloom: true },
-    importScene: lazyScene(() => import('./earth'), 'createEarth', 'loadEarth'),
+    importScene: lazyScene(
+      () => import('./earth'),
+      earthBranch === 'fermilab' ? 'createEarthFermilab' : 'createEarthStanford',
+      'loadEarth',
+    ),
   },
+];
+
+const stanfordSuffix: SceneDef3D[] = [
   {
     id: 'stanford',
     label: 'Stanford University',
@@ -135,4 +147,70 @@ const defs: SceneDef3D[] = [
   },
 ];
 
-export const CHAIN3D: SceneDef3D[] = defs;
+const fermilabSuffix: SceneDef3D[] = [
+  {
+    id: 'fermilab',
+    label: 'Fermilab',
+    frameWidthMeters: 316,
+    restPose: { focus: [0, 2, 0], dir: [0.62, 0.48, 1], frameWidth: 46, fov: 38 },
+    // NuMI hall frame 24 × 0.0833 = 2 apparent units → K ≈ 23
+    anchor: { position: [5.4, -0.45, -5.8], scale: 2 / 24 },
+    exposure: 1.15,
+    effects: {},
+    importScene: lazyScene(() => import('./fermilab'), 'createFermilab'),
+  },
+  {
+    id: 'numi-hall',
+    label: 'NuMI underground hall',
+    frameWidthMeters: 25,
+    restPose: { focus: [0, 1.6, 0], dir: [0.38, 0.22, 1], frameWidth: 24, fov: 42 },
+    // event frame 18 × 0.06 = 1.08 apparent units → K ≈ 22.2
+    anchor: { position: [0, 1.65, -2.6], scale: 0.06 },
+    exposure: 1.25,
+    effects: { bloom: true },
+    importScene: lazyScene(() => import('./numi-hall'), 'createNumiHall'),
+  },
+  {
+    id: 'event',
+    label: 'MINERvA event',
+    frameWidthMeters: 2,
+    restPose: { focus: [0, 0, 0], dir: [0.2, 0.1, 1], frameWidth: 18, fov: 44 },
+    exposure: 1.2,
+    effects: { bloom: true },
+    importScene: lazyScene(() => import('./event'), 'createEvent'),
+  },
+];
+
+/** Default chain: retained as the Stanford route for backwards compatibility. */
+export const CHAIN3D: SceneDef3D[] = [...prefix('stanford'), ...stanfordSuffix];
+export const FERMILAB_CHAIN3D: SceneDef3D[] = [
+  ...prefix('fermilab').map((scene) =>
+    scene.id === 'earth'
+      ? {
+          ...scene,
+          restPose: {
+            ...scene.restPose,
+            dir: [FERMILAB_NORMAL.x, FERMILAB_NORMAL.y, FERMILAB_NORMAL.z] as [
+              number,
+              number,
+              number,
+            ],
+          },
+          anchor: {
+            position: [FERMILAB_POS.x, FERMILAB_POS.y, FERMILAB_POS.z] as [number, number, number],
+            quaternion: quat(FERMILAB_QUAT),
+            scale: 0.04,
+          },
+        }
+      : scene,
+  ),
+  ...fermilabSuffix,
+];
+
+export function branchForHash(hash: string): 'stanford' | 'fermilab' {
+  return /^#\/(?:fermilab|numi-hall|event)(?:\/|$)/.test(hash) ? 'fermilab' : 'stanford';
+}
+
+export function chainForBranch(branch: 'stanford' | 'fermilab'): SceneDef3D[] {
+  return branch === 'fermilab' ? FERMILAB_CHAIN3D : CHAIN3D;
+}
