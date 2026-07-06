@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A particle event-display hero prototype for Joseph Bailey's personal site."
+    />
+    <title>Joseph Bailey - Event Display Prototype</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <canvas id="event-canvas" aria-hidden="true"></canvas>
+    <aside class="event-hud" aria-live="polite" aria-label="Current event summary">
+      <span id="event-hud-readout">EVT 004121 / N_TRK 00 / SUM_PT 000 GEV</span>
+    </aside>
+
+    <main class="story">
+      <section class="story-section hero-section reveal" aria-labelledby="hero-title">
+        <div class="copy-block">
+          <p class="section-kicker">event display / portfolio prototype</p>
+          <h1 id="hero-title">Joseph Bailey</h1>
+          <p class="hero-tagline">Physics &amp; CS at Stanford - machine learning for particle physics.</p>
+          <p class="scroll-cue" aria-hidden="true">Scroll</p>
+        </div>
+      </section>
+
+      <section class="story-section reveal" aria-labelledby="about-title">
+        <div class="copy-block">
+          <p class="section-kicker">about</p>
+          <h2 id="about-title">Collider-scale questions, close-to-the-metal tools.</h2>
+          <p>
+            Joseph Bailey is a Stanford Physics and Computer Science student building at the
+            intersection of fundamental physics, statistical inference, and real-time interfaces.
+            His work treats data displays as part of the thinking tool, not just the final slide.
+          </p>
+        </div>
+      </section>
+
+      <section class="story-section reveal" aria-labelledby="research-title">
+        <div class="copy-block">
+          <p class="section-kicker">research</p>
+          <h2 id="research-title">ML unfolding for measurements that keep their shape.</h2>
+          <p>
+            His MINERvA-OmniFold work explores unbinned, machine-learning-based unfolding for
+            neutrino cross-section measurements, testing whether high-dimensional reweighting can
+            reduce structural model bias compared with traditional binned workflows.
+          </p>
+        </div>
+      </section>
+
+      <section class="story-section reveal" aria-labelledby="athletics-title">
+        <div class="copy-block compact-copy">
+          <p class="section-kicker">athletics</p>
+          <h2 id="athletics-title">D1 110m hurdler.</h2>
+          <p>
+            Training, timing, and technical repetition show up in the work too: fast systems,
+            disciplined iteration, and clean execution under constraints.
+          </p>
+        </div>
+      </section>
+
+      <section class="story-section reveal" aria-labelledby="projects-title">
+        <div class="copy-block wide-copy">
+          <p class="section-kicker">projects</p>
+          <h2 id="projects-title">Selected build directions.</h2>
+          <div class="project-grid" aria-label="Project placeholders">
+            <article class="project-card">
+              <h3>MINERvA-OmniFold</h3>
+              <p>Unbinned ML unfolding pipeline for neutrino interaction measurements.</p>
+            </article>
+            <article class="project-card">
+              <h3>Universe Portfolio</h3>
+              <p>Three.js powers-of-ten navigation from galaxy scale to a desktop interface.</p>
+            </article>
+            <article class="project-card">
+              <h3>Graph Learning</h3>
+              <p>Sports possession modeling with heterogeneous graphs and temporal structure.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="story-section contact-section reveal" aria-labelledby="contact-title">
+        <div class="copy-block compact-copy">
+          <p class="section-kicker">contact</p>
+          <h2 id="contact-title">Open channel.</h2>
+          <p class="contact-links">
+            <a href="mailto:jrbailey555@gmail.com">jrbailey555@gmail.com</a>
+            <a href="https://github.com/josephbaileyy" target="_blank" rel="noopener">GitHub</a>
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
