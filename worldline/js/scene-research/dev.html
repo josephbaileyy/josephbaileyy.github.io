@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>scene-research dev harness</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: #060913;
+        color: #e8ecf1;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      }
+
+      body {
+        height: 300vh;
+      }
+
+      #stage {
+        position: sticky;
+        top: 0;
+        width: 100%;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      #controls {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        padding: 10px 14px;
+        background: rgba(6, 9, 19, 0.86);
+        border-top: 1px solid rgba(127, 142, 163, 0.35);
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        color: #7f8ea3;
+      }
+
+      #controls .row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      #controls input[type='range'] {
+        flex: 1;
+      }
+
+      #controls label {
+        white-space: nowrap;
+      }
+
+      #readout {
+        color: #33d4ff;
+      }
+
+      #reduced-toggle {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <div id="controls">
+      <div class="row">
+        <label for="progress">onProgress</label>
+        <input id="progress" type="range" min="0" max="1000" value="0" />
+        <span id="readout">p = 0.000</span>
+      </div>
+      <div class="row">
+        <span>onParallax follows window scroll on this 300vh page.</span>
+        <span id="scroll-readout">scrollPx = 0</span>
+        <label id="reduced-toggle">
+          <input id="reduced" type="checkbox" />
+          reducedMotion
+        </label>
+      </div>
+    </div>
+
+    <script type="module">
+      import { createScene } from './index.js';
+
+      const stage = document.getElementById('stage');
+      const progressInput = document.getElementById('progress');
+      const readout = document.getElementById('readout');
+      const scrollReadout = document.getElementById('scroll-readout');
+      const reducedToggle = document.getElementById('reduced');
+
+      let scene = null;
+
+      function mount(reducedMotion) {
+        if (scene) {
+          scene.dispose();
+          scene = null;
+        }
+
+        stage.innerHTML = '';
+        scene = createScene(stage, { reducedMotion });
+        scene.onEnter();
+        scene.onProgress(Number(progressInput.value) / 1000);
+        scene.onParallax(window.scrollY);
+      }
+
+      progressInput.addEventListener('input', () => {
+        const p = Number(progressInput.value) / 1000;
+        readout.textContent = `p = ${p.toFixed(3)}`;
+        scene?.onProgress(p);
+      });
+
+      window.addEventListener('scroll', () => {
+        scrollReadout.textContent = `scrollPx = ${Math.round(window.scrollY)}`;
+        scene?.onParallax(window.scrollY);
+      });
+
+      reducedToggle.addEventListener('change', () => {
+        mount(reducedToggle.checked);
+      });
+
+      mount(false);
+    </script>
+  </body>
+</html>

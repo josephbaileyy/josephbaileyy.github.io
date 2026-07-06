@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Joseph Bailey's Worldline site: physics, computing, athletics, music, and contact."
+    />
+    <title>Joseph Bailey - Worldline</title>
+    <link rel="stylesheet" href="./styles/tokens.css" />
+  </head>
+  <body>
+    <div id="ground-underlay" aria-hidden="true"></div>
+    <canvas id="collision-canvas" class="collision-canvas" aria-hidden="true"></canvas>
+    <aside class="site-telemetry" aria-label="Worldline telemetry">
+      <div class="telemetry-label">
+        <span id="chapter-readout">01 COLLISION</span>
+        <span>WL</span>
+      </div>
+      <div class="progress-track" aria-hidden="true">
+        <div id="page-progress-bar" class="progress-bar"></div>
+      </div>
+    </aside>
+
+    <aside class="collision-hud" aria-live="polite" aria-label="Current CMS event summary">
+      <span id="collision-event-hud-readout">RUN ---- / EVT ---- / N_TRK 0 / SUM_PT 0 GEV</span>
+    </aside>
+
+    <main class="worldline-page">
+      <section
+        id="chapter-collision"
+        class="chapter chapter-collision"
+        data-chapter="01"
+        data-title="COLLISION"
+        data-ground="#05060a"
+        aria-labelledby="hero-title"
+      >
+        <div class="hero-section">
+          <div class="copy-block">
+            <p class="eyebrow">CH 01 / COLLISION</p>
+            <h1 id="hero-title">Joseph Bailey</h1>
+            <p class="hero-tagline">Physics &amp; CS at Stanford - machine learning for particle physics.</p>
+            <p class="scroll-cue" aria-hidden="true">Scroll</p>
+          </div>
+        </div>
+
+        <div class="scrub-section" data-scrub="collision-handoff" data-scrub-vh="300">
+          <div class="scrub-sticky">
+            <div class="handoff-caption" aria-hidden="true">
+              <p>CMS event display / collapse to worldline</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="chapter-research"
+        class="chapter scrub-section scene-chapter"
+        data-scrub="research"
+        data-scrub-vh="320"
+        data-chapter="02"
+        data-title="RESEARCH"
+        data-ground="#060913"
+        aria-labelledby="research-title"
+      >
+        <div class="scrub-sticky scene-sticky">
+          <div class="scene-root" id="research-scene" aria-hidden="true"></div>
+          <div class="scene-copy scene-copy-left">
+            <p class="chapter-index">CH 02 / RESEARCH</p>
+            <h2 id="research-title">ML unfolding for measurements that keep their shape.</h2>
+            <p>
+              Benchmarking high-dimensional reweighting against traditional binned workflows for
+              neutrino cross-section measurements.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="chapter-track"
+        class="chapter scrub-section scene-chapter"
+        data-scrub="track"
+        data-scrub-vh="320"
+        data-chapter="03"
+        data-title="TRACK"
+        data-ground="#0d0b10"
+        data-ground-end="#1a1114"
+        aria-labelledby="track-title"
+      >
+        <div class="scrub-sticky scene-sticky">
+          <div class="scene-root" id="track-scene" aria-hidden="true"></div>
+          <div class="scene-copy scene-copy-right">
+            <p class="chapter-index">CH 03 / TRACK</p>
+            <h2 id="track-title">400 meters, ten barriers, one line.</h2>
+            <p>ACC Championships 2025 splits plotted as a lap, with the worldline entering at the finish straight.</p>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="chapter-experience"
+        class="chapter scrub-section scene-chapter chapter-experience"
+        data-scrub="experience"
+        data-scrub-vh="260"
+        data-chapter="04"
+        data-title="EXPERIENCE"
+        data-ground="#0b0a0c"
+        aria-labelledby="experience-title"
+      >
+        <div class="scrub-sticky scene-sticky">
+          <div class="experience-timeline" aria-labelledby="experience-title">
+            <div class="worldline-trunk worldline-trunk-in" aria-hidden="true"></div>
+            <div class="worldline-trunk worldline-trunk-out" aria-hidden="true"></div>
+            <p class="chapter-index">CH 04 / EXPERIENCE</p>
+            <h2 id="experience-title">Experience</h2>
+            <svg class="experience-rule" viewBox="0 0 1000 180" preserveAspectRatio="none" aria-hidden="true">
+              <path class="experience-rule-line" d="M 0 72 L 1000 72"></path>
+              <path class="experience-rule-progress experience-rule-progress-left" d="M 500 72 L 0 72"></path>
+              <path class="experience-rule-progress experience-rule-progress-right" d="M 500 72 L 1000 72"></path>
+            </svg>
+            <div class="experience-list" aria-label="Experience">
+              <article class="experience-entry">
+                <p class="experience-date">SUMMER 2026</p>
+                <div>
+                  <h3>Product Manager Intern, WisdomTree, New York</h3>
+                  <p>
+                    WisdomTree Connect — institutional blockchain rails distributing WTGXX, a
+                    tokenized government money-market fund.
+                  </p>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="chapter-music"
+        class="chapter scrub-section scene-chapter"
+        data-scrub="music"
+        data-scrub-vh="320"
+        data-chapter="05"
+        data-title="MUSIC"
+        data-ground="#120d0b"
+        aria-labelledby="music-title"
+      >
+        <div class="scrub-sticky scene-sticky">
+          <div class="scene-root" id="music-scene" aria-hidden="true"></div>
+          <div class="scene-copy scene-copy-left music-copy">
+            <p class="chapter-index">CH 05 / MUSIC</p>
+            <h2 id="music-title">The line learns to oscillate.</h2>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="chapter-contact"
+        class="chapter scrub-section scene-chapter chapter-contact"
+        data-scrub="contact"
+        data-scrub-vh="250"
+        data-chapter="06"
+        data-title="CONTACT"
+        data-ground="#0a0a0b"
+        aria-labelledby="contact-title"
+      >
+        <div class="scrub-sticky scene-sticky contact-sticky">
+          <div class="contact-worldline" aria-hidden="true">
+            <div class="worldline-trunk worldline-trunk-contact"></div>
+            <svg viewBox="0 0 1000 260" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="contact-dim" gradientUnits="userSpaceOnUse" x1="500" y1="130" x2="640" y2="130">
+                  <stop offset="70%" stop-color="#ffffff" />
+                  <stop offset="100%" stop-color="rgba(255, 255, 255, 0.3)" />
+                </linearGradient>
+                <mask id="contact-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="260">
+                  <polygon points="0,128 448,128 640,129.625 640,130.375 448,132 0,132" fill="url(#contact-dim)" />
+                </mask>
+              </defs>
+              <path class="contact-line" d="M 500 130 Q 570 130 640 130"></path>
+              <circle class="contact-point" cx="640" cy="130" r="4"></circle>
+            </svg>
+          </div>
+          <div class="contact-panel">
+            <p class="chapter-index">CH 06 / CONTACT</p>
+            <h2 id="contact-title">Contact</h2>
+            <p class="contact-links">
+              <a href="mailto:jrbailey555@gmail.com">jrbailey555@gmail.com</a>
+              <a href="https://github.com/josephbaileyy" target="_blank" rel="noopener noreferrer">GitHub</a>
+              <a
+                href="https://www.tfrrs.org/athletes/8731395/Stanford/Joseph_Bailey.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                >TFRRS</a
+              >
+            </p>
+            <p class="data-caption">
+              event data
+              <a href="https://opendata.cern.ch/record/303" target="_blank" rel="noopener noreferrer">CMS Open Data (CC0)</a>
+              + splits ACC Championships 2025
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

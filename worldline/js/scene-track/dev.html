@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 3 Scene Dev Harness</title>
+  <style>
+    :root {
+      --ground: #1a1114;
+      --sans: system-ui, -apple-system, sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--ground);
+      font-family: var(--sans);
+      height: 400vh;
+    }
+    
+    #scene-viewport {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--ground);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+    
+    #controls {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      background: rgba(13, 11, 16, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 14px 20px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 280px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+    
+    #controls label {
+      font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: #7f8ea3;
+      text-transform: uppercase;
+    }
+    
+    #progress-slider {
+      width: 100%;
+      accent-color: #ffb547;
+      cursor: pointer;
+    }
+    
+    #indicators {
+      position: fixed;
+      top: 24px;
+      left: 24px;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(13, 11, 16, 0.7);
+      padding: 10px 14px;
+      border-radius: 4px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      font-family: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+      font-size: 10px;
+      color: #7f8ea3;
+      pointer-events: none;
+    }
+    
+    #indicators span span {
+      color: #ffb547;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="scene-viewport"></div>
+  
+  <div id="indicators">
+    <span>SCENE: <span>CH03 / TRACK</span></span>
+    <span>SANITY P=0.68 LAP: <span id="sanity-status">WAITING</span></span>
+  </div>
+
+  <div id="controls">
+    <label>PROGRESS: <span id="progress-val" style="color: #f2ede6; font-weight: bold;">0.000</span></label>
+    <input type="range" id="progress-slider" min="0" max="1" step="0.001" value="0">
+  </div>
+
+  <script type="module">
+    import { createScene } from './index.js';
+
+    const viewport = document.getElementById('scene-viewport');
+    const slider = document.getElementById('progress-slider');
+    const progressVal = document.getElementById('progress-val');
+    const sanityStatus = document.getElementById('sanity-status');
+
+    const scene = createScene(viewport, { reducedMotion: false });
+    const getMaxScroll = () => document.documentElement.scrollHeight - window.innerHeight;
+
+    function updateState(p) {
+      scene.onProgress(p);
+      progressVal.textContent = p.toFixed(3);
+      
+      const P_ENTRY = 0.12;
+      const P_LAP_END = 0.88;
+      const lapProgress = (p - P_ENTRY) / (P_LAP_END - P_ENTRY);
+      
+      if (p > P_ENTRY && p < P_LAP_END) {
+        const clockEl = viewport.querySelector('.track-clock');
+        const clockTime = clockEl ? parseFloat(clockEl.textContent) : 0;
+        
+        if (Math.abs(lapProgress - 0.68) < 0.005) {
+          sanityStatus.innerHTML = `<span>${clockTime.toFixed(1)}s (PASS)</span>`;
+        }
+      }
+    }
+
+    window.addEventListener('scroll', () => {
+      const maxScroll = getMaxScroll();
+      const progress = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+      slider.value = progress;
+      updateState(progress);
+    }, { passive: true });
+
+    slider.addEventListener('input', (e) => {
+      const progress = parseFloat(e.target.value);
+      const maxScroll = getMaxScroll();
+      window.scrollTo(0, progress * maxScroll);
+      updateState(progress);
+    });
+
+    updateState(0);
+  </script>
+</body>
+</html>

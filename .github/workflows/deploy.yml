@@ -4,10 +4,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  schedule:
-    # Weekly redeploy so the GitHub/Letterboxd live widgets stay fresh
-    # even without a code push.
-    - cron: '0 12 * * 1'
 
 permissions:
   contents: read
@@ -33,18 +29,16 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
-      # Refresh GitHub/Letterboxd widgets at deploy time; a failed fetch keeps
-      # the committed snapshot, so this never blocks a deploy.
-      - run: npm run fetch:live
-        continue-on-error: true
-      - run: npm run build
-        env:
-          VITE_CESIUM_ION_TOKEN: ${{ secrets.VITE_CESIUM_ION_TOKEN }}
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e -- --project=chromium --project=mobile
+      # Worldline (the current site) lives in worldline/ with its own vite
+      # config; it builds to worldline/dist, which is what gets deployed as
+      # the Pages site root. The pre-rebuild "zoomable universe" site's
+      # source still lives at repo root for reference but is no longer built
+      # or deployed — see the archive/universe-site branch for its last
+      # deployed state.
+      - run: npx vite build --config worldline/vite.config.js
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: dist
+          path: worldline/dist
       - id: deployment
         uses: actions/deploy-pages@v4

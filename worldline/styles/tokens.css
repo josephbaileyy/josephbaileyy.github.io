@@ -1,0 +1,687 @@
+:root {
+  color-scheme: dark;
+  --ground-ch1: #05060a;
+  --ground-ch2: #060913;
+  --ground-ch3: #0d0b10;
+  --ground-ch3-end: #1a1114;
+  --ground-ch4: #0b0a0c;
+  --ground-ch5: #120d0b;
+  --ground-ch6: #0a0a0b;
+  --text: #e8ecf1;
+  --muted: #aab4c2;
+  --dim: #7f8ea3;
+  --line: rgba(127, 142, 163, 0.28);
+  --spine-x: 50%;
+  --spine-color: #e8ecf1;
+  --spine-width: 2px;
+  --spine-glow: drop-shadow(0 0 8px rgba(232, 236, 241, 0.32));
+  --panel: rgba(8, 12, 18, 0.48);
+  --cyan: #33d4ff;
+  --amber: #ffb547;
+  --magenta: #ff4fd8;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --system: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --step--1: 0.94rem;
+  --step-0: 1.06rem;
+  --step-1: 1.72rem;
+  --step-2: 2.72rem;
+  --step-3: 5.4rem;
+  background: var(--ground-ch1);
+  color: var(--text);
+  font-family: var(--system);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: var(--ground-ch1);
+}
+
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--ground-ch1);
+}
+
+body::after {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(90deg, rgba(5, 6, 10, 0.6), transparent 46%, rgba(5, 6, 10, 0.32)),
+    linear-gradient(180deg, rgba(5, 6, 10, 0.42), transparent 30%, rgba(5, 6, 10, 0.62));
+}
+
+a {
+  color: var(--text);
+  text-decoration-color: rgba(51, 212, 255, 0.62);
+  text-underline-offset: 0.24em;
+}
+
+a:hover,
+a:focus-visible {
+  color: var(--cyan);
+}
+
+p,
+h1,
+h2,
+h3 {
+  text-wrap: pretty;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-block-start: 0;
+}
+
+h1 {
+  margin-block-end: 0;
+  color: var(--text);
+  font-size: var(--step-3);
+  font-weight: 760;
+  line-height: 0.94;
+  letter-spacing: 0;
+}
+
+h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: var(--step-2);
+  font-weight: 720;
+  line-height: 1.06;
+  letter-spacing: 0;
+}
+
+h3 {
+  margin: 0 0 0.65rem;
+  color: var(--text);
+  font-size: var(--step-0);
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+p {
+  margin: 1.2rem 0 0;
+  color: var(--muted);
+  font-size: var(--step-0);
+  line-height: 1.74;
+}
+
+#ground-underlay {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: var(--ground-ch1);
+}
+
+.collision-canvas {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--ground-ch1);
+  opacity: 1;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.collision-canvas.is-retired {
+  opacity: 0;
+}
+
+.site-telemetry,
+.collision-hud {
+  position: fixed;
+  z-index: 6;
+  max-width: calc(100vw - 2rem);
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.site-telemetry {
+  top: 1rem;
+  left: 1rem;
+  width: min(17rem, calc(100vw - 2rem));
+}
+
+.collision-hud {
+  top: 1rem;
+  right: 1rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid rgba(90, 107, 133, 0.32);
+  border-radius: 6px;
+  background: rgba(5, 6, 10, 0.54);
+  backdrop-filter: blur(8px);
+}
+
+.collision-hud.is-retired {
+  opacity: 0;
+}
+
+.telemetry-label {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.progress-track {
+  width: 100%;
+  height: 1px;
+  overflow: hidden;
+  background: rgba(127, 142, 163, 0.24);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--cyan), var(--amber), var(--magenta));
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+}
+
+.worldline-page {
+  position: relative;
+  z-index: 4;
+}
+
+.chapter {
+  position: relative;
+  min-height: 100vh;
+}
+
+.chapter-collision {
+  min-height: 400vh;
+}
+
+.chapter-shell {
+  width: min(100%, 74rem);
+  margin: 0 auto;
+  padding: 8rem max(1.25rem, 8vw);
+}
+
+.hero-section {
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-end;
+  padding: 7rem max(1.25rem, 8vw) 9rem;
+}
+
+.copy-block {
+  width: min(100%, 38rem);
+}
+
+.wide-copy {
+  width: min(100%, 58rem);
+}
+
+.compact-copy {
+  width: min(100%, 34rem);
+}
+
+.eyebrow,
+.section-kicker,
+.chapter-index,
+.stub-note,
+.performance-line,
+.experience-date,
+.data-caption {
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 0.6875rem;
+  line-height: 1.55;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.eyebrow,
+.section-kicker {
+  margin: 0 0 1.05rem;
+  color: var(--cyan);
+}
+
+.hero-tagline {
+  max-width: 34rem;
+  margin-top: 1.15rem;
+  color: #d3d9e2;
+  font-size: 1.2rem;
+  line-height: 1.55;
+}
+
+.scroll-cue {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 3.2rem;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.scroll-cue::after {
+  width: 4rem;
+  height: 1px;
+  content: "";
+  background: linear-gradient(90deg, var(--cyan), transparent);
+}
+
+.scrub-section {
+  height: var(--scrub-height, 300vh);
+  position: relative;
+}
+
+.scrub-sticky {
+  position: sticky;
+  top: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-end;
+  padding: 7rem max(1.25rem, 8vw);
+}
+
+.scene-chapter {
+  min-height: var(--scrub-height, 300vh);
+}
+
+.scene-sticky {
+  align-items: stretch;
+  padding: 0;
+  overflow: hidden;
+}
+
+.scene-root {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+.scene-copy {
+  position: relative;
+  z-index: 2;
+  align-self: flex-end;
+  width: min(34rem, calc(100vw - 2.4rem));
+  margin: 0 max(1.2rem, 8vw) 6.5rem;
+  pointer-events: none;
+}
+
+.scene-copy-right {
+  margin-left: auto;
+}
+
+.scene-copy h2 {
+  max-width: 14em;
+  font-size: clamp(1.7rem, 3.5vw, 3rem);
+}
+
+.scene-copy p:not(.chapter-index) {
+  max-width: 28rem;
+  color: rgba(170, 180, 194, 0.82);
+}
+
+.music-copy {
+  align-self: flex-start;
+  margin-top: 6.5rem;
+}
+
+.experience-rule path,
+.contact-worldline path {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 8px rgba(232, 236, 241, 0.32));
+}
+
+.handoff-caption {
+  width: min(100%, 30rem);
+  opacity: calc(1 - min(1, var(--scrub-progress, 0) * 1.8));
+}
+
+.handoff-caption p {
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+
+.stub-layout {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.28fr) minmax(18rem, 0.72fr);
+  gap: clamp(2rem, 6vw, 6rem);
+  align-items: start;
+}
+
+.chapter-index {
+  color: rgba(170, 180, 194, 0.65);
+}
+
+.stub-note {
+  margin-top: 2rem;
+  color: rgba(127, 142, 163, 0.64);
+}
+
+.experience-timeline {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding: 7rem max(1.2rem, 8vw);
+}
+
+.experience-timeline h2 {
+  position: relative;
+  z-index: 2;
+}
+
+.experience-rule {
+  position: absolute;
+  top: min(44vh, 28rem);
+  left: max(1.2rem, 8vw);
+  width: calc(100% - max(1.2rem, 8vw) * 2);
+  height: 11.25rem;
+  overflow: visible;
+}
+
+.experience-rule-line {
+  opacity: 0.22;
+}
+
+.experience-rule-progress {
+  stroke-dasharray: 500;
+  stroke-dashoffset: var(--experience-rule-offset, 500);
+}
+
+/* Invariant worldline: static vertical trunks at page-center carrying the
+   line from the chapter's top/bottom edges to the rule's touchpoint, so the
+   timeline reads as a staged bend in the middle of an otherwise-continuous
+   line rather than a separate motif. */
+.worldline-trunk {
+  position: absolute;
+  left: var(--spine-x);
+  width: var(--spine-width);
+  transform: translateX(-50%);
+  background: var(--spine-color);
+  filter: var(--spine-glow);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.worldline-trunk-in {
+  top: 0;
+  height: calc(min(44vh, 28rem) + 4.5rem);
+}
+
+.worldline-trunk-out {
+  top: calc(min(44vh, 28rem) + 4.5rem);
+  bottom: 0;
+}
+
+.experience-list {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 2rem;
+  width: min(100%, 52rem);
+  margin-top: clamp(5.5rem, 18vh, 10rem);
+}
+
+.experience-entry {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.24fr) minmax(0, 1fr);
+  gap: clamp(1rem, 4vw, 3rem);
+  padding-top: 3rem;
+  opacity: var(--experience-entry-opacity, 0);
+  transform: translateY(var(--experience-entry-y, 1.2rem));
+}
+
+.experience-entry::before {
+  position: absolute;
+  top: 0;
+  left: calc(24% - 1px);
+  width: 2px;
+  height: 2.4rem;
+  content: "";
+  background: var(--text);
+  box-shadow: 0 0 10px rgba(232, 236, 241, 0.28);
+}
+
+.experience-entry p:not(.experience-date) {
+  max-width: 48rem;
+  margin-top: 0.45rem;
+  font-size: var(--step--1);
+  line-height: 1.65;
+}
+
+.performance-line {
+  margin-top: 1.4rem;
+}
+
+.performance-line a {
+  color: var(--dim);
+  text-decoration-color: rgba(255, 181, 71, 0.54);
+}
+
+.performance-line a:hover,
+.performance-line a:focus-visible {
+  color: var(--amber);
+}
+
+.contact-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem 1.25rem;
+}
+
+.data-caption {
+  margin-top: 0.95rem;
+}
+
+.chapter-contact {
+  min-height: var(--scrub-height, 250vh);
+}
+
+.contact-sticky {
+  display: grid;
+  place-items: center;
+}
+
+.contact-worldline {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  opacity: 0.95;
+}
+
+/* Carries the invariant line from the chapter's top edge down to the svg's
+   own vertical midpoint (y=130 of 260), exactly where .contact-line now
+   begins its rightward reveal. Shares base positioning with .worldline-trunk. */
+.worldline-trunk-contact {
+  top: 0;
+  height: 50%;
+}
+
+.contact-worldline svg {
+  width: 100%;
+  height: 42vh;
+  min-height: 16rem;
+  overflow: visible;
+}
+
+.contact-worldline path.contact-line {
+  stroke: url(#contact-dim);
+  stroke-dasharray: 640;
+  stroke-dashoffset: var(--contact-line-offset, 640);
+}
+
+.contact-point {
+  fill: #fff9f0;
+  opacity: var(--contact-point-opacity, 0);
+  filter: drop-shadow(0 0 6px rgba(255, 230, 200, 0.8)) drop-shadow(0 0 12px rgba(255, 200, 150, 0.4));
+}
+
+.contact-panel {
+  position: relative;
+  z-index: 2;
+  width: min(34rem, calc(100vw - 2.4rem));
+  margin-left: min(28vw, 25rem);
+  opacity: var(--contact-panel-opacity, 0);
+}
+
+.is-reduced-motion .handoff-caption {
+  opacity: 0;
+}
+
+.is-reduced-motion .experience-entry,
+.is-reduced-motion .contact-panel,
+.is-reduced-motion .contact-point {
+  opacity: 1;
+  transform: none;
+}
+
+.is-reduced-motion .experience-rule-progress,
+.is-reduced-motion .contact-line {
+  stroke-dashoffset: 0;
+}
+
+@media (max-width: 760px) {
+  body::after {
+    background:
+      linear-gradient(180deg, rgba(5, 6, 10, 0.72), rgba(5, 6, 10, 0.22) 42%, rgba(5, 6, 10, 0.78)),
+      linear-gradient(90deg, rgba(5, 6, 10, 0.58), transparent);
+  }
+
+  .site-telemetry {
+    top: 0.75rem;
+    left: 0.75rem;
+    width: 2rem;
+  }
+
+  #chapter-readout {
+    display: none;
+  }
+
+  .collision-hud {
+    top: auto;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .hero-section,
+  .scrub-sticky,
+  .chapter-shell {
+    padding-inline: 1.2rem;
+  }
+
+  .hero-section {
+    padding-bottom: 7.5rem;
+  }
+
+  .stub-layout {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .scene-copy,
+  .scene-copy-right,
+  .music-copy {
+    align-self: flex-end;
+    margin: 0 1.2rem 5.5rem;
+  }
+
+  .scene-copy h2 {
+    font-size: 1.68rem;
+  }
+
+  h1 {
+    font-size: 3.45rem;
+    line-height: 0.96;
+  }
+
+  h2 {
+    font-size: 1.86rem;
+  }
+
+  p {
+    font-size: 1rem;
+    line-height: 1.68;
+  }
+
+  .experience-entry {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .experience-entry::before {
+    left: 0;
+  }
+
+  .experience-rule {
+    top: min(38vh, 22rem);
+  }
+
+  .contact-panel {
+    margin: 38vh 1.2rem 0;
+  }
+}
+
+@media (max-width: 420px) {
+  h1 {
+    font-size: 2.85rem;
+  }
+
+  h2 {
+    font-size: 1.56rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms;
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+  }
+}

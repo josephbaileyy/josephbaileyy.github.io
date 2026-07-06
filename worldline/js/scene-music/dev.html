@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter 5 Scene Dev Harness</title>
+  <style>
+    :root {
+      --ground: #120d0b;
+      --sans: system-ui, -apple-system, sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--ground);
+      font-family: var(--sans);
+      height: 400vh;
+    }
+    #scene-viewport {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--ground);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+    #controls {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      background: rgba(13, 11, 16, 0.85);
+      padding: 14px 20px;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      width: 280px;
+    }
+    #controls label {
+      font-family: ui-monospace, monospace;
+      font-size: 10px;
+      color: #7f8ea3;
+    }
+    #progress-slider {
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div id="scene-viewport"></div>
+  <div id="controls">
+    <label>PROGRESS: <span id="progress-val" style="color: #f2ede6; font-weight: bold;">0.000</span></label>
+    <input type="range" id="progress-slider" min="0" max="1" step="0.001" value="0">
+  </div>
+  <script type="module">
+    import { createScene } from './index.js';
+    const viewport = document.getElementById('scene-viewport');
+    const slider = document.getElementById('progress-slider');
+    const progressVal = document.getElementById('progress-val');
+    
+    const params = new URLSearchParams(window.location.search);
+    const reducedMotion = params.has('reducedMotion');
+
+    const scene = createScene(viewport, {
+      reducedMotion,
+      audioUrl: '../../../public/assets/audio/bach-fugue.mp3',
+      peaksUrl: '../../../public/assets/data/fugue-peaks.json'
+    });
+
+    function updateState(p) {
+      scene.onProgress(p);
+      progressVal.textContent = p.toFixed(3);
+    }
+
+    slider.addEventListener('input', (e) => {
+      const progress = parseFloat(e.target.value);
+      updateState(progress);
+    });
+
+    updateState(0);
+  </script>
+</body>
+</html>
