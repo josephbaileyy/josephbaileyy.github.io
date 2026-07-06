@@ -70,12 +70,12 @@ export function createGroundController({ element = document.querySelector('#grou
     const localProgress = clamp01((centerY - top) / height);
     let color = chapterColorAt(chapter, localProgress);
 
-    if (localProgress > 0.85 && chapters[index + 1]) {
+    if (localProgress > 0.75 && chapters[index + 1]) {
       const nextColor = chapterColorAt(chapters[index + 1], 0);
-      color = mixColor(color, nextColor, smootherStep((localProgress - 0.85) / 0.15));
-    } else if (localProgress < 0.15 && chapters[index - 1]) {
+      color = mixColor(color, nextColor, smootherStep((localProgress - 0.75) / 0.25));
+    } else if (localProgress < 0.25 && chapters[index - 1]) {
       const previousColor = chapterColorAt(chapters[index - 1], 1);
-      color = mixColor(previousColor, color, smootherStep(localProgress / 0.15));
+      color = mixColor(previousColor, color, smootherStep(localProgress / 0.25));
     }
 
     const css = toCssColor(color);

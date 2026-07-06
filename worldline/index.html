@@ -198,8 +198,17 @@
         <div class="scrub-sticky scene-sticky contact-sticky">
           <div class="contact-worldline" aria-hidden="true">
             <svg viewBox="0 0 1000 260" preserveAspectRatio="none">
-              <path class="contact-line" d="M 0 130 Q 520 130 628 130"></path>
-              <circle class="contact-point" cx="640" cy="130" r="5"></circle>
+              <defs>
+                <linearGradient id="contact-dim" gradientUnits="userSpaceOnUse" x1="0" y1="130" x2="640" y2="130">
+                  <stop offset="70%" stop-color="#ffffff" />
+                  <stop offset="100%" stop-color="rgba(255, 255, 255, 0.3)" />
+                </linearGradient>
+                <mask id="contact-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="260">
+                  <polygon points="0,128 448,128 640,129.625 640,130.375 448,132 0,132" fill="url(#contact-dim)" />
+                </mask>
+              </defs>
+              <path class="contact-line" d="M 0 130 Q 520 130 640 130"></path>
+              <circle class="contact-point" cx="640" cy="130" r="4"></circle>
             </svg>
           </div>
           <div class="contact-panel">

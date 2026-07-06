@@ -146,10 +146,16 @@ function updateContactScene(progress) {
   }
 
   const p = clamp01(progress);
-  const line = clamp01(p / 0.72);
-  const point = smootherStep((p - 0.58) / 0.18);
-  const panel = smootherStep((p - 0.5) / 0.25);
-  chapter.style.setProperty('--contact-line-offset', (628 * (1 - line)).toFixed(2));
+  const line = clamp01(p / 0.6);
+  const lineEase = 1 - Math.pow(1 - line, 3);
+  const point = smootherStep((p - 0.55) / 0.15);
+  const panel = smootherStep((p - 0.5) / 0.2);
+  // non-scaling-stroke makes dashes screen-space in Chromium: dash length must
+  // match the rendered path width, not the 640 user-unit length
+  const lineEl = chapter.querySelector('.contact-line');
+  const screenLen = lineEl ? Math.max(lineEl.getBoundingClientRect().width, 1) : 640;
+  if (lineEl) lineEl.style.strokeDasharray = screenLen.toFixed(2);
+  chapter.style.setProperty('--contact-line-offset', (screenLen * (1 - lineEase)).toFixed(2));
   chapter.style.setProperty('--contact-point-opacity', point.toFixed(3));
   chapter.style.setProperty('--contact-panel-opacity', panel.toFixed(3));
 }

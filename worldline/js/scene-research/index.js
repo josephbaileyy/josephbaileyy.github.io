@@ -373,10 +373,13 @@ function drawLabels(ctx, layout, p) {
 
   setMono(ctx, compact ? 10 : 11, 600);
   ctx.textBaseline = 'alphabetic';
+  const amberY = 24 - (labelFade * 6);
+  const cyanY = 24 + ((1 - labelFade) * 6);
+
   ctx.fillStyle = rgba(AMBER, (1 - labelFade) * 0.95);
-  fillSpacedText(ctx, 'DETECTOR-LEVEL', left, 24, 1, 'left');
+  fillSpacedText(ctx, 'DETECTOR-LEVEL', left, amberY, 1, 'left');
   ctx.fillStyle = rgba(CYAN, labelFade * 0.95);
-  fillSpacedText(ctx, 'UNFOLDED / TRUTH-LEVEL', left, 24, 1, 'left');
+  fillSpacedText(ctx, 'UNFOLDED / TRUTH-LEVEL', left, cyanY, 1, 'left');
 
   setMono(ctx, compact ? 8 : 9.5, 500);
   ctx.fillStyle = rgba(DIM, 0.7);

@@ -399,7 +399,7 @@ p {
 }
 
 .chapter-index {
-  color: rgba(170, 180, 194, 0.48);
+  color: rgba(170, 180, 194, 0.65);
 }
 
 .stub-note {
@@ -523,15 +523,16 @@ p {
   overflow: visible;
 }
 
-.contact-line {
-  stroke-dasharray: 628;
-  stroke-dashoffset: var(--contact-line-offset, 628);
+.contact-worldline path.contact-line {
+  stroke: url(#contact-dim);
+  stroke-dasharray: 640;
+  stroke-dashoffset: var(--contact-line-offset, 640);
 }
 
 .contact-point {
-  fill: var(--text);
+  fill: #fff9f0;
   opacity: var(--contact-point-opacity, 0);
-  filter: drop-shadow(0 0 9px rgba(232, 236, 241, 0.86));
+  filter: drop-shadow(0 0 6px rgba(255, 230, 200, 0.8)) drop-shadow(0 0 12px rgba(255, 200, 150, 0.4));
 }
 
 .contact-panel {
@@ -568,7 +569,11 @@ p {
   .site-telemetry {
     top: 0.75rem;
     left: 0.75rem;
-    width: 10rem;
+    width: 2rem;
+  }
+
+  #chapter-readout {
+    display: none;
   }
 
   .collision-hud {
