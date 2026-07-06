@@ -8,7 +8,7 @@ export function createTelemetry({
 } = {}) {
   const chapters = [...document.querySelectorAll('.chapter')].map((element) => ({
     element,
-    label: `CH ${element.dataset.chapter || '--'} / ${element.dataset.title || 'UNTITLED'}`,
+    label: `${element.dataset.chapter || '--'} ${element.dataset.title || 'UNTITLED'}`,
   }));
 
   let currentLabel = '';
@@ -22,7 +22,7 @@ export function createTelemetry({
       return centerY >= top && centerY < bottom;
     });
 
-    return (active || chapters[chapters.length - 1])?.label || 'CH -- / WORLDLINE';
+    return (active || chapters[chapters.length - 1])?.label || '-- WORLDLINE';
   }
 
   function update({ pageProgress = 0 } = {}) {

@@ -3,6 +3,9 @@ import { createSceneLifecycle, getReducedMotionPreference } from './js/core/life
 import { createScrollRuntime } from './js/core/scroll.js';
 import { createTelemetry } from './js/core/telemetry.js';
 import { createCollisionScene } from './js/scene-collision/collision.js';
+import { createScene as createMusicScene } from './js/scene-music/index.js';
+import { createScene as createResearchScene } from './js/scene-research/index.js';
+import { createScene as createTrackScene } from './js/scene-track/index.js';
 
 function clamp01(value) {
   return Math.min(1, Math.max(0, value));
@@ -16,6 +19,9 @@ function smootherStep(value) {
 const reducedMotion = getReducedMotionPreference();
 document.documentElement.classList.toggle('is-reduced-motion', reducedMotion);
 
+const soloAudioUrl = new URL('./assets/audio/solo.m4a', import.meta.url).href;
+const soloPeaksUrl = new URL('./assets/audio/solo-peaks.json', import.meta.url).href;
+
 const collisionCanvas = document.querySelector('#collision-canvas');
 const collisionHud = document.querySelector('#collision-event-hud-readout');
 const collisionChapter = document.querySelector('#chapter-collision');
@@ -28,40 +34,124 @@ const lifecycle = createSceneLifecycle({ reducedMotion });
 const scrollRuntime = createScrollRuntime({ reducedMotion });
 const ground = createGroundController();
 const telemetry = createTelemetry();
-const worldlineSvg = document.querySelector('#worldline-svg');
 const handoffScrub = document.querySelector('[data-scrub="collision-handoff"]');
-const researchChapter = document.querySelector('#chapter-research');
-
-document.addEventListener('click', (event) => {
-  const link = event.target.closest('[data-external-url]');
-
-  if (!link) {
-    return;
-  }
-
-  event.preventDefault();
-  window.open(link.dataset.externalUrl, '_blank', 'noopener');
-});
-
-function layoutWorldline(handoffProgress) {
-  if (!worldlineSvg || !handoffScrub || !researchChapter) {
-    return;
-  }
-
-  const scrubTop = handoffScrub.getBoundingClientRect().top + window.scrollY;
-  const seamY = scrubTop + handoffScrub.offsetHeight - window.innerHeight * 0.58;
-  const endY = researchChapter.getBoundingClientRect().top + window.scrollY + researchChapter.offsetHeight;
-  const height = Math.max(0, endY - seamY);
-  const visible = reducedMotion ? 1 : smootherStep((handoffProgress - 0.82) / 0.16);
-
-  worldlineSvg.style.top = `${Math.round(seamY)}px`;
-  worldlineSvg.style.height = `${Math.round(height)}px`;
-  worldlineSvg.style.opacity = visible.toFixed(3);
-  worldlineSvg.classList.toggle('is-live', visible > 0.01);
-}
 
 function getHandoffProgress(state) {
   return state.scrubs.get('collision-handoff')?.progress ?? (reducedMotion ? 1 : 0);
+}
+
+function getScrollPx(element) {
+  if (!element) {
+    return 0;
+  }
+
+  const top = element.getBoundingClientRect().top + window.scrollY;
+  return Math.max(0, window.scrollY - top);
+}
+
+function createLifecycleAdapter(scene) {
+  let entered = false;
+
+  return {
+    mount() {
+      if (!entered) {
+        scene.onEnter?.();
+        entered = true;
+      }
+    },
+    resume() {
+      if (!entered) {
+        scene.onEnter?.();
+        entered = true;
+      }
+    },
+    pause() {
+      if (entered) {
+        scene.onExit?.();
+        entered = false;
+      }
+    },
+    renderEndState() {
+      scene.onProgress?.(1);
+      scene.onParallax?.(0);
+      scene.onEnter?.();
+    },
+    unmount() {
+      scene.dispose?.();
+      entered = false;
+    },
+  };
+}
+
+function createSceneRecord({ id, chapterSelector, rootSelector, create }) {
+  const chapter = document.querySelector(chapterSelector);
+  const root = document.querySelector(rootSelector);
+
+  if (!chapter || !root || !create) {
+    return null;
+  }
+
+  return {
+    chapter,
+    id,
+    root,
+    scene: create(root),
+  };
+}
+
+const sceneRecords = [
+  createSceneRecord({
+    id: 'research',
+    chapterSelector: '#chapter-research',
+    rootSelector: '#research-scene',
+    create: (root) => createResearchScene(root, { reducedMotion }),
+  }),
+  createSceneRecord({
+    id: 'track',
+    chapterSelector: '#chapter-track',
+    rootSelector: '#track-scene',
+    create: (root) => createTrackScene(root, { reducedMotion }),
+  }),
+  createSceneRecord({
+    id: 'music',
+    chapterSelector: '#chapter-music',
+    rootSelector: '#music-scene',
+    create: (root) => createMusicScene(root, {
+      audioUrl: soloAudioUrl,
+      peaksUrl: soloPeaksUrl,
+      reducedMotion,
+    }),
+  }),
+].filter(Boolean);
+
+function updateExperienceScene(progress) {
+  const chapter = document.querySelector('#chapter-experience');
+
+  if (!chapter) {
+    return;
+  }
+
+  const p = clamp01(progress);
+  const entry = smootherStep((p - 0.16) / 0.22);
+  chapter.style.setProperty('--experience-rule-offset', (1000 * (1 - p)).toFixed(2));
+  chapter.style.setProperty('--experience-entry-opacity', entry.toFixed(3));
+  chapter.style.setProperty('--experience-entry-y', `${((1 - entry) * 1.2).toFixed(3)}rem`);
+}
+
+function updateContactScene(progress) {
+  const chapter = document.querySelector('#chapter-contact');
+
+  if (!chapter) {
+    return;
+  }
+
+  const p = clamp01(progress);
+  const line = clamp01(p / 0.72);
+  const point = smootherStep((p - 0.58) / 0.18);
+  const panel = smootherStep((p - 0.5) / 0.25);
+  chapter.style.setProperty('--contact-line-offset', (628 * (1 - line)).toFixed(2));
+  chapter.style.setProperty('--contact-point-opacity', point.toFixed(3));
+  chapter.style.setProperty('--contact-panel-opacity', panel.toFixed(3));
 }
 
 lifecycle.register({
@@ -70,14 +160,34 @@ lifecycle.register({
   unmountWhen: ({ handoffProgress }) => !reducedMotion && handoffProgress >= 0.996,
 });
 
+sceneRecords.forEach((record) => {
+  lifecycle.register({
+    element: record.chapter,
+    scene: createLifecycleAdapter(record.scene),
+  });
+});
+
 scrollRuntime.onUpdate((state) => {
   const handoffProgress = getHandoffProgress(state);
 
   ground.update(state);
   telemetry.update(state);
-  layoutWorldline(handoffProgress);
 
   lifecycle.tick({ ...state, handoffProgress });
+
+  sceneRecords.forEach((record) => {
+    const scrub = state.scrubs.get(record.id);
+
+    if (!scrub) {
+      return;
+    }
+
+    record.scene.onProgress?.(scrub.progress);
+    record.scene.onParallax?.(getScrollPx(scrub.element));
+  });
+
+  updateExperienceScene(state.scrubs.get('experience')?.progress ?? (reducedMotion ? 1 : 0));
+  updateContactScene(state.scrubs.get('contact')?.progress ?? (reducedMotion ? 1 : 0));
 
   if (collisionScene.isActive()) {
     collisionScene.update({
@@ -90,6 +200,9 @@ scrollRuntime.onUpdate((state) => {
   window.__worldlineDebug = {
     handoffProgress,
     reducedMotion,
+    sceneProgress: Object.fromEntries(
+      [...state.scrubs.entries()].map(([id, scrub]) => [id, scrub.progress]),
+    ),
     webglRetired: collisionScene.isRetired(),
     webglRenderCount: collisionScene.getRenderCount(),
   };
@@ -97,8 +210,13 @@ scrollRuntime.onUpdate((state) => {
 
 window.addEventListener('resize', () => {
   collisionScene.resize();
-  layoutWorldline(scrollRuntime.getSnapshot().scrubs.get('collision-handoff')?.progress ?? 0);
 });
 
-layoutWorldline(reducedMotion ? 1 : 0);
+updateExperienceScene(reducedMotion ? 1 : 0);
+updateContactScene(reducedMotion ? 1 : 0);
 scrollRuntime.start();
+
+window.addEventListener('pagehide', () => {
+  scrollRuntime.destroy();
+  lifecycle.destroy();
+});

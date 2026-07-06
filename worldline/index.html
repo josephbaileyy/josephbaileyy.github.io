@@ -13,13 +13,9 @@
   <body>
     <div id="ground-underlay" aria-hidden="true"></div>
     <canvas id="collision-canvas" class="collision-canvas" aria-hidden="true"></canvas>
-    <svg id="worldline-svg" class="worldline-svg" aria-hidden="true" preserveAspectRatio="none">
-      <line x1="50%" y1="0" x2="50%" y2="100%"></line>
-    </svg>
-
     <aside class="site-telemetry" aria-label="Worldline telemetry">
       <div class="telemetry-label">
-        <span id="chapter-readout">CH 01 / COLLISION</span>
+        <span id="chapter-readout">01 COLLISION</span>
         <span>WL</span>
       </div>
       <div class="progress-track" aria-hidden="true">
@@ -58,139 +54,172 @@
         </div>
       </section>
 
+      <div
+        class="worldline-connector connector-collision-research"
+        data-connector="01-02"
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
+          <path d="M 500 0 Q 500 60 500 120"></path>
+        </svg>
+      </div>
+
       <section
         id="chapter-research"
-        class="chapter stub-chapter"
+        class="chapter scrub-section scene-chapter"
+        data-scrub="research"
+        data-scrub-vh="320"
         data-chapter="02"
         data-title="RESEARCH"
         data-ground="#060913"
         aria-labelledby="research-title"
       >
-        <div class="chapter-shell stub-layout">
-          <p class="chapter-index">CH 02 / RESEARCH</p>
-          <div class="copy-block">
-            <p class="eyebrow">research</p>
+        <div class="scrub-sticky scene-sticky">
+          <div class="scene-root" id="research-scene" aria-hidden="true"></div>
+          <div class="scene-copy scene-copy-left">
+            <p class="chapter-index">CH 02 / RESEARCH</p>
             <h2 id="research-title">ML unfolding for measurements that keep their shape.</h2>
             <p>
-              Joseph benchmarks OmniFold-style machine-learning unfolding for neutrino
-              cross-sections on MINERvA data with Prof. Ben Nachman's group, testing whether
-              high-dimensional reweighting can reduce structural model bias compared with
-              traditional binned workflows.
+              Benchmarking high-dimensional reweighting against traditional binned workflows for
+              neutrino cross-section measurements.
             </p>
-            <p class="stub-note">Scene stub / worldline endpoint for this pass</p>
-            <!-- CH-2 scene: built in later pass -->
           </div>
         </div>
       </section>
 
+      <div class="worldline-connector connector-research-track" data-connector="02-03" aria-hidden="true">
+        <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
+          <path d="M 978 0 Q 805 58 663 120"></path>
+        </svg>
+      </div>
+
       <section
-        id="chapter-experience"
-        class="chapter stub-chapter"
+        id="chapter-track"
+        class="chapter scrub-section scene-chapter"
+        data-scrub="track"
+        data-scrub-vh="320"
         data-chapter="03"
-        data-title="EXPERIENCE"
+        data-title="TRACK"
         data-ground="#0d0b10"
         data-ground-end="#1a1114"
+        aria-labelledby="track-title"
+      >
+        <div class="scrub-sticky scene-sticky">
+          <div class="scene-root" id="track-scene" aria-hidden="true"></div>
+          <div class="scene-copy scene-copy-right">
+            <p class="chapter-index">CH 03 / TRACK</p>
+            <h2 id="track-title">400 meters, ten barriers, one line.</h2>
+            <p>ACC Championships 2025 splits plotted as a lap, with the worldline entering at the finish straight.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="worldline-connector connector-track-experience" data-connector="03-04" aria-hidden="true">
+        <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
+          <path d="M 663 0 Q 360 58 80 120"></path>
+        </svg>
+      </div>
+
+      <section
+        id="chapter-experience"
+        class="chapter scrub-section scene-chapter chapter-experience"
+        data-scrub="experience"
+        data-scrub-vh="260"
+        data-chapter="04"
+        data-title="EXPERIENCE"
+        data-ground="#0b0a0c"
         aria-labelledby="experience-title"
       >
-        <div class="chapter-shell stub-layout">
-          <p class="chapter-index">CH 03 / EXPERIENCE</p>
-          <div class="wide-copy">
-            <p class="eyebrow">experience</p>
-            <h2 id="experience-title">Product work at the edge of finance infrastructure.</h2>
+        <div class="scrub-sticky scene-sticky">
+          <div class="experience-timeline" aria-labelledby="experience-title">
+            <p class="chapter-index">CH 04 / EXPERIENCE</p>
+            <h2 id="experience-title">Experience</h2>
+            <svg class="experience-rule" viewBox="0 0 1000 180" preserveAspectRatio="none" aria-hidden="true">
+              <path class="experience-rule-line" d="M 0 72 L 1000 72"></path>
+              <path class="experience-rule-progress" d="M 0 72 L 1000 72"></path>
+            </svg>
             <div class="experience-list" aria-label="Experience">
               <article class="experience-entry">
                 <p class="experience-date">SUMMER 2026</p>
                 <div>
-                  <h3>Product Manager Intern - WisdomTree, New York</h3>
+                  <h3>Product Manager Intern, WisdomTree, New York</h3>
                   <p>
-                    WisdomTree Connect, the firm's institutional blockchain platform distributing
-                    WTGXX, a tokenized government money-market fund.
+                    WisdomTree Connect — institutional blockchain rails distributing WTGXX, a
+                    tokenized government money-market fund.
                   </p>
                 </div>
               </article>
             </div>
-            <p class="stub-note">Scene stub</p>
-            <!-- CH-3 scene: built in later pass -->
           </div>
         </div>
       </section>
 
-      <section
-        id="chapter-athletics"
-        class="chapter stub-chapter"
-        data-chapter="04"
-        data-title="ATHLETICS"
-        data-ground="#0b0a0c"
-        aria-labelledby="athletics-title"
-      >
-        <div class="chapter-shell stub-layout">
-          <p class="chapter-index">CH 04 / ATHLETICS</p>
-          <div class="compact-copy">
-            <p class="eyebrow">athletics</p>
-            <h2 id="athletics-title">D1 400m hurdler at Stanford.</h2>
-            <p>
-              Training, timing, and technical repetition show up in the work too: fast systems,
-              disciplined iteration, and clean execution under constraints.
-            </p>
-            <p class="performance-line">
-              <a
-                href="#athletics-title"
-                data-external-url="https://www.tfrrs.org/athletes/8731395/Stanford/Joseph_Bailey.html"
-                >400H 52.17 / 400M 49.09i / 200M 22.23i / 60M 7.21i</a
-              >
-            </p>
-            <p class="stub-note">Scene stub</p>
-            <!-- CH-4 scene: built in later pass -->
-          </div>
-        </div>
-      </section>
+      <div class="worldline-connector connector-experience-music" data-connector="04-05" aria-hidden="true">
+        <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
+          <path d="M 920 0 Q 420 58 25 120"></path>
+        </svg>
+      </div>
 
       <section
         id="chapter-music"
-        class="chapter stub-chapter"
+        class="chapter scrub-section scene-chapter"
+        data-scrub="music"
+        data-scrub-vh="320"
         data-chapter="05"
         data-title="MUSIC"
         data-ground="#120d0b"
         aria-labelledby="music-title"
       >
-        <div class="chapter-shell stub-layout">
-          <p class="chapter-index">CH 05 / MUSIC</p>
-          <div class="copy-block">
-            <p class="eyebrow">music</p>
-            <h2 id="music-title">Piano and saxophone, kept close.</h2>
-            <p>
-              Piano is the quiet daily instrument; saxophone is the louder one. Both are ways to
-              practice phrasing, patience, and listening without turning everything into output.
-            </p>
-            <p class="stub-note">Scene stub</p>
-            <!-- CH-5 scene: built in later pass -->
+        <div class="scrub-sticky scene-sticky">
+          <div class="scene-root" id="music-scene" aria-hidden="true"></div>
+          <div class="scene-copy scene-copy-left music-copy">
+            <p class="chapter-index">CH 05 / MUSIC</p>
+            <h2 id="music-title">The line learns to oscillate.</h2>
           </div>
         </div>
       </section>
 
+      <div class="worldline-connector connector-music-contact" data-connector="05-06" aria-hidden="true">
+        <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
+          <path d="M 975 0 Q 800 56 640 120"></path>
+        </svg>
+      </div>
+
       <section
         id="chapter-contact"
-        class="chapter stub-chapter"
+        class="chapter scrub-section scene-chapter chapter-contact"
+        data-scrub="contact"
+        data-scrub-vh="250"
         data-chapter="06"
         data-title="CONTACT"
         data-ground="#0a0a0b"
         aria-labelledby="contact-title"
       >
-        <div class="chapter-shell stub-layout">
-          <p class="chapter-index">CH 06 / CONTACT</p>
-          <div class="compact-copy">
-            <p class="eyebrow">contact</p>
-            <h2 id="contact-title">Open channel.</h2>
+        <div class="scrub-sticky scene-sticky contact-sticky">
+          <div class="contact-worldline" aria-hidden="true">
+            <svg viewBox="0 0 1000 260" preserveAspectRatio="none">
+              <path class="contact-line" d="M 0 130 Q 520 130 628 130"></path>
+              <circle class="contact-point" cx="640" cy="130" r="5"></circle>
+            </svg>
+          </div>
+          <div class="contact-panel">
+            <p class="chapter-index">CH 06 / CONTACT</p>
+            <h2 id="contact-title">Contact</h2>
             <p class="contact-links">
               <a href="mailto:jrbailey555@gmail.com">jrbailey555@gmail.com</a>
-              <a href="#contact-title" data-external-url="https://github.com/josephbaileyy">GitHub</a>
+              <a href="https://github.com/josephbaileyy" target="_blank" rel="noopener noreferrer">GitHub</a>
+              <a
+                href="https://www.tfrrs.org/athletes/8731395/Stanford/Joseph_Bailey.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                >TFRRS</a
+              >
             </p>
             <p class="data-caption">
-              Event displays: real pp collisions,
-              <a href="#contact-title" data-external-url="https://opendata.cern.ch/record/303">CMS Open Data (CC0)</a>
+              event data
+              <a href="https://opendata.cern.ch/record/303" target="_blank" rel="noopener noreferrer">CMS Open Data (CC0)</a>
+              + splits ACC Championships 2025
             </p>
-            <p class="stub-note">Scene stub</p>
-            <!-- CH-6 scene: built in later pass -->
           </div>
         </div>
       </section>

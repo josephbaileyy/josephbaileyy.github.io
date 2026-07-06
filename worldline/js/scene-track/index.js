@@ -298,7 +298,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   // Create SVG element
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'track-svg');
-  svg.setAttribute('viewBox', '100 0 600 370');
+  svg.setAttribute('viewBox', '0 0 800 370');
   
   // Lanes
   const lanesG = document.createElementNS('http://www.w3.org/2000/svg', 'g');

@@ -149,24 +149,6 @@ p {
   opacity: 0;
 }
 
-.worldline-svg {
-  position: absolute;
-  left: 0;
-  z-index: 3;
-  width: 100%;
-  min-height: 1px;
-  overflow: visible;
-  pointer-events: none;
-  opacity: 0;
-}
-
-.worldline-svg line {
-  stroke: var(--text);
-  stroke-width: 2;
-  vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 8px rgba(232, 236, 241, 0.32));
-}
-
 .site-telemetry,
 .collision-hud {
   position: fixed;
@@ -324,6 +306,77 @@ p {
   padding: 7rem max(1.25rem, 8vw);
 }
 
+.scene-chapter {
+  min-height: var(--scrub-height, 300vh);
+}
+
+.scene-sticky {
+  align-items: stretch;
+  padding: 0;
+  overflow: hidden;
+}
+
+.scene-root {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+.scene-copy {
+  position: relative;
+  z-index: 2;
+  align-self: flex-end;
+  width: min(34rem, calc(100vw - 2.4rem));
+  margin: 0 max(1.2rem, 8vw) 6.5rem;
+  pointer-events: none;
+}
+
+.scene-copy-right {
+  margin-left: auto;
+}
+
+.scene-copy h2 {
+  max-width: 14em;
+  font-size: clamp(1.7rem, 3.5vw, 3rem);
+}
+
+.scene-copy p:not(.chapter-index) {
+  max-width: 28rem;
+  color: rgba(170, 180, 194, 0.82);
+}
+
+.music-copy {
+  align-self: flex-start;
+  margin-top: 6.5rem;
+}
+
+.worldline-connector {
+  position: relative;
+  z-index: 4;
+  height: clamp(4.5rem, 16vh, 8rem);
+  pointer-events: none;
+}
+
+.worldline-connector svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.worldline-connector path,
+.experience-rule path,
+.contact-worldline path {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 8px rgba(232, 236, 241, 0.32));
+}
+
 .handoff-caption {
   width: min(100%, 30rem);
   opacity: calc(1 - min(1, var(--scrub-progress, 0) * 1.8));
@@ -336,12 +389,6 @@ p {
   letter-spacing: 0.08em;
   line-height: 1.6;
   text-transform: uppercase;
-}
-
-.stub-chapter {
-  min-height: 108vh;
-  display: flex;
-  align-items: center;
 }
 
 .stub-layout {
@@ -360,20 +407,68 @@ p {
   color: rgba(127, 142, 163, 0.64);
 }
 
+.experience-timeline {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  padding: 7rem max(1.2rem, 8vw);
+}
+
+.experience-timeline h2 {
+  position: relative;
+  z-index: 2;
+}
+
+.experience-rule {
+  position: absolute;
+  top: min(44vh, 28rem);
+  left: max(1.2rem, 8vw);
+  width: calc(100% - max(1.2rem, 8vw) * 2);
+  height: 11.25rem;
+  overflow: visible;
+}
+
+.experience-rule-line {
+  opacity: 0.22;
+}
+
+.experience-rule-progress {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: var(--experience-rule-offset, 1000);
+}
+
 .experience-list {
-  margin-top: 2rem;
-  border-top: 1px solid rgba(127, 142, 163, 0.25);
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: 2rem;
+  width: min(100%, 52rem);
+  margin-top: clamp(5.5rem, 18vh, 10rem);
 }
 
 .experience-entry {
+  position: relative;
   display: grid;
-  grid-template-columns: 8.5rem minmax(0, 1fr);
-  gap: 1.5rem;
-  padding-top: 1.2rem;
+  grid-template-columns: minmax(7rem, 0.24fr) minmax(0, 1fr);
+  gap: clamp(1rem, 4vw, 3rem);
+  padding-top: 3rem;
+  opacity: var(--experience-entry-opacity, 0);
+  transform: translateY(var(--experience-entry-y, 1.2rem));
+}
+
+.experience-entry::before {
+  position: absolute;
+  top: 0;
+  left: calc(24% - 1px);
+  width: 2px;
+  height: 2.4rem;
+  content: "";
+  background: var(--text);
+  box-shadow: 0 0 10px rgba(232, 236, 241, 0.28);
 }
 
 .experience-entry p:not(.experience-date) {
-  max-width: 44rem;
+  max-width: 48rem;
   margin-top: 0.45rem;
   font-size: var(--step--1);
   line-height: 1.65;
@@ -403,12 +498,64 @@ p {
   margin-top: 0.95rem;
 }
 
+.chapter-contact {
+  min-height: var(--scrub-height, 250vh);
+}
+
+.contact-sticky {
+  display: grid;
+  place-items: center;
+}
+
+.contact-worldline {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  opacity: 0.95;
+}
+
+.contact-worldline svg {
+  width: 100%;
+  height: 42vh;
+  min-height: 16rem;
+  overflow: visible;
+}
+
+.contact-line {
+  stroke-dasharray: 628;
+  stroke-dashoffset: var(--contact-line-offset, 628);
+}
+
+.contact-point {
+  fill: var(--text);
+  opacity: var(--contact-point-opacity, 0);
+  filter: drop-shadow(0 0 9px rgba(232, 236, 241, 0.86));
+}
+
+.contact-panel {
+  position: relative;
+  z-index: 2;
+  width: min(34rem, calc(100vw - 2.4rem));
+  margin-left: min(28vw, 25rem);
+  opacity: var(--contact-panel-opacity, 0);
+}
+
 .is-reduced-motion .handoff-caption {
   opacity: 0;
 }
 
-.is-reduced-motion .worldline-svg {
+.is-reduced-motion .experience-entry,
+.is-reduced-motion .contact-panel,
+.is-reduced-motion .contact-point {
   opacity: 1;
+  transform: none;
+}
+
+.is-reduced-motion .experience-rule-progress,
+.is-reduced-motion .contact-line {
+  stroke-dashoffset: 0;
 }
 
 @media (max-width: 760px) {
@@ -448,6 +595,21 @@ p {
     gap: 1.25rem;
   }
 
+  .scene-copy,
+  .scene-copy-right,
+  .music-copy {
+    align-self: flex-end;
+    margin: 0 1.2rem 5.5rem;
+  }
+
+  .scene-copy h2 {
+    font-size: 1.68rem;
+  }
+
+  .worldline-connector {
+    height: 5.2rem;
+  }
+
   h1 {
     font-size: 3.45rem;
     line-height: 0.96;
@@ -465,6 +627,18 @@ p {
   .experience-entry {
     grid-template-columns: 1fr;
     gap: 0.35rem;
+  }
+
+  .experience-entry::before {
+    left: 0;
+  }
+
+  .experience-rule {
+    top: min(38vh, 22rem);
+  }
+
+  .contact-panel {
+    margin: 38vh 1.2rem 0;
   }
 }
 

@@ -30,11 +30,93 @@ function rgba(channels, alpha) {
   return `rgba(${channels}, ${alpha})`;
 }
 
+function rgbToHsl([r, g, b]) {
+  const rn = r / 255;
+  const gn = g / 255;
+  const bn = b / 255;
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  const lightness = (max + min) / 2;
+
+  if (max === min) {
+    return { h: 0, s: 0, l: lightness };
+  }
+
+  const delta = max - min;
+  const saturation = lightness > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+  let hue = 0;
+
+  if (max === rn) {
+    hue = (gn - bn) / delta + (gn < bn ? 6 : 0);
+  } else if (max === gn) {
+    hue = (bn - rn) / delta + 2;
+  } else {
+    hue = (rn - gn) / delta + 4;
+  }
+
+  return { h: hue * 60, s: saturation, l: lightness };
+}
+
+function hueToRgb(p, q, t) {
+  let x = t;
+
+  if (x < 0) {
+    x += 1;
+  }
+
+  if (x > 1) {
+    x -= 1;
+  }
+
+  if (x < 1 / 6) {
+    return p + (q - p) * 6 * x;
+  }
+
+  if (x < 1 / 2) {
+    return q;
+  }
+
+  if (x < 2 / 3) {
+    return p + (q - p) * (2 / 3 - x) * 6;
+  }
+
+  return p;
+}
+
+function hslToRgb({ h, s, l }) {
+  if (s === 0) {
+    const gray = Math.round(l * 255);
+    return [gray, gray, gray];
+  }
+
+  const hue = (((h % 360) + 360) % 360) / 360;
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+
+  return [
+    Math.round(hueToRgb(p, q, hue + 1 / 3) * 255),
+    Math.round(hueToRgb(p, q, hue) * 255),
+    Math.round(hueToRgb(p, q, hue - 1 / 3) * 255),
+  ];
+}
+
 function mixChannels(fromChannels, toChannels, amount) {
-  const a = fromChannels.split(',').map(Number);
-  const b = toChannels.split(',').map(Number);
+  const a = rgbToHsl(fromChannels.split(',').map(Number));
+  const b = rgbToHsl(toChannels.split(',').map(Number));
   const x = smootherStep(amount);
-  return `${Math.round(lerp(a[0], b[0], x))}, ${Math.round(lerp(a[1], b[1], x))}, ${Math.round(lerp(a[2], b[2], x))}`;
+  let hueDelta = ((b.h - a.h + 540) % 360) - 180;
+
+  if (a.h < 80 && b.h > 160 && b.h < 230 && hueDelta > 0) {
+    hueDelta -= 360;
+  }
+
+  const mixed = hslToRgb({
+    h: a.h + hueDelta * x,
+    s: lerp(a.s, b.s, x),
+    l: lerp(a.l, b.l, x),
+  });
+
+  return `${mixed[0]}, ${mixed[1]}, ${mixed[2]}`;
 }
 
 function buildData() {
