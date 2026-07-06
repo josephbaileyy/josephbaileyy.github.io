@@ -14,10 +14,9 @@
       padding: 0;
       background-color: var(--ground);
       font-family: var(--sans);
-      height: 400vh; /* 400vh scroll body */
+      height: 400vh;
     }
     
-    /* Scene Container (Fixed viewport) */
     #scene-viewport {
       position: fixed;
       inset: 0;
@@ -30,7 +29,6 @@
       z-index: 1;
     }
     
-    /* Controls Container */
     #controls {
       position: fixed;
       bottom: 24px;
@@ -111,26 +109,18 @@
     const progressVal = document.getElementById('progress-val');
     const sanityStatus = document.getElementById('sanity-status');
 
-    // Initialize scene
     const scene = createScene(viewport, { reducedMotion: false });
-
-    // Sync scroll and slider
     const getMaxScroll = () => document.documentElement.scrollHeight - window.innerHeight;
 
     function updateState(p) {
-      // Update scene progress
       scene.onProgress(p);
-      
-      // Update UI displays
       progressVal.textContent = p.toFixed(3);
       
-      // Perform clock sanity check at p ≈ 0.68 of the lap portion.
-      // Lap portion runs from p = 0.08 to 0.95.
-      // So lap progress is (p - 0.08) / 0.87.
-      // At lap progress = 0.68, p = 0.08 + 0.68 * 0.87 = 0.6716.
-      // Let's test if p is close to 0.6716.
-      const lapProgress = (p - 0.08) / 0.87;
-      if (p > 0.08 && p < 0.95) {
+      const P_ENTRY = 0.12;
+      const P_LAP_END = 0.88;
+      const lapProgress = (p - P_ENTRY) / (P_LAP_END - P_ENTRY);
+      
+      if (p > P_ENTRY && p < P_LAP_END) {
         const clockEl = viewport.querySelector('.track-clock');
         const clockTime = clockEl ? parseFloat(clockEl.textContent) : 0;
         
@@ -140,7 +130,6 @@
       }
     }
 
-    // Scroll handler
     window.addEventListener('scroll', () => {
       const maxScroll = getMaxScroll();
       const progress = maxScroll > 0 ? window.scrollY / maxScroll : 0;
@@ -148,17 +137,13 @@
       updateState(progress);
     }, { passive: true });
 
-    // Slider input handler
     slider.addEventListener('input', (e) => {
       const progress = parseFloat(e.target.value);
       const maxScroll = getMaxScroll();
-      
-      // Update scroll position (will trigger scroll listener, but we also update state directly)
       window.scrollTo(0, progress * maxScroll);
       updateState(progress);
     });
 
-    // Run initial update
     updateState(0);
   </script>
 </body>

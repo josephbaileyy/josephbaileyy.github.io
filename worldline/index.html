@@ -54,16 +54,6 @@
         </div>
       </section>
 
-      <div
-        class="worldline-connector connector-collision-research"
-        data-connector="01-02"
-        aria-hidden="true"
-      >
-        <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
-          <path d="M 500 0 Q 500 60 500 120"></path>
-        </svg>
-      </div>
-
       <section
         id="chapter-research"
         class="chapter scrub-section scene-chapter"
@@ -87,12 +77,6 @@
         </div>
       </section>
 
-      <div class="worldline-connector connector-research-track" data-connector="02-03" aria-hidden="true">
-        <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
-          <path d="M 978 0 Q 805 58 663 120"></path>
-        </svg>
-      </div>
-
       <section
         id="chapter-track"
         class="chapter scrub-section scene-chapter"
@@ -114,12 +98,6 @@
         </div>
       </section>
 
-      <div class="worldline-connector connector-track-experience" data-connector="03-04" aria-hidden="true">
-        <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
-          <path d="M 663 0 Q 360 58 80 120"></path>
-        </svg>
-      </div>
-
       <section
         id="chapter-experience"
         class="chapter scrub-section scene-chapter chapter-experience"
@@ -132,11 +110,14 @@
       >
         <div class="scrub-sticky scene-sticky">
           <div class="experience-timeline" aria-labelledby="experience-title">
+            <div class="worldline-trunk worldline-trunk-in" aria-hidden="true"></div>
+            <div class="worldline-trunk worldline-trunk-out" aria-hidden="true"></div>
             <p class="chapter-index">CH 04 / EXPERIENCE</p>
             <h2 id="experience-title">Experience</h2>
             <svg class="experience-rule" viewBox="0 0 1000 180" preserveAspectRatio="none" aria-hidden="true">
               <path class="experience-rule-line" d="M 0 72 L 1000 72"></path>
-              <path class="experience-rule-progress" d="M 0 72 L 1000 72"></path>
+              <path class="experience-rule-progress experience-rule-progress-left" d="M 500 72 L 0 72"></path>
+              <path class="experience-rule-progress experience-rule-progress-right" d="M 500 72 L 1000 72"></path>
             </svg>
             <div class="experience-list" aria-label="Experience">
               <article class="experience-entry">
@@ -153,12 +134,6 @@
           </div>
         </div>
       </section>
-
-      <div class="worldline-connector connector-experience-music" data-connector="04-05" aria-hidden="true">
-        <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
-          <path d="M 920 0 Q 420 58 25 120"></path>
-        </svg>
-      </div>
 
       <section
         id="chapter-music"
@@ -179,12 +154,6 @@
         </div>
       </section>
 
-      <div class="worldline-connector connector-music-contact" data-connector="05-06" aria-hidden="true">
-        <svg viewBox="0 0 1000 120" preserveAspectRatio="none">
-          <path d="M 975 0 Q 800 56 640 120"></path>
-        </svg>
-      </div>
-
       <section
         id="chapter-contact"
         class="chapter scrub-section scene-chapter chapter-contact"
@@ -197,9 +166,10 @@
       >
         <div class="scrub-sticky scene-sticky contact-sticky">
           <div class="contact-worldline" aria-hidden="true">
+            <div class="worldline-trunk worldline-trunk-contact"></div>
             <svg viewBox="0 0 1000 260" preserveAspectRatio="none">
               <defs>
-                <linearGradient id="contact-dim" gradientUnits="userSpaceOnUse" x1="0" y1="130" x2="640" y2="130">
+                <linearGradient id="contact-dim" gradientUnits="userSpaceOnUse" x1="500" y1="130" x2="640" y2="130">
                   <stop offset="70%" stop-color="#ffffff" />
                   <stop offset="100%" stop-color="rgba(255, 255, 255, 0.3)" />
                 </linearGradient>
@@ -207,7 +177,7 @@
                   <polygon points="0,128 448,128 640,129.625 640,130.375 448,132 0,132" fill="url(#contact-dim)" />
                 </mask>
               </defs>
-              <path class="contact-line" d="M 0 130 Q 520 130 640 130"></path>
+              <path class="contact-line" d="M 500 130 Q 570 130 640 130"></path>
               <circle class="contact-point" cx="640" cy="130" r="4"></circle>
             </svg>
           </div>

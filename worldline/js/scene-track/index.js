@@ -3,6 +3,25 @@ const HS = 130;
 const CX = 400;
 const CY = 210;
 
+const P_ENTRY_END = 0.12;
+const P_LAP_END = 0.88;
+
+const E1_len = 300;
+const E2_len = Math.sqrt(130 ** 2 + 173.4 ** 2);
+const L_entry = E1_len + E2_len;
+
+const L1 = Math.PI * R;
+const L2 = 2 * HS;
+const L3 = Math.PI * R;
+const L4 = 2 * HS;
+const L_lap = L1 + L2 + L3 + L4; // 1232.513165181745
+
+const X1_len = Math.sqrt(130 ** 2 + 96.6 ** 2);
+const X2_len = 250;
+const L_exit = X1_len + X2_len;
+
+const L_total = L_entry + L_lap + L_exit; // 2161.1960704531785
+
 const TOUCHDOWN_TIMES = [6.09, 10.23, 14.33, 18.49, 22.78, 27.27, 31.89, 36.59, 41.45, 46.26];
 const FINISH_TIME = 52.17;
 const TRACK_POSITIONS = [0, 45, 80, 115, 150, 185, 220, 255, 290, 325, 360, 400];
@@ -89,28 +108,35 @@ function getLapPosition(d) {
 
 function getTrackState(p) {
   p = Math.min(1, Math.max(0, p));
-  const Rt = CX + HS;
-  const bot = CY + R;
-  
-  const L1 = Math.PI * R;
-  const L2 = 2 * HS;
-  const L3 = Math.PI * R;
-  const L4 = 2 * HS;
-  const L_lap = L1 + L2 + L3 + L4; // 1232.5132
-  
-  if (p <= 0.08) {
-    const p_entry = p / 0.08;
-    return {
-      x: Rt,
-      y: p_entry * bot,
-      nx: 1,
-      ny: 0,
-      distance: 0,
-      time: 0,
-      statusText: 'START'
-    };
-  } else if (p <= 0.95) {
-    const p_lap = (p - 0.08) / 0.87;
+
+  if (p <= P_ENTRY_END) {
+    const p_entry = p / P_ENTRY_END;
+    const d = p_entry * L_entry;
+    if (d <= E1_len) {
+      return {
+        x: 400,
+        y: -150 + d,
+        nx: 0,
+        ny: 1,
+        distance: 0,
+        time: 0,
+        statusText: 'START'
+      };
+    } else {
+      const d2 = d - E1_len;
+      const pct = d2 / E2_len;
+      return {
+        x: 400 + 130 * pct,
+        y: 150 + 173.4 * pct,
+        nx: 130 / E2_len,
+        ny: 173.4 / E2_len,
+        distance: 0,
+        time: 0,
+        statusText: 'START'
+      };
+    }
+  } else if (p <= P_LAP_END) {
+    const p_lap = (p - P_ENTRY_END) / (P_LAP_END - P_ENTRY_END);
     const distance = p_lap * 400;
     const time = getRaceTime(distance);
     const statusText = getStatusText(distance);
@@ -125,15 +151,31 @@ function getTrackState(p) {
       statusText
     };
   } else {
-    return {
-      x: Rt,
-      y: bot,
-      nx: 0,
-      ny: 1,
-      distance: 400,
-      time: FINISH_TIME,
-      statusText: `FINISH — ${FINISH_TIME.toFixed(2)}`
-    };
+    const p_exit = (p - P_LAP_END) / (1 - P_LAP_END);
+    const d = p_exit * L_exit;
+    if (d <= X1_len) {
+      const pct = d / X1_len;
+      return {
+        x: 530 - 130 * pct,
+        y: 323.4 + 96.6 * pct,
+        nx: -130 / X1_len,
+        ny: 96.6 / X1_len,
+        distance: 400,
+        time: FINISH_TIME,
+        statusText: `FINISH — ${FINISH_TIME.toFixed(2)}`
+      };
+    } else {
+      const d2 = d - X1_len;
+      return {
+        x: 400,
+        y: 420 + d2,
+        nx: 0,
+        ny: 1,
+        distance: 400,
+        time: FINISH_TIME,
+        statusText: `FINISH — ${FINISH_TIME.toFixed(2)}`
+      };
+    }
   }
 }
 
@@ -299,6 +341,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'track-svg');
   svg.setAttribute('viewBox', '0 0 800 370');
+  svg.style.overflow = 'visible';
   
   // Lanes
   const lanesG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -398,15 +441,14 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   
   // Worldline path
   const worldlinePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  const d_worldline = `M 530 0 L 530 323.4 A 113.4 113.4 0 0 0 530 96.6 L 270 96.6 A 113.4 113.4 0 0 0 270 323.4 L 530 323.4`;
+  const d_worldline = `M 400 -150 L 400 150 L 530 323.4 A 113.4 113.4 0 0 0 530 96.6 L 270 96.6 A 113.4 113.4 0 0 0 270 323.4 L 530 323.4 L 400 420 L 400 670`;
   worldlinePath.setAttribute('d', d_worldline);
   worldlinePath.setAttribute('fill', 'none');
   worldlinePath.setAttribute('stroke', '#f2ede6');
   worldlinePath.setAttribute('stroke-width', '2.8');
   worldlinePath.setAttribute('stroke-linecap', 'round');
   
-  // Total length calculation: entry (323.4) + lap (1232.5132) = 1555.9132
-  const L_total = 1555.9132;
+  // Total length from top variables
   worldlinePath.style.strokeDasharray = L_total.toFixed(2);
   worldlinePath.style.strokeDashoffset = L_total.toFixed(2);
   svg.appendChild(worldlinePath);
@@ -416,8 +458,8 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   runner.setAttribute('r', '4.5');
   runner.setAttribute('fill', '#ffb547');
   // Initial position at top
-  runner.setAttribute('cx', '530');
-  runner.setAttribute('cy', '0');
+  runner.setAttribute('cx', '400');
+  runner.setAttribute('cy', '-150');
   svg.appendChild(runner);
   
   svgWrap.appendChild(svg);
@@ -531,16 +573,39 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   function onProgress(p) {
     p = Math.min(1, Math.max(0, p));
     
-    // Map p to strokeDashoffset
+    // Map p to strokeDashoffset. The entry segment is always fully revealed
+    // (not grown from nothing) so the canonical vertical line is already
+    // present at p=0, matching the other chapters' arrival state; only the
+    // lap itself progressively draws in as the real race is "run". The exit
+    // segment settles to fully-drawn before p=1 (not exactly at it) so the
+    // lerp-smoothed scrub progress has margin to catch up before the sticky
+    // handoff into the next chapter, even on a fast scroll.
+    const EXIT_SETTLE_FRAC = 0.75;
     let p_mapped = 0;
-    if (p <= 0.08) {
-      p_mapped = (p / 0.08) * (323.4 / 1555.913);
-    } else if (p <= 0.95) {
-      p_mapped = (323.4 / 1555.913) + ((p - 0.08) / 0.87) * (1232.513 / 1555.913);
+    if (p <= P_ENTRY_END) {
+      p_mapped = L_entry / L_total;
+    } else if (p <= P_LAP_END) {
+      p_mapped = (L_entry / L_total) + ((p - P_ENTRY_END) / (P_LAP_END - P_ENTRY_END)) * (L_lap / L_total);
     } else {
-      p_mapped = 1.0;
+      const exitRaw = (p - P_LAP_END) / (1 - P_LAP_END);
+      const exitMapped = Math.min(1, exitRaw / EXIT_SETTLE_FRAC);
+      p_mapped = ((L_entry + L_lap) / L_total) + exitMapped * (L_exit / L_total);
     }
     worldlinePath.style.strokeDashoffset = (L_total * (1 - p_mapped)).toFixed(2);
+    
+    // 3D Perspective Tilt during entry
+    if (!reducedMotion) {
+      let tilt = 0;
+      if (p < P_ENTRY_END) {
+        const progress = p / P_ENTRY_END;
+        const eased = 1 - Math.pow(1 - progress, 3);
+        tilt = 38 * (1 - eased);
+      }
+      svgWrap.style.transform = `perspective(900px) rotateX(${tilt}deg)`;
+      svgWrap.style.transformOrigin = 'center center';
+    } else {
+      svgWrap.style.transform = 'none';
+    }
     
     // Get state
     const state = getTrackState(p);

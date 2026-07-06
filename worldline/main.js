@@ -133,7 +133,7 @@ function updateExperienceScene(progress) {
 
   const p = clamp01(progress);
   const entry = smootherStep((p - 0.16) / 0.22);
-  chapter.style.setProperty('--experience-rule-offset', (1000 * (1 - p)).toFixed(2));
+  chapter.style.setProperty('--experience-rule-offset', (500 * (1 - p)).toFixed(2));
   chapter.style.setProperty('--experience-entry-opacity', entry.toFixed(3));
   chapter.style.setProperty('--experience-entry-y', `${((1 - entry) * 1.2).toFixed(3)}rem`);
 }

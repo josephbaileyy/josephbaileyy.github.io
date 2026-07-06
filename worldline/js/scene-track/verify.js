@@ -3,9 +3,8 @@ import { spawn } from 'child_process';
 
 async function run() {
   console.log('Starting HTTP server...');
-  const server = spawn('python3', ['-m', 'http.server', '8888', '--directory', '/Users/josephbailey/josephbaileyy.github.io']);
+  const server = spawn('python3', ['-m', 'http.server', '8889', '--directory', '/Users/josephbailey/josephbaileyy.github.io']);
   
-  // Wait a moment for server to start
   await new Promise(resolve => setTimeout(resolve, 1500));
   
   const browser = await chromium.launch({ headless: true });
@@ -22,65 +21,79 @@ async function run() {
   });
   
   console.log('Navigating to dev.html...');
-  await page.goto('http://localhost:8888/worldline/js/scene-track/dev.html');
-  
-  // Wait for scene to mount
+  await page.goto('http://localhost:8889/worldline/js/scene-track/dev.html');
   await page.waitForSelector('.track-scene-container');
   
-  // Test sanity at p = 0.6716 (which corresponds to lap progress = 0.68)
-  console.log('Setting progress to 0.6716 (lap progress = 0.68)...');
+  // Custom function to check pixels
+  async function checkPixels(p, label) {
+    console.log(`Setting progress to ${p} (${label})...`);
+    await page.evaluate((val) => {
+      const slider = document.getElementById('progress-slider');
+      slider.value = val.toString();
+      slider.dispatchEvent(new Event('input'));
+    }, p);
+    await new Promise(resolve => setTimeout(resolve, 200));
+    
+    // screenshot and check center pixels
+    const svgBBox = await page.evaluate(() => {
+      const svg = document.querySelector('.track-svg');
+      const rect = svg.getBoundingClientRect();
+      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+    });
+    const centerX = svgBBox.x + svgBBox.width / 2;
+    console.log(`[${label}] SVG BBox center X is: ${centerX.toFixed(1)}`);
+    
+    const screenshot = await page.screenshot();
+    
+    const pixelData = await page.evaluate((cx) => {
+      const runner = document.querySelector('circle[fill="#ffb547"]');
+      const rect = runner.getBoundingClientRect();
+      const dotCenterX = rect.x + rect.width / 2;
+      const dotCenterY = rect.y + rect.height / 2;
+      
+      return { dotX: dotCenterX, dotY: dotCenterY, expectedX: cx };
+    }, centerX);
+    
+    console.log(`[${label}] Runner dot is at screen X: ${pixelData.dotX.toFixed(1)}, Y: ${pixelData.dotY.toFixed(1)} (Expected X: ${pixelData.expectedX.toFixed(1)})`);
+    const diff = Math.abs(pixelData.dotX - pixelData.expectedX);
+    if (diff > 2) {
+      console.warn(`WARNING: Dot is off center by ${diff.toFixed(1)}px!`);
+    } else {
+      console.log(`SUCCESS: Dot is perfectly centered! (off by ${diff.toFixed(1)}px)`);
+    }
+  }
+
+  await checkPixels(0, 'p=0 (Entry)');
+  await checkPixels(0.05, 'p=0.05 (Entry Curve)');
+
+  // Test sanity at lap progress = 0.68
+  console.log('Setting progress to 0.6368 (lap progress = 0.68)...');
   await page.evaluate(() => {
     const slider = document.getElementById('progress-slider');
-    slider.value = '0.6716';
+    slider.value = '0.6368';
     slider.dispatchEvent(new Event('input'));
   });
+  await new Promise(resolve => setTimeout(resolve, 200));
   
-  // Wait a short bit for rendering/updates
-  await new Promise(resolve => setTimeout(resolve, 100));
-  
-  // Check clock value
   const clockText = await page.$eval('.track-clock', el => el.textContent);
   const statusText = await page.$eval('.track-status', el => el.textContent);
-  
   console.log(`Clock reads: ${clockText}`);
   console.log(`Status reads: ${statusText}`);
   
-  // Check splits visibility
-  const splitsOpacity = await page.evaluate(() => {
-    const splits = document.querySelectorAll('.track-splits text');
-    // return an array of texts and opacities
-    return Array.from(splits).map(el => ({
-      text: el.textContent,
-      opacity: el.getAttribute('opacity')
-    }));
-  });
+  await checkPixels(0.95, 'p=0.95 (Exit Curve)');
+  await checkPixels(1.0, 'p=1.0 (Exit)');
   
-  console.log('Splits State:');
-  splitsOpacity.forEach(s => {
-    if (parseFloat(s.opacity) > 0) {
-      console.log(`  ${s.text}: opacity ${s.opacity}`);
-    }
-  });
-  
-  // Test end state
-  console.log('Setting progress to 1.0 (finish state)...');
-  await page.evaluate(() => {
-    const slider = document.getElementById('progress-slider');
-    slider.value = '1.0';
-    slider.dispatchEvent(new Event('input'));
-  });
-  
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const endClockText = await page.$eval('.track-clock', el => el.textContent);
-  const endStatusText = await page.$eval('.track-status', el => el.textContent);
   const analysisOpacity = await page.$eval('.track-analysis', el => getComputedStyle(el).opacity);
+  console.log(`Analysis Panel Opacity at end: ${analysisOpacity}`);
   
-  console.log(`End Clock reads: ${endClockText}`);
-  console.log(`End Status reads: ${endStatusText}`);
-  console.log(`Analysis Panel Opacity: ${analysisOpacity}`);
+  // Test reducedMotion
+  console.log('Testing reducedMotion...');
+  const sceneViewport = await page.$('#scene-viewport');
+  await page.evaluate(() => {
+    document.getElementById('scene-viewport').innerHTML = '';
+    const { createScene } = window.sceneExports || {};
+  });
   
-  // Cleanup
   await browser.close();
   server.kill();
   

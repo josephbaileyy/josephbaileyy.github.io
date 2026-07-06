@@ -294,23 +294,66 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
   }
 
   // 5. Drawing & Animation
+  function drawCanonicalLine(x, y1, y2) {
+    if (Math.abs(y1 - y2) < 0.1) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x, y1);
+    ctx.lineTo(x, y2);
+    ctx.strokeStyle = '#e8ecf1';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = 'rgba(232, 236, 241, 0.32)';
+    ctx.stroke();
+    ctx.restore();
+  }
+
   function draw() {
     if (!canvas || !ctx) return;
 
     ctx.clearRect(0, 0, cssWidth, cssHeight);
 
+    const cx = cssWidth / 2;
+    const centerY = cssHeight / 2;
+
+    let t_entry = 1;
+    let t_exit = 0;
+    if (!reducedMotion) {
+      // Entry: p=0.10 to p=0.20
+      t_entry = Math.max(0, Math.min(1, (currentProgress - 0.10) / 0.10));
+      t_entry = t_entry * t_entry * (3 - 2 * t_entry);
+
+      // Exit: p=0.75 to p=0.85
+      t_exit = Math.max(0, Math.min(1, (currentProgress - 0.75) / 0.10));
+      t_exit = t_exit * t_exit * (3 - 2 * t_exit);
+    }
+
+    const horizMinX = cx - cx * t_entry * (1 - t_exit);
+    const horizMaxX = cx + (cssWidth - cx) * t_entry * (1 - t_exit);
+
     if (peaks.length === 0) {
       // Draw horizontal centerline if peaks haven't loaded yet
-      ctx.beginPath();
-      ctx.moveTo(0, cssHeight / 2);
-      ctx.lineTo(cssWidth, cssHeight / 2);
-      ctx.strokeStyle = 'rgba(242, 237, 230, 0.4)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
+      if (horizMaxX > horizMinX) {
+        ctx.beginPath();
+        ctx.moveTo(horizMinX, centerY);
+        ctx.lineTo(horizMaxX, centerY);
+        ctx.strokeStyle = 'rgba(242, 237, 230, 0.4)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Draw vertical entry/exit lines
+      if (reducedMotion) {
+        drawCanonicalLine(cx, 0, centerY);
+        drawCanonicalLine(cx, centerY, cssHeight);
+      } else {
+        if (t_entry < 1) drawCanonicalLine(cx, centerY * t_entry, centerY);
+        if (t_exit > 0) drawCanonicalLine(cx, centerY, centerY + t_exit * (cssHeight - centerY));
+      }
       return;
     }
 
-    const centerY = cssHeight / 2;
     const maxAmplitude = cssHeight * 0.38;
 
     // Morph progress (only if reducedMotion is false, otherwise fully formed)
@@ -340,12 +383,16 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
 
     // Draw active centerline glow (thicker semi-transparent line behind the centerline)
     if (isPlaying && rms > 0 && playheadX > 0) {
-      ctx.beginPath();
-      ctx.moveTo(0, centerY);
-      ctx.lineTo(playheadX, centerY);
-      ctx.strokeStyle = `rgba(255, 181, 71, ${0.05 + rms * 0.35})`;
-      ctx.lineWidth = 2 + rms * 12;
-      ctx.stroke();
+      const glowStartX = Math.max(horizMinX, 0);
+      const glowEndX = Math.min(horizMaxX, playheadX);
+      if (glowEndX > glowStartX) {
+        ctx.beginPath();
+        ctx.moveTo(glowStartX, centerY);
+        ctx.lineTo(glowEndX, centerY);
+        ctx.strokeStyle = `rgba(255, 181, 71, ${0.05 + rms * 0.35})`;
+        ctx.lineWidth = 2 + rms * 12;
+        ctx.stroke();
+      }
     }
 
     // Draw peaks as thin vertical strokes
@@ -390,24 +437,32 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
 
     // Draw active centerline (Amber #ffb547)
     if (playheadX > 0) {
-      ctx.beginPath();
-      ctx.moveTo(0, centerY);
-      ctx.lineTo(playheadX, centerY);
-      ctx.strokeStyle = '#ffb547';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
+      const activeStartX = Math.max(horizMinX, 0);
+      const activeEndX = Math.min(horizMaxX, playheadX);
+      if (activeEndX > activeStartX) {
+        ctx.beginPath();
+        ctx.moveTo(activeStartX, centerY);
+        ctx.lineTo(activeEndX, centerY);
+        ctx.strokeStyle = '#ffb547';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
     }
 
     // Draw inactive centerline (Warm white #f2ede6, slightly brighter than background peaks)
-    ctx.beginPath();
-    ctx.moveTo(playheadX, centerY);
-    ctx.lineTo(cssWidth, centerY);
-    ctx.strokeStyle = 'rgba(242, 237, 230, 0.4)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
+    const inactiveStartX = Math.max(horizMinX, playheadX);
+    const inactiveEndX = Math.min(horizMaxX, cssWidth);
+    if (inactiveEndX > inactiveStartX) {
+      ctx.beginPath();
+      ctx.moveTo(inactiveStartX, centerY);
+      ctx.lineTo(inactiveEndX, centerY);
+      ctx.strokeStyle = 'rgba(242, 237, 230, 0.4)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
 
     // Draw playhead indicator (Small glowing amber circle)
-    if (playProgress > 0 && playProgress < 1) {
+    if (playProgress > 0 && playProgress < 1 && playheadX >= horizMinX && playheadX <= horizMaxX) {
       // Glow circle
       if (isPlaying && rms > 0) {
         ctx.beginPath();
@@ -420,6 +475,15 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
       ctx.arc(playheadX, centerY, 3, 0, Math.PI * 2);
       ctx.fillStyle = '#ffb547';
       ctx.fill();
+    }
+
+    // Draw vertical entry/exit lines
+    if (reducedMotion) {
+      drawCanonicalLine(cx, 0, centerY);
+      drawCanonicalLine(cx, centerY, cssHeight);
+    } else {
+      if (t_entry < 1) drawCanonicalLine(cx, centerY * t_entry, centerY);
+      if (t_exit > 0) drawCanonicalLine(cx, centerY, centerY + t_exit * (cssHeight - centerY));
     }
   }
 

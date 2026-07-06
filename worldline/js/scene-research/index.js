@@ -195,7 +195,7 @@ function computeLayout(width, height) {
   const plotHeight = Math.max(1, baseline - top);
   const binWidth = plotWidth / BIN_COUNT;
   const gap = Math.max(1.1, Math.min(2.6, binWidth * 0.18));
-  return { compact, left, right, top, baseline, plotWidth, plotHeight, binWidth, gap };
+  return { compact, width, height, left, right, top, baseline, plotWidth, plotHeight, binWidth, gap };
 }
 
 function drawHistogram(ctx, layout, data, p) {
@@ -267,104 +267,114 @@ function outlinePoints(layout, data, p) {
   });
 }
 
-function liftedYAt(points, x) {
-  if (!points.length) {
-    return 0;
+// Cumulative arc-length table for a polyline, so we can sample it by fraction.
+function polylineLengths(points) {
+  const cum = [0];
+  let total = 0;
+
+  for (let index = 1; index < points.length; index += 1) {
+    total += Math.hypot(points[index].x - points[index - 1].x, points[index].y - points[index - 1].y);
+    cum.push(total);
   }
 
-  if (x <= points[0].x) {
-    return points[0].y;
+  return { cum, total };
+}
+
+// Point at a normalized arc-length fraction (0 = first point, 1 = last point).
+function samplePolyline(points, cum, total, fraction) {
+  if (points.length === 0) {
+    return { x: 0, y: 0 };
   }
 
-  const last = points[points.length - 1];
-
-  if (x >= last.x) {
-    return last.y;
+  if (total <= 0) {
+    return points[0];
   }
 
-  for (let index = 0; index < points.length - 1; index += 1) {
-    const a = points[index];
-    const b = points[index + 1];
+  const target = clamp01(fraction) * total;
 
-    if (x >= a.x && x <= b.x) {
-      const t = (x - a.x) / (b.x - a.x);
-      return lerp(a.y, b.y, t);
+  for (let index = 1; index < points.length; index += 1) {
+    if (target <= cum[index]) {
+      const segLength = cum[index] - cum[index - 1] || 1;
+      const t = (target - cum[index - 1]) / segLength;
+      return {
+        x: lerp(points[index - 1].x, points[index].x, t),
+        y: lerp(points[index - 1].y, points[index].y, t),
+      };
     }
   }
 
-  return last.y;
+  return points[points.length - 1];
+}
+
+// The "bent" state of the worldline: a continuous path that enters at top-center,
+// dives into the plot to trace the current (morphing) histogram outline as its
+// staged vertex, then collects back to bottom-center. Both endpoints stay pinned
+// to the canonical center x so the entry/exit invariant holds through the morph.
+function buildDetourPath(layout, data, p) {
+  const { width, height, left, right, top, baseline } = layout;
+  const cx = width / 2;
+  const outline = outlinePoints(layout, data, p);
+  const path = [{ x: cx, y: 0 }, { x: cx, y: top * 0.5 }];
+
+  if (outline.length) {
+    // Sweep from center into the left edge of the plot at the first bar's height.
+    path.push({ x: left, y: outline[0].y });
+    outline.forEach((point) => path.push({ x: point.x, y: point.y }));
+    // Carry the trace out to the right axis, then collect back toward center.
+    path.push({ x: right, y: outline[outline.length - 1].y });
+  }
+
+  path.push({ x: cx, y: baseline + (height - baseline) * 0.35 });
+  path.push({ x: cx, y: height });
+  return path;
 }
 
 function drawWorldline(ctx, layout, data, p, time) {
-  const { left, right, baseline, plotWidth, compact } = layout;
-  const arcRadiusMax = compact ? 15 : 22;
-  const bendT = smootherStep(mapRange(p, 0.15, 0.3));
-  const axisExtendT = smootherStep(mapRange(p, 0.15, 0.5));
-  const liftT = smootherStep(mapRange(p, 0.5, 1.0));
-  const radius = arcRadiusMax * bendT;
-  const cornerX = left;
-  const arcCenterX = cornerX + radius;
-  const arcCenterY = baseline - radius;
-  const horizontalStartX = arcCenterX;
-  const horizontalMaxLength = Math.max(0, right - horizontalStartX);
-  const horizontalEndX = horizontalStartX + horizontalMaxLength * axisExtendT;
+  const { width, height } = layout;
+  const cx = width / 2;
+  const bendIn = smootherStep(mapRange(p, 0.12, 0.45));
+  const bendOut = smootherStep(mapRange(p, 0.7, 0.88));
+  // Envelope: 0 at entry, peaks at 1 mid-scroll, back to 0 before the exit window.
+  const bend = bendIn * (1 - bendOut);
   const glow = time === 0 ? 0.95 : 0.92 + 0.08 * Math.sin(time * 0.0016);
 
+  ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
   ctx.lineWidth = 2;
+  ctx.strokeStyle = rgba(LINE, glow);
+  ctx.shadowColor = rgba(LINE, 0.32);
+  ctx.shadowBlur = 8;
 
   ctx.beginPath();
-  ctx.moveTo(cornerX, 0);
-  ctx.lineTo(cornerX, arcCenterY);
 
-  if (radius > 0.1) {
-    ctx.arc(arcCenterX, arcCenterY, radius, Math.PI, Math.PI * 0.5, true);
-  }
-
-  ctx.strokeStyle = rgba(LINE, glow);
-  ctx.stroke();
-
-  let tipX = horizontalEndX;
-  let tipY = baseline;
-
-  if (horizontalEndX > horizontalStartX + 0.5) {
-    ctx.beginPath();
-    ctx.moveTo(horizontalStartX, baseline);
-    ctx.lineTo(horizontalEndX, baseline);
-    ctx.strokeStyle = rgba(LINE, glow * (1 - liftT * 0.85));
-    ctx.stroke();
-  }
-
-  if (liftT > 0.001) {
-    const points = outlinePoints(layout, data, p);
-    const steps = 48;
-    ctx.beginPath();
+  if (bend < 0.0008) {
+    // Canonical vertical spine through the full height, dead-center.
+    ctx.moveTo(cx, 0);
+    ctx.lineTo(cx, height);
+  } else {
+    // Morph each sample between the straight spine and the detour path. The two
+    // endpoints coincide, so the top and bottom stay locked to center at any bend.
+    const detour = buildDetourPath(layout, data, p);
+    const { cum, total } = polylineLengths(detour);
+    const steps = 160;
 
     for (let index = 0; index <= steps; index += 1) {
-      const x = left + (plotWidth * index) / steps;
-      const y = lerp(baseline, liftedYAt(points, x), liftT);
+      const s = index / steps;
+      const bent = samplePolyline(detour, cum, total, s);
+      const x = lerp(cx, bent.x, bend);
+      const y = lerp(s * height, bent.y, bend);
 
       if (index === 0) {
         ctx.moveTo(x, y);
       } else {
         ctx.lineTo(x, y);
       }
-
-      if (index === steps) {
-        tipX = x;
-        tipY = y;
-      }
     }
-
-    ctx.strokeStyle = rgba(LINE, glow * liftT);
-    ctx.stroke();
   }
 
-  ctx.beginPath();
-  ctx.arc(tipX, tipY, compact ? 2.4 : 3, 0, Math.PI * 2);
-  ctx.fillStyle = rgba(LINE, glow);
-  ctx.fill();
+  ctx.stroke();
+  ctx.restore();
 }
 
 function drawLabels(ctx, layout, p) {
