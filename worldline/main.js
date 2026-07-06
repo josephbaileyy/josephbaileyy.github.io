@@ -21,6 +21,7 @@ document.documentElement.classList.toggle('is-reduced-motion', reducedMotion);
 
 const fugueAudioUrl = new URL('./assets/audio/fugue.m4a', import.meta.url).href;
 const fuguePeaksUrl = new URL('./assets/audio/fugue-peaks.json', import.meta.url).href;
+const fugueNotesUrl = new URL('./assets/audio/fugue-notes.json', import.meta.url).href;
 
 const collisionCanvas = document.querySelector('#collision-canvas');
 const collisionHud = document.querySelector('#collision-event-hud-readout');
@@ -119,6 +120,7 @@ const sceneRecords = [
     create: (root) => createMusicScene(root, {
       audioUrl: fugueAudioUrl,
       peaksUrl: fuguePeaksUrl,
+      notesUrl: fugueNotesUrl,
       reducedMotion,
     }),
   }),
@@ -163,7 +165,6 @@ function updateContactScene(progress) {
 lifecycle.register({
   element: collisionChapter,
   scene: collisionScene,
-  unmountWhen: ({ handoffProgress }) => !reducedMotion && handoffProgress >= 0.996,
 });
 
 sceneRecords.forEach((record) => {
@@ -194,6 +195,18 @@ scrollRuntime.onUpdate((state) => {
 
   updateExperienceScene(state.scrubs.get('experience')?.progress ?? (reducedMotion ? 1 : 0));
   updateContactScene(state.scrubs.get('contact')?.progress ?? (reducedMotion ? 1 : 0));
+
+  // The collision->worldline collapse is reversible: scrolling back up above
+  // the handoff threshold brings the event display back rather than leaving
+  // it retired forever. Hysteresis (0.996 vs 0.9) avoids mount/unmount churn
+  // right at the threshold.
+  if (!reducedMotion) {
+    if (handoffProgress >= 0.996 && !collisionScene.isRetired()) {
+      collisionScene.collapse();
+    } else if (handoffProgress < 0.9 && collisionScene.isRetired()) {
+      collisionScene.expand();
+    }
+  }
 
   if (collisionScene.isActive()) {
     collisionScene.update({

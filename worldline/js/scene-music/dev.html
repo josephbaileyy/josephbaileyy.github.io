@@ -69,9 +69,10 @@
 
     const scene = createScene(viewport, {
       reducedMotion,
-      audioUrl: '../../../public/assets/audio/bach-fugue.mp3',
-      peaksUrl: '../../../public/assets/data/fugue-peaks.json'
+      audioUrl: '../../assets/audio/fugue.m4a',
+      notesUrl: '../../assets/audio/fugue-notes.json'
     });
+    window.musicScene = scene;
 
     function updateState(p) {
       scene.onProgress(p);

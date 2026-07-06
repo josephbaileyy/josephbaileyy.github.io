@@ -207,19 +207,29 @@ function makeWorldlineMesh(width, height) {
       uResolution: { value: new THREE.Vector2(width, height) },
       uExtend: { value: 0 },
       uOpacity: { value: 0 },
+      uOriginNDC: { value: new THREE.Vector2(0, 0.16) },
+      uOriginBlend: { value: 1.0 },
     },
     vertexShader: `
       precision highp float;
       attribute vec3 position;
       uniform vec2 uResolution;
       uniform float uExtend;
+      uniform vec2 uOriginNDC;
+      uniform float uOriginBlend;
       varying float vAlpha;
 
       void main() {
         float halfWidth = 1.35;
-        float x = position.x * halfWidth * 2.0 / max(1.0, uResolution.x);
-        float yEnd = mix(0.16, -1.48, clamp(uExtend, 0.0, 1.0));
-        float y = mix(0.16, yEnd, position.y);
+        float lineHalfWidthNDC = halfWidth * 2.0 / max(1.0, uResolution.x);
+        
+        float originX = mix(uOriginNDC.x, 0.0, uOriginBlend);
+        float originY = mix(uOriginNDC.y, 0.16, uOriginBlend);
+        
+        float x = originX + position.x * lineHalfWidthNDC;
+        float yEnd = mix(originY, -1.48, clamp(uExtend, 0.0, 1.0));
+        float y = mix(originY, yEnd, position.y);
+        
         vAlpha = smoothstep(0.0, 0.18, uExtend);
         gl_Position = vec4(x, y, 0.0, 1.0);
       }
@@ -404,6 +414,7 @@ function makeEventBuffers() {
     hitSizes: [],
     hitAlphas: [],
     hitReveals: [],
+    survivorEndpoint: null,
   };
 }
 
@@ -465,6 +476,10 @@ function addTrackToBuffers(
 
   if (isMuon && track.muonHit) {
     addHit(buffers, track.muonHit, AMBER, 13 + Math.min(28, spec.pT * 1.8), 0.72, 0.98);
+  }
+
+  if (survivor) {
+    buffers.survivorEndpoint = points[points.length - 1].clone();
   }
 }
 
@@ -637,6 +652,7 @@ function makeEventSet({ trackCount, sprite, pixelRatio, eventNumber, eventRecord
     hitMaterial,
     stats,
     trackMaterial,
+    survivorEndpoint: buffers.survivorEndpoint,
     dispose() {
       trackGeometry.dispose();
       hitGeometry.dispose();
@@ -876,6 +892,14 @@ class EventDisplay {
     });
 
     if (this.worldlineMesh) {
+      if (this.currentEvent && this.currentEvent.survivorEndpoint) {
+        const ndc = this.currentEvent.survivorEndpoint.clone().project(this.camera);
+        this.worldlineMesh.material.uniforms.uOriginNDC.value.set(ndc.x, ndc.y);
+        this.worldlineMesh.material.uniforms.uOriginBlend.value = smootherStep(collapse);
+      } else {
+        this.worldlineMesh.material.uniforms.uOriginNDC.value.set(0, 0.16);
+        this.worldlineMesh.material.uniforms.uOriginBlend.value = 1.0;
+      }
       this.worldlineMesh.material.uniforms.uExtend.value = smootherStep(collapse);
       this.worldlineMesh.material.uniforms.uOpacity.value = smootherStep(Math.max(0, (collapse - 0.08) / 0.72));
     }

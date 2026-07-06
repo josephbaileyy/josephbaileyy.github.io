@@ -4,7 +4,12 @@ export function createCollisionScene({ canvas, hud, reducedMotion = false }) {
   let display = null;
   let mounted = false;
   let active = false;
-  let retired = reducedMotion;
+  // Reduced-motion never mounts the WebGL scene at all - that's permanent.
+  // "collapsed" is the scroll-driven handoff-into-worldline state, which is
+  // reversible: scrolling back up above the handoff threshold should bring
+  // the event display back, not leave it retired forever.
+  const permanentlyDisabled = reducedMotion;
+  let collapsed = reducedMotion;
   let lastRenderCount = 0;
 
   function setRetiredDomState() {
@@ -15,22 +20,30 @@ export function createCollisionScene({ canvas, hud, reducedMotion = false }) {
     }
   }
 
+  function clearRetiredDomState() {
+    canvas?.classList.remove('is-retired');
+
+    if (hud) {
+      hud.closest('.collision-hud')?.classList.remove('is-retired');
+    }
+  }
+
   if (reducedMotion) {
     setRetiredDomState();
   }
 
   return {
     mount() {
-      if (mounted || retired || reducedMotion) {
+      if (mounted || permanentlyDisabled) {
         return;
       }
 
       display = createEventDisplay({ canvas, hud, reducedMotion });
       mounted = true;
-      active = true;
+      active = !collapsed;
     },
     resume() {
-      active = !retired && mounted;
+      active = !collapsed && mounted;
       display?.resume();
     },
     pause() {
@@ -38,7 +51,7 @@ export function createCollisionScene({ canvas, hud, reducedMotion = false }) {
       display?.pause();
     },
     update(options) {
-      if (!active || retired || !display) {
+      if (!active || collapsed || !display) {
         return lastRenderCount;
       }
 
@@ -52,8 +65,46 @@ export function createCollisionScene({ canvas, hud, reducedMotion = false }) {
     renderEndState() {
       setRetiredDomState();
     },
+    // Reversible: the collision->worldline handoff just pauses rendering and
+    // shows the retired visual state, it does not tear down the WebGL
+    // context. Destroying and recreating a THREE.WebGLRenderer on the same
+    // canvas is fragile (context-loss is asynchronous and can race with a
+    // fresh renderer's capability queries), so scrolling back up simply
+    // resumes the still-live renderer instead of reconstructing it.
+    collapse() {
+      if (permanentlyDisabled || collapsed) {
+        return;
+      }
+
+      collapsed = true;
+      active = false;
+      display?.pause();
+      lastRenderCount = display?.renderCount || lastRenderCount;
+      setRetiredDomState();
+    },
+    expand() {
+      if (permanentlyDisabled || !collapsed) {
+        return;
+      }
+
+      collapsed = false;
+      clearRetiredDomState();
+
+      if (mounted) {
+        display?.resume();
+        active = true;
+      } else {
+        // Shouldn't normally happen (mount() runs on initial visibility), but
+        // guard in case the chapter was never mounted for some reason.
+        display = createEventDisplay({ canvas, hud, reducedMotion });
+        mounted = true;
+        active = true;
+      }
+    },
+    // Full teardown, only for page-lifecycle destroy (not the reversible
+    // scroll-driven collapse above).
     unmount() {
-      if (retired) {
+      if (!mounted) {
         return;
       }
 
@@ -62,14 +113,14 @@ export function createCollisionScene({ canvas, hud, reducedMotion = false }) {
       display = null;
       mounted = false;
       active = false;
-      retired = true;
+      collapsed = true;
       setRetiredDomState();
     },
     isActive() {
-      return active && !retired;
+      return active && !collapsed;
     },
     isRetired() {
-      return retired;
+      return collapsed;
     },
     getRenderCount() {
       return display?.renderCount || lastRenderCount;

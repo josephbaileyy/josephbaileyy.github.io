@@ -311,9 +311,32 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
       transition: none !important;
       animation: none !important;
     }
+    .track-trunk {
+      position: absolute;
+      left: 50%;
+      width: 2px;
+      transform: translateX(-50%);
+      background: #e8ecf1;
+      filter: drop-shadow(0 0 8px rgba(232, 236, 241, 0.32));
+      pointer-events: none;
+      z-index: 0;
+    }
   `;
   document.head.appendChild(styleEl);
-  
+
+  // Bridging trunks: the HUD row and analysis panel are flex siblings of the
+  // svg wrap, so the drawn worldline never actually reaches the scene-root's
+  // true top/bottom edges - measured against the previous/next chapters'
+  // lines (which do reach their true edges), that reads as a visible gap.
+  // These plain, unanimated elements close that gap by spanning from the
+  // scene-root edge to wherever the entry/exit segment's endpoint actually
+  // renders on screen (measured live via getScreenCTM, since the perspective
+  // tilt during entry moves that point every frame).
+  const trunkIn = document.createElement('div');
+  trunkIn.className = 'track-trunk';
+  const trunkOut = document.createElement('div');
+  trunkOut.className = 'track-trunk';
+
   // Set up container
   const container = document.createElement('div');
   container.className = 'track-scene-container';
@@ -569,7 +592,37 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   });
   
   rootEl.appendChild(container);
-  
+  rootEl.appendChild(trunkIn);
+  rootEl.appendChild(trunkOut);
+
+  function updateTrunks() {
+    const rootRect = rootEl.getBoundingClientRect();
+    const point = svg.createSVGPoint();
+    const ctm = svg.getScreenCTM();
+
+    if (!ctm || rootRect.height <= 0) {
+      trunkIn.style.height = '0px';
+      trunkOut.style.height = '0px';
+      return;
+    }
+
+    point.x = 400;
+    point.y = -150;
+    const entryTop = point.matrixTransform(ctm);
+    point.y = 670;
+    const exitBottom = point.matrixTransform(ctm);
+
+    const topGap = Math.max(0, entryTop.y - rootRect.top);
+    const bottomGap = Math.max(0, rootRect.bottom - exitBottom.y);
+
+    trunkIn.style.top = '0px';
+    trunkIn.style.height = `${topGap.toFixed(1)}px`;
+    trunkOut.style.bottom = '0px';
+    trunkOut.style.height = `${bottomGap.toFixed(1)}px`;
+  }
+
+  window.addEventListener('resize', updateTrunks);
+
   function onProgress(p) {
     p = Math.min(1, Math.max(0, p));
     
@@ -591,7 +644,23 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
       const exitMapped = Math.min(1, exitRaw / EXIT_SETTLE_FRAC);
       p_mapped = ((L_entry + L_lap) / L_total) + exitMapped * (L_exit / L_total);
     }
-    worldlinePath.style.strokeDashoffset = (L_total * (1 - p_mapped)).toFixed(2);
+
+    // The entry lead-in closes on itself once the race starts, retracting
+    // toward the oval rather than staying a permanent fixture through the
+    // whole lap - only the oval trace (and the runner) remain mid-race.
+    const RETRACT_END = P_ENTRY_END + 0.3 * (P_LAP_END - P_ENTRY_END);
+    let trailingEdge = 0;
+    if (p > P_ENTRY_END) {
+      const retractRaw = (p - P_ENTRY_END) / (RETRACT_END - P_ENTRY_END);
+      const retractFrac = Math.min(1, Math.max(0, retractRaw));
+      const eased = retractFrac * retractFrac * (3 - 2 * retractFrac);
+      trailingEdge = eased * L_entry;
+    }
+
+    const leadingEdge = p_mapped * L_total;
+    const visibleLen = Math.max(0, leadingEdge - trailingEdge);
+    worldlinePath.style.strokeDasharray = `${visibleLen.toFixed(2)} ${(L_total + 10).toFixed(2)}`;
+    worldlinePath.style.strokeDashoffset = (-trailingEdge).toFixed(2);
     
     // 3D Perspective Tilt during entry
     if (!reducedMotion) {
@@ -606,7 +675,9 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     } else {
       svgWrap.style.transform = 'none';
     }
-    
+
+    updateTrunks();
+
     // Get state
     const state = getTrackState(p);
     
@@ -656,6 +727,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
       // no-op
     },
     dispose() {
+      window.removeEventListener('resize', updateTrunks);
       // Remove dynamically created stylesheet if needed, or let clear handle it
       if (styleEl.parentNode) {
         styleEl.parentNode.removeChild(styleEl);

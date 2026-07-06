@@ -1,10 +1,10 @@
 /**
- * Chapter 5 scene module — Music (the line learns to oscillate)
- * Self-contained module rendering Joseph Bailey's piano recording (Bach, Fugue in C minor) as a waveform
+ * Chapter 5 scene module — Music (the line learns to become a voice)
+ * Self-contained module rendering Joseph Bailey's piano recording (Bach, Fugue in C minor) as falling note lanes
  * and managing minimal custom audio playback.
  */
 
-export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl } = {}) {
+export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl, peaksUrl } = {}) {
   // 1. Inject Styles
   const styleEl = document.createElement('style');
   styleEl.textContent = `
@@ -36,8 +36,9 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
 
     .agy-music-canvas {
       width: 100%;
-      height: 160px;
+      height: clamp(300px, 58vh, 520px);
       display: block;
+      cursor: ew-resize;
     }
 
     .agy-music-controls {
@@ -131,11 +132,21 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
         align-items: flex-start;
         gap: 1.25rem;
       }
-      
+
       .agy-music-caption {
         font-size: 10px;
         letter-spacing: 0.1em;
       }
+    }
+    .music-trunk {
+      position: absolute;
+      left: 50%;
+      width: 2px;
+      transform: translateX(-50%);
+      background: #e8ecf1;
+      filter: drop-shadow(0 0 8px rgba(232, 236, 241, 0.32));
+      pointer-events: none;
+      z-index: 0;
     }
   `;
   document.head.appendChild(styleEl);
@@ -170,6 +181,36 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
   `;
   rootEl.appendChild(container);
 
+  // Bridging trunks: the controls row (and the scene's own top padding) are
+  // flex siblings of the canvas, so the canvas's fixed 160px height never
+  // reaches the scene-root's true top/bottom edges - measured against the
+  // neighboring chapters' lines (which do reach their true edges), that
+  // reads as a visible gap. These close it by spanning from the scene-root
+  // edge to wherever the canvas itself actually starts/ends on screen.
+  const trunkIn = document.createElement('div');
+  trunkIn.className = 'music-trunk';
+  const trunkOut = document.createElement('div');
+  trunkOut.className = 'music-trunk';
+  rootEl.appendChild(trunkIn);
+  rootEl.appendChild(trunkOut);
+
+  function updateTrunks() {
+    const rootRect = rootEl.getBoundingClientRect();
+    const canvasRect = canvas.getBoundingClientRect();
+
+    if (rootRect.height <= 0) {
+      return;
+    }
+
+    const topGap = Math.max(0, canvasRect.top - rootRect.top);
+    const bottomGap = Math.max(0, rootRect.bottom - canvasRect.bottom);
+
+    trunkIn.style.top = '0px';
+    trunkIn.style.height = `${topGap.toFixed(1)}px`;
+    trunkOut.style.bottom = '0px';
+    trunkOut.style.height = `${bottomGap.toFixed(1)}px`;
+  }
+
   // DOM references
   const canvas = container.querySelector('.agy-music-canvas');
   const ctx = canvas.getContext('2d');
@@ -180,7 +221,9 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
   const timeTotalEl = container.querySelector('.agy-music-time-total');
 
   // Scene state
-  let peaks = [];
+  let notes = [];
+  let pitchMin = 36;
+  let pitchMax = 84;
   let duration = 126.0;
   let currentTime = 0.0;
   let currentProgress = 0.0; // 0..1 scroll/chapter progress
@@ -189,6 +232,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
   let animationFrameId = null;
   let cssWidth = 0;
   let cssHeight = 0;
+  const resolvedNotesUrl = notesUrl || deriveSiblingUrl(peaksUrl || audioUrl, 'fugue-notes.json');
 
   // Audio setup
   const audio = document.createElement('audio');
@@ -262,19 +306,33 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
   // Bind button listeners
   playBtn.addEventListener('click', togglePlay);
 
-  // Canvas interaction: Clicking canvas seeks audio if loaded
+  // Canvas interaction: preserve click-to-seek even though x now also maps to pitch.
   canvas.addEventListener('click', (e) => {
-    if (!audioLoaded) return;
     const rect = canvas.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
     const progress = Math.max(0, Math.min(1, clickX / rect.width));
-    audio.currentTime = progress * duration;
-    currentTime = audio.currentTime;
+    const seekTime = progress * duration;
+    if (audioLoaded) {
+      audio.currentTime = seekTime;
+      currentTime = audio.currentTime;
+    } else {
+      currentTime = seekTime;
+    }
     updateReadout();
     draw();
   });
 
   // 4. Formatting Helpers
+  function deriveSiblingUrl(url, filename) {
+    if (!url) return filename;
+
+    try {
+      return new URL(filename, url).href;
+    } catch (err) {
+      return String(url).replace(/[^/?#]+(?=([?#]|$))/, filename);
+    }
+  }
+
   function formatCurrentTime(t) {
     const m = Math.floor(t / 60);
     const s = Math.floor(t % 60);
@@ -309,181 +367,180 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
     ctx.restore();
   }
 
+  function drawCanonicalHorizontalLine(x1, x2, y) {
+    if (Math.abs(x1 - x2) < 0.1) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x1, y);
+    ctx.lineTo(x2, y);
+    ctx.strokeStyle = '#e8ecf1';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = 'rgba(232, 236, 241, 0.32)';
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function smoothStep(value) {
+    const x = Math.max(0, Math.min(1, value));
+    return x * x * (3 - 2 * x);
+  }
+
+  function pitchToX(pitch) {
+    const left = Math.max(24, cssWidth * 0.035);
+    const right = cssWidth - left;
+    const span = Math.max(1, pitchMax - pitchMin);
+    return left + ((pitch - pitchMin) / span) * (right - left);
+  }
+
+  function getLaneWidth() {
+    const pitchCount = Math.max(1, pitchMax - pitchMin + 1);
+    return Math.max(3, Math.min(18, (cssWidth * 0.9) / pitchCount * 0.72));
+  }
+
+  function drawPitchGrid(hitLineY, alpha) {
+    if (alpha <= 0) return;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = 1;
+
+    for (let pitch = pitchMin; pitch <= pitchMax; pitch++) {
+      const pitchClass = pitch % 12;
+      const isC = pitchClass === 0;
+      const isBlackKey = [1, 3, 6, 8, 10].includes(pitchClass);
+      const x = pitchToX(pitch);
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, hitLineY + 22);
+      ctx.strokeStyle = isC
+        ? 'rgba(232, 236, 241, 0.12)'
+        : isBlackKey
+          ? 'rgba(127, 142, 163, 0.055)'
+          : 'rgba(242, 237, 230, 0.035)';
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  function drawFallingNotes(renderTime, hitLineY, alpha) {
+    if (alpha <= 0 || notes.length === 0) return;
+
+    const lookAheadSeconds = reducedMotion ? 10.5 : 5.6;
+    const trailSeconds = reducedMotion ? 2.4 : 1.15;
+    const pixelsPerSecond = Math.max(34, hitLineY / lookAheadSeconds);
+    const laneWidth = getLaneWidth();
+    const flashWindow = 0.2;
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    for (const note of notes) {
+      if (note.start > renderTime + lookAheadSeconds || note.end < renderTime - trailSeconds) {
+        continue;
+      }
+
+      const x = pitchToX(note.pitch);
+      const noteBottom = hitLineY - (note.start - renderTime) * pixelsPerSecond;
+      const noteTop = hitLineY - (note.end - renderTime) * pixelsPerSecond;
+      const top = Math.min(noteTop, noteBottom);
+      const bottom = Math.max(noteTop, noteBottom);
+
+      if (bottom < -24 || top > cssHeight + 24) {
+        continue;
+      }
+
+      const visibleTop = Math.max(-24, top);
+      const visibleBottom = Math.min(cssHeight + 24, bottom);
+      const height = Math.max(3, visibleBottom - visibleTop);
+      const active = renderTime >= note.start && renderTime <= note.end;
+      const justHit = renderTime >= note.start && renderTime <= note.start + flashWindow;
+      const velocity = Math.max(0.2, note.velocity || 0.45);
+      const hue = 34 + (note.pitch - pitchMin) / Math.max(1, pitchMax - pitchMin) * 150;
+      const saturation = active ? 86 : 58;
+      const lightness = active ? 64 : 45 + velocity * 16;
+      const alphaBase = active ? 0.95 : 0.34 + velocity * 0.36;
+
+      ctx.beginPath();
+      ctx.roundRect(x - laneWidth / 2, visibleTop, laneWidth, height, Math.min(4, laneWidth / 2));
+      ctx.fillStyle = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alphaBase})`;
+      ctx.shadowBlur = active ? 14 + velocity * 12 : 0;
+      ctx.shadowColor = active ? `hsla(${hue}, 92%, 62%, 0.55)` : 'transparent';
+      ctx.fill();
+
+      if (justHit) {
+        const flash = 1 - (renderTime - note.start) / flashWindow;
+        ctx.beginPath();
+        ctx.arc(x, hitLineY, 7 + flash * 14 + velocity * 8, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 181, 71, ${0.1 + flash * 0.34})`;
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = 'rgba(255, 181, 71, 0.45)';
+        ctx.fill();
+      }
+    }
+
+    const activeNotes = notes.filter(note => renderTime >= note.start && renderTime <= note.end);
+    if (activeNotes.length > 0) {
+      ctx.save();
+      ctx.globalCompositeOperation = 'lighter';
+      for (const note of activeNotes) {
+        const x = pitchToX(note.pitch);
+        ctx.beginPath();
+        ctx.arc(x, hitLineY, 3 + (note.velocity || 0.45) * 4, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 181, 71, 0.68)';
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = 'rgba(255, 181, 71, 0.55)';
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    ctx.restore();
+  }
+
   function draw() {
     if (!canvas || !ctx) return;
 
     ctx.clearRect(0, 0, cssWidth, cssHeight);
 
     const cx = cssWidth / 2;
-    const centerY = cssHeight / 2;
+    const hitLineY = Math.max(150, cssHeight * 0.78);
 
     let t_entry = 1;
     let t_exit = 0;
     if (!reducedMotion) {
       // Entry: p=0.10 to p=0.20
-      t_entry = Math.max(0, Math.min(1, (currentProgress - 0.10) / 0.10));
-      t_entry = t_entry * t_entry * (3 - 2 * t_entry);
+      t_entry = smoothStep((currentProgress - 0.10) / 0.10);
 
       // Exit: p=0.75 to p=0.85
-      t_exit = Math.max(0, Math.min(1, (currentProgress - 0.75) / 0.10));
-      t_exit = t_exit * t_exit * (3 - 2 * t_exit);
+      t_exit = smoothStep((currentProgress - 0.75) / 0.10);
     }
 
     const horizMinX = cx - cx * t_entry * (1 - t_exit);
     const horizMaxX = cx + (cssWidth - cx) * t_entry * (1 - t_exit);
+    const rollAlpha = reducedMotion ? 0.9 : Math.max(0, Math.min(1, t_entry * (1 - t_exit)));
+    const renderTime = reducedMotion && !isPlaying && currentTime <= 0.01 ? duration * 0.36 : currentTime;
 
-    if (peaks.length === 0) {
-      // Draw horizontal centerline if peaks haven't loaded yet
-      if (horizMaxX > horizMinX) {
-        ctx.beginPath();
-        ctx.moveTo(horizMinX, centerY);
-        ctx.lineTo(horizMaxX, centerY);
-        ctx.strokeStyle = 'rgba(242, 237, 230, 0.4)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
+    drawPitchGrid(hitLineY, rollAlpha);
 
-      // Draw vertical entry/exit lines
-      if (reducedMotion) {
-        drawCanonicalLine(cx, 0, centerY);
-        drawCanonicalLine(cx, centerY, cssHeight);
-      } else {
-        if (t_entry < 1) drawCanonicalLine(cx, centerY * t_entry, centerY);
-        if (t_exit > 0) drawCanonicalLine(cx, centerY, centerY + t_exit * (cssHeight - centerY));
-      }
-      return;
-    }
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(horizMinX - 24, 0, Math.max(0, horizMaxX - horizMinX) + 48, cssHeight);
+    ctx.clip();
+    drawFallingNotes(renderTime, hitLineY, rollAlpha);
+    ctx.restore();
 
-    const maxAmplitude = cssHeight * 0.38;
-
-    // Morph progress (only if reducedMotion is false, otherwise fully formed)
-    const morphProgress = reducedMotion ? 1 : Math.min(1, currentProgress / 0.3);
-
-    // Playback progress (0..1)
-    const playProgress = duration > 0 ? currentTime / duration : 0;
-    const playheadX = playProgress * cssWidth;
-
-    // Compute RMS from current audio peaks for playhead/centerline glow
-    let rms = 0;
-    if (isPlaying && peaks.length > 0) {
-      const currentIndex = playProgress * peaks.length;
-      const windowSize = 24; // 24 peak window
-      const startIdx = Math.max(0, Math.floor(currentIndex - windowSize / 2));
-      const endIdx = Math.min(peaks.length - 1, Math.floor(currentIndex + windowSize / 2));
-      let sum = 0;
-      let count = 0;
-      for (let j = startIdx; j <= endIdx; j++) {
-        sum += peaks[j] * peaks[j];
-        count++;
-      }
-      if (count > 0) {
-        rms = Math.sqrt(sum / count);
-      }
-    }
-
-    // Draw active centerline glow (thicker semi-transparent line behind the centerline)
-    if (isPlaying && rms > 0 && playheadX > 0) {
-      const glowStartX = Math.max(horizMinX, 0);
-      const glowEndX = Math.min(horizMaxX, playheadX);
-      if (glowEndX > glowStartX) {
-        ctx.beginPath();
-        ctx.moveTo(glowStartX, centerY);
-        ctx.lineTo(glowEndX, centerY);
-        ctx.strokeStyle = `rgba(255, 181, 71, ${0.05 + rms * 0.35})`;
-        ctx.lineWidth = 2 + rms * 12;
-        ctx.stroke();
-      }
-    }
-
-    // Draw peaks as thin vertical strokes
-    const numPeaks = peaks.length;
-    for (let i = 0; i < numPeaks; i++) {
-      const peak = peaks[i];
-      const x = (i / (numPeaks - 1)) * cssWidth;
-
-      // Morph factor for this peak
-      let factor = 1;
-      if (!reducedMotion) {
-        // Starts growing from left-to-right as morphProgress goes 0 -> 1
-        const startMorph = (i / (numPeaks - 1)) * 0.7;
-        const endMorph = startMorph + 0.3;
-        if (morphProgress >= endMorph) {
-          factor = 1;
-        } else if (morphProgress <= startMorph) {
-          factor = 0;
-        } else {
-          const linearFactor = (morphProgress - startMorph) / 0.3;
-          // smoothstep easing
-          factor = linearFactor * linearFactor * (3 - 2 * linearFactor);
-        }
-      }
-
-      const h = peak * maxAmplitude * factor;
-
-      if (h > 0.5) { // Only draw if visible
-        ctx.beginPath();
-        ctx.moveTo(x, centerY - h);
-        ctx.lineTo(x, centerY + h);
-
-        if (x <= playheadX && playProgress > 0) {
-          ctx.strokeStyle = '#ffb547'; // amber for played peaks
-        } else {
-          ctx.strokeStyle = 'rgba(242, 237, 230, 0.12)'; // dim warm white for remaining peaks
-        }
-        ctx.lineWidth = 1;
-        ctx.stroke();
-      }
-    }
-
-    // Draw active centerline (Amber #ffb547)
-    if (playheadX > 0) {
-      const activeStartX = Math.max(horizMinX, 0);
-      const activeEndX = Math.min(horizMaxX, playheadX);
-      if (activeEndX > activeStartX) {
-        ctx.beginPath();
-        ctx.moveTo(activeStartX, centerY);
-        ctx.lineTo(activeEndX, centerY);
-        ctx.strokeStyle = '#ffb547';
-        ctx.lineWidth = 1.5;
-        ctx.stroke();
-      }
-    }
-
-    // Draw inactive centerline (Warm white #f2ede6, slightly brighter than background peaks)
-    const inactiveStartX = Math.max(horizMinX, playheadX);
-    const inactiveEndX = Math.min(horizMaxX, cssWidth);
-    if (inactiveEndX > inactiveStartX) {
-      ctx.beginPath();
-      ctx.moveTo(inactiveStartX, centerY);
-      ctx.lineTo(inactiveEndX, centerY);
-      ctx.strokeStyle = 'rgba(242, 237, 230, 0.4)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    }
-
-    // Draw playhead indicator (Small glowing amber circle)
-    if (playProgress > 0 && playProgress < 1 && playheadX >= horizMinX && playheadX <= horizMaxX) {
-      // Glow circle
-      if (isPlaying && rms > 0) {
-        ctx.beginPath();
-        ctx.arc(playheadX, centerY, 4 + rms * 5, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 181, 71, ${0.15 + rms * 0.4})`;
-        ctx.fill();
-      }
-      // Inner circle
-      ctx.beginPath();
-      ctx.arc(playheadX, centerY, 3, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffb547';
-      ctx.fill();
-    }
+    drawCanonicalHorizontalLine(horizMinX, horizMaxX, hitLineY);
 
     // Draw vertical entry/exit lines
     if (reducedMotion) {
-      drawCanonicalLine(cx, 0, centerY);
-      drawCanonicalLine(cx, centerY, cssHeight);
+      drawCanonicalLine(cx, 0, hitLineY);
+      drawCanonicalLine(cx, hitLineY, cssHeight);
     } else {
-      if (t_entry < 1) drawCanonicalLine(cx, centerY * t_entry, centerY);
-      if (t_exit > 0) drawCanonicalLine(cx, centerY, centerY + t_exit * (cssHeight - centerY));
+      if (t_entry < 1) drawCanonicalLine(cx, hitLineY * t_entry, hitLineY);
+      if (t_exit > 0) drawCanonicalLine(cx, hitLineY, hitLineY + t_exit * (cssHeight - hitLineY));
     }
   }
 
@@ -516,6 +573,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
     canvas.height = cssHeight * dpr;
     ctx.resetTransform();
     ctx.scale(dpr, dpr);
+    updateTrunks();
     draw();
   }
 
@@ -527,20 +585,24 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
     window.addEventListener('resize', resize);
   }
 
-  // 7. Load Peaks Data
-  fetch(peaksUrl)
+  // 7. Load transcribed note data
+  fetch(resolvedNotesUrl)
     .then(res => {
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return res.json();
     })
     .then(data => {
-      peaks = data.peaks || [];
+      notes = Array.isArray(data.notes) ? data.notes : [];
       duration = data.duration || 126.0;
+      if (notes.length > 0) {
+        pitchMin = Math.min(...notes.map(note => note.pitch));
+        pitchMax = Math.max(...notes.map(note => note.pitch));
+      }
       updateReadout();
       draw();
     })
     .catch(err => {
-      console.error('Failed to load peaks JSON data:', err);
+      console.error('Failed to load fugue note JSON data:', err);
     });
 
   // Initial resize to set dimensions
@@ -552,6 +614,25 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
     onProgress(p) {
       currentProgress = Math.max(0, Math.min(1, p));
       draw();
+    },
+    seekTo(time) {
+      const nextTime = Math.max(0, Math.min(duration, Number(time) || 0));
+      if (audioLoaded) {
+        audio.currentTime = nextTime;
+      }
+      currentTime = nextTime;
+      updateReadout();
+      draw();
+    },
+    getDebugState() {
+      return {
+        currentTime,
+        duration,
+        hitLineY: Math.max(150, cssHeight * 0.78),
+        noteCount: notes.length,
+        pitchMin,
+        pitchMax,
+      };
     },
     onParallax(scrollPx) {
       // Interface parity
@@ -586,9 +667,11 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
       // Remove style and container from DOM
       styleEl.remove();
       container.remove();
-      
+      trunkIn.remove();
+      trunkOut.remove();
+
       // Clear refs to avoid leaks
-      peaks = null;
+      notes = null;
     }
   };
 }
