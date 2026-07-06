@@ -124,6 +124,21 @@ function smootherStep(value) {
   return x * x * x * (x * (x * 6 - 15) + 10);
 }
 
+// Survivor tracks radiate outward from the vertex in every direction, so
+// their tangent at the clip point can point anywhere - including mostly
+// backward/upward, opposite the worldline's downward travel. Feeding that
+// straight into the vertex shader's quadratic-bezier bevel makes it loop
+// back on itself (a visible cusp/petal shape, worse than the plain kink it
+// was meant to fix). Clamping the tangent's angle to a forward-facing cone
+// around straight-down guarantees the bevel can bend but never reverse.
+const MAX_TANGENT_ANGLE_FROM_DOWN = (70 * Math.PI) / 180;
+
+function clampTangentToForwardCone(tangent) {
+  const theta = Math.atan2(tangent.x, -tangent.y);
+  const clamped = Math.max(-MAX_TANGENT_ANGLE_FROM_DOWN, Math.min(MAX_TANGENT_ANGLE_FROM_DOWN, theta));
+  return new THREE.Vector2(Math.sin(clamped), -Math.cos(clamped));
+}
+
 function randomBetween(min, max) {
   return min + Math.random() * (max - min);
 }
@@ -198,20 +213,25 @@ function makeHitMaterial(sprite, pixelRatio) {
 }
 
 function makeWorldlineMesh(width, height) {
+  const segments = 16;
+  const positions = [];
+  const indices = [];
+
+  for (let i = 0; i <= segments; i++) {
+    const y = i / segments;
+    positions.push(-1, y, 0);
+    positions.push(1, y, 0);
+  }
+
+  for (let i = 0; i < segments; i++) {
+    const base = i * 2;
+    indices.push(base, base + 1, base + 2);
+    indices.push(base + 2, base + 1, base + 3);
+  }
+
   const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute(
-    'position',
-    new THREE.Float32BufferAttribute(
-      [
-        -1, 0, 0,
-        1, 0, 0,
-        -1, 1, 0,
-        1, 1, 0,
-      ],
-      3,
-    ),
-  );
-  geometry.setIndex([0, 1, 2, 2, 1, 3]);
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setIndex(indices);
 
   const material = new THREE.RawShaderMaterial({
     uniforms: {
@@ -219,6 +239,7 @@ function makeWorldlineMesh(width, height) {
       uExtend: { value: 0 },
       uOpacity: { value: 0 },
       uOriginNDC: { value: new THREE.Vector2(0, 0.16) },
+      uOriginTangent: { value: new THREE.Vector2(0, -1) },
       uOriginBlend: { value: 1.0 },
     },
     vertexShader: `
@@ -227,22 +248,57 @@ function makeWorldlineMesh(width, height) {
       uniform vec2 uResolution;
       uniform float uExtend;
       uniform vec2 uOriginNDC;
+      uniform vec2 uOriginTangent;
       uniform float uOriginBlend;
       varying float vAlpha;
 
       void main() {
-        float halfWidth = 0.55;
-        float lineHalfWidthNDC = halfWidth * 2.0 / max(1.0, uResolution.x);
+        float E = clamp(uExtend, 0.0, 1.0);
+        float s = position.y * E;
         
         float originX = mix(uOriginNDC.x, 0.0, uOriginBlend);
         float originY = mix(uOriginNDC.y, 0.16, uOriginBlend);
+        vec2 origin = vec2(originX, originY);
         
-        float x = originX + position.x * lineHalfWidthNDC;
-        float yEnd = mix(originY, -1.48, clamp(uExtend, 0.0, 1.0));
-        float y = mix(originY, yEnd, position.y);
+        vec2 tangent = normalize(mix(uOriginTangent, vec2(0.0, -1.0), uOriginBlend));
+        
+        float t_c = 0.15;
+        float H = 0.22;
+        
+        vec2 B1 = origin + tangent * H;
+        vec2 B2 = B1 + vec2(0.0, -1.0) * H;
+        
+        vec2 C;
+        vec2 C_prime;
+        
+        if (s <= t_c) {
+          float u = s / max(0.0001, t_c);
+          float om_u = 1.0 - u;
+          C = om_u * om_u * origin + 2.0 * om_u * u * B1 + u * u * B2;
+          C_prime = 2.0 * om_u * (B1 - origin) + 2.0 * u * (B2 - B1);
+        } else {
+          float L_straight = B2.y - (-1.48);
+          float u = (s - t_c) / max(0.0001, 1.0 - t_c);
+          C = vec2(B2.x, B2.y - L_straight * u);
+          C_prime = vec2(0.0, -1.0);
+        }
+        
+        vec2 dirScreen = C_prime * uResolution;
+        float len = length(dirScreen);
+        if (len > 0.0001) {
+          dirScreen /= len;
+        } else {
+          dirScreen = vec2(0.0, -1.0);
+        }
+        
+        vec2 normalScreen = vec2(-dirScreen.y, dirScreen.x);
+        float halfWidth = 0.55;
+        vec2 offsetNDC = normalScreen * (halfWidth * 2.0) / max(vec2(1.0), uResolution);
+        
+        vec2 finalPos = C + position.x * offsetNDC;
         
         vAlpha = smoothstep(0.0, 0.18, uExtend);
-        gl_Position = vec4(x, y, 0.0, 1.0);
+        gl_Position = vec4(finalPos, 0.0, 1.0);
       }
     `,
     fragmentShader: `
@@ -916,11 +972,13 @@ class EventDisplay {
         : null;
 
       if (survivorProjection) {
-        const { endpointNdc } = survivorProjection;
+        const { endpointNdc, endpointTangent } = survivorProjection;
         this.worldlineMesh.material.uniforms.uOriginNDC.value.set(endpointNdc.x, endpointNdc.y);
+        this.worldlineMesh.material.uniforms.uOriginTangent.value.set(endpointTangent.x, endpointTangent.y);
         this.worldlineMesh.material.uniforms.uOriginBlend.value = smootherStep(Math.max(0, (collapse - 0.94) / 0.055));
       } else {
         this.worldlineMesh.material.uniforms.uOriginNDC.value.copy(SURVIVOR_PIN_NDC);
+        this.worldlineMesh.material.uniforms.uOriginTangent.value.set(0, -1);
         this.worldlineMesh.material.uniforms.uOriginBlend.value = 1.0;
       }
       this.worldlineMesh.material.uniforms.uExtend.value = smootherStep(collapse);
@@ -957,7 +1015,9 @@ class EventDisplay {
     );
     const points = event.survivorPoints?.length ? event.survivorPoints : [event.survivorEndpoint];
     let endpointNdc = null;
+    let endpointTangent = new THREE.Vector2(0, -1);
     let clipProgress = 1;
+    let prevNdc = points.length > 0 ? this.projectSurvivorPoint(points[0], offset) : null;
 
     for (let index = 1; index < points.length; index += 1) {
       const ndc = this.projectSurvivorPoint(points[index], offset);
@@ -970,12 +1030,16 @@ class EventDisplay {
 
       if (!insideHandoffFrame) {
         if (!endpointNdc) {
-          endpointNdc = this.projectSurvivorPoint(points[Math.max(0, index - 1)], offset);
+          endpointNdc = prevNdc || this.projectSurvivorPoint(points[Math.max(0, index - 1)], offset);
           clipProgress = Math.max(0, index - 1) / Math.max(1, points.length - 1);
         }
         break;
       }
 
+      if (prevNdc) {
+        endpointTangent.subVectors(ndc, prevNdc).normalize();
+      }
+      prevNdc = ndc;
       endpointNdc = ndc;
       clipProgress = index / Math.max(1, points.length - 1);
     }
@@ -983,13 +1047,25 @@ class EventDisplay {
     if (!endpointNdc) {
       endpointNdc = this.projectSurvivorPoint(event.survivorEndpoint, offset);
       clipProgress = 1;
+      if (points.length > 1 && endpointNdc) {
+        const p2 = this.projectSurvivorPoint(points[points.length - 2], offset);
+        if (p2) {
+          endpointTangent.subVectors(endpointNdc, p2).normalize();
+        }
+      }
     }
 
     if (!endpointNdc) {
       return null;
     }
 
-    return { clipProgress, endpointNdc, offset, startNdc };
+    if (endpointTangent.lengthSq() < 0.001) {
+      endpointTangent.set(0, -1);
+    }
+
+    const clampedTangent = clampTangentToForwardCone(endpointTangent);
+
+    return { clipProgress, endpointNdc, endpointTangent: clampedTangent, offset, startNdc };
   }
 
   updateSurvivorProjection(event) {

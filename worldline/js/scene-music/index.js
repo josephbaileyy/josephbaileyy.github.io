@@ -570,18 +570,22 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
     const cx = cssWidth / 2;
     const hitLineY = Math.max(150, cssHeight * 0.78);
 
-    // entryGrow brings the vertical line in from nothing (not floored to
-    // full) so there's nothing pre-formed and visible before the chapter is
-    // actually scrolled into - onProgress fires every tick regardless of
-    // on-screen visibility. entryBend is the separate "turns into the
-    // horizontal hit line" phase, which only starts once the grow-in has
-    // already finished.
+    // entryGrow brings the vertical line in off a small floor (not literally
+    // 0) so a thin sliver stays connected to the previous chapter's exit
+    // point at the exact instant this chapter's sticky content appears - the
+    // chapter boundary is a hard cut (sticky positioning swaps content
+    // instantly), so p=0 is the frame right after the previous chapter
+    // showed its line reaching this same screen position; zero here reads
+    // as the line vanishing at the seam. entryBend is the separate "turns
+    // into the horizontal hit line" phase, which only starts once the
+    // grow-in has already finished.
+    const ENTRY_FLOOR = 0.04;
     let entryGrow = 1;
     let entryBend = 1;
     let t_exit = 0;
     if (!reducedMotion) {
       // Grow in: p=0 to p=0.05
-      entryGrow = smoothStep((currentProgress - 0) / 0.05);
+      entryGrow = Math.max(ENTRY_FLOOR, smoothStep((currentProgress - 0) / 0.05));
       // Bend into horizontal: p=0.10 to p=0.20
       entryBend = smoothStep((currentProgress - 0.10) / 0.10);
       // Exit: p=0.75 to p=0.85
