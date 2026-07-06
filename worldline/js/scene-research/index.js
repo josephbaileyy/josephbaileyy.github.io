@@ -337,6 +337,13 @@ function drawWorldline(ctx, layout, data, p, time) {
   // Envelope: 0 at entry, peaks at 1 mid-scroll, back to 0 before the exit window.
   const bend = bendIn * (1 - bendOut);
   const glow = time === 0 ? 0.95 : 0.92 + 0.08 * Math.sin(time * 0.0016);
+  // The line draws itself down the screen as you scroll rather than being
+  // fully present the instant the chapter arrives. A small stub is already
+  // visible at p=0 (continuous with the previous chapter's exit), growing to
+  // fully drawn by the chapter's midpoint, well before the bend/un-bend
+  // choreography plays out in the second half.
+  const REVEAL_STUB = 0.08;
+  const revealFrac = Math.min(1, REVEAL_STUB + (1 - REVEAL_STUB) * smootherStep(mapRange(p, 0, 0.5)));
 
   ctx.save();
   ctx.lineCap = 'round';
@@ -348,18 +355,16 @@ function drawWorldline(ctx, layout, data, p, time) {
 
   ctx.beginPath();
 
-  if (bend < 0.0008) {
-    // Canonical vertical spine through the full height, dead-center.
-    ctx.moveTo(cx, 0);
-    ctx.lineTo(cx, height);
-  } else {
+  {
     // Morph each sample between the straight spine and the detour path. The two
     // endpoints coincide, so the top and bottom stay locked to center at any bend.
+    // (When bend=0 this reduces exactly to the straight vertical spine.)
     const detour = buildDetourPath(layout, data, p);
     const { cum, total } = polylineLengths(detour);
     const steps = 160;
+    const drawSteps = Math.max(1, Math.round(revealFrac * steps));
 
-    for (let index = 0; index <= steps; index += 1) {
+    for (let index = 0; index <= drawSteps; index += 1) {
       const s = index / steps;
       const bent = samplePolyline(detour, cum, total, s);
       const x = lerp(cx, bent.x, bend);
