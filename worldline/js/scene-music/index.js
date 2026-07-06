@@ -1,6 +1,6 @@
 /**
  * Chapter 5 scene module — Music (the line learns to oscillate)
- * Self-contained module rendering Joseph Bailey's tenor sax solo waveform
+ * Self-contained module rendering Joseph Bailey's piano recording (Bach, Fugue in C minor) as a waveform
  * and managing minimal custom audio playback.
  */
 
@@ -149,7 +149,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
     </div>
     <div class="agy-music-controls">
       <div class="agy-music-controls-left">
-        <button class="agy-music-play-btn" aria-label="Play tenor sax solo" type="button">
+        <button class="agy-music-play-btn" aria-label="Play piano recording" type="button">
           <!-- Play Icon -->
           <svg class="agy-music-icon-play" viewBox="0 0 24 24">
             <path d="M8 5v14l11-7z" fill="currentColor"/>
@@ -160,14 +160,11 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
           </svg>
         </button>
         <div class="agy-music-time" aria-live="polite">
-          <span class="agy-music-time-current">T+ 0:00.0</span> / <span class="agy-music-time-total">0:36</span>
+          <span class="agy-music-time-current">T+ 0:00.0</span> / <span class="agy-music-time-total">2:05</span>
         </div>
       </div>
       <div class="agy-music-caption">
-        TENOR SAX SOLO — CHINO HILLS HS DRUMLINE, MVT 2
-        <a class="agy-music-link" href="https://www.youtube.com/watch?v=ry0rKeoQI0o&t=315s" target="_blank" rel="noopener noreferrer">
-          WATCH THE FULL SHOW ↗
-        </a>
+        J.S. BACH — FUGUE IN C MINOR / PIANO: JOSEPH BAILEY
       </div>
     </div>
   `;
@@ -184,7 +181,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
 
   // Scene state
   let peaks = [];
-  let duration = 36.0;
+  let duration = 126.0;
   let currentTime = 0.0;
   let currentProgress = 0.0; // 0..1 scroll/chapter progress
   let isPlaying = false;
@@ -219,7 +216,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
     isPlaying = true;
     playIcon.style.display = 'none';
     pauseIcon.style.display = 'block';
-    playBtn.setAttribute('aria-label', 'Pause tenor sax solo');
+    playBtn.setAttribute('aria-label', 'Pause piano recording');
     startAnimationLoop();
   }
 
@@ -227,7 +224,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
     isPlaying = false;
     playIcon.style.display = 'block';
     pauseIcon.style.display = 'none';
-    playBtn.setAttribute('aria-label', 'Play tenor sax solo');
+    playBtn.setAttribute('aria-label', 'Play piano recording');
     stopAnimationLoop();
     draw();
   }
@@ -474,7 +471,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, peaksUrl 
     })
     .then(data => {
       peaks = data.peaks || [];
-      duration = data.duration || 36.0;
+      duration = data.duration || 126.0;
       updateReadout();
       draw();
     })

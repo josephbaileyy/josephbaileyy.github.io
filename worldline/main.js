@@ -19,8 +19,8 @@ function smootherStep(value) {
 const reducedMotion = getReducedMotionPreference();
 document.documentElement.classList.toggle('is-reduced-motion', reducedMotion);
 
-const soloAudioUrl = new URL('./assets/audio/solo.m4a', import.meta.url).href;
-const soloPeaksUrl = new URL('./assets/audio/solo-peaks.json', import.meta.url).href;
+const fugueAudioUrl = new URL('./assets/audio/fugue.m4a', import.meta.url).href;
+const fuguePeaksUrl = new URL('./assets/audio/fugue-peaks.json', import.meta.url).href;
 
 const collisionCanvas = document.querySelector('#collision-canvas');
 const collisionHud = document.querySelector('#collision-event-hud-readout');
@@ -117,8 +117,8 @@ const sceneRecords = [
     chapterSelector: '#chapter-music',
     rootSelector: '#music-scene',
     create: (root) => createMusicScene(root, {
-      audioUrl: soloAudioUrl,
-      peaksUrl: soloPeaksUrl,
+      audioUrl: fugueAudioUrl,
+      peaksUrl: fuguePeaksUrl,
       reducedMotion,
     }),
   }),

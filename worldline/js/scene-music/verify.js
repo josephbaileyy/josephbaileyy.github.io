@@ -46,13 +46,13 @@ try {
   console.log('\n--- VERIFY INITIAL STATE ---');
   
   // Check if peaks JSON was fetched
-  const hasPeaks = requests.some(r => r.includes('solo-peaks.json'));
-  console.log(`Assert: solo-peaks.json fetched -> ${hasPeaks ? 'PASS' : 'FAIL'}`);
+  const hasPeaks = requests.some(r => r.includes('fugue-peaks.json'));
+  console.log(`Assert: fugue-peaks.json fetched -> ${hasPeaks ? 'PASS' : 'FAIL'}`);
   if (!hasPeaks) testPassed = false;
 
   // Check if audio file was NOT fetched yet
-  const hasAudioInitially = requests.some(r => r.includes('solo.m4a'));
-  console.log(`Assert: solo.m4a NOT fetched initially -> ${!hasAudioInitially ? 'PASS' : 'FAIL'}`);
+  const hasAudioInitially = requests.some(r => r.includes('fugue.m4a'));
+  console.log(`Assert: fugue.m4a NOT fetched initially -> ${!hasAudioInitially ? 'PASS' : 'FAIL'}`);
   if (hasAudioInitially) testPassed = false;
 
   // Check console errors
@@ -98,8 +98,8 @@ try {
   if (!isAudioPlaying) testPassed = false;
 
   // Assert audio file is now fetched
-  const hasAudioNow = requests.some(r => r.includes('solo.m4a'));
-  console.log(`Assert: solo.m4a fetched after play -> ${hasAudioNow ? 'PASS' : 'FAIL'}`);
+  const hasAudioNow = requests.some(r => r.includes('fugue.m4a'));
+  console.log(`Assert: fugue.m4a fetched after play -> ${hasAudioNow ? 'PASS' : 'FAIL'}`);
   if (!hasAudioNow) testPassed = false;
 
   // Check console errors again
