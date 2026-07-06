@@ -20,6 +20,18 @@ const X1_len = Math.sqrt(130 ** 2 + 96.6 ** 2);
 const X2_len = 250;
 const L_exit = X1_len + X2_len;
 
+// Point along the entry lead-in at a given trailing arc-length distance
+// (mirrors the M 400 -150 L 400 150 L 530 323.4 geometry baked into the
+// worldline path's `d` attribute below).
+function getEntryPointAtDistance(distance) {
+  const d = Math.max(0, Math.min(L_entry, distance));
+  if (d <= E1_len) {
+    return { x: 400, y: -150 + d };
+  }
+  const pct = (d - E1_len) / E2_len;
+  return { x: 400 + 130 * pct, y: 150 + 173.4 * pct };
+}
+
 const L_total = L_entry + L_lap + L_exit; // 2161.1960704531785
 
 const TOUCHDOWN_TIMES = [6.09, 10.23, 14.33, 18.49, 22.78, 27.27, 31.89, 36.59, 41.45, 46.26];
@@ -595,9 +607,17 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   rootEl.appendChild(trunkIn);
   rootEl.appendChild(trunkOut);
 
-  let entryAlpha = 0;
-  let exitAlpha = 0;
+  let currentTrailingEdge = 0;
+  let currentExitAlpha = 0;
 
+  // The trunk bridges the scene-root's true edge to wherever the SVG's own
+  // drawn content CURRENTLY starts - not a fixed point. As the entry
+  // retracts, the visibly-drawn top of the path recedes away from the fixed
+  // (400,-150) anchor toward the oval, so the bridge must grow to keep
+  // reaching it; once that receding point has moved far enough to fall
+  // inside the SVG's own visible area (past the flex-layout gap the trunk
+  // exists to cover), the computed gap naturally clamps to zero and the
+  // trunk disappears on its own, with no separate alpha/scale needed.
   function updateTrunks() {
     const rootRect = rootEl.getBoundingClientRect();
     const point = svg.createSVGPoint();
@@ -609,28 +629,25 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
       return;
     }
 
-    point.x = 400;
-    point.y = -150;
+    const entryAnchor = getEntryPointAtDistance(currentTrailingEdge);
+    point.x = entryAnchor.x;
+    point.y = entryAnchor.y;
     const entryTop = point.matrixTransform(ctm);
+    point.x = 400;
     point.y = 670;
     const exitBottom = point.matrixTransform(ctm);
 
     const topGap = Math.max(0, entryTop.y - rootRect.top);
     const bottomGap = Math.max(0, rootRect.bottom - exitBottom.y);
 
-    // Scaled from the geometric gap by the same reveal/retract fractions as
-    // the entry/exit segments themselves, anchored so they shrink/grow from
-    // the end nearest the SVG content - the bridge must not be a permanent
-    // fixture sitting there before the chapter is actually scrolled into.
     trunkIn.style.top = '0px';
     trunkIn.style.height = `${topGap.toFixed(1)}px`;
-    trunkIn.style.transformOrigin = 'bottom';
-    trunkIn.style.transform = `translateX(-50%) scaleY(${entryAlpha.toFixed(3)})`;
+    trunkIn.style.transform = 'translateX(-50%)';
 
     trunkOut.style.bottom = '0px';
     trunkOut.style.height = `${bottomGap.toFixed(1)}px`;
     trunkOut.style.transformOrigin = 'top';
-    trunkOut.style.transform = `translateX(-50%) scaleY(${exitAlpha.toFixed(3)})`;
+    trunkOut.style.transform = `translateX(-50%) scaleY(${currentExitAlpha.toFixed(3)})`;
   }
 
   window.addEventListener('resize', updateTrunks);
@@ -638,15 +655,16 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   function onProgress(p) {
     p = Math.min(1, Math.max(0, p));
     
-    // Map p to strokeDashoffset. The entry segment grows from nothing as you
-    // scroll into it - it must not be pre-formed and visible before the
-    // chapter is actually being scrolled (onProgress fires every tick
-    // regardless of on-screen visibility, so a floored-to-full entry would
-    // otherwise already be sitting there, fully drawn, while the chapter is
-    // still below the fold). The exit segment settles to fully-drawn before
-    // p=1 (not exactly at it) so the lerp-smoothed scrub progress has margin
-    // to catch up before the sticky handoff into the next chapter, even on a
-    // fast scroll.
+    // Map p to strokeDashoffset. The entry segment grows as you scroll into
+    // it, off a small floor rather than literal zero: the chapter boundary
+    // is a hard cut (sticky positioning swaps content instantly, no blended
+    // overlap), so p=0 is the exact frame after the previous chapter showed
+    // its line reaching this same screen position - zero here reads as the
+    // line vanishing at the seam. The exit segment settles to fully-drawn
+    // before p=1 (not exactly at it) so the lerp-smoothed scrub progress has
+    // margin to catch up before the sticky handoff into the next chapter,
+    // even on a fast scroll.
+    const ENTRY_FLOOR = 0.04;
     const EXIT_SETTLE_FRAC = 0.75;
     const RETRACT_END = P_ENTRY_END + 0.3 * (P_LAP_END - P_ENTRY_END);
     let p_mapped = 0;
@@ -654,7 +672,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     let exitMapped = 0;
     if (p <= P_ENTRY_END) {
       const entryRaw = p / P_ENTRY_END;
-      entryEased = entryRaw * entryRaw * (3 - 2 * entryRaw);
+      entryEased = Math.max(ENTRY_FLOOR, entryRaw * entryRaw * (3 - 2 * entryRaw));
       p_mapped = entryEased * (L_entry / L_total);
     } else if (p <= P_LAP_END) {
       entryEased = 1;
@@ -678,11 +696,12 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
       trailingEdge = retractEased * L_entry;
     }
 
-    // The bridging trunks track the same alpha as the segment they extend:
-    // the entry trunk grows in with the entry, then closes with the retract;
-    // the exit trunk grows in only once the exit segment starts revealing.
-    entryAlpha = Math.max(0, entryEased - retractEased);
-    exitAlpha = exitMapped;
+    // The entry trunk's reach is derived live from trailingEdge inside
+    // updateTrunks() (see its definition). The exit trunk still uses a
+    // simple alpha scale since the exit segment doesn't retract - it only
+    // ever grows in once the exit starts revealing.
+    currentTrailingEdge = trailingEdge;
+    currentExitAlpha = exitMapped;
 
     const leadingEdge = p_mapped * L_total;
     const visibleLen = Math.max(0, leadingEdge - trailingEdge);

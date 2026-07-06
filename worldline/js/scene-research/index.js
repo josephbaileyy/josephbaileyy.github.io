@@ -337,10 +337,15 @@ function drawWorldline(ctx, layout, data, p, time) {
   // stay pinned to the top edge either.
   const bend = smootherStep(mapRange(p, 0.12, 0.45));
   const glow = time === 0 ? 0.95 : 0.92 + 0.08 * Math.sin(time * 0.0016);
-  // The line draws itself down the screen as you scroll, growing from
-  // nothing at p=0 (not floored to a stub) so there's nothing pre-formed
-  // and visible before the chapter is actually being scrolled into.
-  const revealFrac = smootherStep(mapRange(p, 0, 0.5));
+  // The line draws itself down the screen as you scroll. A small floor
+  // (not literally 0) keeps a thin sliver connected to the previous
+  // chapter's exit point at the exact instant this chapter's sticky content
+  // appears - the handoff between chapters is a hard cut (sticky positioning
+  // swaps content instantly, there's no blended overlap), so p=0 IS the
+  // frame right after the previous chapter showed its line reaching this
+  // same screen position. Zero here reads as the line vanishing.
+  const REVEAL_FLOOR = 0.04;
+  const revealFrac = Math.max(REVEAL_FLOOR, smootherStep(mapRange(p, 0, 0.5)));
 
   ctx.save();
   ctx.lineCap = 'round';
