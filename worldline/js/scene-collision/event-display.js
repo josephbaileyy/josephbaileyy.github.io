@@ -19,6 +19,7 @@ const MAX_REAL_TRACKS = 220;
 const HIGH_PT_THRESHOLD = 2;
 const REAL_TRACK_DELAY_MAX = 0.08;
 const LINE_COLOR = new THREE.Color('#e8ecf1');
+const SURVIVOR_PIN_NDC = new THREE.Vector2(0, 0.16);
 
 const trackVertexShader = `
   attribute vec3 aColor;
@@ -30,6 +31,8 @@ const trackVertexShader = `
   uniform float uDraw;
   uniform float uFade;
   uniform float uCollapse;
+  uniform vec2 uSurvivorNdcOffset;
+  uniform float uSurvivorClipProgress;
   varying vec3 vColor;
   varying float vAlpha;
 
@@ -38,13 +41,19 @@ const trackVertexShader = `
     float visible = smoothstep(aTrackProgress - 0.012, aTrackProgress + 0.012, localDraw);
     float collapse = smoothstep(0.0, 1.0, uCollapse);
     vec4 projected = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    vec4 linePosition = vec4(0.0, mix(0.16, -1.42, aLineProgress), 0.0, 1.0);
-    float survivorMix = collapse * aSurvivor;
+    float survivor = step(0.5, aSurvivor);
+    float survivorMix = collapse * survivor;
+    float survivorFade = 1.0 - smoothstep(0.84, 0.94, uCollapse);
+    float survivorClip = 1.0 - smoothstep(uSurvivorClipProgress, min(1.0, uSurvivorClipProgress + 0.024), aLineProgress);
+    survivorClip = mix(1.0, survivorClip, smoothstep(0.08, 0.32, uCollapse));
+    float regularAlpha = aAlpha * mix(1.0, 0.004, collapse);
+    float survivorAlpha = mix(aAlpha, 1.0, smoothstep(0.0, 0.42, uCollapse)) * survivorFade * survivorClip;
     vec3 survivorColor = vec3(${LINE_COLOR.r.toFixed(6)}, ${LINE_COLOR.g.toFixed(6)}, ${LINE_COLOR.b.toFixed(6)});
 
     vColor = mix(aColor, survivorColor, survivorMix);
-    vAlpha = mix(aAlpha * mix(1.0, 0.004, collapse), 1.0, survivorMix) * visible * uFade;
-    gl_Position = mix(projected, linePosition, survivorMix);
+    vAlpha = mix(regularAlpha, survivorAlpha, survivor) * visible * uFade;
+    projected.xy += uSurvivorNdcOffset * projected.w * survivor;
+    gl_Position = projected;
   }
 `;
 
@@ -156,6 +165,8 @@ function makeTrackMaterial() {
       uDraw: { value: 0 },
       uFade: { value: 1 },
       uCollapse: { value: 0 },
+      uSurvivorNdcOffset: { value: new THREE.Vector2(0, 0) },
+      uSurvivorClipProgress: { value: 1 },
       uOpacity: { value: 1.24 },
     },
     vertexShader: trackVertexShader,
@@ -220,7 +231,7 @@ function makeWorldlineMesh(width, height) {
       varying float vAlpha;
 
       void main() {
-        float halfWidth = 1.35;
+        float halfWidth = 0.55;
         float lineHalfWidthNDC = halfWidth * 2.0 / max(1.0, uResolution.x);
         
         float originX = mix(uOriginNDC.x, 0.0, uOriginBlend);
@@ -415,6 +426,8 @@ function makeEventBuffers() {
     hitAlphas: [],
     hitReveals: [],
     survivorEndpoint: null,
+    survivorPoints: [],
+    survivorStartpoint: null,
   };
 }
 
@@ -479,7 +492,9 @@ function addTrackToBuffers(
   }
 
   if (survivor) {
-    buffers.survivorEndpoint = points[points.length - 1].clone();
+    buffers.survivorPoints = points.map((point) => point.clone());
+    buffers.survivorStartpoint = points[0]?.clone() ?? null;
+    buffers.survivorEndpoint = points[points.length - 1]?.clone() ?? null;
   }
 }
 
@@ -653,6 +668,8 @@ function makeEventSet({ trackCount, sprite, pixelRatio, eventNumber, eventRecord
     stats,
     trackMaterial,
     survivorEndpoint: buffers.survivorEndpoint,
+    survivorPoints: buffers.survivorPoints,
+    survivorStartpoint: buffers.survivorStartpoint,
     dispose() {
       trackGeometry.dispose();
       hitGeometry.dispose();
@@ -847,9 +864,9 @@ class EventDisplay {
       this.clearFadingEvents();
     }
 
+    this.setCamera(this.scrollProgress, time, idle);
     this.updateEvents(time);
     this.updateCollapse(this.collapseProgress);
-    this.setCamera(this.scrollProgress, time, idle);
     this.renderer.render(this.scene, this.camera);
     this.renderCount += 1;
     return this.scrollProgress;
@@ -884,24 +901,113 @@ class EventDisplay {
     if (this.currentEvent) {
       this.currentEvent.trackMaterial.uniforms.uCollapse.value = collapse;
       this.currentEvent.hitMaterial.uniforms.uCollapse.value = collapse;
+      this.updateSurvivorProjection(this.currentEvent);
     }
 
     this.fadingEvents.forEach(({ event }) => {
       event.trackMaterial.uniforms.uCollapse.value = collapse;
       event.hitMaterial.uniforms.uCollapse.value = collapse;
+      this.updateSurvivorProjection(event);
     });
 
     if (this.worldlineMesh) {
-      if (this.currentEvent && this.currentEvent.survivorEndpoint) {
-        const ndc = this.currentEvent.survivorEndpoint.clone().project(this.camera);
-        this.worldlineMesh.material.uniforms.uOriginNDC.value.set(ndc.x, ndc.y);
-        this.worldlineMesh.material.uniforms.uOriginBlend.value = smootherStep(collapse);
+      const survivorProjection = this.currentEvent
+        ? this.getCorrectedSurvivorProjection(this.currentEvent)
+        : null;
+
+      if (survivorProjection) {
+        const { endpointNdc } = survivorProjection;
+        this.worldlineMesh.material.uniforms.uOriginNDC.value.set(endpointNdc.x, endpointNdc.y);
+        this.worldlineMesh.material.uniforms.uOriginBlend.value = smootherStep(Math.max(0, (collapse - 0.94) / 0.055));
       } else {
-        this.worldlineMesh.material.uniforms.uOriginNDC.value.set(0, 0.16);
+        this.worldlineMesh.material.uniforms.uOriginNDC.value.copy(SURVIVOR_PIN_NDC);
         this.worldlineMesh.material.uniforms.uOriginBlend.value = 1.0;
       }
       this.worldlineMesh.material.uniforms.uExtend.value = smootherStep(collapse);
       this.worldlineMesh.material.uniforms.uOpacity.value = smootherStep(Math.max(0, (collapse - 0.08) / 0.72));
+    }
+  }
+
+  projectSurvivorPoint(point, offset) {
+    const ndc = point.clone().project(this.camera);
+
+    if (!Number.isFinite(ndc.x) || !Number.isFinite(ndc.y)) {
+      return null;
+    }
+
+    ndc.x += offset.x;
+    ndc.y += offset.y;
+    return ndc;
+  }
+
+  getCorrectedSurvivorProjection(event) {
+    if (!event?.survivorStartpoint || !event?.survivorEndpoint) {
+      return null;
+    }
+
+    const startNdc = event.survivorStartpoint.clone().project(this.camera);
+
+    if (!Number.isFinite(startNdc.x) || !Number.isFinite(startNdc.y)) {
+      return null;
+    }
+
+    const offset = new THREE.Vector2(
+      SURVIVOR_PIN_NDC.x - startNdc.x,
+      SURVIVOR_PIN_NDC.y - startNdc.y,
+    );
+    const points = event.survivorPoints?.length ? event.survivorPoints : [event.survivorEndpoint];
+    let endpointNdc = null;
+    let clipProgress = 1;
+
+    for (let index = 1; index < points.length; index += 1) {
+      const ndc = this.projectSurvivorPoint(points[index], offset);
+
+      if (!ndc) {
+        break;
+      }
+
+      const insideHandoffFrame = ndc.x >= -0.98 && ndc.x <= 0.98 && ndc.y >= -0.9 && ndc.y <= 0.96;
+
+      if (!insideHandoffFrame) {
+        if (!endpointNdc) {
+          endpointNdc = this.projectSurvivorPoint(points[Math.max(0, index - 1)], offset);
+          clipProgress = Math.max(0, index - 1) / Math.max(1, points.length - 1);
+        }
+        break;
+      }
+
+      endpointNdc = ndc;
+      clipProgress = index / Math.max(1, points.length - 1);
+    }
+
+    if (!endpointNdc) {
+      endpointNdc = this.projectSurvivorPoint(event.survivorEndpoint, offset);
+      clipProgress = 1;
+    }
+
+    if (!endpointNdc) {
+      return null;
+    }
+
+    return { clipProgress, endpointNdc, offset, startNdc };
+  }
+
+  updateSurvivorProjection(event) {
+    const offset = event?.trackMaterial?.uniforms.uSurvivorNdcOffset.value;
+    const clipProgress = event?.trackMaterial?.uniforms.uSurvivorClipProgress;
+
+    if (!offset || !clipProgress) {
+      return;
+    }
+
+    const survivorProjection = this.getCorrectedSurvivorProjection(event);
+
+    if (survivorProjection) {
+      offset.copy(survivorProjection.offset);
+      clipProgress.value = survivorProjection.clipProgress;
+    } else {
+      offset.set(0, 0);
+      clipProgress.value = 1;
     }
   }
 

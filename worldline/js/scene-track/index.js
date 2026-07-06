@@ -595,6 +595,9 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   rootEl.appendChild(trunkIn);
   rootEl.appendChild(trunkOut);
 
+  let entryAlpha = 0;
+  let exitAlpha = 0;
+
   function updateTrunks() {
     const rootRect = rootEl.getBoundingClientRect();
     const point = svg.createSVGPoint();
@@ -615,10 +618,19 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     const topGap = Math.max(0, entryTop.y - rootRect.top);
     const bottomGap = Math.max(0, rootRect.bottom - exitBottom.y);
 
+    // Scaled from the geometric gap by the same reveal/retract fractions as
+    // the entry/exit segments themselves, anchored so they shrink/grow from
+    // the end nearest the SVG content - the bridge must not be a permanent
+    // fixture sitting there before the chapter is actually scrolled into.
     trunkIn.style.top = '0px';
     trunkIn.style.height = `${topGap.toFixed(1)}px`;
+    trunkIn.style.transformOrigin = 'bottom';
+    trunkIn.style.transform = `translateX(-50%) scaleY(${entryAlpha.toFixed(3)})`;
+
     trunkOut.style.bottom = '0px';
     trunkOut.style.height = `${bottomGap.toFixed(1)}px`;
+    trunkOut.style.transformOrigin = 'top';
+    trunkOut.style.transform = `translateX(-50%) scaleY(${exitAlpha.toFixed(3)})`;
   }
 
   window.addEventListener('resize', updateTrunks);
@@ -626,40 +638,59 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   function onProgress(p) {
     p = Math.min(1, Math.max(0, p));
     
-    // Map p to strokeDashoffset. The entry segment is always fully revealed
-    // (not grown from nothing) so the canonical vertical line is already
-    // present at p=0, matching the other chapters' arrival state; only the
-    // lap itself progressively draws in as the real race is "run". The exit
-    // segment settles to fully-drawn before p=1 (not exactly at it) so the
-    // lerp-smoothed scrub progress has margin to catch up before the sticky
-    // handoff into the next chapter, even on a fast scroll.
+    // Map p to strokeDashoffset. The entry segment grows from nothing as you
+    // scroll into it - it must not be pre-formed and visible before the
+    // chapter is actually being scrolled (onProgress fires every tick
+    // regardless of on-screen visibility, so a floored-to-full entry would
+    // otherwise already be sitting there, fully drawn, while the chapter is
+    // still below the fold). The exit segment settles to fully-drawn before
+    // p=1 (not exactly at it) so the lerp-smoothed scrub progress has margin
+    // to catch up before the sticky handoff into the next chapter, even on a
+    // fast scroll.
     const EXIT_SETTLE_FRAC = 0.75;
+    const RETRACT_END = P_ENTRY_END + 0.3 * (P_LAP_END - P_ENTRY_END);
     let p_mapped = 0;
+    let entryEased = 0;
+    let exitMapped = 0;
     if (p <= P_ENTRY_END) {
-      p_mapped = L_entry / L_total;
+      const entryRaw = p / P_ENTRY_END;
+      entryEased = entryRaw * entryRaw * (3 - 2 * entryRaw);
+      p_mapped = entryEased * (L_entry / L_total);
     } else if (p <= P_LAP_END) {
+      entryEased = 1;
       p_mapped = (L_entry / L_total) + ((p - P_ENTRY_END) / (P_LAP_END - P_ENTRY_END)) * (L_lap / L_total);
     } else {
+      entryEased = 1;
       const exitRaw = (p - P_LAP_END) / (1 - P_LAP_END);
-      const exitMapped = Math.min(1, exitRaw / EXIT_SETTLE_FRAC);
+      exitMapped = Math.min(1, exitRaw / EXIT_SETTLE_FRAC);
       p_mapped = ((L_entry + L_lap) / L_total) + exitMapped * (L_exit / L_total);
     }
 
     // The entry lead-in closes on itself once the race starts, retracting
     // toward the oval rather than staying a permanent fixture through the
     // whole lap - only the oval trace (and the runner) remain mid-race.
-    const RETRACT_END = P_ENTRY_END + 0.3 * (P_LAP_END - P_ENTRY_END);
     let trailingEdge = 0;
+    let retractEased = 0;
     if (p > P_ENTRY_END) {
       const retractRaw = (p - P_ENTRY_END) / (RETRACT_END - P_ENTRY_END);
       const retractFrac = Math.min(1, Math.max(0, retractRaw));
-      const eased = retractFrac * retractFrac * (3 - 2 * retractFrac);
-      trailingEdge = eased * L_entry;
+      retractEased = retractFrac * retractFrac * (3 - 2 * retractFrac);
+      trailingEdge = retractEased * L_entry;
     }
+
+    // The bridging trunks track the same alpha as the segment they extend:
+    // the entry trunk grows in with the entry, then closes with the retract;
+    // the exit trunk grows in only once the exit segment starts revealing.
+    entryAlpha = Math.max(0, entryEased - retractEased);
+    exitAlpha = exitMapped;
 
     const leadingEdge = p_mapped * L_total;
     const visibleLen = Math.max(0, leadingEdge - trailingEdge);
-    worldlinePath.style.strokeDasharray = `${visibleLen.toFixed(2)} ${(L_total + 10).toFixed(2)}`;
+    // The gap must safely exceed the path's real rendered length so the dash
+    // pattern never wraps around and shows a second, stray fragment near the
+    // end of the path (the arc segments' length is a JS approximation, not
+    // exact, so this needs real margin, not just a few extra units).
+    worldlinePath.style.strokeDasharray = `${visibleLen.toFixed(2)} ${(L_total * 3).toFixed(2)}`;
     worldlinePath.style.strokeDashoffset = (-trailingEdge).toFixed(2);
     
     // 3D Perspective Tilt during entry

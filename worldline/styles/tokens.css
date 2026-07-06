@@ -355,7 +355,6 @@ p {
   margin-top: 6.5rem;
 }
 
-.experience-rule path,
 .contact-worldline path {
   fill: none;
   stroke: var(--text);
@@ -408,28 +407,11 @@ p {
   z-index: 2;
 }
 
-.experience-rule {
-  position: absolute;
-  top: min(44vh, 28rem);
-  left: max(1.2rem, 8vw);
-  width: calc(100% - max(1.2rem, 8vw) * 2);
-  height: 11.25rem;
-  overflow: visible;
-}
-
-.experience-rule-line {
-  opacity: 0.22;
-}
-
-.experience-rule-progress {
-  stroke-dasharray: 500;
-  stroke-dashoffset: var(--experience-rule-offset, 500);
-}
-
-/* Invariant worldline: static vertical trunks at page-center carrying the
-   line from the chapter's top/bottom edges to the rule's touchpoint, so the
-   timeline reads as a staged bend in the middle of an otherwise-continuous
-   line rather than a separate motif. */
+/* CH4 is a quiet chapter: the invariant line runs straight through it,
+   uninterrupted, rather than bending into a decorative motif. Timeline
+   entries branch off the spine with a short tick instead of the line doing
+   anything - the "world" here just doesn't move the line much, which is a
+   valid, restful choice next to the busier chapters either side of it. */
 .worldline-trunk {
   position: absolute;
   left: var(--spine-x);
@@ -441,48 +423,42 @@ p {
   pointer-events: none;
 }
 
-.worldline-trunk-in {
+.worldline-trunk-full {
   top: 0;
-  height: calc(min(44vh, 28rem) + 4.5rem);
-}
-
-.worldline-trunk-out {
-  top: calc(min(44vh, 28rem) + 4.5rem);
   bottom: 0;
 }
 
 .experience-list {
-  position: relative;
+  position: absolute;
+  top: calc(7rem + clamp(5.5rem, 18vh, 10rem));
+  left: calc(var(--spine-x) + 2.75rem);
   z-index: 2;
   display: grid;
   gap: 2rem;
-  width: min(100%, 52rem);
-  margin-top: clamp(5.5rem, 18vh, 10rem);
+  width: min(28rem, calc(100vw - var(--spine-x) - 2.75rem - 2rem));
 }
 
 .experience-entry {
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(7rem, 0.24fr) minmax(0, 1fr);
-  gap: clamp(1rem, 4vw, 3rem);
-  padding-top: 3rem;
+  padding-top: 0.2rem;
   opacity: var(--experience-entry-opacity, 0);
   transform: translateY(var(--experience-entry-y, 1.2rem));
 }
 
-.experience-entry::before {
+.experience-tick {
   position: absolute;
-  top: 0;
-  left: calc(24% - 1px);
-  width: 2px;
-  height: 2.4rem;
-  content: "";
-  background: var(--text);
-  box-shadow: 0 0 10px rgba(232, 236, 241, 0.28);
+  top: 0.5em;
+  left: -2.75rem;
+  width: 2.75rem;
+  height: var(--spine-width);
+  background: var(--spine-color);
+  filter: var(--spine-glow);
+  transform-origin: left center;
+  transform: scaleX(var(--experience-entry-opacity, 0));
 }
 
 .experience-entry p:not(.experience-date) {
-  max-width: 48rem;
+  max-width: 28rem;
   margin-top: 0.45rem;
   font-size: var(--step--1);
   line-height: 1.65;
@@ -576,7 +552,10 @@ p {
   transform: none;
 }
 
-.is-reduced-motion .experience-rule-progress,
+.is-reduced-motion .experience-tick {
+  transform: none;
+}
+
 .is-reduced-motion .contact-line {
   stroke-dashoffset: 0;
 }
@@ -647,17 +626,18 @@ p {
     line-height: 1.68;
   }
 
-  .experience-entry {
-    grid-template-columns: 1fr;
-    gap: 0.35rem;
+  /* Too narrow to hang the timeline off the spine with a tick - the
+     entries just sit in normal flow below the heading, full width. */
+  .experience-list {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    margin-top: 3rem;
   }
 
-  .experience-entry::before {
-    left: 0;
-  }
-
-  .experience-rule {
-    top: min(38vh, 22rem);
+  .experience-tick {
+    display: none;
   }
 
   .contact-panel {
