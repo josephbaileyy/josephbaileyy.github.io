@@ -573,19 +573,23 @@ class EventDisplay {
     this.sprite = makeSpriteTexture();
     this.cameraCurve = new THREE.CatmullRomCurve3([
       new THREE.Vector3(3.35, 1.7, 5.9),
+      new THREE.Vector3(2.18, 1.0, 4.22),
       new THREE.Vector3(1.32, 0.58, 3.0),
       new THREE.Vector3(0.28, 0.1, 1.24),
       new THREE.Vector3(0.04, 0.02, 0.08),
       new THREE.Vector3(-0.22, -0.08, -1.35),
+      new THREE.Vector3(-0.72, 0.14, -2.12),
       new THREE.Vector3(-1.4, 0.5, -3.25),
       new THREE.Vector3(-3.55, 1.08, -6.55),
     ]);
     this.lookCurve = new THREE.CatmullRomCurve3([
       new THREE.Vector3(0, 0, 0),
+      new THREE.Vector3(0.02, 0.02, 0.24),
       new THREE.Vector3(0.02, 0.02, 0.34),
       new THREE.Vector3(0, 0, 0.18),
       new THREE.Vector3(0, 0, -0.35),
       new THREE.Vector3(0.02, 0, -1.2),
+      new THREE.Vector3(0.02, 0, -1.68),
       new THREE.Vector3(0, 0, -2.1),
       new THREE.Vector3(0, 0, -3.0),
     ]);
@@ -665,6 +669,7 @@ class EventDisplay {
     this.updateEvents(time);
     this.setCamera(this.scrollProgress, time, idle);
     this.renderer.render(this.scene, this.camera);
+    return this.scrollProgress;
   }
 
   setCamera(progress, time, idle) {

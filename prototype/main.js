@@ -1,5 +1,6 @@
 import Lenis from 'lenis';
 import { createEventDisplay } from './js/event-display.js';
+import { createStoryFigures } from './js/story-figures.js';
 
 const canvas = document.querySelector('#event-canvas');
 const hud = document.querySelector('#event-hud-readout');
@@ -11,6 +12,7 @@ const display = createEventDisplay({
   hud,
   reducedMotion,
 });
+const storyFigures = createStoryFigures({ reducedMotion });
 
 const revealTargets = [...document.querySelectorAll('.reveal')];
 
@@ -60,10 +62,13 @@ if (!reducedMotion) {
   );
 }
 
-function getScrollProgress() {
+function getScrollMetrics() {
   const root = document.documentElement;
   const maxScroll = Math.max(1, root.scrollHeight - window.innerHeight);
-  return Math.min(1, Math.max(0, window.scrollY / maxScroll));
+  return {
+    maxScroll,
+    progress: Math.min(1, Math.max(0, window.scrollY / maxScroll)),
+  };
 }
 
 function frame(time) {
@@ -76,11 +81,17 @@ function frame(time) {
     lenis.raf(time);
   }
 
+  const scrollMetrics = getScrollMetrics();
   const idle = time - lastScrollTime > 260;
-  display.update({
+  const smoothedScrollProgress = display.update({
     time,
-    rawScrollProgress: getScrollProgress(),
+    rawScrollProgress: scrollMetrics.progress,
     idle,
+  });
+  storyFigures.update({
+    time,
+    scrollProgress: smoothedScrollProgress,
+    maxScroll: scrollMetrics.maxScroll,
   });
 
   frameId = window.requestAnimationFrame(frame);
@@ -94,6 +105,7 @@ function startLoop() {
 
 window.addEventListener('resize', () => {
   display.resize();
+  storyFigures.resize();
 
   if (reducedMotion) {
     display.renderStatic();
