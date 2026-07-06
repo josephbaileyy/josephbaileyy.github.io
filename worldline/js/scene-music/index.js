@@ -126,6 +126,41 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
       border-bottom-color: #ffb547;
     }
 
+    .agy-music-speeds {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .agy-music-speed-btn {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      color: #7f8ea3;
+      background: transparent;
+      border: 1px solid rgba(242, 237, 230, 0.2);
+      border-radius: 3px;
+      padding: 3px 7px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .agy-music-speed-btn:hover {
+      color: #f2ede6;
+      border-color: rgba(255, 181, 71, 0.5);
+    }
+
+    .agy-music-speed-btn:focus-visible {
+      border-color: #ffb547;
+      box-shadow: 0 0 0 2px rgba(255, 181, 71, 0.3);
+    }
+
+    .agy-music-speed-btn.is-active {
+      color: #ffb547;
+      border-color: #ffb547;
+      background: rgba(255, 181, 71, 0.08);
+    }
+
     @media (max-width: 768px) {
       .agy-music-controls {
         flex-direction: column;
@@ -173,6 +208,12 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
         <div class="agy-music-time" aria-live="polite">
           <span class="agy-music-time-current">T+ 0:00.0</span> / <span class="agy-music-time-total">2:05</span>
         </div>
+        <div class="agy-music-speeds" role="group" aria-label="Playback speed">
+          <button class="agy-music-speed-btn is-active" type="button" data-speed="1">1x</button>
+          <button class="agy-music-speed-btn" type="button" data-speed="1.25">1.25x</button>
+          <button class="agy-music-speed-btn" type="button" data-speed="1.5">1.5x</button>
+          <button class="agy-music-speed-btn" type="button" data-speed="2">2x</button>
+        </div>
       </div>
       <div class="agy-music-caption">
         J.S. BACH — FUGUE IN C MINOR / PIANO: JOSEPH BAILEY
@@ -194,6 +235,13 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
   rootEl.appendChild(trunkIn);
   rootEl.appendChild(trunkOut);
 
+  // Track the same grow/bend and exit fractions the canvas draws each
+  // frame, so the bridging trunk scales in sync rather than being a
+  // permanent fixture sitting there before the chapter is actually
+  // scrolled into.
+  let entryTrunkAlpha = reducedMotion ? 1 : 0;
+  let exitTrunkAlpha = reducedMotion ? 1 : 0;
+
   function updateTrunks() {
     const rootRect = rootEl.getBoundingClientRect();
     const canvasRect = canvas.getBoundingClientRect();
@@ -207,8 +255,13 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
 
     trunkIn.style.top = '0px';
     trunkIn.style.height = `${topGap.toFixed(1)}px`;
+    trunkIn.style.transformOrigin = 'bottom';
+    trunkIn.style.transform = `translateX(-50%) scaleY(${entryTrunkAlpha.toFixed(3)})`;
+
     trunkOut.style.bottom = '0px';
     trunkOut.style.height = `${bottomGap.toFixed(1)}px`;
+    trunkOut.style.transformOrigin = 'top';
+    trunkOut.style.transform = `translateX(-50%) scaleY(${exitTrunkAlpha.toFixed(3)})`;
   }
 
   // DOM references
@@ -219,6 +272,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
   const pauseIcon = container.querySelector('.agy-music-icon-pause');
   const timeCurrentEl = container.querySelector('.agy-music-time-current');
   const timeTotalEl = container.querySelector('.agy-music-time-total');
+  const speedBtns = [...container.querySelectorAll('.agy-music-speed-btn')];
 
   // Scene state
   let notes = [];
@@ -305,6 +359,14 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
 
   // Bind button listeners
   playBtn.addEventListener('click', togglePlay);
+
+  speedBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const rate = Number(btn.dataset.speed) || 1;
+      audio.playbackRate = rate;
+      speedBtns.forEach((other) => other.classList.toggle('is-active', other === btn));
+    });
+  });
 
   // Canvas interaction: preserve click-to-seek even though x now also maps to pitch.
   canvas.addEventListener('click', (e) => {
@@ -508,19 +570,27 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
     const cx = cssWidth / 2;
     const hitLineY = Math.max(150, cssHeight * 0.78);
 
-    let t_entry = 1;
+    // entryGrow brings the vertical line in from nothing (not floored to
+    // full) so there's nothing pre-formed and visible before the chapter is
+    // actually scrolled into - onProgress fires every tick regardless of
+    // on-screen visibility. entryBend is the separate "turns into the
+    // horizontal hit line" phase, which only starts once the grow-in has
+    // already finished.
+    let entryGrow = 1;
+    let entryBend = 1;
     let t_exit = 0;
     if (!reducedMotion) {
-      // Entry: p=0.10 to p=0.20
-      t_entry = smoothStep((currentProgress - 0.10) / 0.10);
-
+      // Grow in: p=0 to p=0.05
+      entryGrow = smoothStep((currentProgress - 0) / 0.05);
+      // Bend into horizontal: p=0.10 to p=0.20
+      entryBend = smoothStep((currentProgress - 0.10) / 0.10);
       // Exit: p=0.75 to p=0.85
       t_exit = smoothStep((currentProgress - 0.75) / 0.10);
     }
 
-    const horizMinX = cx - cx * t_entry * (1 - t_exit);
-    const horizMaxX = cx + (cssWidth - cx) * t_entry * (1 - t_exit);
-    const rollAlpha = reducedMotion ? 0.9 : Math.max(0, Math.min(1, t_entry * (1 - t_exit)));
+    const horizMinX = cx - cx * entryBend * (1 - t_exit);
+    const horizMaxX = cx + (cssWidth - cx) * entryBend * (1 - t_exit);
+    const rollAlpha = reducedMotion ? 0.9 : Math.max(0, Math.min(1, entryBend * (1 - t_exit)));
     const renderTime = reducedMotion && !isPlaying && currentTime <= 0.01 ? duration * 0.36 : currentTime;
 
     drawPitchGrid(hitLineY, rollAlpha);
@@ -538,10 +608,17 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
     if (reducedMotion) {
       drawCanonicalLine(cx, 0, hitLineY);
       drawCanonicalLine(cx, hitLineY, cssHeight);
+      entryTrunkAlpha = 1;
+      exitTrunkAlpha = 1;
     } else {
-      if (t_entry < 1) drawCanonicalLine(cx, hitLineY * t_entry, hitLineY);
+      const entryReach = entryGrow * (1 - entryBend);
+      entryTrunkAlpha = entryReach;
+      if (entryReach > 0.001) drawCanonicalLine(cx, hitLineY * (1 - entryReach), hitLineY);
       if (t_exit > 0) drawCanonicalLine(cx, hitLineY, hitLineY + t_exit * (cssHeight - hitLineY));
+      exitTrunkAlpha = t_exit;
     }
+
+    updateTrunks();
   }
 
   function startAnimationLoop() {

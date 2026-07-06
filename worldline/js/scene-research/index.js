@@ -332,18 +332,15 @@ function buildDetourPath(layout, data, p) {
 function drawWorldline(ctx, layout, data, p, time) {
   const { width, height } = layout;
   const cx = width / 2;
-  const bendIn = smootherStep(mapRange(p, 0.12, 0.45));
-  const bendOut = smootherStep(mapRange(p, 0.7, 0.88));
-  // Envelope: 0 at entry, peaks at 1 mid-scroll, back to 0 before the exit window.
-  const bend = bendIn * (1 - bendOut);
+  // Bends in as you scroll and stays bent - it doesn't need to straighten
+  // back out before handing off to the next chapter, and it doesn't need to
+  // stay pinned to the top edge either.
+  const bend = smootherStep(mapRange(p, 0.12, 0.45));
   const glow = time === 0 ? 0.95 : 0.92 + 0.08 * Math.sin(time * 0.0016);
-  // The line draws itself down the screen as you scroll rather than being
-  // fully present the instant the chapter arrives. A small stub is already
-  // visible at p=0 (continuous with the previous chapter's exit), growing to
-  // fully drawn by the chapter's midpoint, well before the bend/un-bend
-  // choreography plays out in the second half.
-  const REVEAL_STUB = 0.08;
-  const revealFrac = Math.min(1, REVEAL_STUB + (1 - REVEAL_STUB) * smootherStep(mapRange(p, 0, 0.5)));
+  // The line draws itself down the screen as you scroll, growing from
+  // nothing at p=0 (not floored to a stub) so there's nothing pre-formed
+  // and visible before the chapter is actually being scrolled into.
+  const revealFrac = smootherStep(mapRange(p, 0, 0.5));
 
   ctx.save();
   ctx.lineCap = 'round';
