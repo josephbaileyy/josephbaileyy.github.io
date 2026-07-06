@@ -236,6 +236,14 @@ p {
   gap: 0.85rem 1.25rem;
 }
 
+.data-caption {
+  margin-top: 0.95rem;
+  color: var(--dim);
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(1.5rem);

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import eventsData from '../data/events.json';
 import { createDetector } from './detector.js';
 
 const BG = '#05060a';
@@ -6,11 +7,17 @@ const CYAN = new THREE.Color('#33d4ff');
 const AMBER = new THREE.Color('#ffb547');
 const MAGENTA = new THREE.Color('#ff4fd8');
 const TRACKER_RADIUS = 0.9;
+const CALO_RADIUS = 1.3;
 const MUON_RADIUS = 1.8;
 const TRACKER_HALF_LENGTH = 1.6;
+const CALO_HALF_LENGTH = 2.2;
 const MUON_HALF_LENGTH = 2.8;
 const DRAW_MS = 1400;
 const FADE_MS = 1150;
+const USE_SYNTHETIC = false;
+const MAX_REAL_TRACKS = 220;
+const HIGH_PT_THRESHOLD = 2;
+const REAL_TRACK_DELAY_MAX = 0.08;
 
 const trackVertexShader = `
   attribute vec3 aColor;
@@ -196,13 +203,12 @@ function radial(point) {
   return Math.hypot(point.x, point.y);
 }
 
-function buildTrack({ pT, eta, phi, charge, isMuon }) {
+function buildTrack({ pT, eta, phi, charge, isMuon, samples = randomInt(64, 96) }) {
   const curvatureRadius = Math.max(0.52, pT * 0.78);
   const curvature = charge / curvatureRadius;
   const zSlope = Math.sinh(eta) * 0.16;
   const targetRadius = isMuon ? MUON_RADIUS : TRACKER_RADIUS;
   const targetHalfLength = isMuon ? MUON_HALF_LENGTH : TRACKER_HALF_LENGTH;
-  const samples = randomInt(64, 96);
   const maxLength = isMuon ? 6.2 : 4.1;
   const points = [];
   let trackerHit = null;
@@ -307,8 +313,8 @@ function addNoiseHits(buffers, count) {
   }
 }
 
-function buildEventGeometry(trackCount) {
-  const buffers = {
+function makeEventBuffers() {
+  return {
     trackPositions: [],
     trackColors: [],
     trackAlphas: [],
@@ -320,39 +326,112 @@ function buildEventGeometry(trackCount) {
     hitAlphas: [],
     hitReveals: [],
   };
+}
+
+function numberOr(value, fallback = 0) {
+  return Number.isFinite(value) ? value : fallback;
+}
+
+function normalizeCharge(value) {
+  return value < 0 ? -1 : 1;
+}
+
+function makeOpenDataTrackSpec(track, type, isMuon = false) {
+  return {
+    type,
+    isMuon,
+    pT: Math.max(0.05, numberOr(track.pt, 0.05)),
+    eta: numberOr(track.eta),
+    phi: numberOr(track.phi),
+    charge: normalizeCharge(numberOr(track.q ?? track.charge, 1)),
+  };
+}
+
+function addTrackToBuffers(
+  buffers,
+  spec,
+  {
+    delayMax = 0.22,
+    samplesMin = 64,
+    samplesMax = 96,
+  } = {},
+) {
+  const isMuon = Boolean(spec.isMuon) || spec.type === 'amber';
+  const color = colorForType(spec.type);
+  const alpha = alphaForPt(spec.pT, spec.type);
+  const delay = randomBetween(0, delayMax);
+  const samples = randomInt(samplesMin, samplesMax);
+  const track = buildTrack({ ...spec, isMuon, samples });
+  const points = track.points;
+
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const progressA = index / Math.max(1, points.length - 1);
+    const progressB = (index + 1) / Math.max(1, points.length - 1);
+    pushVector(buffers.trackPositions, points[index]);
+    pushVector(buffers.trackPositions, points[index + 1]);
+    pushColor(buffers.trackColors, color, 2);
+    buffers.trackAlphas.push(alpha, alpha);
+    buffers.trackProgress.push(progressA, progressB);
+    buffers.trackDelays.push(delay, delay);
+  }
+
+  if (track.trackerHit) {
+    const reveal = delay + track.trackerHitFraction * (1 - delay) * 0.96;
+    const size = 9 + Math.min(34, Math.sqrt(spec.pT) * 8.5);
+    addHit(buffers, track.trackerHit, color, size, Math.min(0.9, alpha + 0.1), reveal);
+  }
+
+  if (isMuon && track.muonHit) {
+    addHit(buffers, track.muonHit, AMBER, 13 + Math.min(28, spec.pT * 1.8), 0.72, 0.98);
+  }
+}
+
+function selectTracksForDisplay(tracks) {
+  const decorated = tracks.map((track, index) => ({ track, index }));
+  const highPt = decorated.filter(({ track }) => numberOr(track.pt) > HIGH_PT_THRESHOLD);
+  const remainder = decorated
+    .filter(({ track }) => numberOr(track.pt) <= HIGH_PT_THRESHOLD)
+    .sort((a, b) => numberOr(b.track.pt) - numberOr(a.track.pt));
+
+  const selected =
+    highPt.length >= MAX_REAL_TRACKS ? highPt : highPt.concat(remainder.slice(0, MAX_REAL_TRACKS - highPt.length));
+
+  return selected.sort((a, b) => a.index - b.index).map(({ track }) => track);
+}
+
+function pointFromEtaPhiAtRadius(eta, phi, radius, halfLength) {
+  const z = Math.min(halfLength, Math.max(-halfLength, Math.sinh(eta) * radius * 0.16));
+  return new THREE.Vector3(Math.cos(phi) * radius, Math.sin(phi) * radius, z);
+}
+
+function addCaloHits(buffers, caloHits) {
+  caloHits.forEach((hit) => {
+    const et = Math.max(0.05, numberOr(hit.et, 0.05));
+    const point = pointFromEtaPhiAtRadius(numberOr(hit.eta), numberOr(hit.phi), CALO_RADIUS, CALO_HALF_LENGTH);
+    const color = String(hit.system).toLowerCase() === 'hcal' ? AMBER : MAGENTA;
+    const size = 10 + Math.min(40, Math.sqrt(et) * 12);
+    const alpha = 0.34 + clamp01(et / 8) * 0.46;
+    addHit(buffers, point, color, size, alpha, randomBetween(0.2, 0.96));
+  });
+}
+
+function parseEventId(id) {
+  const [run = '----', ...eventParts] = String(id || '').split(':');
+  return {
+    run,
+    event: eventParts.join(':') || '----',
+  };
+}
+
+function buildSyntheticEventGeometry(trackCount) {
+  const buffers = makeEventBuffers();
 
   const specs = makeTrackSpecs(trackCount);
   let sumPt = 0;
 
   specs.forEach((spec) => {
-    const isMuon = spec.type === 'amber';
-    const color = colorForType(spec.type);
-    const alpha = alphaForPt(spec.pT, spec.type);
-    const delay = randomBetween(0, 0.22);
-    const track = buildTrack({ ...spec, isMuon });
-    const points = track.points;
     sumPt += spec.pT;
-
-    for (let index = 0; index < points.length - 1; index += 1) {
-      const progressA = index / Math.max(1, points.length - 1);
-      const progressB = (index + 1) / Math.max(1, points.length - 1);
-      pushVector(buffers.trackPositions, points[index]);
-      pushVector(buffers.trackPositions, points[index + 1]);
-      pushColor(buffers.trackColors, color, 2);
-      buffers.trackAlphas.push(alpha, alpha);
-      buffers.trackProgress.push(progressA, progressB);
-      buffers.trackDelays.push(delay, delay);
-    }
-
-    if (track.trackerHit) {
-      const reveal = delay + track.trackerHitFraction * (1 - delay) * 0.96;
-      const size = 9 + Math.min(34, Math.sqrt(spec.pT) * 8.5);
-      addHit(buffers, track.trackerHit, color, size, Math.min(0.9, alpha + 0.1), reveal);
-    }
-
-    if (isMuon && track.muonHit) {
-      addHit(buffers, track.muonHit, AMBER, 13 + Math.min(28, spec.pT * 1.8), 0.72, 0.98);
-    }
+    addTrackToBuffers(buffers, spec);
   });
 
   addNoiseHits(buffers, randomInt(12, 20));
@@ -366,8 +445,49 @@ function buildEventGeometry(trackCount) {
   };
 }
 
-function makeEventSet({ trackCount, sprite, pixelRatio, eventNumber }) {
-  const { buffers, stats } = buildEventGeometry(trackCount);
+function buildRealEventGeometry(eventRecord) {
+  const buffers = makeEventBuffers();
+  const rawTracks = Array.isArray(eventRecord.tracks) ? eventRecord.tracks : [];
+  const rawMuons = Array.isArray(eventRecord.muons) ? eventRecord.muons : [];
+  const rawCalo = Array.isArray(eventRecord.calo) ? eventRecord.calo : [];
+  const selectedTracks = selectTracksForDisplay(rawTracks);
+  const sumPt = rawTracks.reduce((sum, track) => sum + numberOr(track.pt), 0);
+  const { run, event } = parseEventId(eventRecord.id);
+
+  selectedTracks.forEach((track) => {
+    const pT = numberOr(track.pt);
+    const type = pT >= 8 ? 'magenta' : 'cyan';
+    addTrackToBuffers(buffers, makeOpenDataTrackSpec(track, type), {
+      delayMax: REAL_TRACK_DELAY_MAX,
+      samplesMin: 40,
+      samplesMax: 62,
+    });
+  });
+
+  rawMuons.forEach((muon) => {
+    addTrackToBuffers(buffers, makeOpenDataTrackSpec(muon, 'amber', true), {
+      delayMax: REAL_TRACK_DELAY_MAX,
+      samplesMin: 72,
+      samplesMax: 96,
+    });
+  });
+
+  addCaloHits(buffers, rawCalo);
+
+  return {
+    buffers,
+    stats: {
+      run,
+      event,
+      tracks: rawTracks.length,
+      drawnTracks: selectedTracks.length,
+      sumPt: Math.round(sumPt),
+    },
+  };
+}
+
+function makeEventSet({ trackCount, sprite, pixelRatio, eventNumber, eventRecord }) {
+  const { buffers, stats } = eventRecord ? buildRealEventGeometry(eventRecord) : buildSyntheticEventGeometry(trackCount);
   const group = new THREE.Group();
 
   const trackGeometry = new THREE.BufferGeometry();
@@ -396,6 +516,7 @@ function makeEventSet({ trackCount, sprite, pixelRatio, eventNumber }) {
 
   return {
     eventNumber,
+    eventRecord,
     group,
     hitMaterial,
     stats,
@@ -424,6 +545,11 @@ class EventDisplay {
     this.currentEvent = null;
     this.fadingEvents = [];
     this.nextEventAt = 0;
+    this.realEvents = Array.isArray(eventsData.events) ? eventsData.events : [];
+    this.realEventOrder = [];
+    this.realEventCursor = 0;
+    this.lastRealEventIndex = -1;
+    this.shuffleRealEvents();
 
     this.renderer = new THREE.WebGLRenderer({
       canvas,
@@ -471,6 +597,39 @@ class EventDisplay {
       this.currentEvent.trackMaterial.uniforms.uDraw.value = 1;
       this.currentEvent.hitMaterial.uniforms.uDraw.value = 1;
     }
+  }
+
+  shuffleRealEvents() {
+    this.realEventOrder = this.realEvents.map((_, index) => index);
+
+    for (let index = this.realEventOrder.length - 1; index > 0; index -= 1) {
+      const swapIndex = randomInt(0, index);
+      [this.realEventOrder[index], this.realEventOrder[swapIndex]] = [
+        this.realEventOrder[swapIndex],
+        this.realEventOrder[index],
+      ];
+    }
+
+    if (this.realEventOrder.length > 1 && this.realEventOrder[0] === this.lastRealEventIndex) {
+      [this.realEventOrder[0], this.realEventOrder[1]] = [this.realEventOrder[1], this.realEventOrder[0]];
+    }
+
+    this.realEventCursor = 0;
+  }
+
+  getNextRealEventRecord() {
+    if (!this.realEvents.length) {
+      return null;
+    }
+
+    if (this.realEventCursor >= this.realEventOrder.length) {
+      this.shuffleRealEvents();
+    }
+
+    const eventIndex = this.realEventOrder[this.realEventCursor];
+    this.realEventCursor += 1;
+    this.lastRealEventIndex = eventIndex;
+    return this.realEvents[eventIndex] ?? null;
   }
 
   resize() {
@@ -533,15 +692,27 @@ class EventDisplay {
       });
     }
 
-    const mobile = window.innerWidth < 700;
-    const trackCount = mobile ? randomInt(38, 58) : randomInt(50, 90);
-    this.eventNumber += 1;
-    this.currentEvent = makeEventSet({
-      eventNumber: this.eventNumber,
-      pixelRatio: this.pixelRatio,
-      sprite: this.sprite,
-      trackCount,
-    });
+    const eventRecord = USE_SYNTHETIC ? null : this.getNextRealEventRecord();
+
+    if (eventRecord) {
+      this.currentEvent = makeEventSet({
+        eventNumber: this.eventNumber,
+        eventRecord,
+        pixelRatio: this.pixelRatio,
+        sprite: this.sprite,
+      });
+    } else {
+      const mobile = window.innerWidth < 700;
+      const trackCount = mobile ? randomInt(38, 58) : randomInt(50, 90);
+      this.eventNumber += 1;
+      this.currentEvent = makeEventSet({
+        eventNumber: this.eventNumber,
+        pixelRatio: this.pixelRatio,
+        sprite: this.sprite,
+        trackCount,
+      });
+    }
+
     this.currentEvent.startTime = time;
     this.eventRoot.add(this.currentEvent.group);
     this.nextEventAt = time + randomBetween(9000, 12000);
@@ -579,6 +750,22 @@ class EventDisplay {
 
   updateHud(event) {
     if (!this.hud) {
+      return;
+    }
+
+    if (event.stats.run) {
+      const parts = [
+        `RUN ${event.stats.run}`,
+        `EVT ${event.stats.event}`,
+        `N_TRK ${event.stats.tracks}`,
+      ];
+
+      if (event.stats.drawnTracks < event.stats.tracks) {
+        parts.push(`N_DRAWN ${event.stats.drawnTracks}`);
+      }
+
+      parts.push(`SUM_PT ${event.stats.sumPt} GEV`);
+      this.hud.textContent = parts.join(' / ');
       return;
     }
 
