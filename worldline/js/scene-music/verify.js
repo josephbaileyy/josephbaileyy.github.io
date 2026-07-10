@@ -6,48 +6,51 @@ const repoRoot = '/Users/josephbailey/josephbaileyy.github.io';
 const screenshotDir = '/tmp/worldline-music-verify';
 
 function wait(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function startProcess(command, args, label) {
   const child = spawn(command, args, { cwd: repoRoot, stdio: ['ignore', 'pipe', 'pipe'] });
-  child.stdout.on('data', data => process.stdout.write(`[${label}] ${data}`));
-  child.stderr.on('data', data => process.stderr.write(`[${label}] ${data}`));
+  child.stdout.on('data', (data) => process.stdout.write(`[${label}] ${data}`));
+  child.stderr.on('data', (data) => process.stderr.write(`[${label}] ${data}`));
   return child;
 }
 
 async function sampleCanvas(page, x, y, radius = 2) {
-  return page.evaluate(({ x, y, radius }) => {
-    const canvas = document.querySelector('canvas');
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    const px = Math.round(x * dpr);
-    const py = Math.round(y * dpr);
-    const size = radius * 2 + 1;
-    const data = ctx.getImageData(px - radius, py - radius, size, size).data;
-    let max = { r: 0, g: 0, b: 0, a: 0, brightness: 0 };
-    let alphaSum = 0;
+  return page.evaluate(
+    ({ x, y, radius }) => {
+      const canvas = document.querySelector('canvas');
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const px = Math.round(x * dpr);
+      const py = Math.round(y * dpr);
+      const size = radius * 2 + 1;
+      const data = ctx.getImageData(px - radius, py - radius, size, size).data;
+      let max = { r: 0, g: 0, b: 0, a: 0, brightness: 0 };
+      let alphaSum = 0;
 
-    for (let i = 0; i < data.length; i += 4) {
-      const r = data[i];
-      const g = data[i + 1];
-      const b = data[i + 2];
-      const a = data[i + 3];
-      const brightness = r + g + b;
-      alphaSum += a;
-      if (a > max.a || brightness > max.brightness) {
-        max = { r, g, b, a, brightness };
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+        const a = data[i + 3];
+        const brightness = r + g + b;
+        alphaSum += a;
+        if (a > max.a || brightness > max.brightness) {
+          max = { r, g, b, a, brightness };
+        }
       }
-    }
 
-    return {
-      rect: { width: rect.width, height: rect.height, dpr },
-      point: { x, y },
-      alphaSum,
-      max,
-    };
-  }, { x, y, radius });
+      return {
+        rect: { width: rect.width, height: rect.height, dpr },
+        point: { x, y },
+        alphaSum,
+        max,
+      };
+    },
+    { x, y, radius },
+  );
 }
 
 async function canvasActivity(page) {
@@ -98,10 +101,13 @@ async function screenshotCanvas(page, name) {
 }
 
 async function runHarnessMode(browser, reducedMotion = false) {
-  const page = await browser.newPage({ viewport: { width: 1280, height: 820 }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({
+    viewport: { width: 1280, height: 820 },
+    deviceScaleFactor: 1,
+  });
   const consoleErrors = [];
-  page.on('pageerror', err => consoleErrors.push(`Page error: ${err.message}`));
-  page.on('console', msg => {
+  page.on('pageerror', (err) => consoleErrors.push(`Page error: ${err.message}`));
+  page.on('console', (msg) => {
     if (msg.type() === 'error') consoleErrors.push(`Console error: ${msg.text()}`);
   });
 
@@ -117,7 +123,9 @@ async function runHarnessMode(browser, reducedMotion = false) {
   const debug = await page.evaluate(() => window.musicScene.getDebugState());
 
   console.log(`\nHarness ${reducedMotion ? 'reducedMotion' : 'motion'}:`);
-  console.log(`  notes=${debug.noteCount}, duration=${debug.duration.toFixed(3)}, pitch=${debug.pitchMin}..${debug.pitchMax}`);
+  console.log(
+    `  notes=${debug.noteCount}, duration=${debug.duration.toFixed(3)}, pitch=${debug.pitchMin}..${debug.pitchMax}`,
+  );
 
   await setProgress(page, reducedMotion ? 1 : 0.05);
   const canvasRect = await page.evaluate(() => {
@@ -126,16 +134,30 @@ async function runHarnessMode(browser, reducedMotion = false) {
   });
   const centerX = canvasRect.width / 2;
   const topLine = await sampleCanvas(page, centerX, 8, 2);
-  console.log(`  entry top sample @p=${reducedMotion ? 1 : 0.05}:`, topLine.max, `alphaSum=${topLine.alphaSum}`);
+  console.log(
+    `  entry top sample @p=${reducedMotion ? 1 : 0.05}:`,
+    topLine.max,
+    `alphaSum=${topLine.alphaSum}`,
+  );
 
   await setProgress(page, reducedMotion ? 1 : 0.95);
   const bottomLine = await sampleCanvas(page, centerX, topLine.rect.height - 8, 2);
-  console.log(`  exit bottom sample @p=${reducedMotion ? 1 : 0.95}:`, bottomLine.max, `alphaSum=${bottomLine.alphaSum}`);
+  console.log(
+    `  exit bottom sample @p=${reducedMotion ? 1 : 0.95}:`,
+    bottomLine.max,
+    `alphaSum=${bottomLine.alphaSum}`,
+  );
 
-  const chosenNote = noteData.notes.find(note => note.start > 8 && note.start < 20 && note.end - note.start > 0.16) || noteData.notes[0];
+  const chosenNote =
+    noteData.notes.find(
+      (note) => note.start > 8 && note.start < 20 && note.end - note.start > 0.16,
+    ) || noteData.notes[0];
   await setProgress(page, reducedMotion ? 1 : 0.5);
   await seek(page, chosenNote.start - 1.2);
-  const fallingShot = await screenshotCanvas(page, reducedMotion ? 'reduced-static' : 'falling-notes');
+  const fallingShot = await screenshotCanvas(
+    page,
+    reducedMotion ? 'reduced-static' : 'falling-notes',
+  );
   const fallingActivity = await canvasActivity(page);
   console.log(`  falling screenshot=${fallingShot}`);
   console.log(`  falling activity lit=${fallingActivity.lit}, amber=${fallingActivity.amber}`);
@@ -146,13 +168,21 @@ async function runHarnessMode(browser, reducedMotion = false) {
     const canvas = document.querySelector('canvas');
     const rect = canvas.getBoundingClientRect();
     const state = window.musicScene.getDebugState();
-    const left = Math.max(24, rect.width * 0.035);
-    const right = rect.width - left;
-    return left + ((pitch - state.pitchMin) / Math.max(1, state.pitchMax - state.pitchMin)) * (right - left);
+    const edge = Math.max(24, rect.width * 0.035);
+    const left = rect.width / 2 + Math.max(18, rect.width * 0.02);
+    const right = rect.width - edge;
+    return (
+      left +
+      ((pitch - state.pitchMin) / Math.max(1, state.pitchMax - state.pitchMin)) * (right - left)
+    );
   }, chosenNote.pitch);
   const hitGlow = await sampleCanvas(page, laneX, hitState.hitLineY - 7, 4);
   const hitShot = await screenshotCanvas(page, reducedMotion ? 'reduced-hit' : 'hit-flash');
-  console.log(`  hit note pitch=${chosenNote.pitch}, start=${chosenNote.start}, laneX=${laneX.toFixed(1)}, sample=`, hitGlow.max, `alphaSum=${hitGlow.alphaSum}`);
+  console.log(
+    `  hit note pitch=${chosenNote.pitch}, start=${chosenNote.start}, laneX=${laneX.toFixed(1)}, sample=`,
+    hitGlow.max,
+    `alphaSum=${hitGlow.alphaSum}`,
+  );
   console.log(`  hit screenshot=${hitShot}`);
 
   if (debug.noteCount !== noteData.notes.length || debug.noteCount === 0) {
@@ -165,7 +195,9 @@ async function runHarnessMode(browser, reducedMotion = false) {
     throw new Error(`Hit glow sample too dim: alphaSum=${hitGlow.alphaSum}`);
   }
   if (topLine.alphaSum < 200 || bottomLine.alphaSum < 200) {
-    throw new Error(`Canonical entry/exit line sample too dim: top=${topLine.alphaSum}, bottom=${bottomLine.alphaSum}`);
+    throw new Error(
+      `Canonical entry/exit line sample too dim: top=${topLine.alphaSum}, bottom=${bottomLine.alphaSum}`,
+    );
   }
   if (consoleErrors.length > 0) {
     throw new Error(consoleErrors.join('\n'));
@@ -186,10 +218,13 @@ async function runHarnessMode(browser, reducedMotion = false) {
 }
 
 async function runIntegrated(browser, viteUrl) {
-  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({
+    viewport: { width: 1440, height: 900 },
+    deviceScaleFactor: 1,
+  });
   const consoleErrors = [];
-  page.on('pageerror', err => consoleErrors.push(`Page error: ${err.message}`));
-  page.on('console', msg => {
+  page.on('pageerror', (err) => consoleErrors.push(`Page error: ${err.message}`));
+  page.on('console', (msg) => {
     if (msg.type() === 'error') consoleErrors.push(`Console error: ${msg.text()}`);
   });
 
@@ -211,7 +246,9 @@ async function runIntegrated(browser, viteUrl) {
   });
 
   console.log('\nIntegrated worldline:');
-  console.log(`  canvas=${info.canvas.width}x${info.canvas.height}, scrollY=${info.scrollY.toFixed(1)}, chapterTop=${info.chapterTop.toFixed(1)}`);
+  console.log(
+    `  canvas=${info.canvas.width}x${info.canvas.height}, scrollY=${info.scrollY.toFixed(1)}, chapterTop=${info.chapterTop.toFixed(1)}`,
+  );
   console.log(`  consoleErrors=${consoleErrors.length}`);
 
   if (consoleErrors.length > 0) {
@@ -224,8 +261,12 @@ async function runIntegrated(browser, viteUrl) {
 
 async function waitForViteUrl(vite) {
   let output = '';
-  vite.stdout.on('data', data => { output += data.toString(); });
-  vite.stderr.on('data', data => { output += data.toString(); });
+  vite.stdout.on('data', (data) => {
+    output += data.toString();
+  });
+  vite.stderr.on('data', (data) => {
+    output += data.toString();
+  });
 
   for (let i = 0; i < 80; i++) {
     const match = output.match(/Local:\s+(http:\/\/[^\s]+)/);
@@ -239,7 +280,11 @@ async function waitForViteUrl(vite) {
 async function run() {
   await mkdir(screenshotDir, { recursive: true });
 
-  const staticServer = startProcess('python3', ['-m', 'http.server', '8890', '--directory', repoRoot], 'static');
+  const staticServer = startProcess(
+    'python3',
+    ['-m', 'http.server', '8890', '--directory', repoRoot],
+    'static',
+  );
   await wait(1200);
 
   const browser = await chromium.launch({ headless: true });
@@ -249,15 +294,27 @@ async function run() {
     const motion = await runHarnessMode(browser, false);
     const reduced = await runHarnessMode(browser, true);
 
-    vite = startProcess('npx', ['vite', '--config', 'worldline/vite.config.js', '--host', '127.0.0.1'], 'vite');
+    vite = startProcess(
+      'npx',
+      ['vite', '--config', 'worldline/vite.config.js', '--host', '127.0.0.1'],
+      'vite',
+    );
     const viteUrl = await waitForViteUrl(vite);
     await runIntegrated(browser, viteUrl);
 
     console.log('\nSummary:');
-    console.log(`  JSON notes=${motion.noteCount}, duration=${motion.duration.toFixed(3)}, pitch=${motion.pitchMin}..${motion.pitchMax}`);
-    console.log(`  entry alpha=${motion.topLine.alphaSum}, exit alpha=${motion.bottomLine.alphaSum}`);
-    console.log(`  active hit alpha=${motion.hitGlow.alphaSum}, active note pitch=${motion.chosenNote.pitch}, t=${motion.chosenNote.start}`);
-    console.log(`  reducedMotion notes=${reduced.noteCount}, activity=${reduced.fallingActivity.lit}`);
+    console.log(
+      `  JSON notes=${motion.noteCount}, duration=${motion.duration.toFixed(3)}, pitch=${motion.pitchMin}..${motion.pitchMax}`,
+    );
+    console.log(
+      `  entry alpha=${motion.topLine.alphaSum}, exit alpha=${motion.bottomLine.alphaSum}`,
+    );
+    console.log(
+      `  active hit alpha=${motion.hitGlow.alphaSum}, active note pitch=${motion.chosenNote.pitch}, t=${motion.chosenNote.start}`,
+    );
+    console.log(
+      `  reducedMotion notes=${reduced.noteCount}, activity=${reduced.fallingActivity.lit}`,
+    );
   } finally {
     await browser.close();
     staticServer.kill();
@@ -265,7 +322,7 @@ async function run() {
   }
 }
 
-run().catch(err => {
+run().catch((err) => {
   console.error('Verification failed:', err);
   process.exit(1);
 });

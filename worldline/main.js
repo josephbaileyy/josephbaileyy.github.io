@@ -3,9 +3,6 @@ import { createSceneLifecycle, getReducedMotionPreference } from './js/core/life
 import { createScrollRuntime } from './js/core/scroll.js';
 import { createTelemetry } from './js/core/telemetry.js';
 import { createCollisionScene } from './js/scene-collision/collision.js';
-import { createScene as createMusicScene } from './js/scene-music/index.js';
-import { createScene as createResearchScene } from './js/scene-research/index.js';
-import { createScene as createTrackScene } from './js/scene-track/index.js';
 
 function clamp01(value) {
   return Math.min(1, Math.max(0, value));
@@ -36,6 +33,7 @@ const scrollRuntime = createScrollRuntime({ reducedMotion });
 const ground = createGroundController();
 const telemetry = createTelemetry();
 const handoffScrub = document.querySelector('[data-scrub="collision-handoff"]');
+const collisionHudShell = collisionHud?.closest('.collision-hud');
 
 function getHandoffProgress(state) {
   return state.scrubs.get('collision-handoff')?.progress ?? (reducedMotion ? 1 : 0);
@@ -84,6 +82,82 @@ function createLifecycleAdapter(scene) {
   };
 }
 
+function createLazyScene(root, create, label) {
+  let scene = null;
+  let entered = false;
+  let generation = 0;
+  let loadPromise = null;
+  let pendingProgress = reducedMotion ? 1 : 0;
+  let pendingParallax = 0;
+
+  const ensureScene = () => {
+    if (scene) {
+      return Promise.resolve(scene);
+    }
+
+    if (!loadPromise) {
+      const loadGeneration = generation;
+      loadPromise = Promise.resolve()
+        .then(() => create(root))
+        .then((createdScene) => {
+          if (generation !== loadGeneration) {
+            createdScene?.dispose?.();
+            return null;
+          }
+
+          scene = createdScene;
+          loadPromise = null;
+          scene?.onProgress?.(pendingProgress);
+          scene?.onParallax?.(pendingParallax);
+
+          if (entered) {
+            scene?.onEnter?.();
+          }
+
+          return scene;
+        })
+        .catch(() => {
+          loadPromise = null;
+          console.warn(`${label} scene unavailable; continuing with the static chapter.`);
+          return null;
+        });
+    }
+
+    return loadPromise;
+  };
+
+  return {
+    onProgress(progress) {
+      pendingProgress = progress;
+      scene?.onProgress?.(progress);
+    },
+    onParallax(scrollPx) {
+      pendingParallax = scrollPx;
+      scene?.onParallax?.(scrollPx);
+    },
+    onEnter() {
+      entered = true;
+
+      if (scene) {
+        scene.onEnter?.();
+      } else {
+        void ensureScene();
+      }
+    },
+    onExit() {
+      entered = false;
+      scene?.onExit?.();
+    },
+    dispose() {
+      generation += 1;
+      entered = false;
+      scene?.dispose?.();
+      scene = null;
+      loadPromise = null;
+    },
+  };
+}
+
 function createSceneRecord({ id, chapterSelector, rootSelector, create }) {
   const chapter = document.querySelector(chapterSelector);
   const root = document.querySelector(rootSelector);
@@ -95,8 +169,10 @@ function createSceneRecord({ id, chapterSelector, rootSelector, create }) {
   return {
     chapter,
     id,
+    lastParallax: null,
+    lastProgress: null,
     root,
-    scene: create(root),
+    scene: createLazyScene(root, create, id),
   };
 }
 
@@ -105,24 +181,33 @@ const sceneRecords = [
     id: 'research',
     chapterSelector: '#chapter-research',
     rootSelector: '#research-scene',
-    create: (root) => createResearchScene(root, { reducedMotion }),
+    create: async (root) => {
+      const { createScene } = await import('./js/scene-research/index.js');
+      return createScene(root, { reducedMotion });
+    },
   }),
   createSceneRecord({
     id: 'track',
     chapterSelector: '#chapter-track',
     rootSelector: '#track-scene',
-    create: (root) => createTrackScene(root, { reducedMotion }),
+    create: async (root) => {
+      const { createScene } = await import('./js/scene-track/index.js');
+      return createScene(root, { reducedMotion });
+    },
   }),
   createSceneRecord({
     id: 'music',
     chapterSelector: '#chapter-music',
     rootSelector: '#music-scene',
-    create: (root) => createMusicScene(root, {
-      audioUrl: fugueAudioUrl,
-      peaksUrl: fuguePeaksUrl,
-      notesUrl: fugueNotesUrl,
-      reducedMotion,
-    }),
+    create: async (root) => {
+      const { createScene } = await import('./js/scene-music/index.js');
+      return createScene(root, {
+        audioUrl: fugueAudioUrl,
+        peaksUrl: fuguePeaksUrl,
+        notesUrl: fugueNotesUrl,
+        reducedMotion,
+      });
+    },
   }),
 ].filter(Boolean);
 
@@ -151,15 +236,33 @@ function updateContactScene(progress) {
   const lineEase = 1 - Math.pow(1 - line, 3);
   const point = smootherStep((p - 0.55) / 0.15);
   const panel = smootherStep((p - 0.5) / 0.2);
-  // non-scaling-stroke makes dashes screen-space in Chromium: dash length must
-  // match the rendered path width, not the 640 user-unit length
+  // non-scaling-stroke makes dashes screen-space in Chromium. Account for
+  // both the curved path length and preserveAspectRatio="none", whose X/Y
+  // scales differ substantially on phones.
   const lineEl = chapter.querySelector('.contact-line');
-  const screenLen = lineEl ? Math.max(lineEl.getBoundingClientRect().width, 1) : 640;
+  const screenMatrix = lineEl?.getScreenCTM();
+  let screenLen = 640;
+  if (lineEl && screenMatrix) {
+    const pathLen = lineEl.getTotalLength();
+    let previous = lineEl.getPointAtLength(0);
+    screenLen = 0;
+    for (let index = 1; index <= 64; index += 1) {
+      const point = lineEl.getPointAtLength((pathLen * index) / 64);
+      const dx = (point.x - previous.x) * screenMatrix.a + (point.y - previous.y) * screenMatrix.c;
+      const dy = (point.x - previous.x) * screenMatrix.b + (point.y - previous.y) * screenMatrix.d;
+      screenLen += Math.hypot(dx, dy);
+      previous = point;
+    }
+    screenLen = Math.max(screenLen, 1);
+  }
   if (lineEl) lineEl.style.strokeDasharray = screenLen.toFixed(2);
   chapter.style.setProperty('--contact-line-offset', (screenLen * (1 - lineEase)).toFixed(2));
   chapter.style.setProperty('--contact-point-opacity', point.toFixed(3));
   chapter.style.setProperty('--contact-panel-opacity', panel.toFixed(3));
 }
+
+let lastExperienceProgress = null;
+let lastContactProgress = null;
 
 lifecycle.register({
   element: collisionChapter,
@@ -175,6 +278,10 @@ sceneRecords.forEach((record) => {
 
 scrollRuntime.onUpdate((state) => {
   const handoffProgress = getHandoffProgress(state);
+  const handoffBlend = smootherStep((handoffProgress - 0.94) / 0.055);
+
+  handoffScrub?.style.setProperty('--handoff-spine-opacity', handoffBlend.toFixed(3));
+  collisionCanvas?.style.setProperty('--collision-handoff-opacity', (1 - handoffBlend).toFixed(3));
 
   ground.update(state);
   telemetry.update(state);
@@ -188,23 +295,52 @@ scrollRuntime.onUpdate((state) => {
       return;
     }
 
-    record.scene.onProgress?.(scrub.progress);
-    record.scene.onParallax?.(getScrollPx(scrub.element));
+    if (record.lastProgress === null || Math.abs(record.lastProgress - scrub.progress) > 0.0001) {
+      record.scene.onProgress?.(scrub.progress);
+      record.lastProgress = scrub.progress;
+    }
+
+    const rect = record.chapter.getBoundingClientRect();
+    if (rect.bottom > -window.innerHeight && rect.top < window.innerHeight * 2) {
+      const parallax = getScrollPx(scrub.element);
+      if (record.lastParallax === null || Math.abs(record.lastParallax - parallax) > 0.25) {
+        record.scene.onParallax?.(parallax);
+        record.lastParallax = parallax;
+      }
+    }
   });
 
-  updateExperienceScene(state.scrubs.get('experience')?.progress ?? (reducedMotion ? 1 : 0));
-  updateContactScene(state.scrubs.get('contact')?.progress ?? (reducedMotion ? 1 : 0));
+  const experienceProgress = state.scrubs.get('experience')?.progress ?? (reducedMotion ? 1 : 0);
+  if (
+    lastExperienceProgress === null ||
+    Math.abs(lastExperienceProgress - experienceProgress) > 0.0001
+  ) {
+    updateExperienceScene(experienceProgress);
+    lastExperienceProgress = experienceProgress;
+  }
 
-  // The collision->worldline collapse is reversible: scrolling back up above
-  // the handoff threshold brings the event display back rather than leaving
-  // it retired forever. Hysteresis (0.996 vs 0.9) avoids mount/unmount churn
-  // right at the threshold.
+  const contactProgress = state.scrubs.get('contact')?.progress ?? (reducedMotion ? 1 : 0);
+  if (lastContactProgress === null || Math.abs(lastContactProgress - contactProgress) > 0.0001) {
+    updateContactScene(contactProgress);
+    lastContactProgress = contactProgress;
+  }
+
+  // Keep the collapsed line alive until the collision chapter has actually
+  // left the viewport. Retiring at scrub progress 1 leaves an entire sticky
+  // viewport with no owner and creates a conspicuous blank seam before CH02.
   if (!reducedMotion) {
-    if (handoffProgress >= 0.996 && !collisionScene.isRetired()) {
+    const collisionHasViewport = collisionChapter.getBoundingClientRect().bottom > 0;
+
+    if (!collisionHasViewport && !collisionScene.isRetired()) {
       collisionScene.collapse();
-    } else if (handoffProgress < 0.9 && collisionScene.isRetired()) {
+    } else if (collisionHasViewport && collisionScene.isRetired()) {
       collisionScene.expand();
     }
+
+    collisionHudShell?.classList.toggle(
+      'is-retired',
+      !collisionHasViewport || handoffProgress > 0.9,
+    );
   }
 
   if (collisionScene.isActive()) {

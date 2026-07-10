@@ -32,8 +32,6 @@ function getEntryPointAtDistance(distance) {
   return { x: 400 + 130 * pct, y: 150 + 173.4 * pct };
 }
 
-const L_total = L_entry + L_lap + L_exit; // 2161.1960704531785
-
 const TOUCHDOWN_TIMES = [6.09, 10.23, 14.33, 18.49, 22.78, 27.27, 31.89, 36.59, 41.45, 46.26];
 const FINISH_TIME = 52.17;
 const TRACK_POSITIONS = [0, 45, 80, 115, 150, 185, 220, 255, 290, 325, 360, 400];
@@ -48,7 +46,7 @@ const INTERVAL_VELOCITIES = TRACK_POSITIONS.slice(1).map((position, index) => {
 function getRaceTime(dist) {
   if (dist <= 0) return 0;
   if (dist >= 400) return FINISH_TIME;
-  
+
   for (let i = 1; i < TRACK_POSITIONS.length; i++) {
     if (dist <= TRACK_POSITIONS[i]) {
       const pct = (dist - TRACK_POSITIONS[i - 1]) / (TRACK_POSITIONS[i] - TRACK_POSITIONS[i - 1]);
@@ -61,7 +59,7 @@ function getRaceTime(dist) {
 function getStatusText(dist) {
   if (dist <= 0) return 'START';
   if (dist >= 400) return `FINISH — ${FINISH_TIME.toFixed(2)}`;
-  
+
   const hurdles = [45, 80, 115, 150, 185, 220, 255, 290, 325, 360];
   let crossed = 0;
   for (let i = 0; i < hurdles.length; i++) {
@@ -74,21 +72,21 @@ function getStatusText(dist) {
 
 function getLapPosition(d) {
   const Rt = CX + HS; // 530
-  const L = CX - HS;  // 270
+  const L = CX - HS; // 270
   const top = CY - R; // 96.6
   const bot = CY + R; // 323.4
-  
+
   const L1 = Math.PI * R; // 356.2566
-  const L2 = 2 * HS;      // 260
+  const L2 = 2 * HS; // 260
   const L3 = Math.PI * R; // 356.2566
-  
+
   if (d <= L1) {
     const angle = Math.PI / 2 - (d / L1) * Math.PI;
     return {
       x: Rt + R * Math.cos(angle),
       y: CY + R * Math.sin(angle),
       nx: Math.cos(angle),
-      ny: Math.sin(angle)
+      ny: Math.sin(angle),
     };
   } else if (d <= L1 + L2) {
     const d2 = d - L1;
@@ -96,7 +94,7 @@ function getLapPosition(d) {
       x: Rt - d2,
       y: top,
       nx: 0,
-      ny: -1
+      ny: -1,
     };
   } else if (d <= L1 + L2 + L3) {
     const d3 = d - L1 - L2;
@@ -105,7 +103,7 @@ function getLapPosition(d) {
       x: L + R * Math.cos(angle),
       y: CY + R * Math.sin(angle),
       nx: Math.cos(angle),
-      ny: Math.sin(angle)
+      ny: Math.sin(angle),
     };
   } else {
     const d4 = d - L1 - L2 - L3;
@@ -113,7 +111,7 @@ function getLapPosition(d) {
       x: L + d4,
       y: bot,
       nx: 0,
-      ny: 1
+      ny: 1,
     };
   }
 }
@@ -132,7 +130,7 @@ function getTrackState(p) {
         ny: 1,
         distance: 0,
         time: 0,
-        statusText: 'START'
+        statusText: 'START',
       };
     } else {
       const d2 = d - E1_len;
@@ -144,7 +142,7 @@ function getTrackState(p) {
         ny: 173.4 / E2_len,
         distance: 0,
         time: 0,
-        statusText: 'START'
+        statusText: 'START',
       };
     }
   } else if (p <= P_LAP_END) {
@@ -160,7 +158,7 @@ function getTrackState(p) {
       ny: pos.ny,
       distance,
       time,
-      statusText
+      statusText,
     };
   } else {
     const p_exit = (p - P_LAP_END) / (1 - P_LAP_END);
@@ -174,7 +172,7 @@ function getTrackState(p) {
         ny: 96.6 / X1_len,
         distance: 400,
         time: FINISH_TIME,
-        statusText: `FINISH — ${FINISH_TIME.toFixed(2)}`
+        statusText: `FINISH — ${FINISH_TIME.toFixed(2)}`,
       };
     } else {
       const d2 = d - X1_len;
@@ -185,7 +183,7 @@ function getTrackState(p) {
         ny: 1,
         distance: 400,
         time: FINISH_TIME,
-        statusText: `FINISH — ${FINISH_TIME.toFixed(2)}`
+        statusText: `FINISH — ${FINISH_TIME.toFixed(2)}`,
       };
     }
   }
@@ -194,7 +192,7 @@ function getTrackState(p) {
 export function createScene(rootEl, { reducedMotion = false } = {}) {
   // Clear root
   rootEl.innerHTML = '';
-  
+
   // Create stylesheet
   const styleEl = document.createElement('style');
   styleEl.textContent = `
@@ -355,7 +353,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   if (reducedMotion) {
     container.classList.add('reduced-motion');
   }
-  
+
   // HUD
   const hud = document.createElement('div');
   hud.className = 'track-hud';
@@ -364,27 +362,27 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     <span>T+ <span class="track-clock">0.00</span> &nbsp;&nbsp; <span class="track-status">START</span></span>
   `;
   container.appendChild(hud);
-  
+
   const clockEl = hud.querySelector('.track-clock');
   const statusEl = hud.querySelector('.track-status');
-  
+
   // SVG Wrap
   const svgWrap = document.createElement('div');
   svgWrap.className = 'track-svg-wrap';
-  
+
   // Create SVG element
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('class', 'track-svg');
   svg.setAttribute('viewBox', '0 0 800 370');
   svg.style.overflow = 'visible';
-  
+
   // Lanes
   const lanesG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   lanesG.setAttribute('class', 'track-lanes');
   lanesG.setAttribute('stroke', '#3a3542');
   lanesG.setAttribute('stroke-width', '1.2');
   lanesG.setAttribute('fill', 'none');
-  
+
   // Helper to build lane paths
   const getOvalPathD = (r) => {
     const top = CY - r;
@@ -393,7 +391,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     const Rt = CX + HS;
     return `M ${Rt} ${bot} A ${r} ${r} 0 0 0 ${Rt} ${top} L ${L} ${top} A ${r} ${r} 0 0 0 ${L} ${bot} Z`;
   };
-  
+
   // Draw lanes outward
   const laneRadii = [R, R + 10, R + 20, R + 30];
   laneRadii.forEach((r, idx) => {
@@ -403,7 +401,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     lanesG.appendChild(lanePath);
   });
   svg.appendChild(lanesG);
-  
+
   // Finish line line (at CX + HS = 530, across all lanes)
   const finishLine = document.createElementNS('http://www.w3.org/2000/svg', 'line');
   finishLine.setAttribute('x1', '530');
@@ -414,34 +412,37 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   finishLine.setAttribute('stroke-width', '1.5');
   finishLine.setAttribute('opacity', '0.6');
   svg.appendChild(finishLine);
-  
+
   // Hurdles group
   const hurdlesG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   hurdlesG.setAttribute('class', 'track-hurdles');
   svg.appendChild(hurdlesG);
-  
+
   // Split labels group
   const splitsG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   splitsG.setAttribute('class', 'track-splits');
-  splitsG.setAttribute('font-family', 'ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace');
+  splitsG.setAttribute(
+    'font-family',
+    'ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace',
+  );
   splitsG.setAttribute('font-size', '9');
   splitsG.setAttribute('fill', '#7f8ea3');
   svg.appendChild(splitsG);
-  
+
   // Place hurdles ticks & labels mathematically
   const L1 = Math.PI * R;
   const L2 = 2 * HS;
   const L3 = Math.PI * R;
   const L4 = 2 * HS;
   const L_lap = L1 + L2 + L3 + L4; // 1232.5132
-  
+
   const hurdleDists = [45, 80, 115, 150, 185, 220, 255, 290, 325, 360];
   const splitTextElements = [];
-  
+
   hurdleDists.forEach((d_meters, idx) => {
     const d_lap = (d_meters / 400) * L_lap;
     const pos = getLapPosition(d_lap);
-    
+
     // Draw tick line perpendicular
     const tick = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     tick.setAttribute('x1', (pos.x - 7 * pos.nx).toFixed(1));
@@ -452,7 +453,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     tick.setAttribute('stroke-width', '1.5');
     tick.setAttribute('opacity', '0.8');
     hurdlesG.appendChild(tick);
-    
+
     // Draw H1-H10 label
     const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     label.setAttribute('x', (pos.x + 16 * pos.nx).toFixed(1));
@@ -460,7 +461,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     label.setAttribute('text-anchor', 'middle');
     label.textContent = `H${idx + 1}`;
     splitsG.appendChild(label);
-    
+
     // Draw split value (hidden initially)
     const splitText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     splitText.setAttribute('x', (pos.x + 27 * pos.nx).toFixed(1));
@@ -473,21 +474,38 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     splitsG.appendChild(splitText);
     splitTextElements.push(splitText);
   });
-  
+
   // Worldline path
   const worldlinePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  const d_worldline = `M 400 -150 L 400 150 L 530 323.4 A 113.4 113.4 0 0 0 530 96.6 L 270 96.6 A 113.4 113.4 0 0 0 270 323.4 L 530 323.4 L 400 420 L 400 670`;
+  const entryPathD = 'M 400 -150 L 400 60 C 400 180 420 323.4 530 323.4';
+  const lapPathD =
+    'M 530 323.4 A 113.4 113.4 0 0 0 530 96.6 L 270 96.6 A 113.4 113.4 0 0 0 270 323.4 L 530 323.4';
+  const exitPathD = 'M 530 323.4 C 610 323.4 400 360 400 430 L 400 670';
+  const d_worldline = `${entryPathD} ${lapPathD} ${exitPathD}`;
   worldlinePath.setAttribute('d', d_worldline);
   worldlinePath.setAttribute('fill', 'none');
   worldlinePath.setAttribute('stroke', '#f2ede6');
-  worldlinePath.setAttribute('stroke-width', '2.8');
+  worldlinePath.setAttribute('stroke-width', '2.2');
   worldlinePath.setAttribute('stroke-linecap', 'round');
-  
-  // Total length from top variables
-  worldlinePath.style.strokeDasharray = L_total.toFixed(2);
-  worldlinePath.style.strokeDashoffset = L_total.toFixed(2);
+
   svg.appendChild(worldlinePath);
-  
+
+  const measurePath = (pathD) => {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', pathD);
+    path.setAttribute('visibility', 'hidden');
+    svg.appendChild(path);
+    const length = path.getTotalLength();
+    path.remove();
+    return length;
+  };
+  const renderedEntryLength = measurePath(entryPathD);
+  const renderedLapLength = measurePath(lapPathD);
+  const renderedExitLength = measurePath(exitPathD);
+  const renderedTotalLength = renderedEntryLength + renderedLapLength + renderedExitLength;
+  worldlinePath.style.strokeDasharray = renderedTotalLength.toFixed(2);
+  worldlinePath.style.strokeDashoffset = renderedTotalLength.toFixed(2);
+
   // Runner dot
   const runner = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
   runner.setAttribute('r', '4.5');
@@ -496,10 +514,10 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   runner.setAttribute('cx', '400');
   runner.setAttribute('cy', '-150');
   svg.appendChild(runner);
-  
+
   svgWrap.appendChild(svg);
   container.appendChild(svgWrap);
-  
+
   // Analysis Panel (fades in at finish)
   const analysis = document.createElement('div');
   analysis.className = 'track-analysis';
@@ -542,37 +560,37 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     </div>
   `;
   container.appendChild(analysis);
-  
+
   // Populates Chart
   const chartTicks = analysis.querySelector('.track-chart-axis-ticks');
   const chartPath = analysis.querySelector('.track-chart-path');
   const chartDots = analysis.querySelector('.track-chart-dots');
-  
+
   const minV = Math.min(...INTERVAL_VELOCITIES) - 0.16; // 6.608
   const maxV = Math.max(...INTERVAL_VELOCITIES) + 0.16; // 8.697
-  
+
   const xForD = (d) => 24 + (d / 400) * 272;
   const yForV = (v) => 60 - ((v - minV) / (maxV - minV)) * 50;
-  
+
   // Stepped path calculation
   let chartD = '';
   INTERVAL_VELOCITIES.forEach((v, idx) => {
     const xStart = xForD(TRACK_POSITIONS[idx]);
     const xEnd = xForD(TRACK_POSITIONS[idx + 1]);
     const yVal = yForV(v);
-    
+
     if (idx === 0) {
       chartD += `M ${xStart.toFixed(1)} ${yVal.toFixed(1)}`;
     }
     chartD += ` H ${xEnd.toFixed(1)}`;
-    
+
     if (idx < INTERVAL_VELOCITIES.length - 1) {
       const yNext = yForV(INTERVAL_VELOCITIES[idx + 1]);
       chartD += ` V ${yNext.toFixed(1)}`;
     }
   });
   chartPath.setAttribute('d', chartD);
-  
+
   // Midpoint dots and ticks
   TRACK_POSITIONS.forEach((pos, idx) => {
     // Add ticks on the chart's bottom axis
@@ -587,12 +605,12 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
       chartTicks.appendChild(tickLine);
     }
   });
-  
+
   INTERVAL_VELOCITIES.forEach((v, idx) => {
     const midD = (TRACK_POSITIONS[idx] + TRACK_POSITIONS[idx + 1]) / 2;
     const xVal = xForD(midD);
     const yVal = yForV(v);
-    
+
     const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
     dot.setAttribute('cx', xVal.toFixed(1));
     dot.setAttribute('cy', yVal.toFixed(1));
@@ -602,7 +620,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     dot.setAttribute('stroke-width', '1.2');
     chartDots.appendChild(dot);
   });
-  
+
   rootEl.appendChild(container);
   rootEl.appendChild(trunkIn);
   rootEl.appendChild(trunkOut);
@@ -610,14 +628,9 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   let currentTrailingEdge = 0;
   let currentExitAlpha = 0;
 
-  // The trunk bridges the scene-root's true edge to wherever the SVG's own
-  // drawn content CURRENTLY starts - not a fixed point. As the entry
-  // retracts, the visibly-drawn top of the path recedes away from the fixed
-  // (400,-150) anchor toward the oval, so the bridge must grow to keep
-  // reaching it; once that receding point has moved far enough to fall
-  // inside the SVG's own visible area (past the flex-layout gap the trunk
-  // exists to cover), the computed gap naturally clamps to zero and the
-  // trunk disappears on its own, with no separate alpha/scale needed.
+  // Bridge the scene-root edge to the SVG's canonical center entry. The
+  // lead-in remains part of the path for the whole lap, so this endpoint
+  // never drifts sideways away from the center trunk.
   function updateTrunks() {
     const rootRect = rootEl.getBoundingClientRect();
     const point = svg.createSVGPoint();
@@ -654,7 +667,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
 
   function onProgress(p) {
     p = Math.min(1, Math.max(0, p));
-    
+
     // Map p to strokeDashoffset. The entry segment grows as you scroll into
     // it, off a small floor rather than literal zero: the chapter boundary
     // is a hard cut (sticky positioning swaps content instantly, no blended
@@ -666,52 +679,40 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     // even on a fast scroll.
     const ENTRY_FLOOR = 0.04;
     const EXIT_SETTLE_FRAC = 0.75;
-    const RETRACT_END = P_ENTRY_END + 0.3 * (P_LAP_END - P_ENTRY_END);
-    let p_mapped = 0;
-    let entryEased = 0;
+    let leadingEdge = 0;
+    let runnerDistance = 0;
     let exitMapped = 0;
     if (p <= P_ENTRY_END) {
       const entryRaw = p / P_ENTRY_END;
-      entryEased = Math.max(ENTRY_FLOOR, entryRaw * entryRaw * (3 - 2 * entryRaw));
-      p_mapped = entryEased * (L_entry / L_total);
+      const entryEased = Math.max(ENTRY_FLOOR, entryRaw * entryRaw * (3 - 2 * entryRaw));
+      leadingEdge = entryEased * renderedEntryLength;
+      runnerDistance = entryRaw * renderedEntryLength;
     } else if (p <= P_LAP_END) {
-      entryEased = 1;
-      p_mapped = (L_entry / L_total) + ((p - P_ENTRY_END) / (P_LAP_END - P_ENTRY_END)) * (L_lap / L_total);
+      const lapProgress = (p - P_ENTRY_END) / (P_LAP_END - P_ENTRY_END);
+      leadingEdge = renderedEntryLength + lapProgress * renderedLapLength;
+      runnerDistance = leadingEdge;
     } else {
-      entryEased = 1;
       const exitRaw = (p - P_LAP_END) / (1 - P_LAP_END);
       exitMapped = Math.min(1, exitRaw / EXIT_SETTLE_FRAC);
-      p_mapped = ((L_entry + L_lap) / L_total) + exitMapped * (L_exit / L_total);
+      leadingEdge = renderedEntryLength + renderedLapLength + exitMapped * renderedExitLength;
+      runnerDistance = renderedEntryLength + renderedLapLength + exitRaw * renderedExitLength;
     }
 
-    // The entry lead-in closes on itself once the race starts, retracting
-    // toward the oval rather than staying a permanent fixture through the
-    // whole lap - only the oval trace (and the runner) remain mid-race.
-    let trailingEdge = 0;
-    let retractEased = 0;
-    if (p > P_ENTRY_END) {
-      const retractRaw = (p - P_ENTRY_END) / (RETRACT_END - P_ENTRY_END);
-      const retractFrac = Math.min(1, Math.max(0, retractRaw));
-      retractEased = retractFrac * retractFrac * (3 - 2 * retractFrac);
-      trailingEdge = retractEased * L_entry;
-    }
-
-    // The entry trunk's reach is derived live from trailingEdge inside
-    // updateTrunks() (see its definition). The exit trunk still uses a
-    // simple alpha scale since the exit segment doesn't retract - it only
-    // ever grows in once the exit starts revealing.
+    // Keep the entry lead-in visible. Retracting it moved the SVG endpoint
+    // to the right side of the oval while the HTML trunk remained centered,
+    // visibly splitting the supposedly invariant worldline.
+    const trailingEdge = 0;
     currentTrailingEdge = trailingEdge;
     currentExitAlpha = exitMapped;
 
-    const leadingEdge = p_mapped * L_total;
     const visibleLen = Math.max(0, leadingEdge - trailingEdge);
     // The gap must safely exceed the path's real rendered length so the dash
     // pattern never wraps around and shows a second, stray fragment near the
     // end of the path (the arc segments' length is a JS approximation, not
     // exact, so this needs real margin, not just a few extra units).
-    worldlinePath.style.strokeDasharray = `${visibleLen.toFixed(2)} ${(L_total * 3).toFixed(2)}`;
+    worldlinePath.style.strokeDasharray = `${visibleLen.toFixed(2)} ${(renderedTotalLength * 3).toFixed(2)}`;
     worldlinePath.style.strokeDashoffset = (-trailingEdge).toFixed(2);
-    
+
     // 3D Perspective Tilt during entry
     if (!reducedMotion) {
       let tilt = 0;
@@ -730,15 +731,16 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
 
     // Get state
     const state = getTrackState(p);
-    
+    const runnerPoint = worldlinePath.getPointAtLength(runnerDistance);
+
     // Update runner dot
-    runner.setAttribute('cx', state.x.toFixed(1));
-    runner.setAttribute('cy', state.y.toFixed(1));
-    
+    runner.setAttribute('cx', runnerPoint.x.toFixed(1));
+    runner.setAttribute('cy', runnerPoint.y.toFixed(1));
+
     // Update clock and status
     clockEl.textContent = state.time.toFixed(2);
     statusEl.textContent = state.statusText;
-    
+
     // Update hurdle split visibility
     const hurdles = [45, 80, 115, 150, 185, 220, 255, 290, 325, 360];
     hurdles.forEach((dist, idx) => {
@@ -748,7 +750,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
         splitText.setAttribute('opacity', opacity.toFixed(2));
       }
     });
-    
+
     // Update post-race analysis section opacity
     if (p >= 0.95) {
       const fade = (p - 0.95) / 0.05;
@@ -759,15 +761,15 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
       analysis.style.visibility = 'hidden';
     }
   }
-  
+
   // Set initial state
   onProgress(0);
-  
+
   return {
     onProgress(p) {
       onProgress(p);
     },
-    onParallax(scrollPx) {
+    onParallax(_scrollPx) {
       // no-op for interface parity
     },
     onEnter() {
@@ -783,6 +785,6 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
         styleEl.parentNode.removeChild(styleEl);
       }
       rootEl.innerHTML = '';
-    }
+    },
   };
 }

@@ -35,6 +35,10 @@ export function createScrollRuntime({ reducedMotion = false } = {}) {
   let lastScrollTime = performance.now();
   let lenis = null;
 
+  const markScrolling = () => {
+    lastScrollTime = performance.now();
+  };
+
   if (!reducedMotion) {
     lenis = new Lenis({
       lerp: 0.08,
@@ -43,18 +47,10 @@ export function createScrollRuntime({ reducedMotion = false } = {}) {
       wheelMultiplier: 0.9,
     });
 
-    lenis.on('scroll', () => {
-      lastScrollTime = performance.now();
-    });
+    lenis.on('scroll', markScrolling);
   }
 
-  window.addEventListener(
-    'scroll',
-    () => {
-      lastScrollTime = performance.now();
-    },
-    { passive: true },
-  );
+  window.addEventListener('scroll', markScrolling, { passive: true });
 
   function measureScrubs() {
     const map = new Map();
@@ -68,7 +64,10 @@ export function createScrollRuntime({ reducedMotion = false } = {}) {
         const start = rect.top + window.scrollY;
         const range = Math.max(1, record.element.offsetHeight - window.innerHeight);
         record.rawProgress = clamp01((window.scrollY - start) / range);
-        record.progress += (record.rawProgress - record.progress) * 0.1;
+        // Lenis already produces a smooth, frame-by-frame scroll position.
+        // Easing the scrub value again made every drawing trail the section
+        // boundary and created visible catches after quick wheel gestures.
+        record.progress = record.rawProgress;
       }
 
       record.element.style.setProperty('--scrub-progress', record.progress.toFixed(4));
@@ -117,7 +116,7 @@ export function createScrollRuntime({ reducedMotion = false } = {}) {
     }
   }
 
-  document.addEventListener('visibilitychange', () => {
+  const handleVisibilityChange = () => {
     if (document.hidden && frameId) {
       window.cancelAnimationFrame(frameId);
       frameId = 0;
@@ -125,7 +124,9 @@ export function createScrollRuntime({ reducedMotion = false } = {}) {
     }
 
     start();
-  });
+  };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
 
   return {
     onUpdate(callback) {
@@ -144,6 +145,8 @@ export function createScrollRuntime({ reducedMotion = false } = {}) {
       if (lenis) {
         lenis.destroy();
       }
+      window.removeEventListener('scroll', markScrolling);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       subscribers.clear();
     },
     getSnapshot() {

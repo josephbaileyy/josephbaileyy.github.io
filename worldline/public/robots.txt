@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://josephbaileyy.github.io/sitemap.xml

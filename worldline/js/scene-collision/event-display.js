@@ -135,7 +135,10 @@ const MAX_TANGENT_ANGLE_FROM_DOWN = (70 * Math.PI) / 180;
 
 function clampTangentToForwardCone(tangent) {
   const theta = Math.atan2(tangent.x, -tangent.y);
-  const clamped = Math.max(-MAX_TANGENT_ANGLE_FROM_DOWN, Math.min(MAX_TANGENT_ANGLE_FROM_DOWN, theta));
+  const clamped = Math.max(
+    -MAX_TANGENT_ANGLE_FROM_DOWN,
+    Math.min(MAX_TANGENT_ANGLE_FROM_DOWN, theta),
+  );
   return new THREE.Vector2(Math.sin(clamped), -Math.cos(clamped));
 }
 
@@ -160,7 +163,14 @@ function makeSpriteTexture() {
   canvas.width = size;
   canvas.height = size;
   const context = canvas.getContext('2d');
-  const gradient = context.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  const gradient = context.createRadialGradient(
+    size / 2,
+    size / 2,
+    0,
+    size / 2,
+    size / 2,
+    size / 2,
+  );
   gradient.addColorStop(0, 'rgba(255, 255, 255, 1)');
   gradient.addColorStop(0.22, 'rgba(255, 255, 255, 0.86)');
   gradient.addColorStop(0.55, 'rgba(255, 255, 255, 0.22)');
@@ -257,29 +267,32 @@ function makeWorldlineMesh(width, height) {
         float s = position.y * E;
         
         float originX = mix(uOriginNDC.x, 0.0, uOriginBlend);
-        float originY = mix(uOriginNDC.y, 0.16, uOriginBlend);
+        float originY = mix(uOriginNDC.y, 1.08, uOriginBlend);
         vec2 origin = vec2(originX, originY);
         
         vec2 tangent = normalize(mix(uOriginTangent, vec2(0.0, -1.0), uOriginBlend));
         
-        float t_c = 0.15;
-        float H = 0.22;
-        
-        vec2 B1 = origin + tangent * H;
-        vec2 B2 = B1 + vec2(0.0, -1.0) * H;
-        
+        float curveEnd = 0.48;
         vec2 C;
         vec2 C_prime;
-        
-        if (s <= t_c) {
-          float u = s / max(0.0001, t_c);
+
+        if (s <= curveEnd) {
+          float u = s / max(0.0001, curveEnd);
           float om_u = 1.0 - u;
-          C = om_u * om_u * origin + 2.0 * om_u * u * B1 + u * u * B2;
-          C_prime = 2.0 * om_u * (B1 - origin) + 2.0 * u * (B2 - B1);
+          vec2 P0 = origin;
+          vec2 P1 = origin + tangent * 0.24;
+          vec2 P3 = vec2(0.0, -0.42);
+          vec2 P2 = vec2(0.0, -0.20);
+          C = om_u * om_u * om_u * P0
+            + 3.0 * om_u * om_u * u * P1
+            + 3.0 * om_u * u * u * P2
+            + u * u * u * P3;
+          C_prime = 3.0 * om_u * om_u * (P1 - P0)
+            + 6.0 * om_u * u * (P2 - P1)
+            + 3.0 * u * u * (P3 - P2);
         } else {
-          float L_straight = B2.y - (-1.48);
-          float u = (s - t_c) / max(0.0001, 1.0 - t_c);
-          C = vec2(B2.x, B2.y - L_straight * u);
+          float u = (s - curveEnd) / max(0.0001, 1.0 - curveEnd);
+          C = vec2(0.0, mix(-0.42, -1.08, u));
           C_prime = vec2(0.0, -1.0);
         }
         
@@ -292,7 +305,7 @@ function makeWorldlineMesh(width, height) {
         }
         
         vec2 normalScreen = vec2(-dirScreen.y, dirScreen.x);
-        float halfWidth = 0.55;
+        float halfWidth = 1.0;
         vec2 offsetNDC = normalScreen * (halfWidth * 2.0) / max(vec2(1.0), uResolution);
         
         vec2 finalPos = C + position.x * offsetNDC;
@@ -462,8 +475,19 @@ function addNoiseHits(buffers, count) {
     const radiusValue = randomBetween(0.86, 0.93);
     const z = randomBetween(-1.45, 1.45);
     const color = Math.random() > 0.86 ? AMBER : CYAN;
-    const point = new THREE.Vector3(Math.cos(angle) * radiusValue, Math.sin(angle) * radiusValue, z);
-    addHit(buffers, point, color, randomBetween(6, 15), randomBetween(0.16, 0.38), randomBetween(0.32, 0.96));
+    const point = new THREE.Vector3(
+      Math.cos(angle) * radiusValue,
+      Math.sin(angle) * radiusValue,
+      z,
+    );
+    addHit(
+      buffers,
+      point,
+      color,
+      randomBetween(6, 15),
+      randomBetween(0.16, 0.38),
+      randomBetween(0.32, 0.96),
+    );
   }
 }
 
@@ -509,12 +533,7 @@ function makeOpenDataTrackSpec(track, type, isMuon = false) {
 function addTrackToBuffers(
   buffers,
   spec,
-  {
-    delayMax = 0.22,
-    samplesMin = 64,
-    samplesMax = 96,
-    survivor = false,
-  } = {},
+  { delayMax = 0.22, samplesMin = 64, samplesMax = 96, survivor = false } = {},
 ) {
   const isMuon = Boolean(spec.isMuon) || spec.type === 'amber';
   const color = colorForType(spec.type);
@@ -562,7 +581,9 @@ function selectTracksForDisplay(tracks) {
     .sort((a, b) => numberOr(b.track.pt) - numberOr(a.track.pt));
 
   const selected =
-    highPt.length >= MAX_REAL_TRACKS ? highPt : highPt.concat(remainder.slice(0, MAX_REAL_TRACKS - highPt.length));
+    highPt.length >= MAX_REAL_TRACKS
+      ? highPt
+      : highPt.concat(remainder.slice(0, MAX_REAL_TRACKS - highPt.length));
 
   return selected.sort((a, b) => a.index - b.index).map(({ track }) => track);
 }
@@ -572,7 +593,9 @@ function selectSurvivorIndex(specs) {
     return -1;
   }
 
-  const sortedPt = specs.map((track) => Math.max(0.05, numberOr(track.pt ?? track.pT, 0.05))).sort((a, b) => a - b);
+  const sortedPt = specs
+    .map((track) => Math.max(0.05, numberOr(track.pt ?? track.pT, 0.05)))
+    .sort((a, b) => a - b);
   const medianPt = sortedPt[Math.floor(sortedPt.length / 2)] || 1;
   const candidates = specs
     .map((track, index) => ({
@@ -581,11 +604,13 @@ function selectSurvivorIndex(specs) {
       pt: Math.max(0.05, numberOr(track.pt ?? track.pT, 0.05)),
     }))
     .filter(({ eta, pt }) => eta < 1.15 && pt > 0.45);
-  const pool = candidates.length ? candidates : specs.map((track, index) => ({
-    index,
-    eta: Math.abs(numberOr(track.eta)),
-    pt: Math.max(0.05, numberOr(track.pt ?? track.pT, 0.05)),
-  }));
+  const pool = candidates.length
+    ? candidates
+    : specs.map((track, index) => ({
+        index,
+        eta: Math.abs(numberOr(track.eta)),
+        pt: Math.max(0.05, numberOr(track.pt ?? track.pT, 0.05)),
+      }));
 
   pool.sort((a, b) => {
     const scoreA = Math.abs(Math.log(a.pt / medianPt)) + a.eta * 0.72;
@@ -604,7 +629,12 @@ function pointFromEtaPhiAtRadius(eta, phi, radius, halfLength) {
 function addCaloHits(buffers, caloHits) {
   caloHits.forEach((hit) => {
     const et = Math.max(0.05, numberOr(hit.et, 0.05));
-    const point = pointFromEtaPhiAtRadius(numberOr(hit.eta), numberOr(hit.phi), CALO_RADIUS, CALO_HALF_LENGTH);
+    const point = pointFromEtaPhiAtRadius(
+      numberOr(hit.eta),
+      numberOr(hit.phi),
+      CALO_RADIUS,
+      CALO_HALF_LENGTH,
+    );
     const color = String(hit.system).toLowerCase() === 'hcal' ? AMBER : MAGENTA;
     const size = 10 + Math.min(40, Math.sqrt(et) * 12);
     const alpha = 0.34 + clamp01(et / 8) * 0.46;
@@ -687,17 +717,31 @@ function buildRealEventGeometry(eventRecord) {
 }
 
 function makeEventSet({ trackCount, sprite, pixelRatio, eventNumber, eventRecord }) {
-  const { buffers, stats } = eventRecord ? buildRealEventGeometry(eventRecord) : buildSyntheticEventGeometry(trackCount);
+  const { buffers, stats } = eventRecord
+    ? buildRealEventGeometry(eventRecord)
+    : buildSyntheticEventGeometry(trackCount);
   const group = new THREE.Group();
 
   const trackGeometry = new THREE.BufferGeometry();
-  trackGeometry.setAttribute('position', new THREE.Float32BufferAttribute(buffers.trackPositions, 3));
+  trackGeometry.setAttribute(
+    'position',
+    new THREE.Float32BufferAttribute(buffers.trackPositions, 3),
+  );
   trackGeometry.setAttribute('aColor', new THREE.Float32BufferAttribute(buffers.trackColors, 3));
   trackGeometry.setAttribute('aAlpha', new THREE.Float32BufferAttribute(buffers.trackAlphas, 1));
-  trackGeometry.setAttribute('aTrackProgress', new THREE.Float32BufferAttribute(buffers.trackProgress, 1));
+  trackGeometry.setAttribute(
+    'aTrackProgress',
+    new THREE.Float32BufferAttribute(buffers.trackProgress, 1),
+  );
   trackGeometry.setAttribute('aDelay', new THREE.Float32BufferAttribute(buffers.trackDelays, 1));
-  trackGeometry.setAttribute('aSurvivor', new THREE.Float32BufferAttribute(buffers.trackSurvivors, 1));
-  trackGeometry.setAttribute('aLineProgress', new THREE.Float32BufferAttribute(buffers.trackLineProgress, 1));
+  trackGeometry.setAttribute(
+    'aSurvivor',
+    new THREE.Float32BufferAttribute(buffers.trackSurvivors, 1),
+  );
+  trackGeometry.setAttribute(
+    'aLineProgress',
+    new THREE.Float32BufferAttribute(buffers.trackLineProgress, 1),
+  );
 
   const trackMaterial = makeTrackMaterial();
   const tracks = new THREE.LineSegments(trackGeometry, trackMaterial);
@@ -735,12 +779,12 @@ function makeEventSet({ trackCount, sprite, pixelRatio, eventNumber, eventRecord
   };
 }
 
-export function createEventDisplay({ canvas, hud, reducedMotion }) {
-  return new EventDisplay({ canvas, hud, reducedMotion });
+export function createEventDisplay({ canvas, context, hud, reducedMotion }) {
+  return new EventDisplay({ canvas, context, hud, reducedMotion });
 }
 
 class EventDisplay {
-  constructor({ canvas, hud, reducedMotion }) {
+  constructor({ canvas, context, hud, reducedMotion }) {
     this.canvas = canvas;
     this.hud = hud;
     this.reducedMotion = reducedMotion;
@@ -762,9 +806,9 @@ class EventDisplay {
 
     this.renderer = new THREE.WebGLRenderer({
       canvas,
+      context,
       alpha: false,
       antialias: true,
-      preserveDrawingBuffer: true,
       powerPreference: 'high-performance',
     });
     this.renderer.setClearColor(BG, 1);
@@ -833,7 +877,10 @@ class EventDisplay {
     }
 
     if (this.realEventOrder.length > 1 && this.realEventOrder[0] === this.lastRealEventIndex) {
-      [this.realEventOrder[0], this.realEventOrder[1]] = [this.realEventOrder[1], this.realEventOrder[0]];
+      [this.realEventOrder[0], this.realEventOrder[1]] = [
+        this.realEventOrder[1],
+        this.realEventOrder[0],
+      ];
     }
 
     this.realEventCursor = 0;
@@ -929,7 +976,7 @@ class EventDisplay {
   }
 
   setCamera(progress, time, idle) {
-    const t = smootherStep(Math.min(0.42, progress / 0.45 * 0.42));
+    const t = smootherStep(Math.min(0.42, (progress / 0.45) * 0.42));
     const position = this.cameraCurve.getPoint(t);
     const lookAt = this.lookCurve.getPoint(t);
 
@@ -974,15 +1021,26 @@ class EventDisplay {
       if (survivorProjection) {
         const { endpointNdc, endpointTangent } = survivorProjection;
         this.worldlineMesh.material.uniforms.uOriginNDC.value.set(endpointNdc.x, endpointNdc.y);
-        this.worldlineMesh.material.uniforms.uOriginTangent.value.set(endpointTangent.x, endpointTangent.y);
-        this.worldlineMesh.material.uniforms.uOriginBlend.value = smootherStep(Math.max(0, (collapse - 0.94) / 0.055));
+        this.worldlineMesh.material.uniforms.uOriginTangent.value.set(
+          endpointTangent.x,
+          endpointTangent.y,
+        );
+        // Once the survivor fades, let its endpoint become the canonical
+        // top-center chapter entry. The cubic below already handles the
+        // earlier sideways convergence, so this handoff can stay coordinated
+        // with the track fade instead of snapping at the final frame.
+        this.worldlineMesh.material.uniforms.uOriginBlend.value = smootherStep(
+          (collapse - 0.8) / 0.16,
+        );
       } else {
         this.worldlineMesh.material.uniforms.uOriginNDC.value.copy(SURVIVOR_PIN_NDC);
         this.worldlineMesh.material.uniforms.uOriginTangent.value.set(0, -1);
         this.worldlineMesh.material.uniforms.uOriginBlend.value = 1.0;
       }
       this.worldlineMesh.material.uniforms.uExtend.value = smootherStep(collapse);
-      this.worldlineMesh.material.uniforms.uOpacity.value = smootherStep(Math.max(0, (collapse - 0.08) / 0.72));
+      this.worldlineMesh.material.uniforms.uOpacity.value = smootherStep(
+        Math.max(0, (collapse - 0.08) / 0.72),
+      );
     }
   }
 
@@ -1030,7 +1088,8 @@ class EventDisplay {
 
       if (!insideHandoffFrame) {
         if (!endpointNdc) {
-          endpointNdc = prevNdc || this.projectSurvivorPoint(points[Math.max(0, index - 1)], offset);
+          endpointNdc =
+            prevNdc || this.projectSurvivorPoint(points[Math.max(0, index - 1)], offset);
           clipProgress = Math.max(0, index - 1) / Math.max(1, points.length - 1);
         }
         break;

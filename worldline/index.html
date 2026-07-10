@@ -7,7 +7,20 @@
       name="description"
       content="Joseph Bailey's Worldline site: physics, computing, athletics, music, and contact."
     />
+    <meta name="theme-color" content="#05060a" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Joseph Bailey - Worldline" />
+    <meta
+      property="og:description"
+      content="Physics, computing, athletics, and music along one continuous worldline."
+    />
+    <meta property="og:url" content="https://josephbaileyy.github.io/" />
+    <link rel="canonical" href="https://josephbaileyy.github.io/" />
     <title>Joseph Bailey - Worldline</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2305060a'/%3E%3Cpath d='M32 8v48M32 32h18' stroke='%23e8ecf1' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='32' r='4' fill='%23ffb547'/%3E%3C/svg%3E"
+    />
     <link rel="stylesheet" href="./styles/tokens.css" />
   </head>
   <body>
@@ -23,7 +36,7 @@
       </div>
     </aside>
 
-    <aside class="collision-hud" aria-live="polite" aria-label="Current CMS event summary">
+    <aside class="collision-hud" aria-live="off" aria-label="Current CMS event summary">
       <span id="collision-event-hud-readout">RUN ---- / EVT ---- / N_TRK 0 / SUM_PT 0 GEV</span>
     </aside>
 
@@ -40,13 +53,16 @@
           <div class="copy-block">
             <p class="eyebrow">CH 01 / COLLISION</p>
             <h1 id="hero-title">Joseph Bailey</h1>
-            <p class="hero-tagline">Physics &amp; CS at Stanford - machine learning for particle physics.</p>
+            <p class="hero-tagline">
+              Physics &amp; CS at Stanford - machine learning for particle physics.
+            </p>
             <p class="scroll-cue" aria-hidden="true">Scroll</p>
           </div>
         </div>
 
         <div class="scrub-section" data-scrub="collision-handoff" data-scrub-vh="300">
           <div class="scrub-sticky">
+            <div class="handoff-spine" aria-hidden="true"></div>
             <div class="handoff-caption" aria-hidden="true">
               <p>CMS event display / collapse to worldline</p>
             </div>
@@ -93,7 +109,10 @@
           <div class="scene-copy scene-copy-right">
             <p class="chapter-index">CH 03 / TRACK</p>
             <h2 id="track-title">400 meters, ten barriers, one line.</h2>
-            <p>ACC Championships 2025 splits plotted as a lap, with the worldline entering at the finish straight.</p>
+            <p>
+              ACC Championships 2025 splits plotted as a lap, with the worldline entering at the
+              finish straight.
+            </p>
           </div>
         </div>
       </section>
@@ -164,15 +183,35 @@
             <div class="worldline-trunk worldline-trunk-contact"></div>
             <svg viewBox="0 0 1000 260" preserveAspectRatio="none">
               <defs>
-                <linearGradient id="contact-dim" gradientUnits="userSpaceOnUse" x1="500" y1="130" x2="640" y2="130">
+                <linearGradient
+                  id="contact-dim"
+                  gradientUnits="userSpaceOnUse"
+                  x1="500"
+                  y1="130"
+                  x2="640"
+                  y2="130"
+                >
                   <stop offset="70%" stop-color="#ffffff" />
                   <stop offset="100%" stop-color="rgba(255, 255, 255, 0.3)" />
                 </linearGradient>
-                <mask id="contact-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="1000" height="260">
-                  <polygon points="0,128 448,128 640,129.625 640,130.375 448,132 0,132" fill="url(#contact-dim)" />
+                <mask
+                  id="contact-mask"
+                  maskUnits="userSpaceOnUse"
+                  x="0"
+                  y="0"
+                  width="1000"
+                  height="260"
+                >
+                  <polygon
+                    points="0,128 448,128 640,129.625 640,130.375 448,132 0,132"
+                    fill="url(#contact-dim)"
+                  />
                 </mask>
               </defs>
-              <path class="contact-line" d="M 500 130 Q 570 130 640 130"></path>
+              <path
+                class="contact-line"
+                d="M 500 0 L 500 70 C 500 108 532 130 572 130 L 640 130"
+              ></path>
               <circle class="contact-point" cx="640" cy="130" r="4"></circle>
             </svg>
           </div>
@@ -181,7 +220,9 @@
             <h2 id="contact-title">Contact</h2>
             <p class="contact-links">
               <a href="mailto:jrbailey555@gmail.com">jrbailey555@gmail.com</a>
-              <a href="https://github.com/josephbaileyy" target="_blank" rel="noopener noreferrer">GitHub</a>
+              <a href="https://github.com/josephbaileyy" target="_blank" rel="noopener noreferrer"
+                >GitHub</a
+              >
               <a
                 href="https://www.tfrrs.org/athletes/8731395/Stanford/Joseph_Bailey.html"
                 target="_blank"
@@ -191,7 +232,12 @@
             </p>
             <p class="data-caption">
               event data
-              <a href="https://opendata.cern.ch/record/303" target="_blank" rel="noopener noreferrer">CMS Open Data (CC0)</a>
+              <a
+                href="https://opendata.cern.ch/record/303"
+                target="_blank"
+                rel="noopener noreferrer"
+                >CMS Open Data (CC0)</a
+              >
               + splits ACC Championships 2025
             </p>
           </div>

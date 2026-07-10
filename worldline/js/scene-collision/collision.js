@@ -1,14 +1,14 @@
-import { createEventDisplay } from './event-display.js';
-
 export function createCollisionScene({ canvas, hud, reducedMotion = false }) {
   let display = null;
   let mounted = false;
   let active = false;
+  let generation = 0;
+  let loadPromise = null;
   // Reduced-motion never mounts the WebGL scene at all - that's permanent.
   // "collapsed" is the scroll-driven handoff-into-worldline state, which is
   // reversible: scrolling back up above the handoff threshold should bring
   // the event display back, not leave it retired forever.
-  const permanentlyDisabled = reducedMotion;
+  let permanentlyDisabled = reducedMotion;
   let collapsed = reducedMotion;
   let lastRenderCount = 0;
 
@@ -32,19 +32,81 @@ export function createCollisionScene({ canvas, hud, reducedMotion = false }) {
     setRetiredDomState();
   }
 
+  function disableRenderer() {
+    permanentlyDisabled = true;
+    collapsed = true;
+    active = false;
+    canvas?.classList.add('is-unavailable');
+    document.documentElement.classList.add('is-webgl-unavailable');
+    setRetiredDomState();
+  }
+
+  function createWebGLContext() {
+    if (!canvas) {
+      return null;
+    }
+
+    const attributes = {
+      alpha: false,
+      antialias: true,
+      powerPreference: 'high-performance',
+    };
+
+    try {
+      return canvas.getContext('webgl2', attributes) || canvas.getContext('webgl', attributes);
+    } catch {
+      return null;
+    }
+  }
+
+  function ensureDisplay() {
+    if (display || loadPromise || permanentlyDisabled || !mounted) {
+      return;
+    }
+
+    const context = createWebGLContext();
+    if (!context) {
+      disableRenderer();
+      return;
+    }
+
+    const loadGeneration = generation;
+    loadPromise = import('./event-display.js')
+      .then(({ createEventDisplay }) => {
+        if (generation !== loadGeneration || !mounted || permanentlyDisabled) {
+          return;
+        }
+
+        display = createEventDisplay({ canvas, context, hud, reducedMotion });
+        loadPromise = null;
+
+        if (active) {
+          display.resume();
+        } else {
+          display.pause();
+        }
+      })
+      .catch(() => {
+        loadPromise = null;
+        disableRenderer();
+        console.warn('Collision scene unavailable; continuing with the static worldline.');
+      });
+  }
+
   return {
     mount() {
       if (mounted || permanentlyDisabled) {
         return;
       }
 
-      display = createEventDisplay({ canvas, hud, reducedMotion });
       mounted = true;
       active = !collapsed;
+      ensureDisplay();
     },
     resume() {
       active = !collapsed && mounted;
       display?.resume();
+      ensureDisplay();
     },
     pause() {
       active = false;
@@ -93,12 +155,13 @@ export function createCollisionScene({ canvas, hud, reducedMotion = false }) {
       if (mounted) {
         display?.resume();
         active = true;
+        ensureDisplay();
       } else {
         // Shouldn't normally happen (mount() runs on initial visibility), but
         // guard in case the chapter was never mounted for some reason.
-        display = createEventDisplay({ canvas, hud, reducedMotion });
         mounted = true;
         active = true;
+        ensureDisplay();
       }
     },
     // Full teardown, only for page-lifecycle destroy (not the reversible
@@ -108,9 +171,11 @@ export function createCollisionScene({ canvas, hud, reducedMotion = false }) {
         return;
       }
 
+      generation += 1;
       lastRenderCount = display?.renderCount || lastRenderCount;
       display?.unmount();
       display = null;
+      loadPromise = null;
       mounted = false;
       active = false;
       collapsed = true;

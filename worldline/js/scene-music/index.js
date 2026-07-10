@@ -162,15 +162,35 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
     }
 
     @media (max-width: 768px) {
+      .agy-music-scene {
+        padding: 2rem 1.2rem 1.25rem;
+      }
+
       .agy-music-controls {
         flex-direction: column;
         align-items: flex-start;
-        gap: 1.25rem;
+        gap: 0.75rem;
+      }
+
+      .agy-music-controls-left {
+        width: 100%;
+        flex-wrap: wrap;
+        gap: 0.65rem;
+      }
+
+      .agy-music-play-btn {
+        width: 40px;
+        height: 40px;
+      }
+
+      .agy-music-speeds {
+        gap: 0.3rem;
       }
 
       .agy-music-caption {
-        font-size: 10px;
-        letter-spacing: 0.1em;
+        max-width: 100%;
+        font-size: 9px;
+        letter-spacing: 0.08em;
       }
     }
     .music-trunk {
@@ -235,13 +255,6 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
   rootEl.appendChild(trunkIn);
   rootEl.appendChild(trunkOut);
 
-  // Track the same grow/bend and exit fractions the canvas draws each
-  // frame, so the bridging trunk scales in sync rather than being a
-  // permanent fixture sitting there before the chapter is actually
-  // scrolled into.
-  let entryTrunkAlpha = reducedMotion ? 1 : 0;
-  let exitTrunkAlpha = reducedMotion ? 1 : 0;
-
   function updateTrunks() {
     const rootRect = rootEl.getBoundingClientRect();
     const canvasRect = canvas.getBoundingClientRect();
@@ -255,13 +268,11 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
 
     trunkIn.style.top = '0px';
     trunkIn.style.height = `${topGap.toFixed(1)}px`;
-    trunkIn.style.transformOrigin = 'bottom';
-    trunkIn.style.transform = `translateX(-50%) scaleY(${entryTrunkAlpha.toFixed(3)})`;
+    trunkIn.style.transform = 'translateX(-50%)';
 
     trunkOut.style.bottom = '0px';
     trunkOut.style.height = `${bottomGap.toFixed(1)}px`;
-    trunkOut.style.transformOrigin = 'top';
-    trunkOut.style.transform = `translateX(-50%) scaleY(${exitTrunkAlpha.toFixed(3)})`;
+    trunkOut.style.transform = 'translateX(-50%)';
   }
 
   // DOM references
@@ -304,7 +315,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
     if (isPlaying) {
       audio.pause();
     } else {
-      audio.play().catch(err => {
+      audio.play().catch((err) => {
         console.error('Audio play failed:', err);
       });
     }
@@ -390,7 +401,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
 
     try {
       return new URL(filename, url).href;
-    } catch (err) {
+    } catch {
       return String(url).replace(/[^/?#]+(?=([?#]|$))/, filename);
     }
   }
@@ -414,30 +425,86 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
   }
 
   // 5. Drawing & Animation
-  function drawCanonicalLine(x, y1, y2) {
-    if (Math.abs(y1 - y2) < 0.1) return;
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(x, y1);
-    ctx.lineTo(x, y2);
-    ctx.strokeStyle = '#e8ecf1';
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = 'rgba(232, 236, 241, 0.32)';
-    ctx.stroke();
-    ctx.restore();
+  function cubicPoint(a, b, c, d, t) {
+    const mt = 1 - t;
+    return {
+      x: mt ** 3 * a.x + 3 * mt ** 2 * t * b.x + 3 * mt * t ** 2 * c.x + t ** 3 * d.x,
+      y: mt ** 3 * a.y + 3 * mt ** 2 * t * b.y + 3 * mt * t ** 2 * c.y + t ** 3 * d.y,
+    };
   }
 
-  function drawCanonicalHorizontalLine(x1, x2, y) {
-    if (Math.abs(x1 - x2) < 0.1) return;
+  function musicDetourPoint(fraction, hitLineY) {
+    const cx = cssWidth / 2;
+    const edge = Math.max(24, cssWidth * 0.035);
+    const left = cx;
+    const rightEdge = cssWidth - edge;
+    const turnRadius = Math.min(64, cssWidth * 0.05, (cssHeight - hitLineY) * 0.35);
+    const horizontalEnd = rightEdge - turnRadius;
+
+    if (fraction <= 0.32) {
+      return cubicPoint(
+        { x: cx, y: 0 },
+        { x: cx, y: hitLineY * 0.4 },
+        { x: cx - cssWidth * 0.08, y: hitLineY },
+        { x: left, y: hitLineY },
+        fraction / 0.32,
+      );
+    }
+
+    if (fraction <= 0.68) {
+      const t = (fraction - 0.32) / 0.36;
+      return { x: left + (horizontalEnd - left) * t, y: hitLineY };
+    }
+
+    if (fraction <= 0.78) {
+      const t = (fraction - 0.68) / 0.1;
+      return cubicPoint(
+        { x: horizontalEnd, y: hitLineY },
+        { x: horizontalEnd + turnRadius * 0.62, y: hitLineY },
+        { x: rightEdge, y: hitLineY + turnRadius * 0.38 },
+        { x: rightEdge, y: hitLineY + turnRadius },
+        t,
+      );
+    }
+
+    const cornerY = hitLineY + turnRadius;
+    const remaining = cssHeight - cornerY;
+    const tail = Math.min(36, remaining * 0.45);
+    const tailStartY = cssHeight - tail;
+
+    if (fraction <= 0.95) {
+      return cubicPoint(
+        { x: rightEdge, y: cornerY },
+        { x: rightEdge, y: cornerY + remaining * 0.24 },
+        { x: cx, y: tailStartY - remaining * 0.28 },
+        { x: cx, y: tailStartY },
+        (fraction - 0.78) / 0.17,
+      );
+    }
+
+    const t = (fraction - 0.95) / 0.05;
+    return { x: cx, y: tailStartY + tail * t };
+  }
+
+  function drawMusicWorldline(hitLineY, bend) {
+    const cx = cssWidth / 2;
+    const steps = 180;
+
     ctx.save();
     ctx.beginPath();
-    ctx.moveTo(x1, y);
-    ctx.lineTo(x2, y);
+    for (let index = 0; index <= steps; index += 1) {
+      const fraction = index / steps;
+      const detour = musicDetourPoint(fraction, hitLineY);
+      const x = cx + (detour.x - cx) * bend;
+      const straightY = fraction * cssHeight;
+      const y = straightY + (detour.y - straightY) * bend;
+      if (index === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
     ctx.strokeStyle = '#e8ecf1';
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
     ctx.shadowBlur = 8;
     ctx.shadowColor = 'rgba(232, 236, 241, 0.32)';
     ctx.stroke();
@@ -450,15 +517,16 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
   }
 
   function pitchToX(pitch) {
-    const left = Math.max(24, cssWidth * 0.035);
-    const right = cssWidth - left;
+    const edge = Math.max(24, cssWidth * 0.035);
+    const left = cssWidth / 2 + Math.max(18, cssWidth * 0.02);
+    const right = cssWidth - edge;
     const span = Math.max(1, pitchMax - pitchMin);
     return left + ((pitch - pitchMin) / span) * (right - left);
   }
 
   function getLaneWidth() {
     const pitchCount = Math.max(1, pitchMax - pitchMin + 1);
-    return Math.max(3, Math.min(18, (cssWidth * 0.9) / pitchCount * 0.72));
+    return Math.max(3, Math.min(18, ((cssWidth * 0.42) / pitchCount) * 0.72));
   }
 
   function drawPitchGrid(hitLineY, alpha) {
@@ -520,7 +588,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
       const active = renderTime >= note.start && renderTime <= note.end;
       const justHit = renderTime >= note.start && renderTime <= note.start + flashWindow;
       const velocity = Math.max(0.2, note.velocity || 0.45);
-      const hue = 34 + (note.pitch - pitchMin) / Math.max(1, pitchMax - pitchMin) * 150;
+      const hue = 34 + ((note.pitch - pitchMin) / Math.max(1, pitchMax - pitchMin)) * 150;
       const saturation = active ? 86 : 58;
       const lightness = active ? 64 : 45 + velocity * 16;
       const alphaBase = active ? 0.95 : 0.34 + velocity * 0.36;
@@ -543,7 +611,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
       }
     }
 
-    const activeNotes = notes.filter(note => renderTime >= note.start && renderTime <= note.end);
+    const activeNotes = notes.filter((note) => renderTime >= note.start && renderTime <= note.end);
     if (activeNotes.length > 0) {
       ctx.save();
       ctx.globalCompositeOperation = 'lighter';
@@ -567,60 +635,21 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
 
     ctx.clearRect(0, 0, cssWidth, cssHeight);
 
-    const cx = cssWidth / 2;
     const hitLineY = Math.max(150, cssHeight * 0.78);
 
-    // entryGrow brings the vertical line in off a small floor (not literally
-    // 0) so a thin sliver stays connected to the previous chapter's exit
-    // point at the exact instant this chapter's sticky content appears - the
-    // chapter boundary is a hard cut (sticky positioning swaps content
-    // instantly), so p=0 is the frame right after the previous chapter
-    // showed its line reaching this same screen position; zero here reads
-    // as the line vanishing at the seam. entryBend is the separate "turns
-    // into the horizontal hit line" phase, which only starts once the
-    // grow-in has already finished.
-    const ENTRY_FLOOR = 0.04;
-    let entryGrow = 1;
-    let entryBend = 1;
-    let t_exit = 0;
-    if (!reducedMotion) {
-      // Grow in: p=0 to p=0.05
-      entryGrow = Math.max(ENTRY_FLOOR, smoothStep((currentProgress - 0) / 0.05));
-      // Bend into horizontal: p=0.10 to p=0.20
-      entryBend = smoothStep((currentProgress - 0.10) / 0.10);
-      // Exit: p=0.75 to p=0.85
-      t_exit = smoothStep((currentProgress - 0.75) / 0.10);
-    }
-
-    const horizMinX = cx - cx * entryBend * (1 - t_exit);
-    const horizMaxX = cx + (cssWidth - cx) * entryBend * (1 - t_exit);
-    const rollAlpha = reducedMotion ? 0.9 : Math.max(0, Math.min(1, entryBend * (1 - t_exit)));
-    const renderTime = reducedMotion && !isPlaying && currentTime <= 0.01 ? duration * 0.36 : currentTime;
+    // Morph one continuous top-to-bottom path into the piano roll and back.
+    // The old independent entry, horizontal, and exit segments visibly
+    // separated whenever the scroll moved faster than their staggered cues.
+    const bendIn = reducedMotion ? 1 : smoothStep((currentProgress - 0.06) / 0.14);
+    const bendOut = reducedMotion ? 0 : smoothStep((currentProgress - 0.72) / 0.16);
+    const bend = bendIn * (1 - bendOut);
+    const rollAlpha = reducedMotion ? 0.9 : bend;
+    const renderTime =
+      reducedMotion && !isPlaying && currentTime <= 0.01 ? duration * 0.36 : currentTime;
 
     drawPitchGrid(hitLineY, rollAlpha);
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.rect(horizMinX - 24, 0, Math.max(0, horizMaxX - horizMinX) + 48, cssHeight);
-    ctx.clip();
     drawFallingNotes(renderTime, hitLineY, rollAlpha);
-    ctx.restore();
-
-    drawCanonicalHorizontalLine(horizMinX, horizMaxX, hitLineY);
-
-    // Draw vertical entry/exit lines
-    if (reducedMotion) {
-      drawCanonicalLine(cx, 0, hitLineY);
-      drawCanonicalLine(cx, hitLineY, cssHeight);
-      entryTrunkAlpha = 1;
-      exitTrunkAlpha = 1;
-    } else {
-      const entryReach = entryGrow * (1 - entryBend);
-      entryTrunkAlpha = entryReach;
-      if (entryReach > 0.001) drawCanonicalLine(cx, hitLineY * (1 - entryReach), hitLineY);
-      if (t_exit > 0) drawCanonicalLine(cx, hitLineY, hitLineY + t_exit * (cssHeight - hitLineY));
-      exitTrunkAlpha = t_exit;
-    }
+    drawMusicWorldline(hitLineY, bend);
 
     updateTrunks();
   }
@@ -668,21 +697,21 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
 
   // 7. Load transcribed note data
   fetch(resolvedNotesUrl)
-    .then(res => {
+    .then((res) => {
       if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
       return res.json();
     })
-    .then(data => {
+    .then((data) => {
       notes = Array.isArray(data.notes) ? data.notes : [];
       duration = data.duration || 126.0;
       if (notes.length > 0) {
-        pitchMin = Math.min(...notes.map(note => note.pitch));
-        pitchMax = Math.max(...notes.map(note => note.pitch));
+        pitchMin = Math.min(...notes.map((note) => note.pitch));
+        pitchMax = Math.max(...notes.map((note) => note.pitch));
       }
       updateReadout();
       draw();
     })
-    .catch(err => {
+    .catch((err) => {
       console.error('Failed to load fugue note JSON data:', err);
     });
 
@@ -715,7 +744,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
         pitchMax,
       };
     },
-    onParallax(scrollPx) {
+    onParallax(_scrollPx) {
       // Interface parity
     },
     onEnter() {
@@ -753,6 +782,6 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
 
       // Clear refs to avoid leaks
       notes = null;
-    }
+    },
   };
 }

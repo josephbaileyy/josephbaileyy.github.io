@@ -195,7 +195,19 @@ function computeLayout(width, height) {
   const plotHeight = Math.max(1, baseline - top);
   const binWidth = plotWidth / BIN_COUNT;
   const gap = Math.max(1.1, Math.min(2.6, binWidth * 0.18));
-  return { compact, width, height, left, right, top, baseline, plotWidth, plotHeight, binWidth, gap };
+  return {
+    compact,
+    width,
+    height,
+    left,
+    right,
+    top,
+    baseline,
+    plotWidth,
+    plotHeight,
+    binWidth,
+    gap,
+  };
 }
 
 function drawHistogram(ctx, layout, data, p) {
@@ -267,13 +279,59 @@ function outlinePoints(layout, data, p) {
   });
 }
 
+function cubicPoint(a, b, c, d, t) {
+  const mt = 1 - t;
+  return {
+    x: mt ** 3 * a.x + 3 * mt ** 2 * t * b.x + 3 * mt * t ** 2 * c.x + t ** 3 * d.x,
+    y: mt ** 3 * a.y + 3 * mt ** 2 * t * b.y + 3 * mt * t ** 2 * c.y + t ** 3 * d.y,
+  };
+}
+
+function appendCubic(target, a, b, c, d, segments) {
+  for (let index = 1; index <= segments; index += 1) {
+    target.push(cubicPoint(a, b, c, d, index / segments));
+  }
+}
+
+function catmullValue(a, b, c, d, t) {
+  const t2 = t * t;
+  const t3 = t2 * t;
+  return (
+    0.5 * (2 * b + (-a + c) * t + (2 * a - 5 * b + 4 * c - d) * t2 + (-a + 3 * b - 3 * c + d) * t3)
+  );
+}
+
+function smoothOutline(points, top, baseline) {
+  const smoothed = [];
+
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const a = points[Math.max(0, index - 1)];
+    const b = points[index];
+    const c = points[index + 1];
+    const d = points[Math.min(points.length - 1, index + 2)];
+
+    for (let step = index === 0 ? 0 : 1; step <= 4; step += 1) {
+      const t = step / 4;
+      smoothed.push({
+        x: lerp(b.x, c.x, t),
+        y: Math.min(baseline, Math.max(top, catmullValue(a.y, b.y, c.y, d.y, t))),
+      });
+    }
+  }
+
+  return smoothed;
+}
+
 // Cumulative arc-length table for a polyline, so we can sample it by fraction.
 function polylineLengths(points) {
   const cum = [0];
   let total = 0;
 
   for (let index = 1; index < points.length; index += 1) {
-    total += Math.hypot(points[index].x - points[index - 1].x, points[index].y - points[index - 1].y);
+    total += Math.hypot(
+      points[index].x - points[index - 1].x,
+      points[index].y - points[index - 1].y,
+    );
     cum.push(total);
   }
 
@@ -311,21 +369,34 @@ function samplePolyline(points, cum, total, fraction) {
 // staged vertex, then collects back to bottom-center. Both endpoints stay pinned
 // to the canonical center x so the entry/exit invariant holds through the morph.
 function buildDetourPath(layout, data, p) {
-  const { width, height, left, right, top, baseline } = layout;
+  const { width, height, top, baseline } = layout;
   const cx = width / 2;
   const outline = outlinePoints(layout, data, p);
-  const path = [{ x: cx, y: 0 }, { x: cx, y: top * 0.5 }];
+  const start = { x: cx, y: 0 };
+  const end = { x: cx, y: height };
+  const path = [start];
 
-  if (outline.length) {
-    // Sweep from center into the left edge of the plot at the first bar's height.
-    path.push({ x: left, y: outline[0].y });
-    outline.forEach((point) => path.push({ x: point.x, y: point.y }));
-    // Carry the trace out to the right axis, then collect back toward center.
-    path.push({ x: right, y: outline[outline.length - 1].y });
-  }
+  if (!outline.length) return [start, end];
 
-  path.push({ x: cx, y: baseline + (height - baseline) * 0.35 });
-  path.push({ x: cx, y: height });
+  const first = outline[0];
+  const last = outline[outline.length - 1];
+  appendCubic(
+    path,
+    start,
+    { x: cx, y: top * 1.1 },
+    { x: first.x, y: Math.max(top, first.y - height * 0.08) },
+    first,
+    20,
+  );
+  path.push(...smoothOutline(outline, top, baseline).slice(1));
+  appendCubic(
+    path,
+    last,
+    { x: last.x, y: Math.min(baseline, last.y + height * 0.1) },
+    { x: cx, y: baseline },
+    end,
+    28,
+  );
   return path;
 }
 
@@ -390,8 +461,8 @@ function drawLabels(ctx, layout, p) {
 
   setMono(ctx, compact ? 10 : 11, 600);
   ctx.textBaseline = 'alphabetic';
-  const amberY = 24 - (labelFade * 6);
-  const cyanY = 24 + ((1 - labelFade) * 6);
+  const amberY = 24 - labelFade * 6;
+  const cyanY = 24 + (1 - labelFade) * 6;
 
   ctx.fillStyle = rgba(AMBER, (1 - labelFade) * 0.95);
   fillSpacedText(ctx, 'DETECTOR-LEVEL', left, amberY, 1, 'left');
@@ -529,6 +600,7 @@ class ResearchScene {
     this.progress = 0;
     this.width = 0;
     this.height = 0;
+    this.active = false;
     this.rafId = null;
     this.data = buildData();
 
@@ -540,7 +612,8 @@ class ResearchScene {
     this.mainCanvas = document.createElement('canvas');
 
     [this.detectorCanvas, this.histGhostCanvas, this.mainCanvas].forEach((canvas, index) => {
-      canvas.style.cssText = 'position:absolute;left:0;width:100%;display:block;pointer-events:none;';
+      canvas.style.cssText =
+        'position:absolute;left:0;width:100%;display:block;pointer-events:none;';
       canvas.style.zIndex = String(index);
     });
 
@@ -612,7 +685,7 @@ class ResearchScene {
   onProgress(p) {
     this.progress = clamp01(p);
 
-    if (this.reducedMotion || this.rafId === null) {
+    if (this.reducedMotion) {
       this.renderMain(this.reducedMotion ? 0 : performance.now());
     }
   }
@@ -623,6 +696,7 @@ class ResearchScene {
   }
 
   onEnter() {
+    this.active = true;
     if (this.reducedMotion) {
       this.renderMain(0);
       return;
@@ -634,6 +708,7 @@ class ResearchScene {
   }
 
   onExit() {
+    this.active = false;
     if (this.rafId !== null) {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;

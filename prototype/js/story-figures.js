@@ -1,7 +1,6 @@
 const CYAN = { r: 51, g: 212, b: 255 };
 const AMBER = { r: 255, g: 181, b: 71 };
 const DIM = { r: 127, g: 142, b: 163 };
-const TEXT = { r: 232, g: 236, b: 241 };
 const BG = { r: 5, g: 6, b: 10 };
 const MONO =
   'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace';

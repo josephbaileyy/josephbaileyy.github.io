@@ -19,8 +19,8 @@
   --cyan: #33d4ff;
   --amber: #ffb547;
   --magenta: #ff4fd8;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  --system: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  --system: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --step--1: 0.94rem;
   --step-0: 1.06rem;
   --step-1: 1.72rem;
@@ -65,7 +65,7 @@ body::after {
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  content: "";
+  content: '';
   background:
     linear-gradient(90deg, rgba(5, 6, 10, 0.6), transparent 46%, rgba(5, 6, 10, 0.32)),
     linear-gradient(180deg, rgba(5, 6, 10, 0.42), transparent 30%, rgba(5, 6, 10, 0.62));
@@ -144,7 +144,7 @@ p {
   width: 100%;
   height: 100%;
   background: var(--ground-ch1);
-  opacity: 1;
+  opacity: var(--collision-handoff-opacity, 1);
   pointer-events: none;
   transition: opacity 220ms ease;
 }
@@ -230,6 +230,7 @@ p {
 }
 
 .hero-section {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: flex-end;
@@ -237,7 +238,26 @@ p {
 }
 
 .copy-block {
+  position: relative;
+  z-index: 2;
   width: min(100%, 38rem);
+}
+
+.is-webgl-unavailable .hero-section::after {
+  position: absolute;
+  inset-block: 0;
+  left: var(--spine-x);
+  z-index: 1;
+  width: var(--spine-width);
+  background: var(--spine-color);
+  content: '';
+  filter: var(--spine-glow);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.is-webgl-unavailable .handoff-spine {
+  opacity: 1;
 }
 
 .wide-copy {
@@ -292,7 +312,7 @@ p {
 .scroll-cue::after {
   width: 4rem;
   height: 1px;
-  content: "";
+  content: '';
   background: linear-gradient(90deg, var(--cyan), transparent);
 }
 
@@ -366,8 +386,23 @@ p {
 }
 
 .handoff-caption {
+  position: relative;
+  z-index: 2;
   width: min(100%, 30rem);
   opacity: calc(1 - min(1, var(--scrub-progress, 0) * 1.8));
+}
+
+.handoff-spine {
+  position: absolute;
+  inset-block: 0;
+  left: var(--spine-x);
+  z-index: 1;
+  width: var(--spine-width);
+  background: var(--spine-color);
+  filter: var(--spine-glow);
+  opacity: var(--handoff-spine-opacity, 0);
+  transform: translateX(-50%);
+  pointer-events: none;
 }
 
 .handoff-caption p {
@@ -387,7 +422,7 @@ p {
 }
 
 .chapter-index {
-  color: rgba(170, 180, 194, 0.65);
+  color: rgba(182, 192, 205, 0.9);
 }
 
 .stub-note {
@@ -506,12 +541,11 @@ p {
   opacity: 0.95;
 }
 
-/* Carries the invariant line from the chapter's top edge down to the svg's
-   own vertical midpoint (y=130 of 260), exactly where .contact-line now
-   begins its rightward reveal. Shares base positioning with .worldline-trunk. */
+/* Carries the invariant line from the chapter's top edge to the SVG's top.
+   The SVG path then rounds from vertical into the final rightward reveal. */
 .worldline-trunk-contact {
   top: 0;
-  height: 50%;
+  height: calc(50% - max(21vh, 8rem));
 }
 
 .contact-worldline svg {
@@ -530,7 +564,8 @@ p {
 .contact-point {
   fill: #fff9f0;
   opacity: var(--contact-point-opacity, 0);
-  filter: drop-shadow(0 0 6px rgba(255, 230, 200, 0.8)) drop-shadow(0 0 12px rgba(255, 200, 150, 0.4));
+  filter: drop-shadow(0 0 6px rgba(255, 230, 200, 0.8))
+    drop-shadow(0 0 12px rgba(255, 200, 150, 0.4));
 }
 
 .contact-panel {
@@ -602,10 +637,19 @@ p {
   }
 
   .scene-copy,
-  .scene-copy-right,
-  .music-copy {
+  .scene-copy-right {
     align-self: flex-end;
     margin: 0 1.2rem 5.5rem;
+  }
+
+  .scene-copy.music-copy {
+    align-self: flex-start;
+    width: calc(50% - 1.8rem);
+    margin: 5rem 0 0 1.2rem;
+  }
+
+  .scene-copy.music-copy h2 {
+    font-size: 1.42rem;
   }
 
   .scene-copy h2 {

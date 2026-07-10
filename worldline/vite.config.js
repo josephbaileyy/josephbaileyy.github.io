@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => ({
     strictPort: false,
   },
   build: {
+    sourcemap: true,
     assetsInlineLimit: mode === 'artifact' ? 1024 * 1024 : 4096,
     outDir: resolve(worldlineRoot, 'dist'),
     emptyOutDir: true,
