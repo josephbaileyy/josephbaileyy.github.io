@@ -2,6 +2,7 @@ import { createGroundController } from './js/core/ground.js';
 import { createSceneLifecycle, getReducedMotionPreference } from './js/core/lifecycle.js';
 import { createScrollRuntime } from './js/core/scroll.js';
 import { createTelemetry } from './js/core/telemetry.js';
+import { createWorldline } from './js/core/worldline.js';
 import { createCollisionScene } from './js/scene-collision/collision.js';
 
 function clamp01(value) {
@@ -32,7 +33,6 @@ const lifecycle = createSceneLifecycle({ reducedMotion });
 const scrollRuntime = createScrollRuntime({ reducedMotion });
 const ground = createGroundController();
 const telemetry = createTelemetry();
-const handoffScrub = document.querySelector('[data-scrub="collision-handoff"]');
 const collisionHudShell = collisionHud?.closest('.collision-hud');
 
 function getHandoffProgress(state) {
@@ -148,6 +148,9 @@ function createLazyScene(root, create, label) {
       entered = false;
       scene?.onExit?.();
     },
+    getAnchors() {
+      return scene?.getAnchors?.() ?? null;
+    },
     dispose() {
       generation += 1;
       entered = false;
@@ -211,58 +214,65 @@ const sceneRecords = [
   }),
 ].filter(Boolean);
 
-function updateExperienceScene(progress) {
+function updateExperienceScene() {
   const chapter = document.querySelector('#chapter-experience');
 
   if (!chapter) {
     return;
   }
 
-  const p = clamp01(progress);
-  const entry = smootherStep((p - 0.16) / 0.22);
-  chapter.style.setProperty('--experience-entry-opacity', entry.toFixed(3));
-  chapter.style.setProperty('--experience-entry-y', `${((1 - entry) * 1.2).toFixed(3)}rem`);
+  // Each entry lights up as the worldline's head reaches its tick, rather than
+  // on a scrub schedule of its own - otherwise entries appear below the head,
+  // which reads as the content arriving before the line that is supposed to be
+  // delivering it.
+  const headY = worldline.getHeadY();
+
+  for (const entry of chapter.querySelectorAll('.experience-entry')) {
+    const tick = entry.querySelector('.experience-tick') || entry;
+    const y = tick.getBoundingClientRect().top;
+    const reveal = headY === null ? 0 : clamp01((headY - y) / 56);
+    const eased = smootherStep(reveal);
+    entry.style.setProperty('--experience-entry-opacity', eased.toFixed(3));
+    entry.style.setProperty('--experience-entry-y', `${((1 - eased) * 1.2).toFixed(3)}rem`);
+  }
 }
 
-function updateContactScene(progress) {
+function updateContactScene() {
   const chapter = document.querySelector('#chapter-contact');
 
   if (!chapter) {
     return;
   }
 
-  const p = clamp01(progress);
-  const line = clamp01(p / 0.6);
-  const lineEase = 1 - Math.pow(1 - line, 3);
-  const point = smootherStep((p - 0.55) / 0.15);
-  const panel = smootherStep((p - 0.5) / 0.2);
-  // non-scaling-stroke makes dashes screen-space in Chromium. Account for
-  // both the curved path length and preserveAspectRatio="none", whose X/Y
-  // scales differ substantially on phones.
-  const lineEl = chapter.querySelector('.contact-line');
-  const screenMatrix = lineEl?.getScreenCTM();
-  let screenLen = 640;
-  if (lineEl && screenMatrix) {
-    const pathLen = lineEl.getTotalLength();
-    let previous = lineEl.getPointAtLength(0);
-    screenLen = 0;
-    for (let index = 1; index <= 64; index += 1) {
-      const point = lineEl.getPointAtLength((pathLen * index) / 64);
-      const dx = (point.x - previous.x) * screenMatrix.a + (point.y - previous.y) * screenMatrix.c;
-      const dy = (point.x - previous.x) * screenMatrix.b + (point.y - previous.y) * screenMatrix.d;
-      screenLen += Math.hypot(dx, dy);
-      previous = point;
-    }
-    screenLen = Math.max(screenLen, 1);
-  }
-  if (lineEl) lineEl.style.strokeDasharray = screenLen.toFixed(2);
-  chapter.style.setProperty('--contact-line-offset', (screenLen * (1 - lineEase)).toFixed(2));
-  chapter.style.setProperty('--contact-point-opacity', point.toFixed(3));
+  // Same rule as CH04: the panel arrives when the head reaches its tick.
+  const headY = worldline.getHeadY();
+  const tick = chapter.querySelector('.contact-tick') || chapter.querySelector('.contact-panel');
+  const y = tick ? tick.getBoundingClientRect().top : 0;
+  const panel = headY === null ? 0 : smootherStep(clamp01((headY - y) / 56));
   chapter.style.setProperty('--contact-panel-opacity', panel.toFixed(3));
+  chapter.style.setProperty('--contact-point-opacity', panel.toFixed(3));
 }
 
-let lastExperienceProgress = null;
-let lastContactProgress = null;
+// The connective worldline. js/core/worldline.js is the single owner of every
+// stretch of line the scenes do not draw themselves; see WORLDLINE.md. Chapters
+// with no scene of their own register here and the controller sweeps the head
+// through its band across them.
+const worldline = createWorldline();
+const allChapters = [...document.querySelectorAll('.chapter')];
+const lastChapter = allChapters[allChapters.length - 1];
+
+for (const selector of ['#chapter-experience', '#chapter-contact']) {
+  const element = document.querySelector(selector);
+  worldline.registerChapter(selector, element, { isLast: element === lastChapter });
+}
+
+// Scenes contribute a path shape and report where it enters, exits and
+// currently ends. They never decide where the connective line runs.
+worldline.registerScene('collision', () => collisionScene.getAnchors?.() ?? null);
+
+for (const record of sceneRecords) {
+  worldline.registerScene(record.id, () => record.scene.getAnchors?.() ?? null);
+}
 
 lifecycle.register({
   element: collisionChapter,
@@ -278,13 +288,13 @@ sceneRecords.forEach((record) => {
 
 scrollRuntime.onUpdate((state) => {
   const handoffProgress = getHandoffProgress(state);
-  const handoffBlend = smootherStep((handoffProgress - 0.94) / 0.055);
-
-  handoffScrub?.style.setProperty('--handoff-spine-opacity', handoffBlend.toFixed(3));
-  collisionCanvas?.style.setProperty('--collision-handoff-opacity', (1 - handoffBlend).toFixed(3));
+  // No spine cross-fade any more: the collapse ends exactly on the controller's
+  // line, so dissolving one geometry into another is what made the handoff look
+  // disconnected and snap to vertical.
 
   ground.update(state);
   telemetry.update(state);
+  worldline.update({ maxScroll: state.maxScroll });
 
   lifecycle.tick({ ...state, handoffProgress });
 
@@ -310,20 +320,10 @@ scrollRuntime.onUpdate((state) => {
     }
   });
 
-  const experienceProgress = state.scrubs.get('experience')?.progress ?? (reducedMotion ? 1 : 0);
-  if (
-    lastExperienceProgress === null ||
-    Math.abs(lastExperienceProgress - experienceProgress) > 0.0001
-  ) {
-    updateExperienceScene(experienceProgress);
-    lastExperienceProgress = experienceProgress;
-  }
-
-  const contactProgress = state.scrubs.get('contact')?.progress ?? (reducedMotion ? 1 : 0);
-  if (lastContactProgress === null || Math.abs(lastContactProgress - contactProgress) > 0.0001) {
-    updateContactScene(contactProgress);
-    lastContactProgress = contactProgress;
-  }
+  // Not gated on scrub progress: these follow the worldline's head, which keeps
+  // advancing after a chapter's scrub has already completed.
+  updateExperienceScene();
+  updateContactScene();
 
   // Keep the collapsed line alive until the collision chapter has actually
   // left the viewport. Retiring at scrub progress 1 leaves an entire sticky
@@ -366,8 +366,8 @@ window.addEventListener('resize', () => {
   collisionScene.resize();
 });
 
-updateExperienceScene(reducedMotion ? 1 : 0);
-updateContactScene(reducedMotion ? 1 : 0);
+updateExperienceScene();
+updateContactScene();
 scrollRuntime.start();
 
 window.addEventListener('pagehide', () => {

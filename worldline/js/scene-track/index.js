@@ -6,6 +6,8 @@ const CY = 210;
 const P_ENTRY_END = 0.12;
 const P_LAP_END = 0.88;
 
+const clamp01 = (value) => Math.min(1, Math.max(0, value));
+
 const E1_len = 300;
 const E2_len = Math.sqrt(130 ** 2 + 173.4 ** 2);
 const L_entry = E1_len + E2_len;
@@ -20,17 +22,9 @@ const X1_len = Math.sqrt(130 ** 2 + 96.6 ** 2);
 const X2_len = 250;
 const L_exit = X1_len + X2_len;
 
-// Point along the entry lead-in at a given trailing arc-length distance
-// (mirrors the M 400 -150 L 400 150 L 530 323.4 geometry baked into the
-// worldline path's `d` attribute below).
-function getEntryPointAtDistance(distance) {
-  const d = Math.max(0, Math.min(L_entry, distance));
-  if (d <= E1_len) {
-    return { x: 400, y: -150 + d };
-  }
-  const pct = (d - E1_len) / E2_len;
-  return { x: 400 + 130 * pct, y: 150 + 173.4 * pct };
-}
+// The topmost point of the drawn SVG path, in user units. The lead-in is always
+// fully drawn, so this is also the scene's `entryY` anchor for every frame.
+const ENTRY_TOP_Y = -150;
 
 const TOUCHDOWN_TIMES = [6.09, 10.23, 14.33, 18.49, 22.78, 27.27, 31.89, 36.59, 41.45, 46.26];
 const FINISH_TIME = 52.17;
@@ -208,6 +202,8 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
       color: #f2ede6;
       font-family: system-ui, -apple-system, sans-serif;
       user-select: none;
+      position: relative;
+      z-index: 1;
     }
     .track-hud {
       display: flex;
@@ -231,12 +227,12 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
       align-items: center;
       justify-content: center;
       min-height: 0;
-      margin: 2vh 0;
+      margin: 1vh 0;
     }
     .track-svg {
       width: 100%;
       height: auto;
-      max-height: 48vh;
+      max-height: 44vh;
       display: block;
     }
     .track-analysis {
@@ -251,6 +247,9 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
       padding-top: 1.5vh;
       flex-shrink: 0;
       gap: 24px;
+      width: calc(50% - 48px);
+      box-sizing: border-box;
+      align-self: flex-start;
     }
     .track-pr-container {
       flex: 1;
@@ -280,7 +279,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     }
     .track-velocity-container {
       flex: 1;
-      max-width: 320px;
+      max-width: 260px;
       display: flex;
       flex-direction: column;
     }
@@ -303,6 +302,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
         flex-direction: column !important;
         align-items: stretch !important;
         gap: 1.5vh !important;
+        width: 100% !important;
       }
       .track-pr-container {
         text-align: center !important;
@@ -321,31 +321,16 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
       transition: none !important;
       animation: none !important;
     }
-    .track-trunk {
-      position: absolute;
-      left: 50%;
-      width: 2px;
-      transform: translateX(-50%);
-      background: #e8ecf1;
-      filter: drop-shadow(0 0 8px rgba(232, 236, 241, 0.32));
-      pointer-events: none;
-      z-index: 0;
+    .track-worldline {
+      fill: none;
+      stroke: var(--spine-color);
+      stroke-width: var(--spine-width);
+      stroke-linecap: round;
+      vector-effect: non-scaling-stroke;
+      filter: var(--spine-glow);
     }
   `;
   document.head.appendChild(styleEl);
-
-  // Bridging trunks: the HUD row and analysis panel are flex siblings of the
-  // svg wrap, so the drawn worldline never actually reaches the scene-root's
-  // true top/bottom edges - measured against the previous/next chapters'
-  // lines (which do reach their true edges), that reads as a visible gap.
-  // These plain, unanimated elements close that gap by spanning from the
-  // scene-root edge to wherever the entry/exit segment's endpoint actually
-  // renders on screen (measured live via getScreenCTM, since the perspective
-  // tilt during entry moves that point every frame).
-  const trunkIn = document.createElement('div');
-  trunkIn.className = 'track-trunk';
-  const trunkOut = document.createElement('div');
-  trunkOut.className = 'track-trunk';
 
   // Set up container
   const container = document.createElement('div');
@@ -477,18 +462,16 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
 
   // Worldline path
   const worldlinePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  worldlinePath.setAttribute('class', 'track-worldline');
   const entryPathD = 'M 400 -150 L 400 60 C 400 180 420 323.4 530 323.4';
-  const lapPathD =
-    'M 530 323.4 A 113.4 113.4 0 0 0 530 96.6 L 270 96.6 A 113.4 113.4 0 0 0 270 323.4 L 530 323.4';
-  const exitPathD = 'M 530 323.4 C 610 323.4 400 360 400 430 L 400 670';
-  const d_worldline = `${entryPathD} ${lapPathD} ${exitPathD}`;
-  worldlinePath.setAttribute('d', d_worldline);
-  worldlinePath.setAttribute('fill', 'none');
-  worldlinePath.setAttribute('stroke', '#f2ede6');
-  worldlinePath.setAttribute('stroke-width', '2.2');
-  worldlinePath.setAttribute('stroke-linecap', 'round');
-
-  svg.appendChild(worldlinePath);
+  const lapPathContinuationD =
+    'A 113.4 113.4 0 0 0 530 96.6 L 270 96.6 A 113.4 113.4 0 0 0 270 323.4 L 530 323.4';
+  const lapPathD = `M 530 323.4 ${lapPathContinuationD}`;
+  let exitBottomY = 670;
+  let renderedEntryLength = 0;
+  let renderedLapLength = 0;
+  let renderedExitLength = 0;
+  let renderedTotalLength = 0;
 
   const measurePath = (pathD) => {
     const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -499,12 +482,31 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
     path.remove();
     return length;
   };
-  const renderedEntryLength = measurePath(entryPathD);
-  const renderedLapLength = measurePath(lapPathD);
-  const renderedExitLength = measurePath(exitPathD);
-  const renderedTotalLength = renderedEntryLength + renderedLapLength + renderedExitLength;
-  worldlinePath.style.strokeDasharray = renderedTotalLength.toFixed(2);
-  worldlinePath.style.strokeDashoffset = renderedTotalLength.toFixed(2);
+
+  function updateWorldlineGeometry() {
+    // Leave the finish straight above the copy, move left to the shared spine,
+    // then descend vertically. The old first control point (x=610) bowed the
+    // curve into the right-aligned kicker and headline.
+    const exitPathContinuationD = `C 500 323.4 430 323.4 410 340 C 400 348 400 370 400 ${exitBottomY.toFixed(
+      2,
+    )}`;
+    const exitPathD = `M 530 323.4 ${exitPathContinuationD}`;
+    // Keep the rendered worldline as one subpath. Dash patterns restart at
+    // every `M`, which would otherwise reveal entry, lap, and exit fragments
+    // simultaneously even with a single shared strokeDashoffset.
+    worldlinePath.setAttribute(
+      'd',
+      `${entryPathD} ${lapPathContinuationD} ${exitPathContinuationD}`,
+    );
+
+    renderedEntryLength = measurePath(entryPathD);
+    renderedLapLength = measurePath(lapPathD);
+    renderedExitLength = measurePath(exitPathD);
+    renderedTotalLength = renderedEntryLength + renderedLapLength + renderedExitLength;
+  }
+
+  svg.appendChild(worldlinePath);
+  updateWorldlineGeometry();
 
   // Runner dot
   const runner = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -622,96 +624,101 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   });
 
   rootEl.appendChild(container);
-  rootEl.appendChild(trunkIn);
-  rootEl.appendChild(trunkOut);
 
-  let currentTrailingEdge = 0;
-  let currentExitAlpha = 0;
+  let currentProgress = 0;
+  // The drawn head, in SVG user units. Sampled off the same strokeDashoffset
+  // that positions the runner dot, so the anchor the controller reads and the
+  // amber dot are the same point by construction.
+  let headPoint = { x: CX, y: ENTRY_TOP_Y };
 
-  // Bridge the scene-root edge to the SVG's canonical center entry. The
-  // lead-in remains part of the path for the whole lap, so this endpoint
-  // never drifts sideways away from the center trunk.
-  function updateTrunks() {
+  function fitExitToSceneBottom() {
     const rootRect = rootEl.getBoundingClientRect();
-    const point = svg.createSVGPoint();
     const ctm = svg.getScreenCTM();
 
     if (!ctm || rootRect.height <= 0) {
-      trunkIn.style.height = '0px';
-      trunkOut.style.height = '0px';
       return;
     }
 
-    const entryAnchor = getEntryPointAtDistance(currentTrailingEdge);
-    point.x = entryAnchor.x;
-    point.y = entryAnchor.y;
-    const entryTop = point.matrixTransform(ctm);
-    point.x = 400;
-    point.y = 670;
-    const exitBottom = point.matrixTransform(ctm);
+    // A hardcoded endpoint (the old y=670) lands wherever the viewport happens
+    // to put it. Solve the scene-root's bottom edge back into SVG space instead
+    // and make that the real path endpoint, so `exitY` is a point the path
+    // genuinely reaches. At exit time the entry perspective tilt has settled.
+    const sceneBottom = svg.createSVGPoint();
+    sceneBottom.x = rootRect.left + rootRect.width / 2;
+    sceneBottom.y = rootRect.bottom;
+    const localBottom = sceneBottom.matrixTransform(ctm.inverse());
+    const nextExitBottomY = Math.max(370, localBottom.y);
 
-    const topGap = Math.max(0, entryTop.y - rootRect.top);
-    const bottomGap = Math.max(0, rootRect.bottom - exitBottom.y);
-
-    trunkIn.style.top = '0px';
-    trunkIn.style.height = `${topGap.toFixed(1)}px`;
-    trunkIn.style.transform = 'translateX(-50%)';
-
-    trunkOut.style.bottom = '0px';
-    trunkOut.style.height = `${bottomGap.toFixed(1)}px`;
-    trunkOut.style.transformOrigin = 'top';
-    trunkOut.style.transform = `translateX(-50%) scaleY(${currentExitAlpha.toFixed(3)})`;
+    if (Math.abs(nextExitBottomY - exitBottomY) > 0.1) {
+      exitBottomY = nextExitBottomY;
+      updateWorldlineGeometry();
+    }
   }
 
-  window.addEventListener('resize', updateTrunks);
+  // The worldline contract (see WORLDLINE.md). This scene owns exactly the SVG
+  // path: the lead-in, the lap, and the exit descent. Everything above the
+  // lead-in and below the exit is the controller's, so these three numbers have
+  // to be the true viewport Y of the path's topmost pixel, its bottom-most, and
+  // its live tip. `getScreenCTM` is affine, so the Y of a user-space point is
+  // b*x + d*y + f — no SVGPoint allocation per frame.
+  function getAnchors() {
+    const rootRect = rootEl.getBoundingClientRect();
+
+    if (
+      rootRect.height <= 0 ||
+      rootRect.bottom <= 0 ||
+      rootRect.top >= window.innerHeight ||
+      renderedTotalLength <= 0
+    ) {
+      return null;
+    }
+
+    const ctm = svg.getScreenCTM();
+
+    if (!ctm) {
+      return null;
+    }
+
+    const viewportY = (x, y) => ctm.b * x + ctm.d * y + ctm.f;
+
+    return {
+      active: true,
+      entryY: viewportY(CX, ENTRY_TOP_Y),
+      exitY: viewportY(CX, exitBottomY),
+      headY: viewportY(headPoint.x, headPoint.y),
+    };
+  }
+
+  function handleResize() {
+    fitExitToSceneBottom();
+    onProgress(currentProgress);
+  }
+
+  window.addEventListener('resize', handleResize);
 
   function onProgress(p) {
     p = Math.min(1, Math.max(0, p));
+    currentProgress = p;
 
-    // Map p to strokeDashoffset. The entry segment grows as you scroll into
-    // it, off a small floor rather than literal zero: the chapter boundary
-    // is a hard cut (sticky positioning swaps content instantly, no blended
-    // overlap), so p=0 is the exact frame after the previous chapter showed
-    // its line reaching this same screen position - zero here reads as the
-    // line vanishing at the seam. The exit segment settles to fully-drawn
-    // before p=1 (not exactly at it) so the lerp-smoothed scrub progress has
-    // margin to catch up before the sticky handoff into the next chapter,
-    // even on a fast scroll.
-    const ENTRY_FLOOR = 0.04;
-    const EXIT_SETTLE_FRAC = 0.75;
-    let leadingEdge = 0;
-    let runnerDistance = 0;
-    let exitMapped = 0;
-    if (p <= P_ENTRY_END) {
-      const entryRaw = p / P_ENTRY_END;
-      const entryEased = Math.max(ENTRY_FLOOR, entryRaw * entryRaw * (3 - 2 * entryRaw));
-      leadingEdge = entryEased * renderedEntryLength;
-      runnerDistance = entryRaw * renderedEntryLength;
-    } else if (p <= P_LAP_END) {
-      const lapProgress = (p - P_ENTRY_END) / (P_LAP_END - P_ENTRY_END);
-      leadingEdge = renderedEntryLength + lapProgress * renderedLapLength;
-      runnerDistance = leadingEdge;
-    } else {
-      const exitRaw = (p - P_LAP_END) / (1 - P_LAP_END);
-      exitMapped = Math.min(1, exitRaw / EXIT_SETTLE_FRAC);
-      leadingEdge = renderedEntryLength + renderedLapLength + exitMapped * renderedExitLength;
-      runnerDistance = renderedEntryLength + renderedLapLength + exitRaw * renderedExitLength;
-    }
+    // The lead-in is not part of the head - it is the line arriving from the
+    // previous chapter, so it is already fully drawn when this scrub begins.
+    // Only the lap and then the exit advance.
+    const lapProgress = clamp01((p - P_ENTRY_END) / (P_LAP_END - P_ENTRY_END));
+    const exitProgress = clamp01((p - P_LAP_END) / (1 - P_LAP_END));
+    const drawnLength =
+      renderedEntryLength + renderedLapLength * lapProgress + renderedExitLength * exitProgress;
+    // non-scaling-stroke evaluates dash distances in the rendered viewport,
+    // while getTotalLength()/getPointAtLength() use SVG user units. Convert
+    // between them so both operations describe the identical physical head.
+    const viewBox = svg.viewBox.baseVal;
+    const dashScale = Math.min(svg.clientWidth / viewBox.width, svg.clientHeight / viewBox.height);
+    const strokeDashoffset = (renderedTotalLength - drawnLength) * dashScale;
 
-    // Keep the entry lead-in visible. Retracting it moved the SVG endpoint
-    // to the right side of the oval while the HTML trunk remained centered,
-    // visibly splitting the supposedly invariant worldline.
-    const trailingEdge = 0;
-    currentTrailingEdge = trailingEdge;
-    currentExitAlpha = exitMapped;
-
-    const visibleLen = Math.max(0, leadingEdge - trailingEdge);
-    // The gap must safely exceed the path's real rendered length so the dash
-    // pattern never wraps around and shows a second, stray fragment near the
-    // end of the path (the arc segments' length is a JS approximation, not
-    // exact, so this needs real margin, not just a few extra units).
-    worldlinePath.style.strokeDasharray = `${visibleLen.toFixed(2)} ${(renderedTotalLength * 3).toFixed(2)}`;
-    worldlinePath.style.strokeDashoffset = (-trailingEdge).toFixed(2);
+    worldlinePath.style.strokeDasharray = `${renderedTotalLength * dashScale} ${
+      renderedTotalLength * dashScale * 3
+    }`;
+    worldlinePath.style.strokeDashoffset = strokeDashoffset.toString();
+    const appliedDashoffset = Number.parseFloat(worldlinePath.style.strokeDashoffset);
 
     // 3D Perspective Tilt during entry
     if (!reducedMotion) {
@@ -721,21 +728,31 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
         const eased = 1 - Math.pow(1 - progress, 3);
         tilt = 38 * (1 - eased);
       }
-      svgWrap.style.transform = `perspective(900px) rotateX(${tilt}deg)`;
-      svgWrap.style.transformOrigin = 'center center';
+      if (tilt > 0.01) {
+        svgWrap.style.transform = `perspective(900px) rotateX(${tilt}deg)`;
+        svgWrap.style.transformOrigin = 'center center';
+      } else {
+        // A rotateX(0) still creates a composited 3D layer. Chromium clips
+        // filtered SVG overflow to that layer's flex-item bounds, cutting the
+        // exit above the scene bottom even though its geometry continues.
+        svgWrap.style.transform = 'none';
+      }
     } else {
       svgWrap.style.transform = 'none';
     }
 
-    updateTrunks();
-
     // Get state
     const state = getTrackState(p);
-    const runnerPoint = worldlinePath.getPointAtLength(runnerDistance);
+    // Sample the exact value used by strokeDashoffset. This makes the amber
+    // dot the one and only drawn head, including both endpoint states.
+    const runnerPoint = worldlinePath.getPointAtLength(
+      renderedTotalLength - appliedDashoffset / dashScale,
+    );
 
     // Update runner dot
-    runner.setAttribute('cx', runnerPoint.x.toFixed(1));
-    runner.setAttribute('cy', runnerPoint.y.toFixed(1));
+    runner.setAttribute('cx', runnerPoint.x.toString());
+    runner.setAttribute('cy', runnerPoint.y.toString());
+    headPoint = runnerPoint;
 
     // Update clock and status
     clockEl.textContent = state.time.toFixed(2);
@@ -763,12 +780,14 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
   }
 
   // Set initial state
+  fitExitToSceneBottom();
   onProgress(0);
 
   return {
     onProgress(p) {
       onProgress(p);
     },
+    getAnchors,
     onParallax(_scrollPx) {
       // no-op for interface parity
     },
@@ -779,7 +798,7 @@ export function createScene(rootEl, { reducedMotion = false } = {}) {
       // no-op
     },
     dispose() {
-      window.removeEventListener('resize', updateTrunks);
+      window.removeEventListener('resize', handleResize);
       // Remove dynamically created stylesheet if needed, or let clear handle it
       if (styleEl.parentNode) {
         styleEl.parentNode.removeChild(styleEl);

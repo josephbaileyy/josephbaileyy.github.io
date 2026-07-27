@@ -92,6 +92,10 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
       height: 16px;
     }
 
+    @keyframes agy-music-spin {
+      to { transform: rotate(360deg); }
+    }
+
     .agy-music-time {
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
       font-size: 11px;
@@ -110,6 +114,14 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
       letter-spacing: 0.15em;
       color: #7f8ea3;
       line-height: 1.6;
+    }
+
+    .agy-music-caption-note {
+      display: block;
+      margin-top: 0.2rem;
+      font-size: 9px;
+      letter-spacing: 0.11em;
+      color: rgba(127, 142, 163, 0.68);
     }
 
     .agy-music-link {
@@ -192,16 +204,11 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
         font-size: 9px;
         letter-spacing: 0.08em;
       }
-    }
-    .music-trunk {
-      position: absolute;
-      left: 50%;
-      width: 2px;
-      transform: translateX(-50%);
-      background: #e8ecf1;
-      filter: drop-shadow(0 0 8px rgba(232, 236, 241, 0.32));
-      pointer-events: none;
-      z-index: 0;
+
+      .agy-music-caption-note {
+        font-size: 8px;
+        letter-spacing: 0.06em;
+      }
     }
   `;
   document.head.appendChild(styleEl);
@@ -224,6 +231,10 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
           <svg class="agy-music-icon-pause" viewBox="0 0 24 24" style="display: none;">
             <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="currentColor"/>
           </svg>
+          <!-- Load Icon -->
+          <svg class="agy-music-icon-load" viewBox="0 0 24 24" style="display: none; animation: agy-music-spin 1s linear infinite;">
+            <path d="M12 4V2A10 10 0 0 0 2 12h2a8 8 0 0 1 8-8z" fill="currentColor"/>
+          </svg>
         </button>
         <div class="agy-music-time" aria-live="polite">
           <span class="agy-music-time-current">T+ 0:00.0</span> / <span class="agy-music-time-total">2:05</span>
@@ -237,42 +248,14 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
       </div>
       <div class="agy-music-caption">
         J.S. BACH — FUGUE IN C MINOR / PIANO: JOSEPH BAILEY
+        <span class="agy-music-caption-note">NOTE DATA MACHINE-TRANSCRIBED FROM THE AUDIO</span>
       </div>
     </div>
   `;
   rootEl.appendChild(container);
 
-  // Bridging trunks: the controls row (and the scene's own top padding) are
-  // flex siblings of the canvas, so the canvas's fixed 160px height never
-  // reaches the scene-root's true top/bottom edges - measured against the
-  // neighboring chapters' lines (which do reach their true edges), that
-  // reads as a visible gap. These close it by spanning from the scene-root
-  // edge to wherever the canvas itself actually starts/ends on screen.
-  const trunkIn = document.createElement('div');
-  trunkIn.className = 'music-trunk';
-  const trunkOut = document.createElement('div');
-  trunkOut.className = 'music-trunk';
-  rootEl.appendChild(trunkIn);
-  rootEl.appendChild(trunkOut);
-
-  function updateTrunks() {
-    const rootRect = rootEl.getBoundingClientRect();
-    const canvasRect = canvas.getBoundingClientRect();
-
-    if (rootRect.height <= 0) {
-      return;
-    }
-
-    const topGap = Math.max(0, canvasRect.top - rootRect.top);
-    const bottomGap = Math.max(0, rootRect.bottom - canvasRect.bottom);
-
-    trunkIn.style.top = '0px';
-    trunkIn.style.height = `${topGap.toFixed(1)}px`;
-    trunkIn.style.transform = 'translateX(-50%)';
-
-    trunkOut.style.bottom = '0px';
-    trunkOut.style.height = `${bottomGap.toFixed(1)}px`;
-    trunkOut.style.transform = 'translateX(-50%)';
+  function clamp01(value) {
+    return Math.max(0, Math.min(1, value));
   }
 
   // DOM references
@@ -281,9 +264,20 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
   const playBtn = container.querySelector('.agy-music-play-btn');
   const playIcon = container.querySelector('.agy-music-icon-play');
   const pauseIcon = container.querySelector('.agy-music-icon-pause');
+  const loadIcon = container.querySelector('.agy-music-icon-load');
   const timeCurrentEl = container.querySelector('.agy-music-time-current');
   const timeTotalEl = container.querySelector('.agy-music-time-total');
   const speedBtns = [...container.querySelectorAll('.agy-music-speed-btn')];
+  const rootStyles = getComputedStyle(document.documentElement);
+  const spineX = Number.parseFloat(rootStyles.getPropertyValue('--spine-x')) / 100;
+  const spineColor = rootStyles.getPropertyValue('--spine-color').trim();
+  const spineWidth = Number.parseFloat(rootStyles.getPropertyValue('--spine-width'));
+  const spineGlow = rootStyles.getPropertyValue('--spine-glow').trim();
+  const spineGlowMatch = spineGlow.match(
+    /drop-shadow\(\s*0(?:px)?\s+0(?:px)?\s+([\d.]+)px\s+(.+)\)$/,
+  );
+  const spineShadowBlur = Number.parseFloat(spineGlowMatch?.[1] ?? '0');
+  const spineShadowColor = spineGlowMatch?.[2]?.trim() ?? spineColor;
 
   // Scene state
   let notes = [];
@@ -294,6 +288,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
   let currentProgress = 0.0; // 0..1 scroll/chapter progress
   let isPlaying = false;
   let audioLoaded = false;
+  let isLoading = false;
   let animationFrameId = null;
   let cssWidth = 0;
   let cssHeight = 0;
@@ -305,11 +300,35 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
   container.appendChild(audio);
 
   // 3. Audio Handlers & Actions
-  function togglePlay() {
+  async function togglePlay() {
+    if (isLoading) return;
+
     if (!audioLoaded) {
-      audio.src = audioUrl;
-      audio.load();
-      audioLoaded = true;
+      isLoading = true;
+      playIcon.style.display = 'none';
+      pauseIcon.style.display = 'none';
+      loadIcon.style.display = 'block';
+      playBtn.setAttribute('aria-label', 'Loading piano recording');
+
+      try {
+        const response = await fetch(audioUrl);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const blob = await response.blob();
+        audio.src = URL.createObjectURL(blob);
+        audioLoaded = true;
+      } catch (err) {
+        console.error('Failed to load audio:', err);
+        isLoading = false;
+        loadIcon.style.display = 'none';
+        playIcon.style.display = 'block';
+        playBtn.setAttribute('aria-label', 'Play piano recording');
+        return; // Abort play on failure
+      } finally {
+        if (audioLoaded) {
+          isLoading = false;
+          loadIcon.style.display = 'none';
+        }
+      }
     }
 
     if (isPlaying) {
@@ -323,6 +342,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
 
   function handlePlay() {
     isPlaying = true;
+    loadIcon.style.display = 'none';
     playIcon.style.display = 'none';
     pauseIcon.style.display = 'block';
     playBtn.setAttribute('aria-label', 'Pause piano recording');
@@ -331,6 +351,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
 
   function handlePause() {
     isPlaying = false;
+    loadIcon.style.display = 'none';
     playIcon.style.display = 'block';
     pauseIcon.style.display = 'none';
     playBtn.setAttribute('aria-label', 'Play piano recording');
@@ -434,7 +455,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
   }
 
   function musicDetourPoint(fraction, hitLineY) {
-    const cx = cssWidth / 2;
+    const cx = cssWidth * spineX;
     const edge = Math.max(24, cssWidth * 0.035);
     const left = cx;
     const rightEdge = cssWidth - edge;
@@ -486,27 +507,83 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
     return { x: cx, y: tailStartY + tail * t };
   }
 
-  function drawMusicWorldline(hitLineY, bend) {
-    const cx = cssWidth / 2;
-    const steps = 180;
+  function worldlineBend(progress) {
+    if (reducedMotion) return 1;
+
+    const bendIn = smoothStep((progress - 0.06) / 0.14);
+    const bendOut = smoothStep((progress - 0.72) / 0.16);
+    return bendIn * (1 - bendOut);
+  }
+
+  function musicWorldlinePoint(fraction, hitLineY, progress) {
+    const cx = cssWidth * spineX;
+    const detour = musicDetourPoint(fraction, hitLineY);
+    const bend = worldlineBend(progress);
+    const straightY = fraction * cssHeight;
+    return {
+      x: cx + (detour.x - cx) * bend,
+      y: straightY + (detour.y - straightY) * bend,
+    };
+  }
+
+  // The polyline the scene's own path is drawn as. Both the stroke and the
+  // anchor the worldline controller reads are derived from these, so the head
+  // it is told about is the pixel that actually got painted.
+  const WORLDLINE_STEPS = 180;
+
+  function worldlineHeadFraction() {
+    return clamp01((currentProgress - 0.1) / 0.8);
+  }
+
+  function worldlinePointAt(index, hitLineY) {
+    const fraction = index / WORLDLINE_STEPS;
+    const reachedAtProgress = 0.1 + fraction * 0.8;
+    const pointProgress = Math.min(currentProgress, reachedAtProgress);
+    return musicWorldlinePoint(fraction, hitLineY, pointProgress);
+  }
+
+  function worldlineHeadPoint(hitLineY) {
+    const headStep = worldlineHeadFraction() * WORLDLINE_STEPS;
+    const completeSegments = Math.floor(headStep);
+    const partialSegment = headStep - completeSegments;
+
+    if (partialSegment <= 0 || completeSegments >= WORLDLINE_STEPS) {
+      return worldlinePointAt(Math.min(completeSegments, WORLDLINE_STEPS), hitLineY);
+    }
+
+    const from = worldlinePointAt(completeSegments, hitLineY);
+    const to = worldlinePointAt(completeSegments + 1, hitLineY);
+    return {
+      x: from.x + (to.x - from.x) * partialSegment,
+      y: from.y + (to.y - from.y) * partialSegment,
+    };
+  }
+
+  function drawMusicWorldline(hitLineY) {
+    const headFrac = worldlineHeadFraction();
+
+    if (headFrac <= 0) return;
+
+    const completeSegments = Math.floor(headFrac * WORLDLINE_STEPS);
 
     ctx.save();
     ctx.beginPath();
-    for (let index = 0; index <= steps; index += 1) {
-      const fraction = index / steps;
-      const detour = musicDetourPoint(fraction, hitLineY);
-      const x = cx + (detour.x - cx) * bend;
-      const straightY = fraction * cssHeight;
-      const y = straightY + (detour.y - straightY) * bend;
-      if (index === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+    const start = worldlinePointAt(0, hitLineY);
+    ctx.moveTo(start.x, start.y);
+
+    for (let index = 1; index <= completeSegments; index += 1) {
+      const point = worldlinePointAt(index, hitLineY);
+      ctx.lineTo(point.x, point.y);
     }
-    ctx.strokeStyle = '#e8ecf1';
-    ctx.lineWidth = 2;
+
+    const head = worldlineHeadPoint(hitLineY);
+    ctx.lineTo(head.x, head.y);
+    ctx.strokeStyle = spineColor;
+    ctx.lineWidth = spineWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = 'rgba(232, 236, 241, 0.32)';
+    ctx.shadowBlur = spineShadowBlur;
+    ctx.shadowColor = spineShadowColor;
     ctx.stroke();
     ctx.restore();
   }
@@ -516,17 +593,83 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
     return x * x * (3 - 2 * x);
   }
 
-  function pitchToX(pitch) {
-    const edge = Math.max(24, cssWidth * 0.035);
-    const left = cssWidth / 2 + Math.max(18, cssWidth * 0.02);
-    const right = cssWidth - edge;
-    const span = Math.max(1, pitchMax - pitchMin);
-    return left + ((pitch - pitchMin) / span) * (right - left);
+  const blackPitchClasses = new Set([1, 3, 6, 8, 10]);
+  let keyboardMetricsCache = null;
+
+  function isBlackPitch(pitch) {
+    return blackPitchClasses.has(((pitch % 12) + 12) % 12);
   }
 
-  function getLaneWidth() {
-    const pitchCount = Math.max(1, pitchMax - pitchMin + 1);
-    return Math.max(3, Math.min(18, ((cssWidth * 0.42) / pitchCount) * 0.72));
+  function getKeyboardMetrics() {
+    const cacheKey = `${cssWidth}:${pitchMin}:${pitchMax}`;
+    if (keyboardMetricsCache?.cacheKey === cacheKey) {
+      return keyboardMetricsCache;
+    }
+
+    const edge = Math.max(24, cssWidth * 0.035);
+    const firstKeyCenter = cssWidth / 2 + Math.max(18, cssWidth * 0.02);
+    const lastKeyCenter = cssWidth - edge;
+    const whitePitches = [];
+
+    for (let pitch = pitchMin; pitch <= pitchMax; pitch += 1) {
+      if (!isBlackPitch(pitch)) {
+        whitePitches.push(pitch);
+      }
+    }
+
+    const whiteKeyWidth =
+      whitePitches.length > 1
+        ? (lastKeyCenter - firstKeyCenter) / (whitePitches.length - 1)
+        : Math.max(2, lastKeyCenter - firstKeyCenter);
+    const keyboardLeft = firstKeyCenter - whiteKeyWidth / 2;
+    const blackKeyWidth = Math.max(1, whiteKeyWidth * 0.62);
+    const keys = new Map();
+
+    whitePitches.forEach((pitch, index) => {
+      keys.set(pitch, {
+        pitch,
+        isBlack: false,
+        x: keyboardLeft + (index + 0.5) * whiteKeyWidth,
+        left: keyboardLeft + index * whiteKeyWidth,
+        width: whiteKeyWidth,
+      });
+    });
+
+    let precedingWhiteKeys = 0;
+    for (let pitch = pitchMin; pitch <= pitchMax; pitch += 1) {
+      if (isBlackPitch(pitch)) {
+        const x = keyboardLeft + precedingWhiteKeys * whiteKeyWidth;
+        keys.set(pitch, {
+          pitch,
+          isBlack: true,
+          x,
+          left: x - blackKeyWidth / 2,
+          width: blackKeyWidth,
+        });
+      } else {
+        precedingWhiteKeys += 1;
+      }
+    }
+
+    keyboardMetricsCache = {
+      cacheKey,
+      blackKeyWidth,
+      keyboardLeft,
+      keyboardRight: keyboardLeft + whitePitches.length * whiteKeyWidth,
+      keys,
+      whiteKeyWidth,
+    };
+    return keyboardMetricsCache;
+  }
+
+  function pitchToX(pitch) {
+    return getKeyboardMetrics().keys.get(pitch)?.x ?? cssWidth / 2;
+  }
+
+  function getLaneWidth(pitch) {
+    const key = getKeyboardMetrics().keys.get(pitch);
+    const keyWidth = key?.width ?? getKeyboardMetrics().whiteKeyWidth;
+    return Math.max(1.25, Math.min(18, keyWidth * (key?.isBlack ? 0.78 : 0.7)));
   }
 
   function drawPitchGrid(hitLineY, alpha) {
@@ -555,13 +698,98 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
     ctx.restore();
   }
 
+  function drawPianoKeyboard(renderTime, hitLineY, alpha) {
+    if (alpha <= 0) return;
+
+    const metrics = getKeyboardMetrics();
+    const activeNotes = notes.filter((note) => renderTime >= note.start && renderTime <= note.end);
+    const activePitches = new Map();
+    for (const note of activeNotes) {
+      const current = activePitches.get(note.pitch);
+      if (!current || (note.velocity || 0) > (current.velocity || 0)) {
+        activePitches.set(note.pitch, note);
+      }
+    }
+
+    const keyboardY = hitLineY + 1;
+    const availableHeight = Math.max(24, cssHeight - keyboardY - 7);
+    const keyboardHeight = Math.min(Math.max(48, cssHeight * 0.18), 94, availableHeight);
+    const blackKeyHeight = keyboardHeight * 0.62;
+    const pressedOffset = Math.min(2.5, keyboardHeight * 0.035);
+    const baseWhiteGradient = ctx.createLinearGradient(0, keyboardY, 0, keyboardY + keyboardHeight);
+    baseWhiteGradient.addColorStop(0, '#f2efe8');
+    baseWhiteGradient.addColorStop(0.72, '#d7d1c8');
+    baseWhiteGradient.addColorStop(1, '#aaa39a');
+    const baseBlackGradient = ctx.createLinearGradient(0, keyboardY, 0, keyboardY + blackKeyHeight);
+    baseBlackGradient.addColorStop(0, '#36312d');
+    baseBlackGradient.addColorStop(0.18, '#1c1917');
+    baseBlackGradient.addColorStop(1, '#070606');
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.shadowBlur = 14;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.38)';
+    ctx.fillStyle = '#090807';
+    ctx.fillRect(
+      metrics.keyboardLeft - 2,
+      keyboardY - 2,
+      metrics.keyboardRight - metrics.keyboardLeft + 4,
+      keyboardHeight + 5,
+    );
+    ctx.shadowBlur = 0;
+
+    for (let pitch = pitchMin; pitch <= pitchMax; pitch += 1) {
+      const key = metrics.keys.get(pitch);
+      if (!key || key.isBlack) continue;
+
+      const activeNote = activePitches.get(pitch);
+      const offset = activeNote ? pressedOffset : 0;
+      const hue = 34 + ((pitch - pitchMin) / Math.max(1, pitchMax - pitchMin)) * 150;
+
+      ctx.fillStyle = activeNote ? `hsl(${hue}, 76%, 61%)` : baseWhiteGradient;
+      ctx.fillRect(key.left, keyboardY + offset, key.width, keyboardHeight);
+      ctx.strokeStyle = activeNote ? `hsla(${hue}, 72%, 28%, 0.72)` : 'rgba(20, 16, 13, 0.42)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(key.left + 0.5, keyboardY + offset + 0.5, key.width, keyboardHeight - 1);
+
+      if (activeNote) {
+        ctx.fillStyle = `hsla(${hue}, 78%, 23%, 0.58)`;
+        ctx.fillRect(key.left + 1, keyboardY + offset, Math.max(0, key.width - 2), 2);
+      }
+    }
+
+    for (let pitch = pitchMin; pitch <= pitchMax; pitch += 1) {
+      const key = metrics.keys.get(pitch);
+      if (!key?.isBlack) continue;
+
+      const activeNote = activePitches.get(pitch);
+      const offset = activeNote ? pressedOffset : 0;
+      const hue = 34 + ((pitch - pitchMin) / Math.max(1, pitchMax - pitchMin)) * 150;
+
+      ctx.fillStyle = activeNote ? `hsl(${hue}, 82%, 43%)` : baseBlackGradient;
+      ctx.shadowBlur = activeNote ? 8 : 3;
+      ctx.shadowColor = activeNote ? `hsla(${hue}, 92%, 58%, 0.48)` : 'rgba(0, 0, 0, 0.5)';
+      ctx.fillRect(key.left, keyboardY + offset, key.width, blackKeyHeight);
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = activeNote ? `hsla(${hue}, 86%, 22%, 0.84)` : 'rgba(0, 0, 0, 0.9)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(key.left + 0.5, keyboardY + offset + 0.5, key.width - 1, blackKeyHeight - 1);
+
+      if (activeNote) {
+        ctx.fillStyle = `hsla(${hue}, 88%, 18%, 0.72)`;
+        ctx.fillRect(key.left + 1, keyboardY + offset, Math.max(0, key.width - 2), 2);
+      }
+    }
+
+    ctx.restore();
+  }
+
   function drawFallingNotes(renderTime, hitLineY, alpha) {
     if (alpha <= 0 || notes.length === 0) return;
 
     const lookAheadSeconds = reducedMotion ? 10.5 : 5.6;
     const trailSeconds = reducedMotion ? 2.4 : 1.15;
     const pixelsPerSecond = Math.max(34, hitLineY / lookAheadSeconds);
-    const laneWidth = getLaneWidth();
     const flashWindow = 0.2;
 
     ctx.save();
@@ -573,6 +801,7 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
       }
 
       const x = pitchToX(note.pitch);
+      const laneWidth = getLaneWidth(note.pitch);
       const noteBottom = hitLineY - (note.start - renderTime) * pixelsPerSecond;
       const noteTop = hitLineY - (note.end - renderTime) * pixelsPerSecond;
       const top = Math.min(noteTop, noteBottom);
@@ -630,28 +859,67 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
     ctx.restore();
   }
 
+  function getHitLineY() {
+    return Math.max(150, cssHeight * 0.78);
+  }
+
+  /**
+   * The worldline contract (see WORLDLINE.md). This scene owns exactly the
+   * oscillating path it paints on the canvas: it starts at canvas y = 0 and
+   * ends at canvas y = cssHeight, both on the centre line, so the anchors are
+   * the canvas box itself plus the live tip. The canvas bitmap is stretched to
+   * the element box, so drawn Y is scaled by rect.height / cssHeight rather
+   * than assumed equal - a resize the ResizeObserver has not delivered yet
+   * would otherwise report a head a few pixels off the painted one.
+   */
+  function getAnchors() {
+    if (!canvas || cssHeight <= 0) {
+      return null;
+    }
+
+    const rect = canvas.getBoundingClientRect();
+
+    if (rect.height <= 0 || rect.bottom <= 0 || rect.top >= window.innerHeight) {
+      return null;
+    }
+
+    // Only claim the line once the chapter has pinned. Before that the sticky
+    // is still sliding up from the bottom of the viewport with nothing drawn on
+    // it, and claiming ownership would drag the head backwards up the screen as
+    // the canvas rose.
+    if (rootEl.getBoundingClientRect().top > 0) {
+      return null;
+    }
+
+    const scale = rect.height / cssHeight;
+
+    return {
+      active: true,
+      entryY: rect.top,
+      exitY: rect.bottom,
+      headY: rect.top + worldlineHeadPoint(getHitLineY()).y * scale,
+    };
+  }
+
   function draw() {
     if (!canvas || !ctx) return;
 
     ctx.clearRect(0, 0, cssWidth, cssHeight);
 
-    const hitLineY = Math.max(150, cssHeight * 0.78);
+    const hitLineY = getHitLineY();
 
     // Morph one continuous top-to-bottom path into the piano roll and back.
     // The old independent entry, horizontal, and exit segments visibly
     // separated whenever the scroll moved faster than their staggered cues.
-    const bendIn = reducedMotion ? 1 : smoothStep((currentProgress - 0.06) / 0.14);
-    const bendOut = reducedMotion ? 0 : smoothStep((currentProgress - 0.72) / 0.16);
-    const bend = bendIn * (1 - bendOut);
+    const bend = worldlineBend(currentProgress);
     const rollAlpha = reducedMotion ? 0.9 : bend;
     const renderTime =
       reducedMotion && !isPlaying && currentTime <= 0.01 ? duration * 0.36 : currentTime;
 
     drawPitchGrid(hitLineY, rollAlpha);
+    drawPianoKeyboard(renderTime, hitLineY, rollAlpha);
     drawFallingNotes(renderTime, hitLineY, rollAlpha);
-    drawMusicWorldline(hitLineY, bend);
-
-    updateTrunks();
+    drawMusicWorldline(hitLineY);
   }
 
   function startAnimationLoop() {
@@ -683,7 +951,6 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
     canvas.height = cssHeight * dpr;
     ctx.resetTransform();
     ctx.scale(dpr, dpr);
-    updateTrunks();
     draw();
   }
 
@@ -734,11 +1001,12 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
       updateReadout();
       draw();
     },
+    getAnchors,
     getDebugState() {
       return {
         currentTime,
         duration,
-        hitLineY: Math.max(150, cssHeight * 0.78),
+        hitLineY: getHitLineY(),
         noteCount: notes.length,
         pitchMin,
         pitchMax,
@@ -777,8 +1045,6 @@ export function createScene(rootEl, { reducedMotion = false, audioUrl, notesUrl,
       // Remove style and container from DOM
       styleEl.remove();
       container.remove();
-      trunkIn.remove();
-      trunkOut.remove();
 
       // Clear refs to avoid leaks
       notes = null;

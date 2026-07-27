@@ -18,8 +18,9 @@ const USE_SYNTHETIC = false;
 const MAX_REAL_TRACKS = 220;
 const HIGH_PT_THRESHOLD = 2;
 const REAL_TRACK_DELAY_MAX = 0.08;
-const LINE_COLOR = new THREE.Color('#e8ecf1');
 const SURVIVOR_PIN_NDC = new THREE.Vector2(0, 0.16);
+const SURVIVOR_VERTICAL_END_NDC_Y = -0.12;
+const WORLDLINE_EXIT_NDC_Y = -0.42;
 
 const trackVertexShader = `
   attribute vec3 aColor;
@@ -31,6 +32,7 @@ const trackVertexShader = `
   uniform float uDraw;
   uniform float uFade;
   uniform float uCollapse;
+  uniform vec3 uLineColor;
   uniform vec2 uSurvivorNdcOffset;
   uniform float uSurvivorClipProgress;
   varying vec3 vColor;
@@ -43,16 +45,24 @@ const trackVertexShader = `
     vec4 projected = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     float survivor = step(0.5, aSurvivor);
     float survivorMix = collapse * survivor;
+    float inverseCollapse = 1.0 - collapse;
+    float survivorConvergence = 1.0 - inverseCollapse * inverseCollapse * inverseCollapse;
     float survivorFade = 1.0 - smoothstep(0.84, 0.94, uCollapse);
     float survivorClip = 1.0 - smoothstep(uSurvivorClipProgress, min(1.0, uSurvivorClipProgress + 0.024), aLineProgress);
-    survivorClip = mix(1.0, survivorClip, smoothstep(0.08, 0.32, uCollapse));
     float regularAlpha = aAlpha * mix(1.0, 0.004, collapse);
     float survivorAlpha = mix(aAlpha, 1.0, smoothstep(0.0, 0.42, uCollapse)) * survivorFade * survivorClip;
-    vec3 survivorColor = vec3(${LINE_COLOR.r.toFixed(6)}, ${LINE_COLOR.g.toFixed(6)}, ${LINE_COLOR.b.toFixed(6)});
-
-    vColor = mix(aColor, survivorColor, survivorMix);
+    vColor = mix(aColor, uLineColor, survivorMix);
     vAlpha = mix(regularAlpha, survivorAlpha, survivor) * visible * uFade;
     projected.xy += uSurvivorNdcOffset * projected.w * survivor;
+    vec2 survivorTargetNdc = vec2(
+      0.0,
+      mix(${SURVIVOR_PIN_NDC.y.toFixed(2)}, ${SURVIVOR_VERTICAL_END_NDC_Y.toFixed(2)}, aLineProgress)
+    );
+    projected.xy = mix(
+      projected.xy,
+      survivorTargetNdc * projected.w,
+      survivor * survivorConvergence
+    );
     gl_Position = projected;
   }
 `;
@@ -124,6 +134,22 @@ function smootherStep(value) {
   return x * x * x * (x * (x * 6 - 15) + 10);
 }
 
+function collapseConvergence(value) {
+  const inverse = 1 - clamp01(value);
+  return 1 - inverse * inverse * inverse;
+}
+
+function readWorldlineStyle() {
+  const style = getComputedStyle(document.documentElement);
+  const color = style.getPropertyValue('--spine-color').trim() || '#e8ecf1';
+  const width = Number.parseFloat(style.getPropertyValue('--spine-width'));
+
+  return {
+    color: new THREE.Color(color),
+    width: Number.isFinite(width) ? width : 2,
+  };
+}
+
 // Survivor tracks radiate outward from the vertex in every direction, so
 // their tangent at the clip point can point anywhere - including mostly
 // backward/upward, opposite the worldline's downward travel. Feeding that
@@ -185,11 +211,14 @@ function makeSpriteTexture() {
 }
 
 function makeTrackMaterial() {
+  const worldlineStyle = readWorldlineStyle();
+
   return new THREE.ShaderMaterial({
     uniforms: {
       uDraw: { value: 0 },
       uFade: { value: 1 },
       uCollapse: { value: 0 },
+      uLineColor: { value: worldlineStyle.color },
       uSurvivorNdcOffset: { value: new THREE.Vector2(0, 0) },
       uSurvivorClipProgress: { value: 1 },
       uOpacity: { value: 1.24 },
@@ -223,9 +252,10 @@ function makeHitMaterial(sprite, pixelRatio) {
 }
 
 function makeWorldlineMesh(width, height) {
-  const segments = 16;
+  const segments = 24;
   const positions = [];
   const indices = [];
+  const worldlineStyle = readWorldlineStyle();
 
   for (let i = 0; i <= segments; i++) {
     const y = i / segments;
@@ -248,6 +278,8 @@ function makeWorldlineMesh(width, height) {
       uResolution: { value: new THREE.Vector2(width, height) },
       uExtend: { value: 0 },
       uOpacity: { value: 0 },
+      uColor: { value: worldlineStyle.color },
+      uHalfWidthPx: { value: worldlineStyle.width / 2 },
       uOriginNDC: { value: new THREE.Vector2(0, 0.16) },
       uOriginTangent: { value: new THREE.Vector2(0, -1) },
       uOriginBlend: { value: 1.0 },
@@ -257,6 +289,7 @@ function makeWorldlineMesh(width, height) {
       attribute vec3 position;
       uniform vec2 uResolution;
       uniform float uExtend;
+      uniform float uHalfWidthPx;
       uniform vec2 uOriginNDC;
       uniform vec2 uOriginTangent;
       uniform float uOriginBlend;
@@ -264,37 +297,21 @@ function makeWorldlineMesh(width, height) {
 
       void main() {
         float E = clamp(uExtend, 0.0, 1.0);
-        float s = position.y * E;
-        
-        float originX = mix(uOriginNDC.x, 0.0, uOriginBlend);
-        float originY = mix(uOriginNDC.y, 1.08, uOriginBlend);
-        vec2 origin = vec2(originX, originY);
-        
+        float u = position.y * E;
+        float om_u = 1.0 - u;
+        vec2 origin = uOriginNDC;
         vec2 tangent = normalize(mix(uOriginTangent, vec2(0.0, -1.0), uOriginBlend));
-        
-        float curveEnd = 0.48;
-        vec2 C;
-        vec2 C_prime;
-
-        if (s <= curveEnd) {
-          float u = s / max(0.0001, curveEnd);
-          float om_u = 1.0 - u;
-          vec2 P0 = origin;
-          vec2 P1 = origin + tangent * 0.24;
-          vec2 P3 = vec2(0.0, -0.42);
-          vec2 P2 = vec2(0.0, -0.20);
-          C = om_u * om_u * om_u * P0
-            + 3.0 * om_u * om_u * u * P1
-            + 3.0 * om_u * u * u * P2
-            + u * u * u * P3;
-          C_prime = 3.0 * om_u * om_u * (P1 - P0)
-            + 6.0 * om_u * u * (P2 - P1)
-            + 3.0 * u * u * (P3 - P2);
-        } else {
-          float u = (s - curveEnd) / max(0.0001, 1.0 - curveEnd);
-          C = vec2(0.0, mix(-0.42, -1.08, u));
-          C_prime = vec2(0.0, -1.0);
-        }
+        vec2 P0 = origin;
+        vec2 P1 = origin + tangent * 0.24;
+        vec2 P2 = vec2(0.0, -0.20);
+        vec2 P3 = vec2(0.0, ${WORLDLINE_EXIT_NDC_Y.toFixed(2)});
+        vec2 C = om_u * om_u * om_u * P0
+          + 3.0 * om_u * om_u * u * P1
+          + 3.0 * om_u * u * u * P2
+          + u * u * u * P3;
+        vec2 C_prime = 3.0 * om_u * om_u * (P1 - P0)
+          + 6.0 * om_u * u * (P2 - P1)
+          + 3.0 * u * u * (P3 - P2);
         
         vec2 dirScreen = C_prime * uResolution;
         float len = length(dirScreen);
@@ -305,8 +322,7 @@ function makeWorldlineMesh(width, height) {
         }
         
         vec2 normalScreen = vec2(-dirScreen.y, dirScreen.x);
-        float halfWidth = 1.0;
-        vec2 offsetNDC = normalScreen * (halfWidth * 2.0) / max(vec2(1.0), uResolution);
+        vec2 offsetNDC = normalScreen * (uHalfWidthPx * 2.0) / max(vec2(1.0), uResolution);
         
         vec2 finalPos = C + position.x * offsetNDC;
         
@@ -317,6 +333,7 @@ function makeWorldlineMesh(width, height) {
     fragmentShader: `
       precision mediump float;
       uniform float uOpacity;
+      uniform vec3 uColor;
       varying float vAlpha;
 
       void main() {
@@ -324,7 +341,7 @@ function makeWorldlineMesh(width, height) {
         if (alpha < 0.01) {
           discard;
         }
-        gl_FragColor = vec4(${LINE_COLOR.r.toFixed(6)}, ${LINE_COLOR.g.toFixed(6)}, ${LINE_COLOR.b.toFixed(6)}, alpha);
+        gl_FragColor = vec4(uColor, alpha);
       }
     `,
     transparent: true,
@@ -791,6 +808,9 @@ class EventDisplay {
     this.pixelRatio = Math.min(2, window.devicePixelRatio || 1);
     this.scrollProgress = 0;
     this.collapseProgress = 0;
+    this.viewportTop = 0;
+    this.viewportHeight = window.innerHeight;
+    this.anchorState = null;
     this.eventNumber = 4120;
     this.currentEvent = null;
     this.fadingEvents = [];
@@ -908,6 +928,9 @@ class EventDisplay {
 
     const width = window.innerWidth;
     const height = window.innerHeight;
+    const canvasRect = this.canvas.getBoundingClientRect();
+    this.viewportTop = canvasRect.top;
+    this.viewportHeight = canvasRect.height || height;
     this.pixelRatio = Math.min(2, window.devicePixelRatio || 1);
     this.renderer.setPixelRatio(this.pixelRatio);
     this.renderer.setSize(width, height, false);
@@ -1001,23 +1024,21 @@ class EventDisplay {
       material.opacity = material.userData.baseOpacity * detectorScale;
     });
 
+    let survivorProjection = null;
+
     if (this.currentEvent) {
       this.currentEvent.trackMaterial.uniforms.uCollapse.value = collapse;
       this.currentEvent.hitMaterial.uniforms.uCollapse.value = collapse;
-      this.updateSurvivorProjection(this.currentEvent);
+      survivorProjection = this.updateSurvivorProjection(this.currentEvent, collapse);
     }
 
     this.fadingEvents.forEach(({ event }) => {
       event.trackMaterial.uniforms.uCollapse.value = collapse;
       event.hitMaterial.uniforms.uCollapse.value = collapse;
-      this.updateSurvivorProjection(event);
+      this.updateSurvivorProjection(event, collapse);
     });
 
     if (this.worldlineMesh) {
-      const survivorProjection = this.currentEvent
-        ? this.getCorrectedSurvivorProjection(this.currentEvent)
-        : null;
-
       if (survivorProjection) {
         const { endpointNdc, endpointTangent } = survivorProjection;
         this.worldlineMesh.material.uniforms.uOriginNDC.value.set(endpointNdc.x, endpointNdc.y);
@@ -1025,26 +1046,82 @@ class EventDisplay {
           endpointTangent.x,
           endpointTangent.y,
         );
-        // Once the survivor fades, let its endpoint become the canonical
-        // top-center chapter entry. The cubic below already handles the
-        // earlier sideways convergence, so this handoff can stay coordinated
-        // with the track fade instead of snapping at the final frame.
-        this.worldlineMesh.material.uniforms.uOriginBlend.value = smootherStep(
-          (collapse - 0.8) / 0.16,
-        );
+        // The survivor retracts along its own sampled curve, so the mesh
+        // remains attached to its visible endpoint. Ease the endpoint tangent
+        // toward vertical over that same full interval instead of redirecting
+        // it during the final few frames.
+        this.worldlineMesh.material.uniforms.uOriginBlend.value = collapseConvergence(collapse);
       } else {
         this.worldlineMesh.material.uniforms.uOriginNDC.value.copy(SURVIVOR_PIN_NDC);
         this.worldlineMesh.material.uniforms.uOriginTangent.value.set(0, -1);
         this.worldlineMesh.material.uniforms.uOriginBlend.value = 1.0;
       }
-      this.worldlineMesh.material.uniforms.uExtend.value = smootherStep(collapse);
-      this.worldlineMesh.material.uniforms.uOpacity.value = smootherStep(
-        Math.max(0, (collapse - 0.08) / 0.72),
-      );
+
+      const extend = smootherStep(collapse);
+      const opacity = smootherStep(collapse / 0.24);
+      this.worldlineMesh.material.uniforms.uExtend.value = extend;
+      this.worldlineMesh.material.uniforms.uOpacity.value = opacity;
+      this.updateAnchorState(collapse, extend, opacity);
     }
   }
 
-  projectSurvivorPoint(point, offset) {
+  updateAnchorState(collapse, extend, opacity) {
+    if (!this.worldlineMesh || collapse <= 0.01 || opacity <= 0.001) {
+      this.anchorState = null;
+      return;
+    }
+
+    const uniforms = this.worldlineMesh.material.uniforms;
+    const origin = uniforms.uOriginNDC.value;
+    const sourceTangent = uniforms.uOriginTangent.value;
+    const verticalBlend = uniforms.uOriginBlend.value;
+    const tangent = new THREE.Vector2(
+      sourceTangent.x * (1 - verticalBlend),
+      sourceTangent.y * (1 - verticalBlend) - verticalBlend,
+    );
+
+    if (tangent.lengthSq() < 0.0001) {
+      tangent.set(0, -1);
+    } else {
+      tangent.normalize();
+    }
+
+    const p1Y = origin.y + tangent.y * 0.24;
+    const t = collapse >= 0.999 ? 1 : extend;
+    const inverse = 1 - t;
+    const headNdcY =
+      inverse * inverse * inverse * origin.y +
+      3 * inverse * inverse * t * p1Y +
+      3 * inverse * t * t * -0.2 +
+      t * t * t * WORLDLINE_EXIT_NDC_Y;
+
+    this.anchorState = {
+      active: true,
+      entryNdcY: SURVIVOR_PIN_NDC.y,
+      exitNdcY: WORLDLINE_EXIT_NDC_Y,
+      headNdcY: t === 1 ? WORLDLINE_EXIT_NDC_Y : headNdcY,
+    };
+  }
+
+  getAnchors() {
+    if (this.isDisposed || !this.anchorState) {
+      return null;
+    }
+
+    const toViewportY = (ndcY) => this.viewportTop + ((1 - ndcY) * this.viewportHeight) / 2;
+    const entryY = toViewportY(this.anchorState.entryNdcY);
+    const exitY = toViewportY(this.anchorState.exitNdcY);
+    const headY = toViewportY(this.anchorState.headNdcY);
+
+    return {
+      active: this.anchorState.active,
+      entryY,
+      exitY,
+      headY: this.anchorState.headNdcY === this.anchorState.exitNdcY ? exitY : headY,
+    };
+  }
+
+  projectSurvivorPoint(point, offset, lineProgress = 0, collapse = 0) {
     const ndc = point.clone().project(this.camera);
 
     if (!Number.isFinite(ndc.x) || !Number.isFinite(ndc.y)) {
@@ -1053,10 +1130,16 @@ class EventDisplay {
 
     ndc.x += offset.x;
     ndc.y += offset.y;
+    const convergence = collapseConvergence(collapse);
+    ndc.x *= 1 - convergence;
+    ndc.y =
+      ndc.y * (1 - convergence) +
+      (SURVIVOR_PIN_NDC.y + (SURVIVOR_VERTICAL_END_NDC_Y - SURVIVOR_PIN_NDC.y) * lineProgress) *
+        convergence;
     return ndc;
   }
 
-  getCorrectedSurvivorProjection(event) {
+  getCorrectedSurvivorProjection(event, collapse = 0) {
     if (!event?.survivorStartpoint || !event?.survivorEndpoint) {
       return null;
     }
@@ -1072,54 +1155,82 @@ class EventDisplay {
       SURVIVOR_PIN_NDC.y - startNdc.y,
     );
     const points = event.survivorPoints?.length ? event.survivorPoints : [event.survivorEndpoint];
-    let endpointNdc = null;
-    let endpointTangent = new THREE.Vector2(0, -1);
-    let clipProgress = 1;
-    let prevNdc = points.length > 0 ? this.projectSurvivorPoint(points[0], offset) : null;
+    let frameClipProgress = 1;
+    let lastInsideIndex = -1;
 
-    for (let index = 1; index < points.length; index += 1) {
-      const ndc = this.projectSurvivorPoint(points[index], offset);
+    for (let index = 0; index < points.length; index += 1) {
+      const lineProgress = index / Math.max(1, points.length - 1);
+      const ndc = this.projectSurvivorPoint(points[index], offset, lineProgress, collapse);
 
       if (!ndc) {
+        frameClipProgress = Math.max(0, lastInsideIndex) / Math.max(1, points.length - 1);
         break;
       }
 
       const insideHandoffFrame = ndc.x >= -0.98 && ndc.x <= 0.98 && ndc.y >= -0.9 && ndc.y <= 0.96;
 
       if (!insideHandoffFrame) {
-        if (!endpointNdc) {
-          endpointNdc =
-            prevNdc || this.projectSurvivorPoint(points[Math.max(0, index - 1)], offset);
-          clipProgress = Math.max(0, index - 1) / Math.max(1, points.length - 1);
-        }
+        frameClipProgress = Math.max(0, lastInsideIndex) / Math.max(1, points.length - 1);
         break;
       }
 
-      if (prevNdc) {
-        endpointTangent.subVectors(ndc, prevNdc).normalize();
-      }
-      prevNdc = ndc;
-      endpointNdc = ndc;
-      clipProgress = index / Math.max(1, points.length - 1);
+      lastInsideIndex = index;
     }
 
-    if (!endpointNdc) {
-      endpointNdc = this.projectSurvivorPoint(event.survivorEndpoint, offset);
-      clipProgress = 1;
-      if (points.length > 1 && endpointNdc) {
-        const p2 = this.projectSurvivorPoint(points[points.length - 2], offset);
-        if (p2) {
-          endpointTangent.subVectors(endpointNdc, p2).normalize();
-        }
-      }
-    }
-
-    if (!endpointNdc) {
+    if (lastInsideIndex < 0) {
       return null;
     }
 
+    // Pull the visible endpoint back through the actual projected track for
+    // the whole collapse. The shader clips the survivor at this same sampled
+    // point, so there is no detached lerp between two unrelated geometries.
+    const clipProgress = frameClipProgress * (1 - collapseConvergence(collapse));
+    const sampleIndex = clipProgress * Math.max(1, points.length - 1);
+    const lowerIndex = Math.min(lastInsideIndex, Math.floor(sampleIndex));
+    const upperIndex = Math.min(lastInsideIndex, lowerIndex + 1);
+    const fraction = sampleIndex - Math.floor(sampleIndex);
+    const denominator = Math.max(1, points.length - 1);
+    const lowerNdc = this.projectSurvivorPoint(
+      points[lowerIndex],
+      offset,
+      lowerIndex / denominator,
+      collapse,
+    );
+    const upperNdc = this.projectSurvivorPoint(
+      points[upperIndex],
+      offset,
+      upperIndex / denominator,
+      collapse,
+    );
+
+    if (!lowerNdc || !upperNdc) {
+      return null;
+    }
+
+    const endpointNdc = lowerNdc.lerp(upperNdc, fraction);
+    const beforeIndex = Math.max(0, lowerIndex - 1);
+    const afterIndex = Math.min(lastInsideIndex, upperIndex + 1);
+    const beforeNdc = this.projectSurvivorPoint(
+      points[beforeIndex],
+      offset,
+      beforeIndex / denominator,
+      collapse,
+    );
+    const afterNdc = this.projectSurvivorPoint(
+      points[afterIndex],
+      offset,
+      afterIndex / denominator,
+      collapse,
+    );
+    const endpointTangent =
+      beforeNdc && afterNdc
+        ? new THREE.Vector2().subVectors(afterNdc, beforeNdc)
+        : new THREE.Vector2(0, -1);
+
     if (endpointTangent.lengthSq() < 0.001) {
       endpointTangent.set(0, -1);
+    } else {
+      endpointTangent.normalize();
     }
 
     const clampedTangent = clampTangentToForwardCone(endpointTangent);
@@ -1127,15 +1238,15 @@ class EventDisplay {
     return { clipProgress, endpointNdc, endpointTangent: clampedTangent, offset, startNdc };
   }
 
-  updateSurvivorProjection(event) {
+  updateSurvivorProjection(event, collapse) {
     const offset = event?.trackMaterial?.uniforms.uSurvivorNdcOffset.value;
     const clipProgress = event?.trackMaterial?.uniforms.uSurvivorClipProgress;
 
     if (!offset || !clipProgress) {
-      return;
+      return null;
     }
 
-    const survivorProjection = this.getCorrectedSurvivorProjection(event);
+    const survivorProjection = this.getCorrectedSurvivorProjection(event, collapse);
 
     if (survivorProjection) {
       offset.copy(survivorProjection.offset);
@@ -1144,6 +1255,8 @@ class EventDisplay {
       offset.set(0, 0);
       clipProgress.value = 1;
     }
+
+    return survivorProjection;
   }
 
   generateEvent(time) {

@@ -5,6 +5,10 @@ const LINE = '232, 236, 241';
 const GROUND = '#060913';
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace';
 const BIN_COUNT = 30;
+const PATH_EXIT_RATIO = 0.76;
+const PATH_TRACE_START_X_RATIO = 0.66;
+const PATH_TRACE_TOP_RATIO = 0.16;
+const PATH_TRACE_BOTTOM_RATIO = 0.58;
 
 function clamp01(value) {
   return Math.min(1, Math.max(0, value));
@@ -28,6 +32,12 @@ function mapRange(value, from, to) {
 
 function rgba(channels, alpha) {
   return `rgba(${channels}, ${alpha})`;
+}
+
+function getHudRowY(rootStyles) {
+  const rootRem = Number.parseFloat(rootStyles.fontSize) || 16;
+  const hudBandRem = Number.parseFloat(rootStyles.getPropertyValue('--hud-band')) || 0;
+  return hudBandRem * rootRem + rootRem;
 }
 
 function rgbToHsl([r, g, b]) {
@@ -365,15 +375,29 @@ function samplePolyline(points, cum, total, fraction) {
 }
 
 // The "bent" state of the worldline: a continuous path that enters at top-center,
-// dives into the plot to trace the current (morphing) histogram outline as its
-// staged vertex, then collects back to bottom-center. Both endpoints stay pinned
-// to the canonical center x so the entry/exit invariant holds through the morph.
-function buildDetourPath(layout, data, p) {
+// dives into the right side of the plot to echo the current (morphing) histogram
+// outline, then collects back to the canonical center. Keeping the trace on the
+// right prevents the worldline from crossing the research index and its scrim.
+// The path ends in the controller's head band; the controller owns everything
+// below it.
+function buildDetourPath(layout, data, p, spineX) {
   const { width, height, top, baseline } = layout;
-  const cx = width / 2;
-  const outline = outlinePoints(layout, data, p);
+  const cx = width * spineX;
+  const exitY = height * PATH_EXIT_RATIO;
+  const traceTop = height * PATH_TRACE_TOP_RATIO;
+  const traceBottom = height * PATH_TRACE_BOTTOM_RATIO;
+  const traceStartX = Math.max(cx + 1, width * PATH_TRACE_START_X_RATIO);
+  const sourceOutline = outlinePoints(layout, data, p);
+  const rightOutline = sourceOutline.filter((point) => point.x >= traceStartX);
+  const selectedOutline = rightOutline.length ? rightOutline : sourceOutline.slice(-1);
+  let previousY = traceTop;
+  const outline = selectedOutline.map((point) => {
+    const y = Math.max(previousY, lerp(traceTop, traceBottom, mapRange(point.y, top, baseline)));
+    previousY = y;
+    return { x: point.x, y };
+  });
   const start = { x: cx, y: 0 };
-  const end = { x: cx, y: height };
+  const end = { x: cx, y: exitY };
   const path = [start];
 
   if (!outline.length) return [start, end];
@@ -383,31 +407,40 @@ function buildDetourPath(layout, data, p) {
   appendCubic(
     path,
     start,
-    { x: cx, y: top * 1.1 },
-    { x: first.x, y: Math.max(top, first.y - height * 0.08) },
+    { x: cx, y: traceTop * 0.55 },
+    { x: first.x, y: Math.max(traceTop, first.y - height * 0.06) },
     first,
     20,
   );
-  path.push(...smoothOutline(outline, top, baseline).slice(1));
+  previousY = first.y;
+  path.push(
+    ...smoothOutline(outline, traceTop, traceBottom)
+      .slice(1)
+      .map((point) => {
+        const y = Math.max(previousY, point.y);
+        previousY = y;
+        return { x: point.x, y };
+      }),
+  );
   appendCubic(
     path,
     last,
-    { x: last.x, y: Math.min(baseline, last.y + height * 0.1) },
-    { x: cx, y: baseline },
+    { x: last.x, y: Math.min(exitY, last.y + height * 0.08) },
+    { x: cx, y: Math.max(last.y, exitY - height * 0.08) },
     end,
     28,
   );
   return path;
 }
 
-function drawWorldline(ctx, layout, data, p, time) {
+function drawWorldline(ctx, layout, data, p, spineStyle, visible) {
   const { width, height } = layout;
-  const cx = width / 2;
+  const cx = width * spineStyle.x;
+  const exitY = height * PATH_EXIT_RATIO;
   // Bends in as you scroll and stays bent - it doesn't need to straighten
   // back out before handing off to the next chapter, and it doesn't need to
   // stay pinned to the top edge either.
   const bend = smootherStep(mapRange(p, 0.12, 0.45));
-  const glow = time === 0 ? 0.95 : 0.92 + 0.08 * Math.sin(time * 0.0016);
   // The line draws itself down the screen as you scroll. A small floor
   // (not literally 0) keeps a thin sliver connected to the previous
   // chapter's exit point at the exact instant this chapter's sticky content
@@ -416,15 +449,15 @@ function drawWorldline(ctx, layout, data, p, time) {
   // frame right after the previous chapter showed its line reaching this
   // same screen position. Zero here reads as the line vanishing.
   const REVEAL_FLOOR = 0.04;
-  const revealFrac = Math.max(REVEAL_FLOOR, smootherStep(mapRange(p, 0, 0.5)));
+  const revealFrac = Math.max(REVEAL_FLOOR, smootherStep(p));
 
   ctx.save();
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = rgba(LINE, glow);
-  ctx.shadowColor = rgba(LINE, 0.32);
-  ctx.shadowBlur = 8;
+  ctx.lineWidth = spineStyle.width;
+  ctx.strokeStyle = spineStyle.color;
+  ctx.shadowColor = spineStyle.shadowColor;
+  ctx.shadowBlur = spineStyle.shadowBlur;
 
   ctx.beginPath();
 
@@ -432,16 +465,21 @@ function drawWorldline(ctx, layout, data, p, time) {
     // Morph each sample between the straight spine and the detour path. The two
     // endpoints coincide, so the top and bottom stay locked to center at any bend.
     // (When bend=0 this reduces exactly to the straight vertical spine.)
-    const detour = buildDetourPath(layout, data, p);
+    const detour = buildDetourPath(layout, data, p, spineStyle.x);
     const { cum, total } = polylineLengths(detour);
     const steps = 160;
-    const drawSteps = Math.max(1, Math.round(revealFrac * steps));
+    // Never round up to the endpoint before the scrub is genuinely complete.
+    // The controller resumes below exitY as soon as headY reaches it.
+    const drawSteps =
+      p >= 1 ? steps : Math.min(steps - 1, Math.max(1, Math.floor(revealFrac * steps)));
+    let headY = 0;
 
     for (let index = 0; index <= drawSteps; index += 1) {
       const s = index / steps;
       const bent = samplePolyline(detour, cum, total, s);
       const x = lerp(cx, bent.x, bend);
-      const y = lerp(s * height, bent.y, bend);
+      const y = lerp(s * exitY, bent.y, bend);
+      headY = y;
 
       if (index === 0) {
         ctx.moveTo(x, y);
@@ -449,29 +487,36 @@ function drawWorldline(ctx, layout, data, p, time) {
         ctx.lineTo(x, y);
       }
     }
-  }
 
-  ctx.stroke();
-  ctx.restore();
+    if (visible) {
+      ctx.stroke();
+    }
+
+    ctx.restore();
+    return {
+      entryY: 0,
+      exitY,
+      headY: drawSteps === steps ? exitY : headY,
+    };
+  }
 }
 
-function drawLabels(ctx, layout, p) {
+function drawLabels(ctx, layout, p, hudRowY) {
   const { left, right, compact } = layout;
-  const labelFade = smootherStep(mapRange(p, 0.4, 0.62));
+  const detectorAlpha = 1 - smootherStep(mapRange(p, 0.15, 0.21));
+  const truthAlpha = smootherStep(mapRange(p, 0.24, 0.3));
 
   setMono(ctx, compact ? 10 : 11, 600);
   ctx.textBaseline = 'alphabetic';
-  const amberY = 24 - labelFade * 6;
-  const cyanY = 24 + (1 - labelFade) * 6;
 
-  ctx.fillStyle = rgba(AMBER, (1 - labelFade) * 0.95);
-  fillSpacedText(ctx, 'DETECTOR-LEVEL', left, amberY, 1, 'left');
-  ctx.fillStyle = rgba(CYAN, labelFade * 0.95);
-  fillSpacedText(ctx, 'UNFOLDED / TRUTH-LEVEL', left, cyanY, 1, 'left');
+  ctx.fillStyle = rgba(AMBER, detectorAlpha * 0.95);
+  fillSpacedText(ctx, 'DETECTOR-LEVEL', left, hudRowY, 1, 'left');
+  ctx.fillStyle = rgba(CYAN, truthAlpha * 0.95);
+  fillSpacedText(ctx, 'UNFOLDED / TRUTH-LEVEL', left, hudRowY, 1, 'left');
 
   setMono(ctx, compact ? 8 : 9.5, 500);
   ctx.fillStyle = rgba(DIM, 0.7);
-  const captionY = compact ? 42 : 24;
+  const captionY = compact ? hudRowY + 18 : hudRowY;
   const captionAlign = compact ? 'left' : 'right';
   const captionX = compact ? left : right;
   fillSpacedText(
@@ -601,8 +646,23 @@ class ResearchScene {
     this.width = 0;
     this.height = 0;
     this.active = false;
+    this.pathAnchors = null;
+    this.pathVisible = false;
     this.rafId = null;
     this.data = buildData();
+    const rootStyles = getComputedStyle(document.documentElement);
+    this.hudRowY = getHudRowY(rootStyles);
+    const spineGlow = rootStyles.getPropertyValue('--spine-glow').trim();
+    const spineGlowMatch = spineGlow.match(
+      /drop-shadow\(\s*0(?:px)?\s+0(?:px)?\s+([\d.]+)px\s+(.+)\)$/,
+    );
+    this.spineStyle = {
+      x: Number.parseFloat(rootStyles.getPropertyValue('--spine-x')) / 100,
+      color: rootStyles.getPropertyValue('--spine-color').trim(),
+      width: Number.parseFloat(rootStyles.getPropertyValue('--spine-width')),
+      shadowBlur: Number.parseFloat(spineGlowMatch?.[1] ?? '0'),
+      shadowColor: spineGlowMatch?.[2]?.trim(),
+    };
 
     this.container = document.createElement('div');
     this.container.style.cssText = `position:relative;width:100%;height:100%;overflow:hidden;background:${GROUND};`;
@@ -643,6 +703,7 @@ class ResearchScene {
   }
 
   resize() {
+    this.hudRowY = getHudRowY(getComputedStyle(document.documentElement));
     const rect = this.rootEl.getBoundingClientRect();
     const width = Math.max(1, Math.round(rect.width));
     const height = Math.max(1, Math.round(rect.height));
@@ -661,10 +722,10 @@ class ResearchScene {
     this.mainCtx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     this.detectorLayer.resize(width, height);
     this.histGhostLayer.resize(width, height);
-    this.renderMain(this.reducedMotion ? 0 : performance.now());
+    this.renderMain();
   }
 
-  renderMain(time) {
+  renderMain() {
     if (!this.mainCtx || this.width <= 0 || this.height <= 0) {
       return;
     }
@@ -673,12 +734,19 @@ class ResearchScene {
     const layout = computeLayout(this.width, this.height);
     ctx.clearRect(0, 0, this.width, this.height);
     drawHistogram(ctx, layout, this.data, this.progress);
-    drawWorldline(ctx, layout, this.data, this.progress, time);
-    drawLabels(ctx, layout, this.progress);
+    this.pathAnchors = drawWorldline(
+      ctx,
+      layout,
+      this.data,
+      this.progress,
+      this.spineStyle,
+      this.pathVisible,
+    );
+    drawLabels(ctx, layout, this.progress, this.hudRowY);
   }
 
-  tick(time) {
-    this.renderMain(time);
+  tick() {
+    this.renderMain();
     this.rafId = requestAnimationFrame(this.tick);
   }
 
@@ -686,7 +754,7 @@ class ResearchScene {
     this.progress = clamp01(p);
 
     if (this.reducedMotion) {
-      this.renderMain(this.reducedMotion ? 0 : performance.now());
+      this.renderMain();
     }
   }
 
@@ -695,10 +763,35 @@ class ResearchScene {
     this.histGhostLayer.setParallax(scrollPx);
   }
 
+  getAnchors() {
+    if (!this.active || !this.pathAnchors || !this.mainCanvas.isConnected) {
+      this.pathVisible = false;
+      return null;
+    }
+
+    const rect = this.mainCanvas.getBoundingClientRect();
+    const scaleY = rect.height / this.height;
+    const entryY = rect.top + this.pathAnchors.entryY * scaleY;
+    const exitY = rect.top + this.pathAnchors.exitY * scaleY;
+    const pathIsComplete = this.pathAnchors.headY === this.pathAnchors.exitY;
+    const headY = pathIsComplete ? exitY : rect.top + this.pathAnchors.headY * scaleY;
+    const onScreen = rect.bottom > 0 && entryY < window.innerHeight && exitY > 0;
+    const insideHeadBand = headY <= window.innerHeight * PATH_EXIT_RATIO + 0.5;
+
+    this.pathVisible = onScreen && insideHeadBand;
+
+    if (!this.pathVisible) {
+      return null;
+    }
+
+    return { active: true, entryY, exitY, headY };
+  }
+
   onEnter() {
     this.active = true;
+    this.pathVisible = true;
     if (this.reducedMotion) {
-      this.renderMain(0);
+      this.renderMain();
       return;
     }
 
@@ -709,6 +802,7 @@ class ResearchScene {
 
   onExit() {
     this.active = false;
+    this.pathVisible = false;
     if (this.rafId !== null) {
       cancelAnimationFrame(this.rafId);
       this.rafId = null;

@@ -26,6 +26,13 @@
   <body>
     <div id="ground-underlay" aria-hidden="true"></div>
     <canvas id="collision-canvas" class="collision-canvas" aria-hidden="true"></canvas>
+
+    <!-- The connective worldline. Single owner of every stretch of line that a
+         scene is not drawing itself; see WORLDLINE.md. Fixed to the viewport,
+         so no sticky can carry it off the top, and rendered as a list of
+         segments computed each frame from the scenes' reported anchors. -->
+    <div id="wl-connector" aria-hidden="true"></div>
+    <div id="wl-head" aria-hidden="true"></div>
     <aside class="site-telemetry" aria-label="Worldline telemetry">
       <div class="telemetry-label">
         <span id="chapter-readout">01 COLLISION</span>
@@ -60,9 +67,8 @@
           </div>
         </div>
 
-        <div class="scrub-section" data-scrub="collision-handoff" data-scrub-vh="300">
+        <div class="scrub-section" data-scrub="collision-handoff" data-scrub-vh="200">
           <div class="scrub-sticky">
-            <div class="handoff-spine" aria-hidden="true"></div>
             <div class="handoff-caption" aria-hidden="true">
               <p>CMS event display / collapse to worldline</p>
             </div>
@@ -74,7 +80,7 @@
         id="chapter-research"
         class="chapter scrub-section scene-chapter"
         data-scrub="research"
-        data-scrub-vh="320"
+        data-scrub-vh="205"
         data-chapter="02"
         data-title="RESEARCH"
         data-ground="#060913"
@@ -82,13 +88,121 @@
       >
         <div class="scrub-sticky scene-sticky">
           <div class="scene-root" id="research-scene" aria-hidden="true"></div>
-          <div class="scene-copy scene-copy-left">
+          <div class="scene-copy scene-copy-left research-copy">
             <p class="chapter-index">CH 02 / RESEARCH</p>
             <h2 id="research-title">ML unfolding for measurements that keep their shape.</h2>
             <p>
               Benchmarking high-dimensional reweighting against traditional binned workflows for
               neutrino cross-section measurements.
             </p>
+            <!-- The written record. Kept to two lines per item so the whole
+                 index fits one sticky viewport; the long-form versions live in
+                 about.html. Every link is a PDF under /papers. -->
+            <div class="work-index">
+              <p class="work-group">Papers &amp; talks</p>
+              <ul class="work-list">
+                <li class="work-item">
+                  <p class="work-head">
+                    <a href="./papers/neutrino-unfolding.pdf">
+                      Unbinned unfolding for neutrino-nucleus cross sections
+                    </a>
+                    <span class="work-tag">paper &middot; 2026</span>
+                  </p>
+                  <p class="work-note">
+                    OmniFold benchmarked against iterative Bayesian unfolding on MINERvA data.
+                  </p>
+                </li>
+                <li class="work-item">
+                  <p class="work-head">
+                    <a href="./papers/xcc-pileup-poster.pdf">
+                      Pileup identification for the XCC &#947;&#947; Higgs factory
+                    </a>
+                    <span class="work-tag">poster &middot; SLAC</span>
+                  </p>
+                  <p class="work-note">
+                    ML for pileup effects on di-Higgs detection in a proposed collider.
+                  </p>
+                </li>
+                <li class="work-item">
+                  <p class="work-head">
+                    <a href="./papers/x17-bump-hunt-apsfws.pdf">
+                      Gaussian-process bump hunting for the X17 boson
+                    </a>
+                    <span class="work-tag">talk &middot; 2025</span>
+                  </p>
+                  <p class="work-note">
+                    Searching for excesses from a hypothetical particle, APS Far West Section.
+                  </p>
+                </li>
+                <li class="work-item">
+                  <p class="work-head">
+                    <a href="./papers/am-cvn-report.pdf">
+                      V-band time-series photometry of AM CVn
+                    </a>
+                    <span class="work-tag"
+                      >report / <a href="./papers/am-cvn-presentation.pdf">slides</a> &middot;
+                      2026</span
+                    >
+                  </p>
+                  <p class="work-note">
+                    138 retained exposures recovering the known 1051-second superhump family.
+                  </p>
+                </li>
+                <li class="work-item">
+                  <p class="work-head">
+                    <a href="./papers/ligo-caltech-report.pdf">
+                      Gaussian beam interference for detecting focal length
+                    </a>
+                    <span class="work-tag">note &middot; 2023</span>
+                  </p>
+                  <p class="work-note">
+                    LIGO technical note; interferometry alongside suspension testing.
+                  </p>
+                </li>
+              </ul>
+              <p class="work-group">Reports &amp; posters</p>
+              <ul class="work-list">
+                <li class="work-item">
+                  <p class="work-head">
+                    <a href="./papers/splora-report.pdf">
+                      SPLoRA: sonnet generation and paraphrase detection
+                    </a>
+                    <span class="work-tag"
+                      >report / <a href="./papers/splora-poster.pdf">poster</a></span
+                    >
+                  </p>
+                  <p class="work-note">
+                    LoRA fine-tuning of GPT-2: 0.888 dev accuracy at about 1% of parameters.
+                  </p>
+                </li>
+                <li class="work-item">
+                  <p class="work-head">
+                    <a href="./papers/lord-report.pdf">
+                      LoRD: LoRA-adapted re-identification with DINO
+                    </a>
+                    <span class="work-tag"
+                      >report / <a href="./papers/lord-poster.pdf">poster</a></span
+                    >
+                  </p>
+                  <p class="work-note">
+                    Video person re-identification with DINOv2/v3 backbones, on MARS.
+                  </p>
+                </li>
+                <li class="work-item">
+                  <p class="work-head">
+                    <a href="./papers/lol-report.pdf">
+                      Predicting professional League of Legends outcomes
+                    </a>
+                    <span class="work-tag"
+                      >report / <a href="./papers/lol-poster.pdf">poster</a></span
+                    >
+                  </p>
+                  <p class="work-note">
+                    Calibrated win-probability models over draft, economy, and objective data.
+                  </p>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
@@ -97,7 +211,7 @@
         id="chapter-track"
         class="chapter scrub-section scene-chapter"
         data-scrub="track"
-        data-scrub-vh="320"
+        data-scrub-vh="220"
         data-chapter="03"
         data-title="TRACK"
         data-ground="#0d0b10"
@@ -121,7 +235,7 @@
         id="chapter-experience"
         class="chapter scrub-section scene-chapter chapter-experience"
         data-scrub="experience"
-        data-scrub-vh="260"
+        data-scrub-vh="200"
         data-chapter="04"
         data-title="EXPERIENCE"
         data-ground="#0b0a0c"
@@ -129,10 +243,23 @@
       >
         <div class="scrub-sticky scene-sticky">
           <div class="experience-timeline" aria-labelledby="experience-title">
-            <div class="worldline-trunk worldline-trunk-full" aria-hidden="true"></div>
             <p class="chapter-index">CH 04 / EXPERIENCE</p>
             <h2 id="experience-title">Experience</h2>
+            <p class="experience-resume">
+              <a href="./resume.pdf">Resume (PDF)</a>
+            </p>
             <div class="experience-list" aria-label="Experience">
+              <article class="experience-entry">
+                <div class="experience-tick" aria-hidden="true"></div>
+                <p class="experience-date">2026 - PRESENT</p>
+                <div>
+                  <h3>Research Assistant, Stanford Physics</h3>
+                  <p>
+                    Neutrino cross-section unfolding with Prof. Benjamin Nachman; Stanford Major
+                    Grant.
+                  </p>
+                </div>
+              </article>
               <article class="experience-entry">
                 <div class="experience-tick" aria-hidden="true"></div>
                 <p class="experience-date">SUMMER 2026</p>
@@ -141,6 +268,47 @@
                   <p>
                     WisdomTree Connect — institutional blockchain rails distributing WTGXX, a
                     tokenized government money-market fund.
+                  </p>
+                </div>
+              </article>
+              <article class="experience-entry">
+                <div class="experience-tick" aria-hidden="true"></div>
+                <p class="experience-date">2025</p>
+                <div>
+                  <h3>Jefferson Lab</h3>
+                  <p>
+                    Gaussian-process regression to search for excesses from the hypothetical X17
+                    particle.
+                  </p>
+                </div>
+              </article>
+              <article class="experience-entry">
+                <div class="experience-tick" aria-hidden="true"></div>
+                <p class="experience-date">JUN 2024 - JAN 2025</p>
+                <div>
+                  <h3>SLAC National Accelerator Laboratory</h3>
+                  <p>
+                    Four-person team proposing a &#947;&#947; collider; ML for pileup effects on
+                    di-Higgs detection.
+                  </p>
+                </div>
+              </article>
+              <article class="experience-entry">
+                <div class="experience-tick" aria-hidden="true"></div>
+                <p class="experience-date">2023</p>
+                <div>
+                  <h3>Caltech LIGO Lab</h3>
+                  <p>Suspension simulation and testing; laser-beam interferometry in Python.</p>
+                </div>
+              </article>
+              <article class="experience-entry">
+                <div class="experience-tick" aria-hidden="true"></div>
+                <p class="experience-date">JUN - SEP 2023</p>
+                <div>
+                  <h3>Engineering Intern, Polytec, Pasadena</h3>
+                  <p>
+                    Python, MATLAB, and Octave statistical tools for customers analyzing vibration
+                    data.
                   </p>
                 </div>
               </article>
@@ -153,7 +321,7 @@
         id="chapter-music"
         class="chapter scrub-section scene-chapter"
         data-scrub="music"
-        data-scrub-vh="320"
+        data-scrub-vh="205"
         data-chapter="05"
         data-title="MUSIC"
         data-ground="#120d0b"
@@ -172,50 +340,19 @@
         id="chapter-contact"
         class="chapter scrub-section scene-chapter chapter-contact"
         data-scrub="contact"
-        data-scrub-vh="250"
+        data-scrub-vh="200"
         data-chapter="06"
         data-title="CONTACT"
         data-ground="#0a0a0b"
         aria-labelledby="contact-title"
       >
         <div class="scrub-sticky scene-sticky contact-sticky">
-          <div class="contact-worldline" aria-hidden="true">
-            <div class="worldline-trunk worldline-trunk-contact"></div>
-            <svg viewBox="0 0 1000 260" preserveAspectRatio="none">
-              <defs>
-                <linearGradient
-                  id="contact-dim"
-                  gradientUnits="userSpaceOnUse"
-                  x1="500"
-                  y1="130"
-                  x2="640"
-                  y2="130"
-                >
-                  <stop offset="70%" stop-color="#ffffff" />
-                  <stop offset="100%" stop-color="rgba(255, 255, 255, 0.3)" />
-                </linearGradient>
-                <mask
-                  id="contact-mask"
-                  maskUnits="userSpaceOnUse"
-                  x="0"
-                  y="0"
-                  width="1000"
-                  height="260"
-                >
-                  <polygon
-                    points="0,128 448,128 640,129.625 640,130.375 448,132 0,132"
-                    fill="url(#contact-dim)"
-                  />
-                </mask>
-              </defs>
-              <path
-                class="contact-line"
-                d="M 500 0 L 500 70 C 500 108 532 130 572 130 L 640 130"
-              ></path>
-              <circle class="contact-point" cx="640" cy="130" r="4"></circle>
-            </svg>
-          </div>
+          <!-- CH6 uses the same grammar as CH4: the worldline runs straight
+               through as one trunk and the content branches off it with a
+               tick. The line used to bend across the middle of the viewport
+               and strike straight through this chapter's own headline. -->
           <div class="contact-panel">
+            <div class="contact-tick" aria-hidden="true"></div>
             <p class="chapter-index">CH 06 / CONTACT</p>
             <h2 id="contact-title">Contact</h2>
             <p class="contact-links">
@@ -229,6 +366,10 @@
                 rel="noopener noreferrer"
                 >TFRRS</a
               >
+            </p>
+            <p class="data-caption">
+              <a href="./about.html">Plain-text version</a> - all of the above on one page, no
+              scrolling
             </p>
             <p class="data-caption">
               event data
