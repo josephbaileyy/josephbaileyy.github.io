@@ -1,0 +1,63 @@
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/instrument-serif-latin-regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Instrument Serif';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/instrument-serif-latin-italic.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('/fonts/inter-latin-variable.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-latin-regular.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/ibm-plex-mono-latin-medium.woff2') format('woff2');
+}
+
+:root {
+  --paper: #f4f1ea;
+  --paper-sunk: #eae6dc;
+  --ink: #14161a;
+  --ink-soft: #55595f;
+  --ink-faint: #8b8f96;
+  --rule: #d6d1c4;
+  --cobalt: #1b46d8;
+  --cobalt-sunk: #12309a;
+  --vermilion: #d8451f;
+  --specimen-bg: #07090d;
+  --specimen-rim: #1e242e;
+
+  --font-display: 'Instrument Serif', 'Iowan Old Style', Georgia, serif;
+  --font-text: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --page-gutter: clamp(1.25rem, 4vw, 4.5rem);
+  --page-max: 112rem;
+  --measure: 42rem;
+  --baseline: 0.5rem;
+  --focus-ring: 0 0 0 3px var(--paper), 0 0 0 5px var(--cobalt);
+}
