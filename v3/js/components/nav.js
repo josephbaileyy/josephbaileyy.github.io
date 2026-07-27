@@ -5,18 +5,17 @@ export default function mountNav(nav, sections) {
   const sectionList = [...sections];
   const linksById = new Map(links.map((link) => [decodeURIComponent(link.hash.slice(1)), link]));
   const visible = new Map();
-  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+  // Marking the active link is the whole job. Do NOT call scrollIntoView here:
+  // .site-nav is a flex row that wraps rather than scrolling, so there is never
+  // an offscreen link to reveal, and the header is `position: relative` — so
+  // scrolling a nav link into view scrolls the *document* back to the top on
+  // every scroll-spy update, which makes the page impossible to scroll at all.
   const setCurrent = (id) => {
     links.forEach((link) => link.removeAttribute('aria-current'));
     const active = linksById.get(id);
     if (!active) return;
     active.setAttribute('aria-current', 'location');
-    active.scrollIntoView({
-      behavior: prefersReducedMotion ? 'auto' : 'smooth',
-      block: 'nearest',
-      inline: 'nearest',
-    });
   };
 
   const firstLinkedSection = sectionList.find((section) => linksById.has(section.id));
