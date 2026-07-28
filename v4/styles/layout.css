@@ -1,7 +1,7 @@
 .site-header {
-  position: absolute;
+  position: sticky;
   z-index: 30;
-  inset: 0 0 auto;
+  top: 0;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: start;
@@ -59,6 +59,7 @@
 
 .machine-hero {
   position: relative;
+  margin-block-start: -4.75rem;
   min-height: 100svh;
   overflow: hidden;
   isolation: isolate;
@@ -243,17 +244,26 @@
 
 .content-section {
   display: grid;
-  grid-template-columns: minmax(12rem, 0.36fr) minmax(0, 0.64fr);
-  gap: clamp(2.5rem, 8vw, 8rem);
+  grid-template-columns: minmax(12rem, 0.46fr) minmax(0, 0.54fr);
+  gap: clamp(2.5rem, 5vw, 5rem);
   border-top: 1px solid var(--rule);
 }
 
+.machine-hero,
+.content-section,
+.site-footer {
+  scroll-margin-top: 5.25rem;
+}
+
 .section-heading {
+  min-width: 0;
   align-self: start;
+  container-type: inline-size;
 }
 
 .section-heading h2 {
   margin-block-end: 1.3rem;
+  overflow-wrap: break-word;
 }
 
 .section-index {
@@ -639,6 +649,12 @@
   }
 }
 
+@media (min-width: 58.001rem) {
+  .section-heading h2 {
+    font-size: clamp(2.5rem, 16cqi, 6.5rem);
+  }
+}
+
 @media (max-width: 52rem) {
   .site-header {
     display: block;
@@ -669,6 +685,10 @@
   .site-nav a {
     padding: 0.34rem 0.4rem;
     font-size: clamp(0.5rem, 2.5vw, 0.62rem);
+  }
+
+  .machine-hero {
+    margin-block-start: -2.65rem;
   }
 
   .hero-readout {
