@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The Unfolding Machine — fixture</title>
+    <style>
+      :root {
+        --void: #06070a;
+        --shell: #0b0d12;
+        --surface: #12151c;
+        --rule: #343a49;
+        --text: #eef1f6;
+        --text-soft: #aeb7c6;
+        --charge: #4cf2ff;
+        --charge-max: #ffffff;
+        --mass-heavy: #2f6bff;
+        --mass-mid: #ffb020;
+        --mass-light: #ff3d81;
+        --track: #b8e8ff;
+        --font-display: 'Mona Sans', 'Archivo', system-ui, sans-serif;
+        --font-text: 'Inter', system-ui, -apple-system, sans-serif;
+        --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body,
+      #machine {
+        width: 100%;
+        min-width: 0;
+        height: 100%;
+        margin: 0;
+        overflow-x: clip;
+        background: var(--void);
+      }
+    </style>
+  </head>
+  <body>
+    <main id="machine" data-debug="true"></main>
+    <script type="module">
+      import { fixtureManifest } from './fixture-manifest.js';
+      import mountUnfoldingMachine from './index.js';
+
+      const machine = mountUnfoldingMachine(document.querySelector('#machine'), {
+        manifest: fixtureManifest,
+        seed: 17,
+        onOpenItem(id) {
+          document.querySelector('#machine').dataset.openedItem = id;
+        },
+        onSoundPreference(enabled) {
+          document.querySelector('#machine').dataset.sound = String(enabled);
+        },
+      });
+      window.unfoldingMachine = machine;
+    </script>
+  </body>
+</html>

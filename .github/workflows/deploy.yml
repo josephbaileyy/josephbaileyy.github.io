@@ -28,23 +28,27 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
+      # Unit suite covers all versions still in the tree (v4, v3, and the root
+      # site). `npm test` excludes tests/e2e/**, which target the v1 root site
+      # that is no longer deployed.
       - run: npm test
-      # v3 ("The Event Lens") is the current site. It lives in v3/ with its own
-      # vite config and builds to v3/dist, which is what gets deployed as the
-      # Pages site root. Two earlier versions are kept, built by nothing and
-      # deployed by nothing, purely as fallbacks: worldline/ (the scroll-driven
-      # physics worldline) and the repo root (the zoomable-universe site, whose
-      # last deployed state is on the archive/universe-site branch).
+      # v4 ("The Unfolding Machine") is the current site. It lives in v4/ with
+      # its own vite config and builds to v4/dist, which is deployed as the
+      # Pages site root. Three earlier versions stay in the tree, built by
+      # nothing and deployed by nothing, purely as fallbacks: v3/ (the Event
+      # Lens monograph), worldline/ (the scroll-driven physics worldline), and
+      # the repo root (the zoomable-universe site, whose last deployed state is
+      # on the archive/universe-site branch).
       #
-      # v3/public/data holds the CMS event and signal JSON. It lives under
-      # publicDir deliberately: when that data sat in v3/data it was outside the
-      # build, every fetch 404'd in production, and the Event Lens silently
-      # degraded to its static fallback on every load while dev looked fine.
-      # v3/tests/build-output.test.js regression-tests that seam.
-      - run: npx vite build --config v3/vite.config.js
+      # Everything fetched at runtime must live under v4/public/. In v3 the JSON
+      # sat in v3/data/, outside publicDir, so vite build never copied it: every
+      # fetch 404'd in production and the hero silently fell back on every load
+      # while the dev server looked perfect. v4/tests/build-output.test.js
+      # regression-tests that seam.
+      - run: npx vite build --config v4/vite.config.js
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: v3/dist
+          path: v4/dist
       - id: deployment
         uses: actions/deploy-pages@v4
