@@ -3,10 +3,11 @@ import { mkdir } from 'node:fs/promises';
 
 import { chromium } from 'playwright';
 
-const baseUrl = 'http://127.0.0.1:4177/';
+const baseUrl = 'http://127.0.0.1:4174/';
 const shotsDir =
   '/private/tmp/claude-501/-Users-josephbailey-josephbaileyy-github-io/be09eafa-f60f-4346-9414-48a5ff71123d/scratchpad/shots';
 const widths = [390, 768, 1280, 1920];
+const overlapWidths = [390, 768, 1024, 1280, 1440, 1920, 2560];
 const screenshotWidths = [390, 1280, 1920];
 const browser = await chromium.launch({
   headless: true,
@@ -30,9 +31,55 @@ try {
   });
 
   await page.goto(`${baseUrl}?machine=idle&seed=17&frame=0`, { waitUntil: 'networkidle' });
-  await page.waitForFunction(() =>
-    ['ready', 'fallback'].includes(document.querySelector('#unfolding-machine')?.dataset.state),
+  await page.waitForFunction(
+    () => document.querySelector('#unfolding-machine')?.dataset.state === 'ready',
   );
+
+  const overlapResults = [];
+  for (const width of overlapWidths) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.waitForTimeout(100);
+    const sections = await page.evaluate(() =>
+      [...document.querySelectorAll('.content-section')].map((section) => {
+        const heading = section.querySelector('h2');
+        const card = section.children[1].getBoundingClientRect();
+        const textRange = document.createRange();
+        textRange.selectNodeContents(heading);
+        const textRects = [...textRange.getClientRects()];
+        const sharesRows = textRects.some(
+          (rect) => rect.bottom > card.top && rect.top < card.bottom,
+        );
+        const textRight = Math.max(...textRects.map((rect) => rect.right));
+        return {
+          section: section.id,
+          textRight: Number(textRight.toFixed(1)),
+          cardLeft: Number(card.left.toFixed(1)),
+          layout: sharesRows ? 'columns' : 'stacked',
+          overlap:
+            sharesRows &&
+            textRects.some(
+              (rect) =>
+                rect.right > card.left + 0.5 && rect.bottom > card.top && rect.top < card.bottom,
+            ),
+        };
+      }),
+    );
+    for (const section of sections) {
+      assert.equal(
+        section.overlap,
+        false,
+        `title/card overlap at ${width}px: ${JSON.stringify(section)}`,
+      );
+      if (section.layout === 'columns') {
+        assert.ok(
+          section.textRight <= section.cardLeft,
+          `title escaped its column at ${width}px: ${JSON.stringify(section)}`,
+        );
+      }
+    }
+    overlapResults.push({ width, sections });
+  }
+  console.log('TITLE_OVERLAP', JSON.stringify(overlapResults));
 
   const overflowResults = [];
   for (const width of widths) {
@@ -51,6 +98,47 @@ try {
   console.log('OVERFLOW', JSON.stringify(overflowResults));
 
   await page.setViewportSize({ width: 1280, height: 900 });
+  await page.evaluate(() => window.scrollTo(0, 3000));
+  await page.waitForTimeout(100);
+  const stickyAt3000 = await page.evaluate(() => {
+    const header = document.querySelector('.site-header').getBoundingClientRect();
+    const nav = document.querySelector('.site-nav').getBoundingClientRect();
+    return {
+      scrollY: window.scrollY,
+      viewportHeight: window.innerHeight,
+      headerTop: Number(header.top.toFixed(1)),
+      headerBottom: Number(header.bottom.toFixed(1)),
+      navTop: Number(nav.top.toFixed(1)),
+      navBottom: Number(nav.bottom.toFixed(1)),
+    };
+  });
+  assert.ok(stickyAt3000.headerTop >= 0, JSON.stringify(stickyAt3000));
+  assert.ok(stickyAt3000.headerBottom <= stickyAt3000.viewportHeight, JSON.stringify(stickyAt3000));
+  assert.ok(stickyAt3000.navTop >= 0, JSON.stringify(stickyAt3000));
+  assert.ok(stickyAt3000.navBottom <= stickyAt3000.viewportHeight, JSON.stringify(stickyAt3000));
+  console.log('STICKY_AT_3000', JSON.stringify(stickyAt3000));
+
+  await page.locator('.site-nav a[href="#education"]').click();
+  await page.waitForTimeout(100);
+  const anchorClearance = await page.evaluate(() => {
+    const header = document.querySelector('.site-header').getBoundingClientRect();
+    const target = document.querySelector('#education').getBoundingClientRect();
+    const heading = document.querySelector('#education-title').getBoundingClientRect();
+    return {
+      scrollY: window.scrollY,
+      headerBottom: Number(header.bottom.toFixed(1)),
+      targetTop: Number(target.top.toFixed(1)),
+      headingTop: Number(heading.top.toFixed(1)),
+      headingClearance: Number((heading.top - header.bottom).toFixed(1)),
+    };
+  });
+  assert.ok(anchorClearance.targetTop >= anchorClearance.headerBottom, JSON.stringify(anchorClearance));
+  assert.ok(
+    anchorClearance.headingTop >= anchorClearance.headerBottom,
+    JSON.stringify(anchorClearance),
+  );
+  console.log('ANCHOR_CLEARANCE', JSON.stringify(anchorClearance));
+
   await page.evaluate(() => window.scrollTo(0, 8000));
   await page.waitForTimeout(1600);
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -141,13 +229,31 @@ try {
     await visualPage.goto(`${baseUrl}?machine=idle&seed=17&frame=0`, {
       waitUntil: 'networkidle',
     });
-    await visualPage.waitForFunction(() =>
-      ['ready', 'fallback'].includes(document.querySelector('#unfolding-machine')?.dataset.state),
+    await visualPage.waitForFunction(
+      () => document.querySelector('#unfolding-machine')?.dataset.state === 'ready',
     );
-    const path = `${shotsDir}/v4f-${width}.png`;
-    await visualPage.screenshot({ path, animations: 'disabled' });
+    await visualPage.evaluate(() => document.documentElement.classList.remove('reveal-ready'));
+    for (const section of ['research', 'education']) {
+      await visualPage.evaluate((id) => {
+        const target = document.querySelector(`#${id}`);
+        window.scrollTo(0, target.getBoundingClientRect().top + window.scrollY - 84);
+      }, section);
+      await visualPage.waitForTimeout(400);
+      const path = `${shotsDir}/v4lay-${width}-${section}.png`;
+      await visualPage.screenshot({ path, animations: 'disabled' });
+      screenshotResults.push({
+        path,
+        scrollY: await visualPage.evaluate(() => window.scrollY),
+        state: await visualPage.locator('#unfolding-machine').getAttribute('data-state'),
+      });
+    }
+    await visualPage.evaluate(() => window.scrollTo(0, 3000));
+    await visualPage.waitForTimeout(400);
+    const stickyPath = `${shotsDir}/v4lay-${width}-sticky-3000.png`;
+    await visualPage.screenshot({ path: stickyPath, animations: 'disabled' });
     screenshotResults.push({
-      path,
+      path: stickyPath,
+      scrollY: await visualPage.evaluate(() => window.scrollY),
       state: await visualPage.locator('#unfolding-machine').getAttribute('data-state'),
     });
   }
