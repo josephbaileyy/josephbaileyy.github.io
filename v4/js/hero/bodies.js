@@ -340,6 +340,7 @@ export function createBodyVisuals(scene, records, colors, tier, deterministicCap
       labelMaterial,
       jewelFaces,
       baseEmissive: record.isProjectile ? 2.35 : record.source.massClass === 'mid' ? 0.05 : 0.1,
+      flashEmissiveBoost: record.source.massClass === 'heavy' ? 0.05 : 2.1,
       flash: 0,
     };
     byRecord.set(record, visual);
@@ -442,7 +443,8 @@ export function createBodyVisuals(scene, records, colors, tier, deterministicCap
         });
       }
       if (visual.flash > 0) {
-        visual.material.emissiveIntensity = visual.baseEmissive + (visual.flash / 12) * 2.1;
+        visual.material.emissiveIntensity =
+          visual.baseEmissive + (visual.flash / 12) * visual.flashEmissiveBoost;
       } else {
         visual.material.emissiveIntensity = visual.baseEmissive;
       }
