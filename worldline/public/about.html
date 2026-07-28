@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Joseph Bailey - About, research &amp; resume</title>
+    <meta
+      name="description"
+      content="Joseph Bailey - coterminal B.S. Physics and M.S. Computer Science (AI) at Stanford, working on machine learning for fundamental physics. Research papers, posters, experience, and contact."
+    />
+    <meta name="theme-color" content="#05060a" />
+    <link rel="canonical" href="https://josephbaileyy.github.io/about.html" />
+    <meta property="og:type" content="profile" />
+    <meta property="og:title" content="Joseph Bailey - About, research &amp; resume" />
+    <meta
+      property="og:description"
+      content="Machine learning for fundamental physics: research papers, posters, experience, and contact."
+    />
+    <meta property="og:url" content="https://josephbaileyy.github.io/about.html" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2305060a'/%3E%3Cpath d='M32 8v48M32 32h18' stroke='%23e8ecf1' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='50' cy='32' r='4' fill='%23ffb547'/%3E%3C/svg%3E"
+    />
+    <style>
+      /* Deliberately self-contained: this page ships out of public/ verbatim,
+         so it cannot reference the bundled stylesheet. Same tokens and type
+         scale as the worldline page, no JS, no WebGL, one paint. */
+      :root {
+        color-scheme: dark;
+        --bg: #05060a;
+        --text: #e8ecf1;
+        --muted: #aab4c2;
+        --dim: #7f8ea3;
+        --line: rgba(127, 142, 163, 0.28);
+        --cyan: #33d4ff;
+        --amber: #ffb547;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+        --system: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        --step--1: 0.94rem;
+        --step-0: 1.06rem;
+        --step-1: 1.72rem;
+        --step-2: 2.72rem;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        max-width: 46rem;
+        margin: 0 auto;
+        padding: 3.5rem max(1.25rem, 5vw) 6rem;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--system);
+        font-size: var(--step-0);
+        line-height: 1.7;
+      }
+
+      a {
+        color: var(--text);
+        text-decoration-color: rgba(51, 212, 255, 0.62);
+        text-underline-offset: 0.24em;
+      }
+
+      a:hover,
+      a:focus-visible {
+        color: var(--cyan);
+      }
+
+      h1 {
+        margin: 0.35rem 0 0;
+        font-size: clamp(2.4rem, 8vw, var(--step-2));
+        font-weight: 760;
+        line-height: 1.04;
+      }
+
+      h2 {
+        margin: 3.25rem 0 0;
+        padding-top: 0.9rem;
+        border-top: 1px solid var(--line);
+        font-size: var(--step-1);
+        font-weight: 720;
+        line-height: 1.12;
+      }
+
+      h3 {
+        margin: 0;
+        font-size: var(--step-0);
+        line-height: 1.3;
+      }
+
+      p {
+        margin: 0.55rem 0 0;
+        color: var(--muted);
+      }
+
+      .eyebrow,
+      .meta,
+      .group-label,
+      footer {
+        color: var(--dim);
+        font-family: var(--mono);
+        font-size: 0.6875rem;
+        line-height: 1.55;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow {
+        margin: 0;
+        color: var(--cyan);
+      }
+
+      .group-label {
+        margin: 2rem 0 0.9rem;
+        color: var(--cyan);
+      }
+
+      .lede {
+        margin-top: 1.1rem;
+        color: var(--muted);
+        font-size: 1.14rem;
+        line-height: 1.6;
+      }
+
+      .profile-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.7rem 1.3rem;
+        margin: 1.6rem 0 0;
+        padding: 0;
+        list-style: none;
+        font-size: var(--step--1);
+      }
+
+      .items {
+        margin: 1.4rem 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .items > li {
+        margin-top: 1.7rem;
+      }
+
+      .items > li:first-child {
+        margin-top: 0;
+      }
+
+      .meta {
+        display: block;
+        margin: 0.3rem 0 0;
+      }
+
+      .item-links {
+        margin: 0.5rem 0 0;
+        font-family: var(--mono);
+        font-size: 0.6875rem;
+        letter-spacing: 0.11em;
+        text-transform: uppercase;
+      }
+
+      .item-links a + a::before {
+        margin: 0 0.5rem;
+        color: var(--dim);
+        content: '/';
+      }
+
+      .plain {
+        margin: 1.2rem 0 0;
+        padding-left: 1.15rem;
+        color: var(--muted);
+        font-size: var(--step--1);
+      }
+
+      .plain li {
+        margin-top: 0.5rem;
+      }
+
+      footer {
+        margin-top: 3.5rem;
+        padding-top: 1.1rem;
+        border-top: 1px solid var(--line);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          scroll-behavior: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p class="eyebrow">Joseph Bailey / plain text</p>
+      <h1>Joseph Bailey</h1>
+      <p class="lede">
+        Coterminal B.S. Physics and M.S. Computer Science (AI track) at Stanford, graduating June
+        2027. I work on machine learning for fundamental physics - making AI a rigorous, calibrated
+        instrument for science, with honest uncertainties. I am drawn to compact objects, statistical
+        inference, and secure systems. Off the clock I run the 400-meter hurdles for Stanford Track &amp;
+        Field and play jazz and classical piano.
+      </p>
+      <ul class="profile-links">
+        <li><a href="./resume.pdf">Resume (PDF)</a></li>
+        <li><a href="mailto:jrbailey555@gmail.com">jrbailey555@gmail.com</a></li>
+        <li><a href="mailto:josephrb@stanford.edu">josephrb@stanford.edu</a></li>
+        <li>
+          <a href="https://github.com/josephbaileyy" rel="noopener noreferrer">GitHub</a>
+        </li>
+        <li>
+          <a href="https://linkedin.com/in/baileyjosephr" rel="noopener noreferrer">LinkedIn</a>
+        </li>
+        <li>
+          <a
+            href="https://www.tfrrs.org/athletes/8731395/Stanford/Joseph_Bailey.html"
+            rel="noopener noreferrer"
+            >TFRRS</a
+          >
+        </li>
+        <li>
+          <a
+            href="https://gostanford.com/sports/track-field/roster/player/joseph-bailey"
+            rel="noopener noreferrer"
+            >Stanford Track &amp; Field</a
+          >
+        </li>
+      </ul>
+    </header>
+
+    <main>
+      <section aria-labelledby="research-heading">
+        <h2 id="research-heading">Research</h2>
+
+        <p class="group-label">Papers &amp; talks</p>
+        <ul class="items">
+          <li>
+            <h3>Unbinned unfolding for neutrino-nucleus cross sections</h3>
+            <p>
+              Implementing and evaluating OmniFold, an unbinned ML unfolding framework, on MINERvA
+              neutrino-scattering data. I benchmark it against iterative Bayesian unfolding through
+              closure tests, generator stress tests, bootstrap resampling, and bias-variance
+              analysis, asking whether high-dimensional unbinned unfolding can reduce structural
+              model bias in the few-GeV regime.
+            </p>
+            <span class="meta"
+              >Prof. Benjamin Nachman, Stanford Physics &middot; 2026-present &middot; 2026 Stanford
+              Major Grant</span
+            >
+            <p class="item-links">
+              <a href="./papers/neutrino-unfolding.pdf">Paper (PDF)</a>
+              <a href="https://github.com/josephbaileyy/MINERvA-OmniFold" rel="noopener noreferrer"
+                >Code</a
+              >
+            </p>
+          </li>
+          <li>
+            <h3>Pileup identification for the XCC &#947;&#947; Higgs factory</h3>
+            <p>
+              On a four-person team proposing a &#947;&#947; collider, using Delphes, ROOT, and Unix
+              HPC to simulate and analyze terabytes of collider data and applying ML to study pileup
+              effects on di-Higgs detection.
+            </p>
+            <span class="meta"
+              >SLAC National Accelerator Laboratory &middot; June 2024-January 2025</span
+            >
+            <p class="item-links">
+              <a href="./papers/xcc-pileup-poster.pdf">Poster (PDF)</a>
+            </p>
+          </li>
+          <li>
+            <h3>Gaussian-process bump hunting for the X17 boson</h3>
+            <p>
+              Used Gaussian-process regression to search for excesses from the hypothetical X17
+              particle in collider data, and presented the work at the APS Far West Section meeting
+              at UC Santa Cruz.
+            </p>
+            <span class="meta">Jefferson Lab &middot; 2025</span>
+            <p class="item-links">
+              <a href="./papers/x17-bump-hunt-apsfws.pdf">APS talk (PDF)</a>
+            </p>
+          </li>
+          <li>
+            <h3>V-band time-series photometry of AM CVn</h3>
+            <p>
+              Reduced 140 V-band CCD images and performed AAVSO differential photometry on 138
+              retained exposures, recovering variability consistent with the known 1051-second
+              positive-superhump family.
+            </p>
+            <span class="meta">PHYSICS 100: Observational Astrophysics &middot; Spring 2026</span>
+            <p class="item-links">
+              <a href="./papers/am-cvn-report.pdf">Report (PDF)</a>
+              <a href="./papers/am-cvn-presentation.pdf">Slides (PDF)</a>
+            </p>
+          </li>
+          <li>
+            <h3>Gaussian beam interference for detecting focal length</h3>
+            <p>
+              Supported simulation, testing, and preparation of suspension elements, and conducted
+              laser-beam interferometry experiments with Python analysis.
+            </p>
+            <span class="meta">Caltech LIGO Lab &middot; 2023 &middot; LIGO technical note</span>
+            <p class="item-links">
+              <a href="./papers/ligo-caltech-report.pdf">Report (PDF)</a>
+            </p>
+          </li>
+        </ul>
+
+        <p class="group-label">Reports &amp; posters</p>
+        <ul class="items">
+          <li>
+            <h3>SPLoRA - sonnet generation and paraphrase detection with LoRA</h3>
+            <p>
+              LoRA fine-tuning of GPT-2 for paraphrase detection and Shakespearean sonnet
+              generation: 0.888 development accuracy while training about 1% of parameters, with
+              41.94 chrF.
+            </p>
+            <p class="item-links">
+              <a href="./papers/splora-report.pdf">Report (PDF)</a>
+              <a href="./papers/splora-poster.pdf">Poster (PDF)</a>
+              <a href="https://github.com/josephbaileyy/splora" rel="noopener noreferrer">Code</a>
+            </p>
+          </li>
+          <li>
+            <h3>LoRD - LoRA-adapted re-identification with DINO</h3>
+            <p>
+              Video person re-identification with DINOv2/v3 vision backbones, LoRA adaptation,
+              BNNeck, and temporal attention, evaluated on the MARS benchmark.
+            </p>
+            <p class="item-links">
+              <a href="./papers/lord-report.pdf">Report (PDF)</a>
+              <a href="./papers/lord-poster.pdf">Poster (PDF)</a>
+              <a href="https://github.com/anandkrishnan27/lord" rel="noopener noreferrer">Code</a>
+            </p>
+          </li>
+          <li>
+            <h3>Predicting outcomes in professional League of Legends matches</h3>
+            <p>
+              Machine learning over draft, economy, and objective data to predict the outcomes of
+              professional matches, with calibrated win-probability models benchmarked against
+              baselines.
+            </p>
+            <p class="item-links">
+              <a href="./papers/lol-report.pdf">Report (PDF)</a>
+              <a href="./papers/lol-poster.pdf">Poster (PDF)</a>
+              <a href="https://github.com/josephbaileyy/cs-229-project" rel="noopener noreferrer"
+                >Code</a
+              >
+            </p>
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="experience-heading">
+        <h2 id="experience-heading">Experience</h2>
+        <ul class="items">
+          <li>
+            <span class="meta">2026-present</span>
+            <h3>Research Assistant, Stanford Physics</h3>
+            <p>
+              Neutrino cross-section unfolding with Prof. Benjamin Nachman, on a 2026 Stanford Major
+              Grant.
+            </p>
+          </li>
+          <li>
+            <span class="meta">Summer 2026 &middot; New York, NY</span>
+            <h3>Product Manager Intern, WisdomTree Digital Movement</h3>
+            <p>
+              Supporting product management, market research, internal documentation, and
+              product-development discussions for digital-asset financial products, connecting
+              technical work in blockchain with financial markets and client-focused strategy.
+            </p>
+          </li>
+          <li>
+            <span class="meta">2025</span>
+            <h3>Jefferson Lab</h3>
+            <p>
+              Gaussian-process regression to search for excesses from the hypothetical X17 particle.
+            </p>
+          </li>
+          <li>
+            <span class="meta">June 2024 - January 2025</span>
+            <h3>SLAC National Accelerator Laboratory</h3>
+            <p>
+              Four-person team proposing a &#947;&#947; collider; ML for pileup effects on di-Higgs
+              detection.
+            </p>
+          </li>
+          <li>
+            <span class="meta">2023</span>
+            <h3>Caltech LIGO Lab</h3>
+            <p>
+              Suspension-element simulation and testing, plus laser-beam interferometry with Python
+              analysis.
+            </p>
+          </li>
+          <li>
+            <span class="meta">June - September 2023 &middot; Pasadena, CA</span>
+            <h3>Engineering Intern, Polytec</h3>
+            <p>
+              Designed Python, MATLAB, and Octave statistical tools for customers analyzing
+              vibration data, and modeled and 3D-printed laboratory tools to streamline operations.
+            </p>
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="education-heading">
+        <h2 id="education-heading">Education</h2>
+        <ul class="items">
+          <li>
+            <h3>Stanford University - B.S. Physics &amp; M.S. Computer Science (AI)</h3>
+            <p>
+              Coterminal degree, expected June 2027. Selected coursework: Quantum Mechanics I-II,
+              General Relativity, Stellar &amp; Galactic Astrophysics, Observational Astrophysics,
+              Machine Learning, NLP with Deep Learning, Machine Learning with Graphs, Deep Learning
+              for Computer Vision, Operating Systems, Cryptography, and Theory of Computation.
+            </p>
+            <span class="meta">Stanford, CA &middot; expected 2027</span>
+          </li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="honors-heading">
+        <h2 id="honors-heading">Honors</h2>
+        <ul class="plain">
+          <li>2026 Stanford Major Grant (neutrino unfolding research)</li>
+          <li>National Merit Finalist</li>
+          <li>ACS U.S. National Chemistry Olympiad National Finalist</li>
+          <li>Stanford Track &amp; Field Heart and Hustle Award, 2025</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="beyond-heading">
+        <h2 id="beyond-heading">Beyond research</h2>
+        <ul class="plain">
+          <li>
+            NCAA Division I track &amp; field - 400-meter hurdles for Stanford. Personal best 52.17
+            at the 2025 ACC Championships, down from 54.65 in 2024.
+          </li>
+          <li>Jazz (alto sax, flute, clarinet) and classical piano - MTAC Level 10.</li>
+          <li>
+            Other code: a Solidity and Foundry 2-of-3 multisig Ethereum wallet, an end-to-end
+            encrypted chat client implementing the Double Ratchet, Pintos OS enhancements spanning
+            scheduling, system calls, and virtual memory, and
+            <a href="https://github.com/josephbaileyy/cs-224w-project" rel="noopener noreferrer"
+              >soccer next-action prediction with graph neural networks</a
+            >.
+          </li>
+          <li>Interested in scientific ML, compact-object astrophysics, secure systems, and digital assets.</li>
+        </ul>
+      </section>
+
+      <section aria-labelledby="contact-heading">
+        <h2 id="contact-heading">Contact</h2>
+        <ul class="plain">
+          <li><a href="mailto:jrbailey555@gmail.com">jrbailey555@gmail.com</a></li>
+          <li><a href="mailto:josephrb@stanford.edu">josephrb@stanford.edu</a> (Stanford)</li>
+          <li>
+            <a href="https://github.com/josephbaileyy" rel="noopener noreferrer"
+              >github.com/josephbaileyy</a
+            >
+          </li>
+          <li>
+            <a href="https://linkedin.com/in/baileyjosephr" rel="noopener noreferrer"
+              >linkedin.com/in/baileyjosephr</a
+            >
+          </li>
+          <li>
+            <a
+              href="https://www.tfrrs.org/athletes/8731395/Stanford/Joseph_Bailey.html"
+              rel="noopener noreferrer"
+              >TFRRS race results</a
+            >
+          </li>
+          <li><a href="./resume.pdf">Resume (PDF)</a></li>
+        </ul>
+        <p><a href="./index.html">Back to the worldline &#8212; the scenic version of this page</a></p>
+      </section>
+    </main>
+
+    <footer>Joseph Bailey &middot; josephbaileyy.github.io</footer>
+  </body>
+</html>

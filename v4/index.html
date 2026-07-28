@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Joseph Bailey — Machine Learning for Fundamental Physics</title>
+    <meta
+      name="description"
+      content="Joseph Bailey works on machine learning for fundamental physics, making AI a rigorous, calibrated instrument for science."
+    />
+    <link rel="canonical" href="https://josephbaileyy.github.io/" />
+    <meta property="og:type" content="profile" />
+    <meta property="og:title" content="Joseph Bailey — Machine Learning for Fundamental Physics" />
+    <meta
+      property="og:description"
+      content="Research, projects, and evidence from work at the intersection of machine learning and fundamental physics."
+    />
+    <meta property="og:url" content="https://josephbaileyy.github.io/" />
+    <meta property="og:image" content="https://josephbaileyy.github.io/og-preview.jpg" />
+    <meta
+      property="og:image:alt"
+      content="Joseph Bailey and a visual study of machine learning for fundamental physics"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="preload"
+      href="./fonts/mona-sans-variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="./fonts/inter-variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="./fonts/jetbrains-mono-variable.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link rel="stylesheet" href="./styles/tokens.css" />
+    <link rel="stylesheet" href="./styles/base.css" />
+    <link rel="stylesheet" href="./styles/layout.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to the portfolio</a>
+
+    <header class="site-header">
+      <a class="wordmark" href="#top" aria-label="Joseph Bailey, top of page">JB</a>
+      <nav class="site-nav" aria-label="Primary navigation">
+        <a href="#research">Research</a>
+        <a href="#projects">Projects</a>
+        <a href="#experience">Experience</a>
+        <a href="#education">Education</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main id="main-content">
+      <section class="machine-hero" id="top" aria-labelledby="hero-title">
+        <div
+          class="machine-mount"
+          id="unfolding-machine"
+          data-state="loading"
+          aria-label="The Unfolding Machine interactive collision chamber"
+        ></div>
+        <p class="hero-readout" aria-hidden="true">
+          <strong>Unfolding machine / 017</strong>
+          Pull the unknown. Aim. Release. Select a labelled detector body.
+        </p>
+        <div class="hero-identity">
+          <div class="hero-name">
+            <p class="eyebrow">Physics × machine learning · Stanford</p>
+            <h1 id="hero-title">Joseph Bailey</h1>
+          </div>
+          <div class="hero-profile" data-content="profile">
+            <!-- PROFILE_CONTENT -->
+          </div>
+        </div>
+      </section>
+
+      <div class="document-shell">
+        <section class="content-section" id="research" aria-labelledby="research-title">
+          <header class="section-heading">
+            <p class="section-index">01 / Research</p>
+            <h2 id="research-title">Unknowns, measured carefully.</h2>
+            <p class="section-intro">
+              Five efforts across particle physics, astrophysics, and instrumentation. Each record
+              separates the question, the method, and what the evidence actually supports.
+            </p>
+          </header>
+          <div class="record-list" data-content="research">
+            <!-- RESEARCH_CONTENT -->
+          </div>
+        </section>
+
+        <section class="content-section" id="projects" aria-labelledby="projects-title">
+          <header class="section-heading">
+            <p class="section-index">02 / Projects</p>
+            <h2 id="projects-title">Systems that have to answer back.</h2>
+            <p class="section-intro">
+              Scientific machine learning, language models, vision, graphs, security, and a
+              portfolio built as an instrument rather than a brochure.
+            </p>
+          </header>
+          <div class="project-list" data-content="projects">
+            <!-- PROJECTS_CONTENT -->
+          </div>
+        </section>
+
+        <section class="content-section" id="experience" aria-labelledby="experience-title">
+          <header class="section-heading">
+            <p class="section-index">03 / Experience</p>
+            <h2 id="experience-title">From research systems to real products.</h2>
+          </header>
+          <div class="experience-list" data-content="experience">
+            <!-- EXPERIENCE_CONTENT -->
+          </div>
+        </section>
+
+        <section class="content-section" id="education" aria-labelledby="education-title">
+          <header class="section-heading">
+            <p class="section-index">04 / Education</p>
+            <h2 id="education-title">Physics, computation, proof.</h2>
+          </header>
+          <div data-content="education">
+            <!-- EDUCATION_CONTENT -->
+          </div>
+        </section>
+
+        <section class="content-section" id="instruments" aria-labelledby="instruments-title">
+          <header class="section-heading">
+            <p class="section-index">05 / Other instruments</p>
+            <h2 id="instruments-title">Timing in more than one register.</h2>
+          </header>
+          <div class="instrument-grid" data-content="instruments">
+            <!-- INSTRUMENTS_CONTENT -->
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer" id="contact">
+      <div>
+        <p class="section-index">06 / Contact</p>
+        <p class="footer-title">For research, systems, and hard questions.</p>
+      </div>
+      <div data-content="footer">
+        <!-- FOOTER_CONTENT -->
+      </div>
+    </footer>
+
+    <dialog class="item-drawer" id="item-drawer" aria-labelledby="drawer-title">
+      <div class="drawer-frame">
+        <header class="drawer-header">
+          <p class="drawer-kicker" id="drawer-title">Selected detector record</p>
+          <button class="drawer-close" type="button" data-drawer-close aria-label="Close details">
+            ×
+          </button>
+        </header>
+        <div class="drawer-content" data-drawer-content></div>
+      </div>
+    </dialog>
+
+    <script type="module" src="./js/main.js"></script>
+  </body>
+</html>

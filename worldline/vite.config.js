@@ -15,7 +15,11 @@ export default defineConfig(({ mode }) => ({
     strictPort: false,
   },
   build: {
-    sourcemap: true,
+    // Builds ship no source maps: production was serving ~2.9 MB of them, and
+    // `mode !== 'production'` still emitted one for the single-file artifact
+    // build. The dev server provides its own maps regardless of this option,
+    // so only an explicit development build opts back in.
+    sourcemap: mode === 'development',
     assetsInlineLimit: mode === 'artifact' ? 1024 * 1024 : 4096,
     outDir: resolve(worldlineRoot, 'dist'),
     emptyOutDir: true,

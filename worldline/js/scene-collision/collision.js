@@ -190,5 +190,12 @@ export function createCollisionScene({ canvas, hud, reducedMotion = false }) {
     getRenderCount() {
       return display?.renderCount || lastRenderCount;
     },
+    getAnchors() {
+      if (!mounted || !active || collapsed || permanentlyDisabled) {
+        return null;
+      }
+
+      return display?.getAnchors() ?? null;
+    },
   };
 }

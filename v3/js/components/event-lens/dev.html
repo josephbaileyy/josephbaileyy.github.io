@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Event Lens — component specimen</title>
+    <style>
+      :root {
+        --paper: #f4f1ea;
+        --ink: #14161a;
+        --ink-soft: #55595f;
+        --rule: #d6d1c4;
+        --cobalt: #1b46d8;
+        --specimen-bg: #07090d;
+        --specimen-rim: #1e242e;
+        --font-text: Inter, system-ui, sans-serif;
+        --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--paper);
+      }
+
+      body {
+        display: grid;
+        place-items: center;
+        padding: 1.25rem;
+      }
+
+      #event-lens {
+        width: min(640px, calc(100vw - 2.5rem), calc(100vh - 8.2rem));
+      }
+
+      @media (max-width: 480px) {
+        body {
+          align-content: start;
+          padding: 1rem;
+        }
+
+        #event-lens {
+          width: min(100%, calc(100vh - 10.5rem));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="event-lens" class="event-lens" data-event-src="../../../data/event.json"></main>
+    <script type="module">
+      import mountEventLens from './index.js';
+
+      const element = document.querySelector('#event-lens');
+      window.eventLens = mountEventLens(element);
+    </script>
+  </body>
+</html>

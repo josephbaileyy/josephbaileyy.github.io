@@ -21,7 +21,10 @@ export function createScrollRuntime({ reducedMotion = false } = {}) {
   const subscribers = new Set();
   const scrubRecords = [...document.querySelectorAll('[data-scrub]')].map((element, index) => {
     const height = Number(element.dataset.scrubVh || element.dataset.scrubHeight || 300);
-    element.style.setProperty('--scrub-height', `${Math.min(400, Math.max(200, height))}vh`);
+    // Floor is 120vh, not 200vh: a scrub only needs to exceed the viewport for
+    // `range` below to be positive, and the old floor silently clamped every
+    // chapter that tried to be shorter than two screens.
+    element.style.setProperty('--scrub-height', `${Math.min(400, Math.max(120, height))}vh`);
 
     return {
       element,

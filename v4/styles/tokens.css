@@ -1,0 +1,68 @@
+@font-face {
+  font-family: 'Mona Sans';
+  src: url('/fonts/mona-sans-variable.woff2') format('woff2-variations');
+  font-style: normal;
+  font-weight: 200 900;
+  font-stretch: 75% 125%;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/inter-variable.woff2') format('woff2-variations');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/fonts/jetbrains-mono-variable.woff2') format('woff2-variations');
+  font-style: normal;
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+:root {
+  --void: #06070a;
+  --shell: #0b0d12;
+  --surface: #12151c;
+  --rule: #232733;
+  --text: #eef1f6;
+  --text-soft: #9aa3b2;
+  --charge: #4cf2ff;
+  --charge-max: #ffffff;
+  --mass-heavy: #2f6bff;
+  --mass-mid: #ffb020;
+  --mass-light: #ff3d81;
+  --track: #b8e8ff;
+
+  --void-transparent: #06070a00;
+  --void-soft: #06070ab8;
+  --void-strong: #06070aeb;
+  --shell-transparent: #0b0d1200;
+  --shell-soft: #0b0d12d9;
+  --surface-soft: #12151ce6;
+  --surface-raised: #171b24;
+  --rule-soft: #23273399;
+  --rule-strong: #465064;
+  --text-faint: #6f7888;
+  --charge-soft: #4cf2ff26;
+  --charge-mid: #4cf2ff66;
+  --heavy-soft: #2f6bff24;
+  --mid-soft: #ffb02024;
+  --light-soft: #ff3d8124;
+  --shadow: #00000080;
+  --selection: #4cf2ff42;
+
+  --font-display: 'Mona Sans', 'Archivo', system-ui, sans-serif;
+  --font-text: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --page-pad: clamp(1rem, 3vw, 3.75rem);
+  --measure: 74rem;
+  --radius-small: 0.25rem;
+  --radius-medium: 0.75rem;
+  --radius-large: 1.25rem;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}

@@ -1,0 +1,188 @@
+.unfolding-machine {
+  --machine-charge: 0;
+  position: relative;
+  display: block;
+  inline-size: 100%;
+  block-size: max(42rem, 100svh);
+  min-inline-size: 0;
+  overflow: hidden;
+  background: var(--void);
+  color: var(--text);
+  isolation: isolate;
+}
+
+.unfolding-machine__canvas,
+.unfolding-machine__poster {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+}
+
+.unfolding-machine__canvas {
+  touch-action: none;
+  cursor: grab;
+}
+
+.unfolding-machine__canvas:active {
+  cursor: grabbing;
+}
+
+.unfolding-machine__poster {
+  object-fit: cover;
+}
+
+.unfolding-machine__instruments {
+  position: absolute;
+  z-index: 3;
+  inset-block-start: clamp(1rem, 2.5vw, 2rem);
+  inset-inline-end: clamp(1rem, 2.5vw, 2rem);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.unfolding-machine__control,
+.unfolding-machine__items button {
+  border: 1px solid var(--text-soft);
+  background: color-mix(
+    in srgb,
+    var(--surface) 84%,
+    var(--charge) calc(var(--machine-charge) * 16%)
+  );
+  color: var(--text);
+  font: 700 0.7rem/1 var(--font-mono);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.unfolding-machine__control {
+  min-block-size: 2.75rem;
+  padding-inline: 0.85rem;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+}
+
+.unfolding-machine__control:hover {
+  border-color: var(--charge);
+  color: var(--charge);
+}
+
+.unfolding-machine__control:focus-visible,
+.unfolding-machine__items button:focus-visible {
+  outline: 3px solid var(--charge-max);
+  outline-offset: 3px;
+}
+
+.unfolding-machine__items {
+  position: absolute;
+  z-index: 5;
+  inset-block-start: 5.25rem;
+  inset-inline-end: 1rem;
+  inline-size: min(18rem, calc(100% - 2rem));
+  max-block-size: min(72svh, 38rem);
+  padding: 0.75rem;
+  overflow: auto;
+  border: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(calc(100% + 2rem));
+  transition:
+    transform 180ms ease,
+    opacity 180ms ease;
+}
+
+.unfolding-machine__items:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.unfolding-machine__items > p {
+  margin: 0 0 0.65rem;
+  color: var(--text-soft);
+  font: 700 0.65rem/1.2 var(--font-mono);
+  letter-spacing: 0.12em;
+}
+
+.unfolding-machine__items ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.unfolding-machine__items button {
+  inline-size: 100%;
+  min-block-size: 2.4rem;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.unfolding-machine__fallback-note {
+  position: absolute;
+  inset-inline: 50% auto;
+  inset-block-end: clamp(1.25rem, 5vw, 3rem);
+  inline-size: min(34rem, calc(100% - 2rem));
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--text-soft);
+  background: var(--surface);
+  color: var(--text);
+  font: 600 0.8rem/1.45 var(--font-text);
+  text-align: center;
+  transform: translateX(-50%);
+}
+
+.unfolding-machine__debug {
+  position: absolute;
+  z-index: 3;
+  inset-inline-start: 1rem;
+  inset-block-end: 1rem;
+  max-inline-size: calc(100% - 2rem);
+  padding: 0.55rem 0.7rem;
+  overflow: hidden;
+  border: 1px solid var(--rule);
+  background: var(--surface);
+  color: var(--text-soft);
+  font: 600 0.62rem/1.3 var(--font-mono);
+  letter-spacing: 0.04em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 619px) {
+  .unfolding-machine {
+    block-size: max(38rem, 100svh);
+  }
+
+  .unfolding-machine__instruments {
+    inset-block-start: 0.75rem;
+    inset-inline: 0.75rem;
+    justify-content: space-between;
+  }
+
+  .unfolding-machine__control {
+    min-block-size: 2.65rem;
+    padding-inline: 0.65rem;
+    font-size: 0.62rem;
+  }
+
+  .unfolding-machine__items {
+    inset-block-start: 4.5rem;
+    inset-inline-end: 0.75rem;
+  }
+
+  .unfolding-machine__debug {
+    inset-inline-start: 0.75rem;
+    inset-block-end: 0.75rem;
+    font-size: 0.56rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .unfolding-machine__items {
+    transition: none;
+  }
+}

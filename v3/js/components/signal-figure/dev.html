@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Signal Figure — Dev Harness</title>
+    <link rel="stylesheet" href="./signal-figure.css" />
+    <style>
+      :root {
+        --paper: #f4f1ea;
+        --paper-sunk: #eae6dc;
+        --ink: #14161a;
+        --ink-soft: #55595f;
+        --ink-faint: #8b8f96;
+        --rule: #d6d1c4;
+        --cobalt: #1b46d8;
+        --cobalt-sunk: #12309a;
+        --vermilion: #d8451f;
+        --font-display: 'Instrument Serif', Georgia, serif;
+        --font-text: 'Inter', system-ui, sans-serif;
+        --font-mono: 'IBM Plex Mono', monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--font-text);
+        margin: 0;
+        padding: 1.5rem;
+      }
+
+      h1 {
+        font-family: var(--font-display);
+        font-weight: 400;
+        font-size: 2rem;
+        margin-top: 0;
+        margin-bottom: 1.5rem;
+        border-bottom: 1px solid var(--rule);
+        padding-bottom: 0.5rem;
+      }
+
+      .demo-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        max-width: 860px;
+        margin: 0 auto;
+      }
+
+      .demo-section {
+        background: var(--paper);
+        border: 1px solid var(--rule);
+        border-radius: 6px;
+        padding: 1.25rem;
+      }
+
+      .demo-section h2 {
+        font-family: var(--font-text);
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-top: 0;
+        margin-bottom: 1rem;
+        color: var(--ink);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-grid">
+      <h1>Signal Figure — Standalone Dev Mount</h1>
+
+      <section class="demo-section">
+        <h2>1. Stride Signal (400m Hurdles Splits)</h2>
+        <div class="signal-figure" id="fig-stride" data-signal="stride"></div>
+      </section>
+
+      <section class="demo-section">
+        <h2>2. Score Signal (Bach Fugue Piano Roll)</h2>
+        <div class="signal-figure" id="fig-score" data-signal="score"></div>
+      </section>
+
+      <section class="demo-section">
+        <h2>3. Star Signal (AM CVn Photometry)</h2>
+        <div class="signal-figure" id="fig-star" data-signal="star"></div>
+      </section>
+    </div>
+
+    <script type="module">
+      import mountSignalFigure from './index.js';
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.signal-figure').forEach((el) => {
+          const signal = el.dataset.signal;
+          mountSignalFigure(el, { signal });
+        });
+      });
+    </script>
+  </body>
+</html>
