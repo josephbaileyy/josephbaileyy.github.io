@@ -32,9 +32,9 @@ jobs:
       # site). `npm test` excludes tests/e2e/**, which target the v1 root site
       # that is no longer deployed.
       - run: npm test
-      # v4 ("The Unfolding Machine") is the current site. It lives in v4/ with
-      # its own vite config and builds to v4/dist, which is deployed as the
-      # Pages site root. Three earlier versions stay in the tree, built by
+      # The list-first portfolio in v4/ builds to v4/dist. The earlier
+      # collision chamber is included at /lab/. Three older versions stay in
+      # the tree, built by
       # nothing and deployed by nothing, purely as fallbacks: v3/ (the Event
       # Lens monograph), worldline/ (the scroll-driven physics worldline), and
       # the repo root (the zoomable-universe site, whose last deployed state is

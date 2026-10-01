@@ -4,6 +4,7 @@ import { defineConfig } from 'vite';
 
 import { education } from './content/education.js';
 import { experience } from './content/experience.js';
+import { renderHome } from './content/home.js';
 import { profile } from './content/profile.js';
 import { projects } from './content/projects.js';
 import { research } from './content/research.js';
@@ -229,6 +230,10 @@ export default defineConfig({
     sourcemap: false,
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
+      input: {
+        home: fileURLToPath(new URL('./index.html', import.meta.url)),
+        lab: fileURLToPath(new URL('./lab/index.html', import.meta.url)),
+      },
       output: {
         manualChunks(id) {
           if (id.includes('/node_modules/three/')) return 'three';
@@ -250,11 +255,17 @@ export default defineConfig({
   plugins: [
     {
       name: 'static-portfolio-content',
-      transformIndexHtml(html) {
-        return contentMarkers.reduce(
+      transformIndexHtml(html, context) {
+        if (html.includes('<!-- HOME_CONTENT -->')) {
+          return html.replace('<!-- HOME_CONTENT -->', renderHome());
+        }
+        const rendered = contentMarkers.reduce(
           (output, [marker, render]) => output.replace(marker, render()),
           html,
         );
+        return context.filename.includes('/lab/')
+          ? rendered.replaceAll('href="./', 'href="../')
+          : rendered;
       },
     },
   ],

@@ -3,9 +3,8 @@ import { mkdir } from 'node:fs/promises';
 
 import { chromium } from 'playwright';
 
-const baseUrl = 'http://127.0.0.1:4174/';
-const shotsDir =
-  '/private/tmp/claude-501/-Users-josephbailey-josephbaileyy-github-io/be09eafa-f60f-4346-9414-48a5ff71123d/scratchpad/shots';
+const baseUrl = new URL('lab/', process.env.SITE_URL || 'http://127.0.0.1:4177/').href;
+const shotsDir = process.env.SHOTS_DIR || 'test-results/lab';
 const widths = [390, 768, 1280, 1920];
 const overlapWidths = [390, 768, 1024, 1280, 1440, 1920, 2560];
 const screenshotWidths = [390, 1280, 1920];
@@ -132,7 +131,10 @@ try {
       headingClearance: Number((heading.top - header.bottom).toFixed(1)),
     };
   });
-  assert.ok(anchorClearance.targetTop >= anchorClearance.headerBottom, JSON.stringify(anchorClearance));
+  assert.ok(
+    anchorClearance.targetTop >= anchorClearance.headerBottom,
+    JSON.stringify(anchorClearance),
+  );
   assert.ok(
     anchorClearance.headingTop >= anchorClearance.headerBottom,
     JSON.stringify(anchorClearance),

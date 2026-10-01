@@ -1,4 +1,10 @@
-# josephbaileyy.github.io — a zoomable universe, in 3D
+# josephbaileyy.github.io
+
+The current deployed site is the list-first portfolio in `v4/`. Research contributions, dates, reports, and code are readable without JavaScript. The educational unfolding toy loads only when its explanation is opened. The earlier collision chamber is preserved at `/lab/`.
+
+Run `npm run dev`, `npm run build`, and `npm run preview` for the current site. See [v4/README.md](v4/README.md) for content editing and browser checks. The documentation below describes the archived universe version; use `npm run dev:universe` or `npm run build:universe` for it.
+
+## Archived universe site
 
 A personal site that dives from the Milky Way down to my desk, Powers-of-Ten style:
 

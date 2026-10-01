@@ -40,6 +40,15 @@ describe('v4 production output', () => {
       'fonts/LICENSE-MONA-SANS.txt',
       'fonts/LICENSE-INTER.txt',
       'fonts/LICENSE-JETBRAINS-MONO.txt',
+      'fonts/source-serif-4-regular.ttf',
+      'fonts/source-serif-4-semibold.ttf',
+      'fonts/LICENSE-SOURCE-SERIF-4.txt',
+      'lab/index.html',
+      'img/home/with-camera.jpg',
+      'img/home/amcvn-fit.png',
+      'img/unfolding/face2024.png',
+      'img/unfolding/face2025.png',
+      'data/acc-2025-400mh-splits.csv',
       'resume.pdf',
       'og-preview.jpg',
       'papers/neutrino-unfolding.pdf',
@@ -50,13 +59,20 @@ describe('v4 production output', () => {
     ].forEach((asset) => expect(files, asset).toContain(asset));
 
     const html = readFileSync(path.join(outputDir, 'index.html'), 'utf8');
-    expect(html).toContain('I am a coterminal B.S. Physics');
+    expect(html).toContain('coterminal physics B.S.');
     expect(html).toContain(
       'whether high-dimensional unbinned unfolding reduces structural model bias is the question under test',
     );
     expect(html).toContain('WisdomTree Connect');
     expect(html).toContain('MTAC Level 10 piano');
     expect(html).not.toContain('<!-- RESEARCH_CONTENT -->');
+    expect(html).not.toContain('<!-- HOME_CONTENT -->');
+    expect(html).not.toContain('id="unfolding-machine"');
+    expect(html).toContain('Explanation and demonstration');
+    const lab = readFileSync(path.join(outputDir, 'lab/index.html'), 'utf8');
+    expect(lab).toContain('id="unfolding-machine"');
+    expect(lab).toContain('href="../papers/neutrino-unfolding.pdf"');
+    expect(lab).toContain('href="../resume.pdf"');
     expect(existsSync(path.join(outputDir, 'assets'))).toBe(true);
   });
 });
