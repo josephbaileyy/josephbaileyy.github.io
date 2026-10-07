@@ -20,6 +20,30 @@ try {
   });
   await page.goto(baseUrl, { waitUntil: 'networkidle' });
   await page.evaluate(() => document.fonts.ready);
+  const instagram = page.locator('[data-instagram]');
+  const visiblePost = instagram.locator('[data-instagram-slide]:not([hidden])');
+  assert.equal(await visiblePost.count(), 1);
+  const firstPost = await visiblePost.locator('.instagram-post').getAttribute('href');
+  assert.match(firstPost, /\/p\/DdXkvjlj4eb\/$/);
+  await instagram.getByRole('button', { name: 'Next Instagram post' }).click();
+  assert.match(await visiblePost.locator('.instagram-post').getAttribute('href'), /DcaDTaWDRd4/);
+  assert.equal(await instagram.locator('[data-instagram-count]').innerText(), '2 / 4');
+  await page.keyboard.press('ArrowLeft');
+  assert.equal(await visiblePost.locator('.instagram-post').getAttribute('href'), firstPost);
+  await instagram.getByRole('button', { name: 'Previous Instagram post' }).click();
+  assert.match(await visiblePost.locator('.instagram-post').getAttribute('href'), /DMVm3ckxOOf/);
+  await page.keyboard.press('ArrowRight');
+  assert.equal(await visiblePost.locator('.instagram-post').getAttribute('href'), firstPost);
+  for (let index = 0; index < 4; index++) {
+    const photo = visiblePost.locator('.instagram-post img');
+    await page.waitForFunction(() => {
+      const img = document.querySelector('[data-instagram-slide]:not([hidden]) img');
+      return img?.complete && img.naturalWidth > 0;
+    });
+    assert.ok(await photo.evaluate((img) => img.complete && img.naturalWidth > 0));
+    assert.equal(await visiblePost.locator('.instagram-post').getAttribute('target'), '_blank');
+    await instagram.getByRole('button', { name: 'Next Instagram post' }).click();
+  }
   assert.equal(await page.locator('#research article').count(), 5);
   assert.equal(await page.locator('#projects article').count(), 7);
   assert.equal(await page.locator('#unfolding-machine').count(), 0);
@@ -54,6 +78,10 @@ try {
   }
 
   await page.setViewportSize({ width: 1280, height: 1000 });
+  await page.screenshot({
+    path: `${shotsDir}/instagram-preview.png`,
+    clip: { x: 140, y: 40, width: 1000, height: 480 },
+  });
   const summary = page.locator('#unfolding-explanation > summary');
   await summary.focus();
   await page.keyboard.press('Enter');
@@ -109,6 +137,9 @@ try {
   assert.equal(await plain.locator('#research article').count(), 5);
   assert.equal(await plain.locator('#projects article').count(), 7);
   assert.equal(await plain.locator('#experience article').count(), 2);
+  assert.equal(await plain.locator('[data-instagram-slide]:not([hidden])').count(), 1);
+  assert.equal(await plain.getByRole('button', { name: 'Next Instagram post' }).isVisible(), false);
+  assert.equal(await plain.locator('.instagram-profile').isVisible(), true);
   assert.match(await plain.locator('body').innerText(), /question under test/);
   await plain.locator('#unfolding-explanation > summary').click();
   assert.match(await plain.locator('#unfolding-explanation').innerText(), /needs JavaScript/);

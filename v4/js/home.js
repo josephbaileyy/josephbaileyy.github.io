@@ -1,3 +1,7 @@
+import { mountInstagramCarousel } from './components/instagram.js';
+
+mountInstagramCarousel(document.querySelector('[data-instagram]'));
+
 const disclosure = document.querySelector('[data-demo="unfolding"]');
 let loading = false;
 let initialized = false;

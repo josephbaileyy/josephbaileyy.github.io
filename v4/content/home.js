@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 
 import { education } from './education.js';
 import { experience } from './experience.js';
+import { instagram } from './instagram.js';
 import { profile } from './profile.js';
 import { projects } from './projects.js';
 import { research } from './research.js';
@@ -196,6 +197,41 @@ function personalList() {
   </ul>`;
 }
 
+function instagramCarousel() {
+  const icon = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".8" fill="currentColor" stroke="none"/></svg>`;
+  return `<aside class="instagram-card" data-instagram role="region" aria-roledescription="carousel" aria-label="Instagram posts by ${instagram.username}">
+    <a class="instagram-profile" href="${instagram.profileUrl}" target="_blank" rel="noopener noreferrer" aria-label="View @${instagram.username} on Instagram (opens in a new tab)">
+      <img class="instagram-avatar" src="${instagram.avatar}" alt="" width="32" height="32">
+      <span><strong>@${instagram.username}</strong><span class="instagram-network">Instagram</span></span>${icon}
+    </a>
+    <div class="instagram-view">
+      ${instagram.posts
+        .map(
+          (
+            post,
+            index,
+          ) => `<div class="instagram-slide" data-instagram-slide data-post-date="${post.label}" role="group" aria-roledescription="slide" aria-label="Post ${index + 1} of ${instagram.posts.length}"${index ? ' hidden' : ''}>
+        <a class="instagram-post" href="https://www.instagram.com/p/${post.id}/" target="_blank" rel="noopener noreferrer" aria-label="Open Instagram post from ${post.label} and view all photos (opens in a new tab)">
+          <img src="./img/instagram/${post.id}.jpg" alt="${escape(post.alt)}" width="640" height="800"${index ? ' loading="lazy"' : ''}>
+          <span class="instagram-album" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="13" height="13" rx="2"/><path d="M8 20h10a2 2 0 0 0 2-2V8"/></svg></span>
+        </a>
+        <div class="instagram-caption"><time datetime="${post.date}">${post.label}</time><a href="https://www.instagram.com/p/${post.id}/" target="_blank" rel="noopener noreferrer">View post ↗</a></div>
+      </div>`,
+        )
+        .join('')}
+      <div class="instagram-arrows" data-instagram-controls hidden>
+        <button type="button" class="instagram-prev" data-instagram-prev aria-label="Previous Instagram post"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
+        <button type="button" class="instagram-next" data-instagram-next aria-label="Next Instagram post"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
+      </div>
+    </div>
+    <div class="instagram-pagination" data-instagram-controls hidden>
+      <span class="instagram-dots" aria-hidden="true">${instagram.posts.map((_, index) => `<span data-instagram-dot${index === 0 ? ' class="is-active"' : ''}></span>`).join('')}</span>
+      <span data-instagram-count aria-hidden="true">1 / ${instagram.posts.length}</span>
+    </div>
+    <p class="visually-hidden" data-instagram-status role="status" aria-atomic="true"></p>
+  </aside>`;
+}
+
 export function renderHome() {
   return `<header class="introduction" id="top">
     <div><h1>Joseph Bailey</h1>
@@ -211,7 +247,7 @@ export function renderHome() {
       ])}</nav>
       <nav class="page-index" aria-label="On this page"><a href="#research">Research</a><a href="#projects">Projects</a><a href="#experience">Experience</a><a href="#instruments">Outside research</a></nav>
     </div>
-    <figure><img src="./img/home/with-camera.jpg" alt="Joseph holding a red camera in a town square" width="168" height="210"><figcaption>With my camera.</figcaption></figure>
+    ${instagramCarousel()}
   </header>
   <section id="research" aria-labelledby="research-heading"><h2 id="research-heading">Research</h2>${researchList()}</section>
   <section id="projects" aria-labelledby="projects-heading"><h2 id="projects-heading">Code and other projects</h2><ul class="work-list">${projects.map((item) => `<li><article id="${item.id}"><header class="entry-heading"><h3>${escape(item.title === 'prior-personal-site' ? 'Earlier versions of this website' : item.title)}</h3></header><p>${escape(item.work)}</p><p class="project-evidence">${escape(item.evidence)}</p>${links(item.links)}</article></li>`).join('')}</ul></section>

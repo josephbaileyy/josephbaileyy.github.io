@@ -32,8 +32,15 @@ Rapier; the toy code and images load only after opening its explanation.
 - `public/papers/` and `public/resume.pdf` are the directly linked evidence.
 - `public/img/home/with-camera.jpg`, `amcvn-fit.png`, and
   `public/img/unfolding/face2024.png`, `face2025.png` were copied unchanged from
-  the user-supplied design handoff. The header photo caption deliberately makes no
-  claim about its unverified date.
+  the user-supplied design handoff. The camera photo remains the social preview.
+- The header Instagram carousel uses `content/instagram.js` and local covers in
+  `public/img/instagram/`, saved from the public @josphbailey profile on October 7, 2026. This is a curated snapshot, not an automatically synchronized feed. To add
+  posts, save their covers as `<post-id>.jpg` and add their ID, date, label, and alt
+  text to the records. Images and “View post” links open the original Instagram
+  post in a new tab, where visitors can view its full album. Arrow buttons and
+  keyboard Left/Right cycle through posts with wraparound; without JavaScript,
+  the first post and profile links remain usable. No Instagram script, token, or
+  third-party widget service is loaded.
 - `public/data/acc-2025-400mh-splits.csv` is copied unchanged from the supplied
   recorded splits. Both the static plot and its accessible data table derive from
   that file at build time. Speeds use differences of cumulative times and nominal
