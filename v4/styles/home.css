@@ -1,30 +1,13 @@
-@font-face {
-  font-family: 'Source Serif 4';
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url('/fonts/source-serif-4-regular.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'Source Serif 4';
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url('/fonts/source-serif-4-semibold.ttf') format('truetype');
-}
-
 :root {
   color-scheme: light;
+  --home-font:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --home-background: #fbfaf7;
   --home-ink: #1b1b1a;
   --home-secondary: #62605a;
   --home-rule: #dedbd3;
   --home-link: #294a83;
-  font:
-    400 18px/1.6 'Source Serif 4',
-    Georgia,
-    serif;
+  font: 400 17px/1.65 var(--home-font);
   background: var(--home-background);
   color: var(--home-ink);
 }
@@ -70,32 +53,39 @@ input[type='radio'] {
   transform: none;
 }
 main {
-  max-width: 1000px;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 64px 28px 72px;
+  padding: 56px 28px 72px;
 }
 h1,
 h2,
 h3 {
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.4;
   font-weight: 600;
   margin: 0;
 }
 h1 {
-  margin-bottom: 10px;
+  font-size: clamp(32px, 4vw, 40px);
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+  font-weight: 700;
+  margin-bottom: 18px;
 }
 h2 {
+  font-size: 24px;
+  letter-spacing: -0.025em;
   margin-bottom: 18px;
 }
 h3 {
-  font-weight: 400;
+  font-weight: 600;
 }
 p {
+  max-width: 70ch;
   margin: 0 0 12px;
 }
 section {
-  margin-top: 42px;
+  margin-top: 48px;
   scroll-margin-top: 24px;
 }
 article {
@@ -124,12 +114,124 @@ img {
 
 .introduction {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 240px;
+  grid-template-columns: minmax(0, 1fr) 248px;
   gap: 40px;
   align-items: start;
 }
 .introduction > div > p {
   max-width: 640px;
+}
+.intro-secondary {
+  font-size: 15px;
+  color: var(--home-secondary);
+}
+.intro-personal {
+  font-size: 15px;
+  color: var(--home-secondary);
+}
+.entry-heading h3 a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  color: inherit;
+  text-decoration: none;
+}
+.entry-heading h3 a::after {
+  content: '↗';
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--home-secondary);
+}
+.entry-heading h3 a:hover,
+.entry-heading h3 a:focus-visible {
+  text-decoration: underline;
+}
+.record-details {
+  margin-top: 4px;
+}
+.record-details > summary,
+.more-projects > summary {
+  font-size: 14px;
+  color: var(--home-secondary);
+  text-decoration: none;
+}
+.record-details > summary:hover,
+.more-projects > summary:hover {
+  text-decoration: underline;
+}
+.record-details .explanation-body {
+  padding: 12px 0 4px;
+  max-width: 760px;
+}
+.more-projects {
+  margin-top: 16px;
+}
+.unfolding-explainer {
+  max-width: 800px;
+  padding: 20px 0 8px;
+}
+.unfolding-takeaway {
+  font-size: 20px;
+  line-height: 1.45;
+}
+.unfolding-story {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+  margin: 24px 0 12px;
+}
+.unfolding-story h4 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.unfolding-story svg {
+  display: block;
+  width: 100%;
+}
+.unfolding-story text {
+  font:
+    11px system-ui,
+    sans-serif;
+  fill: var(--home-secondary);
+}
+.unfolding-story p,
+.method-link {
+  font-size: 15px;
+}
+.unfolding-comparison {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+  margin: 22px 0;
+}
+.unfolding-comparison canvas {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--home-background);
+}
+.unfolding-comparison figcaption {
+  color: var(--home-ink);
+}
+.unfolding-comparison figcaption span {
+  display: block;
+  font-size: 13px;
+  color: var(--home-secondary);
+}
+.simple-demo-controls label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+}
+.simple-demo-controls input {
+  width: 100%;
+  margin: 12px 0;
+  accent-color: var(--home-link);
+}
+.demo-insight {
+  font-size: 15px;
+  min-height: 3.2em;
 }
 .visually-hidden {
   position: absolute;
@@ -149,15 +251,13 @@ img {
   border: 1px solid var(--home-rule);
   border-radius: 10px;
   background: #fff;
-  font:
-    13px/1.4 system-ui,
-    sans-serif;
+  font: 13px/1.4 var(--home-font);
 }
 .instagram-profile {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 12px;
+  padding: 9px 12px;
   color: var(--home-ink);
   text-decoration: none;
   border-radius: 10px 10px 0 0;
@@ -191,8 +291,9 @@ img {
 }
 .instagram-post img {
   width: 100%;
-  aspect-ratio: 4 / 5;
-  object-fit: contain;
+  aspect-ratio: 6 / 5;
+  object-fit: cover;
+  object-position: center 45%;
 }
 .instagram-post:focus-visible {
   outline-offset: -3px;
@@ -229,7 +330,7 @@ img {
   top: 0;
   left: 0;
   width: 100%;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 6 / 5;
   pointer-events: none;
 }
 .instagram-arrows button {
@@ -285,6 +386,7 @@ img {
   flex-wrap: wrap;
   gap: 6px 20px;
   margin-top: 14px;
+  font-size: 14px;
 }
 .evidence-links {
   list-style: none;
@@ -299,6 +401,27 @@ img {
 }
 .introduction .evidence-links {
   margin-top: 16px;
+  font-size: 15px;
+}
+
+.personal-photos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 26px;
+}
+.personal-photos a {
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.personal-photos img {
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+.personal-photos figcaption {
+  font-size: 13px;
 }
 
 .work-list {
@@ -321,6 +444,8 @@ img {
 .entry-date {
   flex-shrink: 0;
   margin: 0;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
 }
 .research-status,
 .project-evidence {
@@ -421,10 +546,7 @@ input[type='radio'] {
 }
 .race-plot text {
   fill: var(--home-secondary);
-  font:
-    15px 'Source Serif 4',
-    Georgia,
-    serif;
+  font: 15px var(--home-font);
 }
 .race-plot-mobile {
   display: none;
@@ -481,7 +603,7 @@ footer {
     padding: 36px 22px 48px;
   }
   .introduction {
-    grid-template-columns: minmax(0, 1fr) 220px;
+    grid-template-columns: minmax(0, 1fr) 208px;
     gap: 24px;
   }
   .entry-heading {
@@ -505,9 +627,36 @@ footer {
     grid-template-columns: 1fr;
     gap: 24px;
   }
+  .instagram-card {
+    max-width: 320px;
+  }
+  .instagram-post img,
+  .instagram-arrows {
+    aspect-ratio: 3 / 2;
+  }
+  .personal-photos {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    max-width: 400px;
+  }
+  .personal-photos img {
+    aspect-ratio: 1;
+  }
 }
 
 @media (max-width: 520px) {
+  .unfolding-comparison {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    max-width: 300px;
+  }
+  .unfolding-story {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .unfolding-story > div {
+    max-width: 300px;
+  }
   section {
     margin-top: 34px;
   }

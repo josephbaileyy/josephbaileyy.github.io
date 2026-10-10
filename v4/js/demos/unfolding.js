@@ -11,9 +11,24 @@ export default async function mountUnfolding(root) {
   const iterationValue = root.querySelector('#unfolding-iteration-value');
   const ess = root.querySelector('[data-ess]');
   const caption = root.querySelector('[data-result-caption]');
-  const truthButton = root.querySelector('[data-reveal-truth]');
+  const insight = root.querySelector('[data-demo-insight]');
   let prior = 'y2024';
-  let showTruth = false;
+
+  // Render data, estimate, and target with identical binning and dot-area scale.
+  const sampleFrame = (xs, ys) => {
+    const { M, ND } = toy.E;
+    const H = new Float32Array(M * M);
+    for (let i = 0; i < ND; i++) {
+      const x = Math.min(M - 1, Math.max(0, Math.floor(xs[i] * M)));
+      const y = Math.min(M - 1, Math.max(0, Math.floor(ys[i] * M)));
+      H[y * M + x]++;
+    }
+    const sorted = Array.from(H).sort((a, b) => a - b);
+    return { H, ref: sorted[Math.floor(0.98 * (M * M - 1))] };
+  };
+  const measuredFrame = sampleFrame(toy.E.rx, toy.E.ry);
+  const targetFrame = sampleFrame(toy.E.tx, toy.E.ty);
+  toy.E.displayRef = Math.max(toy.E.displayRef, measuredFrame.ref, targetFrame.ref);
 
   function prepare(canvas) {
     const size = Math.max(1, canvas.getBoundingClientRect().width);
@@ -33,41 +48,25 @@ export default async function mountUnfolding(root) {
     const main = prepare(root.querySelector('[data-unfolded]'));
     toy.halftone(main.context, main.size, frame);
     const measured = prepare(root.querySelector('[data-measured]'));
-    toy.stipple(measured.context, measured.size, toy.E.rx, toy.E.ry, toy.E.ND, 0.35);
+    toy.halftone(measured.context, measured.size, measuredFrame);
     const actual = prepare(root.querySelector('[data-truth]'));
-    if (showTruth) {
-      toy.stipple(actual.context, actual.size, toy.E.tx, toy.E.ty, toy.E.ND, 0.35);
-    } else {
-      actual.context.strokeStyle = '#dedbd3';
-      actual.context.beginPath();
-      actual.context.moveTo(0, 0);
-      actual.context.lineTo(actual.size, actual.size);
-      actual.context.moveTo(actual.size, 0);
-      actual.context.lineTo(0, actual.size);
-      actual.context.stroke();
-    }
+    toy.halftone(actual.context, actual.size, targetFrame);
     iterationValue.value = String(index);
     ess.value = `${Math.round(frame.ess * 100)}%`;
     caption.textContent =
       index === 0
-        ? 'Starting simulation, before reweighting.'
-        : `Reweighted simulation after ${index} iteration${index === 1 ? '' : 's'}. Fixed display scale; largest dots capped.`;
+        ? 'Starting simulation'
+        : `After ${index} reweighting step${index === 1 ? '' : 's'}`;
     root
       .querySelector('[data-unfolded]')
       .setAttribute(
         'aria-label',
         `${prior === 'y2024' ? '2024-photo' : 'Uniform'} starting simulation, iteration ${index}. Effective sample size ${ess.value}. Summed weights in each display cell.`,
       );
-    truthButton.textContent = showTruth ? 'Hide synthetic truth' : 'Show synthetic truth';
-    truthButton.setAttribute('aria-pressed', String(showTruth));
-    root
-      .querySelector('[data-truth]')
-      .setAttribute(
-        'aria-label',
-        showTruth
-          ? 'Synthetic generating sample used to make the measured data'
-          : 'Synthetic generating sample hidden. Use Show synthetic truth to reveal it.',
-      );
+    insight.textContent =
+      index === 0
+        ? 'At step 0, the estimate is just the starting simulation. Move the slider to change the weights.'
+        : 'Only the middle panel changes. Compare it with the target: the simulation is being reweighted, while the measured data stay fixed.';
   }
 
   view.hidden = false;
@@ -80,10 +79,6 @@ export default async function mountUnfolding(root) {
       prior = input.value;
       paint();
     });
-  });
-  truthButton.addEventListener('click', () => {
-    showTruth = !showTruth;
-    paint();
   });
   root.addEventListener('toggle', paint);
   const observer = new ResizeObserver(paint);

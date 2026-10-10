@@ -13,7 +13,7 @@ async function loadDemo() {
   const retry = disclosure.querySelector('[data-demo-retry]');
   retry.hidden = true;
   status.hidden = false;
-  status.textContent = 'Preparing the synthetic samples…';
+  status.textContent = 'Preparing the interactive example…';
   try {
     const { default: mountUnfolding } = await import('./demos/unfolding.js');
     await mountUnfolding(disclosure);
@@ -43,6 +43,11 @@ function revealLinkedExplanation() {
   }
   const target = document.getElementById(id);
   if (target instanceof HTMLDetailsElement) target.open = true;
+  let ancestor = target?.parentElement;
+  while (ancestor) {
+    if (ancestor instanceof HTMLDetailsElement) ancestor.open = true;
+    ancestor = ancestor.parentElement;
+  }
 }
 
 addEventListener('hashchange', revealLinkedExplanation);

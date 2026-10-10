@@ -59,7 +59,7 @@ describe('v4 production output', () => {
     ].forEach((asset) => expect(files, asset).toContain(asset));
 
     const html = readFileSync(path.join(outputDir, 'index.html'), 'utf8');
-    expect(html).toContain('coterminal physics B.S.');
+    expect(html).toContain('Coterminal B.S. Physics');
     expect(html).toContain(
       'whether high-dimensional unbinned unfolding reduces structural model bias is the question under test',
     );
@@ -68,7 +68,8 @@ describe('v4 production output', () => {
     expect(html).not.toContain('<!-- RESEARCH_CONTENT -->');
     expect(html).not.toContain('<!-- HOME_CONTENT -->');
     expect(html).not.toContain('id="unfolding-machine"');
-    expect(html).toContain('Explanation and demonstration');
+    expect(html).toContain('What is unfolding?');
+    expect(html).toContain('Try the interactive version');
     const lab = readFileSync(path.join(outputDir, 'lab/index.html'), 'utf8');
     expect(lab).toContain('id="unfolding-machine"');
     expect(lab).toContain('href="../papers/neutrino-unfolding.pdf"');

@@ -55,8 +55,16 @@ try {
     requests.some((url) => /(?:three-|rapier-|\/unfolding-|\/img\/unfolding\/)/.test(url)),
     false,
   );
-  const researchLinks = await page.locator('#research article > .evidence-links a').all();
+  const researchLinks = await page.locator('#research article > .entry-heading a').all();
+  assert.equal(researchLinks.length, 5);
   for (const anchor of researchLinks) assert.equal(await anchor.isVisible(), true);
+  assert.equal(await page.locator('#projects > .work-list article').count(), 3);
+  assert.equal(await page.locator('#more-projects').evaluate((element) => element.open), false);
+  const researchDetails = page.locator('#minerva-omnifold > .record-details');
+  assert.equal(await researchDetails.locator('.explanation-body').isVisible(), false);
+  await researchDetails.locator('summary').click();
+  assert.match(await researchDetails.innerText(), /question under test/);
+  await researchDetails.locator('summary').click();
 
   for (const width of [320, 390, 768, 1280, 1920]) {
     await page.setViewportSize({ width, height: 1000 });
@@ -82,27 +90,56 @@ try {
     path: `${shotsDir}/instagram-preview.png`,
     clip: { x: 140, y: 40, width: 1000, height: 480 },
   });
-  const summary = page.locator('#unfolding-explanation > summary');
+  const explanation = page.locator('#unfolding-explanation > summary');
+  await explanation.focus();
+  await page.keyboard.press('Enter');
+  assert.equal(await page.locator('.unfolding-story svg').count(), 3);
+  assert.equal(await page.locator('.unfolding-story').isVisible(), true);
+  assert.equal(await page.locator('[data-demo-view]').isVisible(), false);
+  assert.equal(
+    requests.some((url) => /\/img\/unfolding\//.test(url)),
+    false,
+  );
+  await page.locator('.unfolding-takeaway').click();
+  await page
+    .locator('.unfolding-explainer')
+    .screenshot({ path: `${shotsDir}/unfolding-visual.png` });
+  const summary = page.locator('#unfolding-interactive > summary');
   await summary.focus();
   await page.keyboard.press('Enter');
   await page.locator('[data-demo-view]').waitFor({ state: 'visible' });
   assert.equal(await page.locator('#unfolding-iteration').inputValue(), '0');
-  assert.equal(await page.locator('[data-ess]').innerText(), '100%');
+  assert.equal(await page.locator('[data-ess]').textContent(), '100%');
+  const estimateBefore = await page
+    .locator('[data-unfolded]')
+    .evaluate((canvas) => canvas.toDataURL());
   await page.locator('#unfolding-iteration').fill('8');
-  const photoEss = await page.locator('[data-ess]').innerText();
+  assert.notEqual(
+    await page.locator('[data-unfolded]').evaluate((canvas) => canvas.toDataURL()),
+    estimateBefore,
+  );
+  const photoEss = await page.locator('[data-ess]').textContent();
   assert.equal(photoEss, '42%');
   const measuredData = () =>
     page.locator('[data-measured]').evaluate((canvas) => canvas.toDataURL());
   const measuredBefore = await measuredData();
+  const targetBefore = await page.locator('[data-truth]').evaluate((canvas) => canvas.toDataURL());
+  await page.locator('#unfolding-interactive .record-details > summary').click();
   await page.locator('[name="unfolding-prior"][value="uniform"]').check();
-  assert.equal(await page.locator('[data-ess]').innerText(), '32%');
+  assert.equal(await page.locator('[data-ess]').textContent(), '32%');
   assert.equal(
     await measuredData(),
     measuredBefore,
     'Changing the simulation changed the measured data',
   );
-  await page.getByRole('button', { name: 'Show synthetic truth' }).click();
-  assert.equal(await page.locator('[data-reveal-truth]').getAttribute('aria-pressed'), 'true');
+  assert.equal(
+    await page.locator('[data-truth]').evaluate((canvas) => canvas.toDataURL()),
+    targetBefore,
+  );
+  await page.locator('#unfolding-interactive .record-details > summary').click();
+  await page
+    .locator('#unfolding-interactive')
+    .screenshot({ path: `${shotsDir}/unfolding-interactive.png` });
   await page.screenshot({ path: `${shotsDir}/unfolding-1280.png`, fullPage: true });
   await summary.click();
   await summary.click();
@@ -116,12 +153,15 @@ try {
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   await page.screenshot({ path: `${shotsDir}/race-320.png`, fullPage: true });
 
-  await page.goto(new URL('#unfolding-explanation', baseUrl).href);
+  await page.goto(new URL('#unfolding-interactive', baseUrl).href);
   await page.locator('[data-demo-view]').waitFor({ state: 'visible' });
   assert.equal(
     await page.locator('#unfolding-explanation').evaluate((element) => element.open),
     true,
   );
+  await page.goto(new URL('#systems-security', baseUrl).href);
+  assert.equal(await page.locator('#more-projects').evaluate((element) => element.open), true);
+  assert.equal(await page.locator('#systems-security').isVisible(), true);
   assert.deepEqual(errors, []);
   console.log(
     'PASS: initial page has visible evidence and dates, no physics-engine requests, responsive layouts, keyboard disclosure, fixed synthetic data, and persistent controls.',
@@ -140,8 +180,11 @@ try {
   assert.equal(await plain.locator('[data-instagram-slide]:not([hidden])').count(), 1);
   assert.equal(await plain.getByRole('button', { name: 'Next Instagram post' }).isVisible(), false);
   assert.equal(await plain.locator('.instagram-profile').isVisible(), true);
+  await plain.locator('#minerva-omnifold > .record-details > summary').click();
   assert.match(await plain.locator('body').innerText(), /question under test/);
   await plain.locator('#unfolding-explanation > summary').click();
+  assert.equal(await plain.locator('.unfolding-story').isVisible(), true);
+  await plain.locator('#unfolding-interactive > summary').click();
   assert.match(await plain.locator('#unfolding-explanation').innerText(), /needs JavaScript/);
   assert.equal(await plain.locator('[data-demo-view]').isVisible(), false);
   await plain.locator('#athletics summary').first().click();
@@ -171,12 +214,10 @@ try {
   await failed.route(imagePattern, (route) => route.abort());
   await failed.goto(baseUrl, { waitUntil: 'networkidle' });
   await failed.locator('#unfolding-explanation > summary').click();
+  await failed.locator('#unfolding-interactive > summary').click();
   await failed.locator('[data-demo-retry]').waitFor({ state: 'visible' });
   assert.match(await failed.locator('[data-demo-status]').innerText(), /could not load/);
-  assert.equal(
-    await failed.locator('#minerva-omnifold > .evidence-links a').first().isVisible(),
-    true,
-  );
+  assert.equal(await failed.locator('#minerva-omnifold > .entry-heading a').isVisible(), true);
   await failed.unroute(imagePattern);
   await failed.locator('[data-demo-retry]').click();
   await failed.locator('[data-demo-view]').waitFor({ state: 'visible' });

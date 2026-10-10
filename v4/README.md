@@ -16,11 +16,12 @@ npm run test:e2e  # run with the preview server already running
 npm run test:e2e:lab
 ```
 
-The homepage is rendered at build time by `content/home.js`. Research contributions,
-dates, and evidence links are visible without opening a disclosure or enabling
-JavaScript. Native disclosures reveal the optional unfolding toy, the AM CVn
-figure, recorded hurdle splits, and coursework. The homepage loads no Three.js or
-Rapier; the toy code and images load only after opening its explanation.
+The homepage is rendered at build time by `content/home.js`. Each research item
+has a one-sentence summary and a linked title. Native “Details and links”
+disclosures preserve the full contribution, evidence, and supplementary figures.
+Three projects are featured; the remaining four are under “More projects.” All
+records and disclosures work without JavaScript. Hash links open any enclosing
+disclosures when JavaScript is available. The homepage loads no Three.js or Rapier.
 
 ## Content and assets
 
@@ -45,12 +46,22 @@ Rapier; the toy code and images load only after opening its explanation.
   recorded splits. Both the static plot and its accessible data table derive from
   that file at build time. Speeds use differences of cumulative times and nominal
   hurdle distances; they are interval averages.
-- Source Serif 4 is self-hosted in `public/fonts/`, with the SIL Open Font License
-  in `LICENSE-SOURCE-SERIF-4.txt`. Font files came from Google Fonts; the license
-  came from the Google Fonts Source Serif 4 directory. The legacy lab retains its
-  original fonts and licenses.
+- The homepage uses native system sans-serif fonts for text, navigation, and plots,
+  without requesting a webfont. Its compact header carousel and three curated
+  photos under “Outside research” share the existing local Instagram covers.
+  Source Serif 4 assets and their SIL Open Font License remain in `public/fonts/`
+  for future typography comparisons. The legacy lab retains its original fonts
+  and licenses.
 
 ## Educational toy
+
+“What is unfolding?” offers two versions for comparison: a static three-stage
+schematic and a nested “Try the interactive version” disclosure. The schematic
+is illustrative, not measured data or a calculated unfolding result. The toy
+loads only when its own disclosure opens, uses one main step slider, and shows
+measured data, current estimate, and known synthetic target side by side. The
+three canvases use identical display binning and dot-area scale. Prior selection
+and effective sample size are under “Change the starting simulation.”
 
 `js/demos/omnifold-engine.js` adapts the supplied prototype, preserving the seeded
 samples and two smoothed density-ratio steps. It reweights simulated events; it
