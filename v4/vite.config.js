@@ -4,12 +4,14 @@ import { defineConfig } from 'vite';
 
 import { education } from './content/education.js';
 import { experience } from './content/experience.js';
-import { renderHome } from './content/home.js';
+import { renderAbout, renderHome, renderNotes } from './content/home.js';
 import { profile } from './content/profile.js';
+import { prepareNotePages } from './content/note-pages.js';
 import { projects } from './content/projects.js';
 import { research } from './content/research.js';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
+const noteEntries = prepareNotePages(root);
 const asArray = (value) => (Array.isArray(value) ? value : []);
 const asText = (value) => (typeof value === 'string' ? value.trim() : '');
 const escapeHtml = (value) =>
@@ -232,6 +234,9 @@ export default defineConfig({
     rollupOptions: {
       input: {
         home: fileURLToPath(new URL('./index.html', import.meta.url)),
+        about: fileURLToPath(new URL('./about.html', import.meta.url)),
+        notes: fileURLToPath(new URL('./notes/index.html', import.meta.url)),
+        ...noteEntries,
         lab: fileURLToPath(new URL('./lab/index.html', import.meta.url)),
       },
       output: {
@@ -256,6 +261,12 @@ export default defineConfig({
     {
       name: 'static-portfolio-content',
       transformIndexHtml(html, context) {
+        if (html.includes('<!-- ABOUT_CONTENT -->'))
+          return html.replace('<!-- ABOUT_CONTENT -->', renderAbout());
+        if (html.includes('<!-- NOTES_CONTENT -->'))
+          return html.replace('<!-- NOTES_CONTENT -->', renderNotes());
+        if (/<!-- NOTE_CONTENT:([\w-]+) -->/.test(html))
+          return html.replace(/<!-- NOTE_CONTENT:([\w-]+) -->/, (_, slug) => renderNotes(slug));
         if (html.includes('<!-- HOME_CONTENT -->')) {
           return html.replace('<!-- HOME_CONTENT -->', renderHome());
         }

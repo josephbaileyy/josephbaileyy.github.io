@@ -52,3 +52,16 @@ function revealLinkedExplanation() {
 
 addEventListener('hashchange', revealLinkedExplanation);
 revealLinkedExplanation();
+
+// Keep previously shared experience and education anchors useful after the move.
+function redirectMovedSection() {
+  if (
+    document.querySelector('.introduction') &&
+    ['#experience', '#education', '#wisdomtree', '#polytec'].includes(location.hash)
+  ) {
+    location.replace(new URL(`./about.html${location.hash}`, location.href));
+  }
+}
+
+addEventListener('hashchange', redirectMovedSection);
+redirectMovedSection();

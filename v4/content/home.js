@@ -4,6 +4,8 @@ import { education } from './education.js';
 import { experience } from './experience.js';
 import { instagram } from './instagram.js';
 import { profile } from './profile.js';
+import { notes } from './notes.js';
+import { personal } from './personal.js';
 import { projects } from './projects.js';
 import { research } from './research.js';
 
@@ -175,7 +177,7 @@ function researchList() {
     .join('')}</ul>`;
 }
 
-function projectList(items) {
+function projectList(items, featured = false) {
   const descriptions = {
     splora: 'Fine-tuning language models using about 1% of their parameters.',
     lord: 'Recognizing the same person across video from different cameras.',
@@ -185,12 +187,13 @@ function projectList(items) {
     'lol-match-prediction': 'Predicting professional League of Legends match outcomes.',
     'systems-security': 'Projects in encrypted chat, smart contracts, and operating systems.',
   };
-  return `<ul class="work-list">${items
+  return `<ul class="work-list${featured ? ' project-grid' : ''}">${items
     .map(
-      (item) => `<li><article id="${item.id}">
-    <header class="entry-heading"><h3>${item.links.length ? link({ ...item.links[0], label: item.title }) : escape(item.title)}</h3></header>
+      (item) => `<li><article id="${item.id}"${featured ? ' class="project-card"' : ''}>
+    ${featured ? projectPreview(item) : ''}
+    <div class="project-copy"><header class="entry-heading"><h3>${item.links.length ? link({ ...item.links[0], label: item.title }) : escape(item.title)}</h3></header>
     <p>${escape(descriptions[item.id])}</p>
-    <details class="explanation record-details"><summary>Details and links</summary><div class="explanation-body"><p>${escape(item.work)}</p><p class="project-evidence">${escape(item.evidence)}</p>${links(item.links)}</div></details>
+    <details class="explanation record-details"><summary>Details and links</summary><div class="explanation-body"><p>${escape(item.work)}</p><p class="project-evidence">${escape(item.evidence)}</p>${links(item.links)}</div></details></div>
   </article></li>`,
     )
     .join('')}</ul>`;
@@ -254,17 +257,33 @@ function personalList() {
     'utf8',
   );
   const intervals = raceIntervals(csv);
-  return `<ul class="work-list">
-    <li><article id="athletics"><header class="entry-heading"><h3>${link({ href: 'https://gostanford.com/sports/track-field/roster/player/joseph-bailey', label: 'Stanford Track & Field' })}</h3><p class="entry-date">ACC Championships, 2025</p></header>
-      <p>I compete for Stanford Track &amp; Field in NCAA Division I. I ran 52.17 seconds at the 2025 ACC Championships.</p>
-      <details class="explanation"><summary>Split times from that race</summary><div class="explanation-body">
+  return `<div class="personal-grid">
+    <article class="life-card track-card" id="athletics">
+      <a class="life-photo" href="https://gostanford.com/sports/track-field/roster/player/joseph-bailey" target="_blank" rel="noopener noreferrer" aria-label="Joseph’s Stanford Track & Field profile">
+        <img src="./img/home/track-start.png" alt="Joseph in his Stanford uniform at the start line against a red backdrop" width="1672" height="941" loading="lazy">
+        <span class="race-stamp"><strong>52.17</strong><span>400 m hurdles · ACC 2025</span></span>
+      </a>
+      <div class="life-copy"><h3>One lap. Ten hurdles.</h3>
+        <p>I compete in the 400-meter hurdles for Stanford Track &amp; Field in NCAA Division I. I ran 52.17 seconds at the 2025 ACC Championships.</p>
+        <details class="explanation"><summary>Split times from that race</summary><div class="explanation-body">
         <figure>${raceFigure(intervals, 720)}${raceFigure(intervals, 320, true)}<figcaption>My real race: average speed between recorded hurdle touchdowns, using nominal hurdle distances. The first interval includes the start; the last runs from hurdle 10 to the finish. These are interval averages, not instantaneous speeds.</figcaption></figure>
         <p>The fastest interval was between hurdles 2 and 3, at 8.54 m/s. The 40-meter run-in took 5.91 seconds, averaging 6.77 m/s.</p>
         <details><summary>Recorded times and calculation</summary><div class="table-wrap"><table><caption>ACC Championships 2025. Speed = nominal interval distance ÷ elapsed interval time.</caption><thead><tr><th scope="col">Mark</th><th scope="col">Distance (m)</th><th scope="col">Time (s)</th><th scope="col">Mean speed (m/s)</th></tr></thead><tbody>${intervals.map((record) => `<tr><th scope="row">${record.mark}</th><td>${record.distanceM}</td><td>${record.cumulativeS.toFixed(2)}</td><td>${record.speed.toFixed(2)}</td></tr>`).join('')}</tbody></table></div></details>
         ${links([profile.links.find((item) => item.id === 'tfrrs-link'), { href: './data/acc-2025-400mh-splits.csv', label: 'Recorded splits (CSV)' }])}
-      </div></details></article></li>
-    <li><article id="music"><header class="entry-heading"><h3>Playing jazz and classical music</h3></header><p>I play piano, alto saxophone, flute, and clarinet. I completed MTAC Level 10 piano.</p></article></li>
-  </ul>`;
+      </div></details>
+        <p class="card-link">${link({ href: 'https://gostanford.com/sports/track-field/roster/player/joseph-bailey', label: 'Stanford Track & Field ↗' })}</p>
+      </div>
+    </article>
+    <article class="life-card music-card" id="music">
+      <div class="music-visual" aria-hidden="true"><span class="music-symbol">♮</span><span class="music-word">a little<br><em>jazz &amp; classical.</em></span>
+        <div class="piano-keys">${Array.from({ length: 14 }, (_, i) => `<span${[0, 1, 3, 4, 5, 7, 8, 10, 11, 12].includes(i) ? ' class="has-sharp"' : ''}></span>`).join('')}</div>
+      </div>
+      <div class="life-copy"><h3>Music, between everything else.</h3><p>${escape(personal.music)}</p><p class="card-link"><a class="personal-link music-link" href="${personal.saxUrl}" target="_blank" rel="noopener noreferrer">${escape(personal.saxCaption)} ↗</a></p>
+        <figure class="piano-recording"><figcaption><strong>${escape(personal.piano.composer)} · ${escape(personal.piano.title)}</strong><span>${escape(personal.piano.collection)}</span></figcaption><audio controls preload="none" aria-label="Joseph performing Bach’s Fugue No. 2 in C minor, BWV 847"><source src="${personal.piano.src}" type="audio/mp4"><a href="${personal.piano.src}">Listen to the piano recording</a></audio></figure>
+        <ul class="instrument-tags" aria-label="Instruments"><li>Piano</li><li>Alto saxophone</li><li>Flute</li><li>Clarinet</li></ul>
+      </div>
+    </article>
+  </div>`;
 }
 
 function experienceList() {
@@ -319,42 +338,97 @@ function instagramCarousel() {
   </aside>`;
 }
 
-function personalPhotos() {
-  const selections = [
-    { post: instagram.posts[2], caption: 'Stanford track & field' },
-    { post: instagram.posts[1], caption: 'A rooftop at sunset' },
-    { post: instagram.posts[3], caption: 'Out in the city' },
-  ];
-  return `<div class="personal-photos" aria-label="A few photos outside research">${selections
+function projectPreview(item) {
+  if (item.id === 'splora')
+    return `<a class="project-preview preview-splora" href="./papers/splora-poster.pdf" target="_blank" rel="noopener noreferrer" aria-label="View SPLoRA project poster"><img src="./img/projects/splora-chart.webp" alt="Chart from the SPLoRA poster comparing paraphrase detection accuracy across LoRA adapter placements" width="693" height="609" loading="lazy"><span class="preview-caption">From the project poster ↗</span></a>`;
+  if (item.id === 'lord')
+    return `<a class="project-preview preview-lord" href="./papers/lord-poster.pdf" target="_blank" rel="noopener noreferrer" aria-label="View LoRD project poster"><img src="./img/projects/lord-model.webp" alt="LoRD model diagram: video frames pass through DINO, temporal aggregation, and BNNeck for cosine retrieval" width="1072" height="284" loading="lazy"><span class="preview-caption">From the project poster ↗</span></a>`;
+  return `<a class="project-preview preview-soccer" href="${escape(item.links[0].href)}" target="_blank" rel="noopener noreferrer" aria-label="View soccer graph neural network project on GitHub"><svg viewBox="0 0 360 210" role="img" aria-label="Illustrative graph connecting players on a soccer pitch"><rect x="18" y="25" width="324" height="162" rx="2" fill="none" stroke="#b7c9b6"/><path d="M180 25v162M18 69h44v73H18m324-73h-44v73h44" fill="none" stroke="#b7c9b6"/><circle cx="180" cy="106" r="28" fill="none" stroke="#b7c9b6"/><path d="M82 113 123 67 172 126 218 73 282 112M82 113l90 13 110-14M123 67l95 6M172 126l60 37" fill="none" stroke="#436448" stroke-width="1.5" stroke-dasharray="4 4"/>${[
+    [82, 113],
+    [123, 67],
+    [172, 126],
+    [218, 73],
+    [282, 112],
+    [232, 163],
+  ]
     .map(
-      ({ post, caption }) => `<figure>
-      <a href="https://www.instagram.com/p/${post.id}/" target="_blank" rel="noopener noreferrer" aria-label="${escape(caption)} — view Instagram post (opens in a new tab)">
-        <img src="./img/instagram/${post.id}.jpg" alt="${escape(post.alt)}" width="640" height="800" loading="lazy">
-      </a><figcaption>${escape(caption)}</figcaption>
-    </figure>`,
+      ([x, y]) =>
+        `<circle cx="${x}" cy="${y}" r="7" fill="#436448" stroke="#f2f6ef" stroke-width="3"/>`,
     )
-    .join('')}</div>`;
+    .join(
+      '',
+    )}<path d="m177 126 36-9m-7-4 7 4-5 6" fill="none" stroke="#b56539" stroke-width="3"/></svg><span class="preview-caption">An illustrative possession graph ↗</span></a>`;
+}
+
+export function siteNavigation(active = 'home', prefix = './') {
+  return `<nav class="site-nav" aria-label="Main navigation"><a class="site-name" href="${prefix}"${active === 'home' ? ' aria-current="page"' : ''}>Joseph Bailey<span class="name-dot" aria-hidden="true">·</span></a><div>${[
+    ['home', 'Home', ''],
+    ['about', 'About', 'about.html'],
+    ['notes', 'Notes', 'notes/'],
+  ]
+    .map(
+      ([id, label, href]) =>
+        `<a href="${prefix}${href}"${active === id ? ' aria-current="page"' : ''}>${label}</a>`,
+    )
+    .join(
+      '',
+    )}<a href="${prefix}resume.pdf" target="_blank" rel="noopener noreferrer">CV ↗</a></div></nav>`;
+}
+
+export function siteFooter(prefix = './') {
+  return `<footer id="contact"><div><p>Research, ideas, or a good conversation.</p><p>${link({ href: `mailto:${profile.email}`, label: profile.email })}</p></div><nav aria-label="More links">${link(profile.links.find((item) => item.id === 'github-link'))}<a href="${prefix}lab/">Visit the lab ↗</a><a href="${prefix}notes/">Notes</a><a href="#top">Back to top ↑</a></nav></footer>`;
+}
+
+function noteList(prefix = './notes/', limit = notes.length) {
+  return `<ul class="note-list">${notes
+    .slice(0, limit)
+    .map(
+      (note) =>
+        `<li><a href="${prefix}${escape(note.slug)}.html"><div><h3>${escape(note.title)}</h3><p>${escape(note.summary)}</p></div><time datetime="${escape(note.date)}">${new Date(`${note.date}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}<span aria-hidden="true"> ↗</span></time></a></li>`,
+    )
+    .join('')}</ul>`;
 }
 
 export function renderHome() {
-  return `<header class="introduction" id="top">
-    <div><h1>Joseph Bailey</h1>
-      <p>I study physics and computer science at Stanford, and work on machine learning for fundamental physics.</p>
-      <p class="intro-secondary">Currently: neutrino unfolding with Prof. Benjamin Nachman.</p>
-      <p class="intro-personal">Outside research, I run the 400-meter hurdles for Stanford and play jazz and classical music.</p>
-      <nav aria-label="Contact and profile links">${links([
-        { ...profile.links.find((item) => item.id === 'resume-link'), label: 'CV (PDF)' },
-        profile.links.find((item) => item.id === 'contact-link'),
-        profile.links.find((item) => item.id === 'github-link'),
-      ])}</nav>
-      <nav class="page-index" aria-label="On this page"><a href="#research">Research</a><a href="#projects">Projects</a><a href="#experience">Experience</a><a href="#instruments">Outside research</a></nav>
+  const featured = ['splora', 'lord', 'soccer-gnn'];
+  return `${siteNavigation()}<header class="introduction" id="top">
+    <div class="intro-copy"><h1>Hi, I’m <em>Joseph.</em></h1>
+      <p class="intro-lead">${escape(personal.introduction)}</p><p class="intro-personal">${escape(
+        personal.outside,
+      )
+        .replace(
+          '{track}',
+          `<a class="personal-link track-link" href="${personal.trackUrl}" target="_blank" rel="noopener noreferrer">400m hurdler</a>`,
+        )
+        .replace(
+          '{sax}',
+          `<a class="personal-link music-link" href="${personal.saxUrl}" target="_blank" rel="noopener noreferrer" aria-label="Watch my sax solo in the Chino Hills HS 2023 indoor drumline show">variety of ensembles</a>`,
+        )}</p>
+      <nav aria-label="Contact and profile links">${links([{ ...profile.links.find((item) => item.id === 'resume-link'), label: 'CV (PDF)' }, profile.links.find((item) => item.id === 'contact-link'), profile.links.find((item) => item.id === 'github-link')])}</nav>
+      <p class="currently"><span class="status-dot" aria-hidden="true"></span><span>Currently exploring neutrino unfolding<br>with Prof. Benjamin Nachman.</span></p>
     </div>
     ${instagramCarousel()}
   </header>
-  <section id="research" aria-labelledby="research-heading"><h2 id="research-heading">Research</h2>${researchList()}</section>
-  <section id="projects" aria-labelledby="projects-heading"><h2 id="projects-heading">Selected projects</h2>${projectList(projects.filter((item) => ['splora', 'lord', 'soccer-gnn'].includes(item.id)))}<details class="explanation more-projects" id="more-projects"><summary>More projects</summary><div class="explanation-body">${projectList(projects.filter((item) => !['splora', 'lord', 'soccer-gnn'].includes(item.id)))}</div></details></section>
-  <section id="experience" aria-labelledby="experience-heading"><h2 id="experience-heading">Experience</h2>${experienceList()}</section>
-  <section id="education" aria-labelledby="education-heading"><h2 id="education-heading">Education</h2><p>${escape(education.degree)}, ${escape(education.school)}. Expected June 2027.</p><details class="explanation"><summary>Coursework and honors</summary><div class="explanation-body"><p>Selected coursework: ${escape(education.coursework.join('; '))}.</p><p>Honors: ${escape(education.honors.join('; '))}.</p></div></details></section>
-  <section id="instruments" aria-labelledby="instruments-heading"><h2 id="instruments-heading">Outside research</h2>${personalList()}${personalPhotos()}</section>
-  <footer id="contact"><p>You can reach me at ${link({ href: `mailto:${profile.email}`, label: profile.email })}.</p><p>The earlier interactive collision chamber is still available in ${link({ href: './lab/', label: 'the lab' })}.</p><p><a href="#top">Back to the top</a></p></footer>`;
+  <nav class="page-index" aria-label="On this page"><a href="#research">Research</a><a href="#projects">Projects</a><a href="#instruments">Outside research</a><a href="#notes">Notes</a></nav>
+  <section id="research" aria-labelledby="research-heading"><div class="section-heading"><div><h2 id="research-heading">Research</h2></div><a href="./about.html">A little more about me ↗</a></div>${researchList()}</section>
+  <section id="projects" aria-labelledby="projects-heading"><div class="section-heading"><div><h2 id="projects-heading">Selected projects</h2></div><span class="section-aside">Code, experiments &amp; what I learned</span></div>${projectList(
+    projects.filter((item) => featured.includes(item.id)),
+    true,
+  )}<details class="explanation more-projects" id="more-projects"><summary>Four more projects</summary><div class="explanation-body">${projectList(projects.filter((item) => !featured.includes(item.id)))}</div></details></section>
+  <section id="instruments" aria-labelledby="instruments-heading"><div class="section-heading"><div><h2 id="instruments-heading">Outside research</h2></div></div>${personalList()}</section>
+  <section id="notes" aria-labelledby="notes-heading"><div class="section-heading"><div><h2 id="notes-heading">Notes</h2></div><a href="./notes/">All notes ↗</a></div>${noteList('./notes/', 3)}</section>
+  ${siteFooter()}`;
+}
+
+export function renderAbout() {
+  return `${siteNavigation('about')}<header class="page-header" id="top"><h1>Curiosity, <em>in a few directions.</em></h1><p class="intro-lead">${escape(profile.statement)}</p><p>I also run the 400-meter hurdles for Stanford and play jazz and classical music.</p><p>${link({ ...profile.links.find((item) => item.id === 'resume-link'), label: 'Download my CV ↗' })}</p></header>
+    <section id="experience" aria-labelledby="experience-heading"><h2 id="experience-heading">Experience</h2>${experienceList()}</section>
+    <section id="education" aria-labelledby="education-heading"><h2 id="education-heading">Education</h2><p>${escape(education.degree)}, ${escape(education.school)}. Expected June 2027.</p><div class="about-columns"><div><h3>Selected coursework</h3><ul>${education.coursework.map((item) => `<li>${escape(item)}</li>`).join('')}</ul></div><div><h3>Honors</h3><ul>${education.honors.map((item) => `<li>${escape(item)}</li>`).join('')}</ul></div></div></section>
+    <section><p><a href="./#research">Research</a> · <a href="./#instruments">Track and music</a> · <a href="./lab/">The interactive lab</a></p></section>${siteFooter()}`;
+}
+
+export function renderNotes(slug) {
+  const note = slug ? notes.find((item) => item.slug === slug) : null;
+  if (slug && !note) throw new Error(`Unknown note: ${slug}`);
+  return `${siteNavigation('notes', '../')}${note ? `<article class="note-article" id="top"><header class="page-header"><p class="note-back"><a href="./">← All notes</a></p><h1>${escape(note.title)}</h1><p class="note-meta"><time datetime="${escape(note.date)}">${escape(note.date)}</time> · Joseph Bailey</p></header>${slug === 'how-this-site-works' ? '<aside class="archive-note">From the archive: this describes the earlier universe version of my website.</aside>' : ''}<div class="note-body">${note.html}</div></article>` : `<header class="page-header" id="top"><h1>Things I’m <em>figuring out.</em></h1><p class="intro-lead">Notes on physics, machine learning, and building things.</p></header>${noteList('./')}`}${siteFooter('../')}`;
 }

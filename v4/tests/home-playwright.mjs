@@ -21,6 +21,39 @@ try {
   await page.goto(baseUrl, { waitUntil: 'networkidle' });
   await page.evaluate(() => document.fonts.ready);
   const instagram = page.locator('[data-instagram]');
+  assert.equal(await page.locator('.introduction [data-instagram]').count(), 1);
+  assert.equal(
+    await page
+      .locator('img[src*="/img/instagram/"]')
+      .evaluateAll((images) => images.every((image) => image.closest('[data-instagram]'))),
+    true,
+    'Instagram images should stay inside the widget',
+  );
+  assert.equal(await page.locator('.photo-roll, .intro-portrait').count(), 0);
+  assert.equal(
+    await page.locator('.track-card img').getAttribute('src'),
+    './img/home/track-start.png',
+  );
+  const trackLink = page.locator('.intro-personal .track-link');
+  const musicLink = page.locator('.intro-personal .music-link');
+  assert.equal(await trackLink.innerText(), '400m hurdler');
+  assert.equal(await musicLink.innerText(), 'variety of ensembles');
+  assert.notEqual(
+    await trackLink.evaluate((link) => getComputedStyle(link).color),
+    await musicLink.evaluate((link) => getComputedStyle(link).color),
+  );
+  for (const link of [trackLink, musicLink]) {
+    assert.equal(
+      await link.evaluate((element) => getComputedStyle(element).textDecorationLine),
+      'none',
+    );
+    await link.hover();
+    assert.equal(
+      await link.evaluate((element) => getComputedStyle(element).textDecorationLine),
+      'underline',
+    );
+    await page.mouse.move(0, 0);
+  }
   const visiblePost = instagram.locator('[data-instagram-slide]:not([hidden])');
   assert.equal(await visiblePost.count(), 1);
   const firstPost = await visiblePost.locator('.instagram-post').getAttribute('href');
@@ -44,6 +77,16 @@ try {
     assert.equal(await visiblePost.locator('.instagram-post').getAttribute('target'), '_blank');
     await instagram.getByRole('button', { name: 'Next Instagram post' }).click();
   }
+  assert.equal(await page.locator('#music audio').getAttribute('preload'), 'none');
+  assert.equal(await page.locator('#music audio').getAttribute('autoplay'), null);
+  assert.equal(
+    requests.some((url) => url.includes('/audio/fugue.m4a')),
+    false,
+    'Audio fetched before play',
+  );
+  const audioResponse = await context.request.get(new URL('audio/fugue.m4a', baseUrl).href);
+  assert.equal(audioResponse.ok(), true);
+  assert.match(audioResponse.headers()['content-type'], /audio\/(?:mp4|x-m4a)/);
   assert.equal(await page.locator('#research article').count(), 5);
   assert.equal(await page.locator('#projects article').count(), 7);
   assert.equal(await page.locator('#unfolding-machine').count(), 0);
@@ -86,6 +129,8 @@ try {
   }
 
   await page.setViewportSize({ width: 1280, height: 1000 });
+  await page.locator('.personal-grid').screenshot({ path: `${shotsDir}/personal-preview.png` });
+  await page.evaluate(() => window.scrollTo(0, 0));
   await page.screenshot({
     path: `${shotsDir}/instagram-preview.png`,
     clip: { x: 140, y: 40, width: 1000, height: 480 },
@@ -162,6 +207,11 @@ try {
   await page.goto(new URL('#systems-security', baseUrl).href);
   assert.equal(await page.locator('#more-projects').evaluate((element) => element.open), true);
   assert.equal(await page.locator('#systems-security').isVisible(), true);
+  await page.goto(new URL('#experience', baseUrl).href);
+  await page.waitForURL('**/about.html#experience');
+  assert.equal(await page.locator('#experience article').count(), 2);
+  await page.reload();
+  assert.equal(await page.locator('#experience article').count(), 2);
   assert.deepEqual(errors, []);
   console.log(
     'PASS: initial page has visible evidence and dates, no physics-engine requests, responsive layouts, keyboard disclosure, fixed synthetic data, and persistent controls.',
@@ -176,7 +226,7 @@ try {
   await plain.goto(baseUrl, { waitUntil: 'networkidle' });
   assert.equal(await plain.locator('#research article').count(), 5);
   assert.equal(await plain.locator('#projects article').count(), 7);
-  assert.equal(await plain.locator('#experience article').count(), 2);
+  assert.equal(await plain.locator('#experience article').count(), 0);
   assert.equal(await plain.locator('[data-instagram-slide]:not([hidden])').count(), 1);
   assert.equal(await plain.getByRole('button', { name: 'Next Instagram post' }).isVisible(), false);
   assert.equal(await plain.locator('.instagram-profile').isVisible(), true);
@@ -202,6 +252,20 @@ try {
     const response = await noJs.request.get(url);
     assert.equal(response.ok(), true, `${url} returned ${response.status()}`);
     if (url.endsWith('.pdf')) assert.match(response.headers()['content-type'], /pdf/);
+  }
+  await plain.getByRole('link', { name: 'About', exact: true }).click();
+  assert.equal(await plain.locator('#experience article').count(), 2);
+  assert.match(await plain.locator('#education').innerText(), /Expected June 2027/);
+  await plain.getByRole('link', { name: 'Notes', exact: true }).first().click();
+  await plain.locator('.note-list a').first().click();
+  assert.equal(await plain.locator('.archive-note').isVisible(), true);
+  assert.match(await plain.locator('.note-body').innerText(), /The seam theorem/);
+  for (const width of [320, 390, 768, 1280]) {
+    await plain.setViewportSize({ width, height: 900 });
+    assert.ok(
+      await plain.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      `Note overflow at ${width}px`,
+    );
   }
   console.log(
     `PASS: no-JavaScript research, disclosures, race plot, and ${localLinks.length} local evidence links.`,

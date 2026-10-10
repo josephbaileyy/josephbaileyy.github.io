@@ -34,6 +34,12 @@ describe('v4 production output', () => {
 
     const files = listFiles(outputDir);
     [
+      'fonts/outfit-latin-variable.woff2',
+      'fonts/google-sans-flex-latin-variable.woff2',
+      'fonts/google-sans-code-latin-variable.woff2',
+      'fonts/outfit-OFL.txt',
+      'fonts/google-sans-flex-OFL.txt',
+      'fonts/google-sans-code-OFL.txt',
       'fonts/mona-sans-variable.woff2',
       'fonts/inter-variable.woff2',
       'fonts/jetbrains-mono-variable.woff2',
@@ -44,6 +50,13 @@ describe('v4 production output', () => {
       'fonts/source-serif-4-semibold.ttf',
       'fonts/LICENSE-SOURCE-SERIF-4.txt',
       'lab/index.html',
+      'about.html',
+      'notes/index.html',
+      'notes/how-this-site-works.html',
+      'img/home/track-start.png',
+      'img/projects/splora-chart.webp',
+      'img/projects/lord-model.webp',
+      'audio/fugue.m4a',
       'img/home/with-camera.jpg',
       'img/home/amcvn-fit.png',
       'img/unfolding/face2024.png',
@@ -59,16 +72,24 @@ describe('v4 production output', () => {
     ].forEach((asset) => expect(files, asset).toContain(asset));
 
     const html = readFileSync(path.join(outputDir, 'index.html'), 'utf8');
-    expect(html).toContain('Coterminal B.S. Physics');
+    const about = readFileSync(path.join(outputDir, 'about.html'), 'utf8');
+    expect(about).toContain('Coterminal B.S. Physics');
     expect(html).toContain(
       'whether high-dimensional unbinned unfolding reduces structural model bias is the question under test',
     );
-    expect(html).toContain('WisdomTree Connect');
-    expect(html).toContain('MTAC Level 10 piano');
+    expect(about).toContain('WisdomTree Connect');
+    expect(html).toContain('BWV 847');
+    expect(html).toContain('ry0rKeoQI0o');
     expect(html).not.toContain('<!-- RESEARCH_CONTENT -->');
     expect(html).not.toContain('<!-- HOME_CONTENT -->');
     expect(html).not.toContain('id="unfolding-machine"');
     expect(html).toContain('What is unfolding?');
+    const note = readFileSync(path.join(outputDir, 'notes/how-this-site-works.html'), 'utf8');
+    const notesIndex = readFileSync(path.join(outputDir, 'notes/index.html'), 'utf8');
+    for (const page of [html, about, note, notesIndex]) expect(page).not.toContain('eyebrow');
+    expect(note).toContain('The seam theorem');
+    expect(note).toContain('earlier universe version');
+    expect(note).not.toContain('<!-- NOTE_CONTENT:');
     expect(html).toContain('Try the interactive version');
     const lab = readFileSync(path.join(outputDir, 'lab/index.html'), 'utf8');
     expect(lab).toContain('id="unfolding-machine"');

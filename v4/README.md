@@ -1,6 +1,6 @@
 # Current portfolio
 
-The deployed site is the list-first homepage in this directory. `lab/index.html`
+The current site has an editorial homepage, an About page, and Markdown-backed Notes in this directory. `lab/index.html`
 preserves the earlier interactive collision chamber. Older versions at the repository
 root, `v3/`, and `worldline/` are not the deployed homepage.
 
@@ -8,7 +8,7 @@ From the repository root:
 
 ```sh
 npm run dev       # http://localhost:5177
-npm run build     # v4/dist, both the homepage and /lab/
+npm run build     # v4/dist, home, About, Notes, and /lab/
 npm run preview   # http://localhost:4177
 npm test
 npm run lint
@@ -19,7 +19,7 @@ npm run test:e2e:lab
 The homepage is rendered at build time by `content/home.js`. Each research item
 has a one-sentence summary and a linked title. Native “Details and links”
 disclosures preserve the full contribution, evidence, and supplementary figures.
-Three projects are featured; the remaining four are under “More projects.” All
+Three projects have visual previews; the remaining four are under “Four more projects.” Experience, coursework, and honors live on `/about.html`. Old experience and education anchors redirect there. All
 records and disclosures work without JavaScript. Hash links open any enclosing
 disclosures when JavaScript is available. The homepage loads no Three.js or Rapier.
 
@@ -27,7 +27,7 @@ disclosures when JavaScript is available. The homepage loads no Three.js or Rapi
 
 - `content/research.js`, `projects.js`, `experience.js`, and `education.js` hold
   the existing records. `content/home.js` supplies concise homepage contributions,
-  the two-sentence introduction, and the educational explanation. Keep both in sync
+  the homepage layout and educational explanation. `content/personal.js` holds editable first-person introduction and music copy. Keep both in sync
   when changing facts. Research dates come from the shared records; project dates
   are omitted where none have been supplied.
 - `public/papers/` and `public/resume.pdf` are the directly linked evidence.
@@ -46,12 +46,27 @@ disclosures when JavaScript is available. The homepage loads no Three.js or Rapi
   recorded splits. Both the static plot and its accessible data table derive from
   that file at build time. Speeds use differences of cumulative times and nominal
   hurdle distances; they are interval averages.
-- The homepage uses native system sans-serif fonts for text, navigation, and plots,
-  without requesting a webfont. Its compact header carousel and three curated
-  photos under “Outside research” share the existing local Instagram covers.
-  Source Serif 4 assets and their SIL Open Font License remain in `public/fonts/`
-  for future typography comparisons. The legacy lab retains its original fonts
-  and licenses.
+- The main pages use local Outfit for headings and a native system sans-serif stack
+  with Google Sans Flex as a fallback for text, navigation, and plots. Dates and code
+  use Google Sans Code. These match the font families on tania.dev (checked October 10, 2026). No remote font service is requested. Licenses
+  remain in `public/fonts/`; the legacy lab keeps its own typography.
+- Instagram photos appear only inside the header widget. The track card uses
+  `public/img/home/track-start.png`, copied unchanged from the supplied image. Project previews
+  `public/img/projects/splora-chart.webp` and `lord-model.webp` are excerpts from
+  their respective local posters, linked to the complete PDFs. The soccer graph
+  is an explicitly labelled illustrative SVG, not measured model output.
+- Add Markdown notes under `src/content/notes/`, with `title`, `date`, and `summary`
+  frontmatter. `content/notes.js` shares the existing Markdown renderer with the
+  archived universe's generator. At Vite startup, `content/note-pages.js` prepares
+  every note's HTML entry and the sitemap. Notes appear on the homepage and index
+  automatically and are rendered into the production build. Generated note HTML
+  wrappers under `notes/` should be committed along with their Markdown source.
+  The existing universe write-up is labelled as archived so it does not describe
+  the new homepage as the older 3D experience.
+- The music card links to the user-supplied Chino Hills HS 2023 indoor drumline
+  show and includes the confirmed piano performance of Bach's Fugue No. 2 in
+  C minor, BWV 847 (The Well-Tempered Clavier, Book I). The native audio player
+  uses `public/audio/fugue.m4a` with `preload="none"` and no autoplay.
 
 ## Educational toy
 

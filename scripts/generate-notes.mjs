@@ -13,6 +13,8 @@
  */
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 
+import { parseFrontmatter, renderMarkdown } from './lib/note-markdown.js';
+
 const ORIGIN = 'https://josephbaileyy.github.io';
 const notesDir = new URL('../src/content/notes/', import.meta.url);
 const outDir = new URL('../public/notes/', import.meta.url);
@@ -22,106 +24,6 @@ const escapeHtml = (value) =>
     /[&<>"']/g,
     (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' })[char],
   );
-
-/** Inline markdown on already-escaped text: code, links, bold, italic. */
-const inline = (text) =>
-  text
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(
-      /\[([^\]]+)\]\(([^)\s]+)\)/g,
-      (_, label, href) =>
-        `<a href="${href}"${href.startsWith('http') ? ' target="_blank" rel="noopener"' : ''}>${label}</a>`,
-    )
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*([^*\n]+)\*/g, '<em>$1</em>')
-    .replace(/(^|[\s(])_([^_\n]+)_(?=[\s).,;:!?]|$)/g, '$1<em>$2</em>');
-
-function parseFrontmatter(raw) {
-  const match = raw.match(/^---\n([\s\S]*?)\n---\n?/);
-  if (!match) throw new Error('note is missing frontmatter');
-  const meta = {};
-  for (const line of match[1].split('\n')) {
-    const idx = line.indexOf(':');
-    if (idx < 0) continue;
-    const key = line.slice(0, idx).trim();
-    let value = line.slice(idx + 1).trim();
-    const quote = value[0];
-    if ((quote === '"' || quote === "'") && value.endsWith(quote)) {
-      value = value.slice(1, -1);
-    }
-    meta[key] = value;
-  }
-  return { meta, body: raw.slice(match[0].length) };
-}
-
-function renderMarkdown(body) {
-  const lines = body.split('\n');
-  const out = [];
-  let paragraph = [];
-  let list = null;
-  let code = null;
-
-  const flushParagraph = () => {
-    if (paragraph.length) {
-      out.push(`<p>${inline(escapeHtml(paragraph.join(' ')))}</p>`);
-      paragraph = [];
-    }
-  };
-  const flushList = () => {
-    if (list) {
-      out.push(`<ul>${list.map((item) => `<li>${inline(escapeHtml(item))}</li>`).join('')}</ul>`);
-      list = null;
-    }
-  };
-
-  for (const line of lines) {
-    if (code !== null) {
-      if (line.startsWith('```')) {
-        out.push(`<pre><code>${escapeHtml(code.join('\n'))}</code></pre>`);
-        code = null;
-      } else {
-        code.push(line);
-      }
-      continue;
-    }
-    if (line.startsWith('```')) {
-      flushParagraph();
-      flushList();
-      code = [];
-      continue;
-    }
-    const heading = line.match(/^(#{1,4})\s+(.*)$/);
-    if (heading) {
-      flushParagraph();
-      flushList();
-      const level = Math.max(2, heading[1].length); // h1 is the page title
-      out.push(`<h${level}>${inline(escapeHtml(heading[2]))}</h${level}>`);
-      continue;
-    }
-    const item = line.match(/^[-*]\s+(.*)$/);
-    if (item) {
-      flushParagraph();
-      (list ??= []).push(item[1]);
-      continue;
-    }
-    if (line.startsWith('> ')) {
-      flushParagraph();
-      flushList();
-      out.push(`<blockquote><p>${inline(escapeHtml(line.slice(2)))}</p></blockquote>`);
-      continue;
-    }
-    if (!line.trim()) {
-      flushParagraph();
-      flushList();
-      continue;
-    }
-    flushList();
-    paragraph.push(line.trim());
-  }
-  flushParagraph();
-  flushList();
-  return out.join('\n');
-}
 
 const STYLE = `
       :root{--bg:#0b1026;--panel:#131a3a;--ink:#eef2ff;--dim:#aeb7d9;--gold:#ffd479;--cyan:#7fd4ff}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -20%,#1b1740 0,var(--bg) 38%);color:var(--ink);font-family:"Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;line-height:1.75}main{max-width:720px;margin:0 auto;padding:48px 24px 96px}a{color:var(--cyan)}.crumbs{font:13px ui-monospace,Menlo,monospace;color:var(--dim)}.crumbs a{text-decoration:none}h1{font-size:clamp(30px,5.5vw,42px);line-height:1.15;margin:14px 0 6px}h2{font-size:22px;margin:40px 0 10px;color:var(--gold)}h3{font-size:18px;margin:28px 0 8px}.note-meta{color:var(--dim);font:13px ui-monospace,Menlo,monospace;margin:0 0 28px}p{margin:0 0 18px;color:#d9dff4}pre{background:#0a0e24;border:1px solid rgb(127 212 255/.18);border-radius:12px;padding:16px 18px;overflow-x:auto;margin:0 0 18px}code{font:0.92em ui-monospace,Menlo,monospace;color:var(--cyan)}p code,li code{background:rgb(127 212 255/.1);border-radius:5px;padding:1px 5px}ul{margin:0 0 18px;padding-left:24px;color:#d9dff4}blockquote{margin:0 0 18px;padding:2px 18px;border-left:3px solid var(--gold);color:var(--dim)}.note-card{display:block;background:linear-gradient(145deg,#171f46,var(--panel));border:1px solid rgb(174 183 217/.2);border-radius:14px;padding:20px 22px;margin:0 0 14px;text-decoration:none;color:var(--ink)}.note-card:hover,.note-card:focus-visible{border-color:var(--cyan)}.note-card h2{margin:2px 0 8px;font-size:19px;color:var(--ink)}.note-card p{margin:0;color:var(--dim);font-size:15px}.note-card span{color:var(--gold);font:11px ui-monospace,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase}footer{margin-top:56px;color:var(--dim);font:13px/1.6 ui-monospace,Menlo,monospace}@media(max-width:620px){main{padding:36px 20px 72px}}`;
