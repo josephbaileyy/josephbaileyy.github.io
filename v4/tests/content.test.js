@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 import { education } from '../content/education.js';
+import { courses, courseQuarters } from '../content/coursework.js';
 import { experience } from '../content/experience.js';
 import { manifest } from '../content/manifest.js';
 import { profile } from '../content/profile.js';
@@ -41,6 +42,20 @@ describe('v4 content integrity', () => {
 
     const ids = [...research, ...projects, ...experience].map((item) => item.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('reconciles coursework with the October 2026 transcript totals', () => {
+    // Transcript: 140 undergraduate + 41 graduate Stanford units completed;
+    // 23 units enrolled this autumn. AP credit is separate from these courses.
+    const offerings = courses.flatMap((course) => course.offerings);
+    expect(new Set(courses.map((course) => course.code)).size).toBe(57);
+    expect(offerings).toHaveLength(61);
+    const unitsFor = (status) =>
+      offerings
+        .filter(({ quarter }) => courseQuarters[quarter].status === status)
+        .reduce((total, { units }) => total + units, 0);
+    expect(unitsFor('completed')).toBe(181);
+    expect(unitsFor('in-progress')).toBe(23);
   });
 
   it('resolves every local paper and resume link inside v4/public', () => {

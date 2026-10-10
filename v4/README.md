@@ -13,6 +13,7 @@ npm run preview   # http://localhost:4177
 npm test
 npm run lint
 npm run test:e2e  # run with the preview server already running
+npm run test:e2e:coursework # coursework filters, colors, and no-JavaScript fallback
 npm run test:e2e:lab
 ```
 
@@ -22,6 +23,23 @@ disclosures preserve the full contribution, evidence, and supplementary figures.
 Three projects have visual previews; the remaining four are under “Four more projects.” Experience, coursework, and honors live on `/about.html`. Old experience and education anchors redirect there. All
 records and disclosures work without JavaScript. Hash links open any enclosing
 disclosures when JavaScript is available. The homepage loads no Three.js or Rapier.
+
+The About page course atlas contains all 57 distinct courses and 61 enrollments from
+the October 10, 2026 transcript. `content/coursework.js` holds full titles, shortened
+tile titles, quarters, units, subject groupings, and related work; it contains no grades
+or student identifiers. Status is a dated snapshot, so update the quarter metadata
+when the current courses finish. `content/course-colors.js` pairs every color with a
+label in one shared legend per area. The five area tabs are the only controls.
+Display titles use sentence case, preserving proper names, acronyms, and Roman numerals.
+Bubbles flow from the left with even gaps, in order of each course's first quarter.
+Tiles show a course code and title, soft full-surface subject tint, an in-progress dot when applicable,
+and a 4-by-3 quarter grid: academic years run left to right from 2023–24 through
+2026–27, while Autumn/Winter/Spring run top to bottom. Each recorded enrollment
+fills one cell. Compact bubbles place the code, title, and quarter grid in one row;
+long titles wrap within the available width. Tiles are static list items; they do not expand and contain
+no unit counts. Full titles are available as native hover text, and exact quarter
+names remain in screen-reader text. Without JavaScript, all five areas remain
+available. AP credit is listed separately without units.
 
 ## Content and assets
 

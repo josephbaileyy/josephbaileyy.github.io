@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 
 import { education } from './education.js';
+import { renderCourseAtlas } from './course-atlas.js';
 import { experience } from './experience.js';
 import { instagram } from './instagram.js';
 import { profile } from './profile.js';
@@ -423,7 +424,7 @@ export function renderHome() {
 export function renderAbout() {
   return `${siteNavigation('about')}<header class="page-header" id="top"><h1>Curiosity, <em>in a few directions.</em></h1><p class="intro-lead">${escape(profile.statement)}</p><p>I also run the 400-meter hurdles for Stanford and play jazz and classical music.</p><p>${link({ ...profile.links.find((item) => item.id === 'resume-link'), label: 'Download my CV ↗' })}</p></header>
     <section id="experience" aria-labelledby="experience-heading"><h2 id="experience-heading">Experience</h2>${experienceList()}</section>
-    <section id="education" aria-labelledby="education-heading"><h2 id="education-heading">Education</h2><p>${escape(education.degree)}, ${escape(education.school)}. Expected June 2027.</p><div class="about-columns"><div><h3>Selected coursework</h3><ul>${education.coursework.map((item) => `<li>${escape(item)}</li>`).join('')}</ul></div><div><h3>Honors</h3><ul>${education.honors.map((item) => `<li>${escape(item)}</li>`).join('')}</ul></div></div></section>
+    <section id="education" aria-labelledby="education-heading"><h2 id="education-heading">Education</h2><p>${escape(education.degree)}, ${escape(education.school)}. Expected June 2027.</p>${renderCourseAtlas()}<div class="about-honors"><h3>Honors</h3><ul>${education.honors.map((item) => `<li>${escape(item)}</li>`).join('')}</ul></div></section>
     <section><p><a href="./#research">Research</a> · <a href="./#instruments">Track and music</a> · <a href="./lab/">The interactive lab</a></p></section>${siteFooter()}`;
 }
 

@@ -1123,6 +1123,167 @@ footer nav {
 .about-columns li {
   margin-bottom: 8px;
 }
+.course-atlas {
+  margin-top: 32px;
+}
+.atlas-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 24px;
+}
+.atlas-heading h3 {
+  font-size: 23px;
+}
+.atlas-heading p,
+.atlas-intro {
+  font-size: 14px;
+  color: var(--home-secondary);
+}
+.atlas-intro {
+  margin: 8px 0 20px;
+}
+.atlas-areas,
+.atlas-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.atlas-areas button {
+  border: 1px solid var(--home-rule);
+  border-radius: 24px;
+  padding: 8px 14px;
+  font-size: 14px;
+  background: transparent;
+  min-height: 44px;
+}
+.atlas-areas button[aria-pressed='true'] {
+  background: var(--home-link);
+  border-color: var(--home-link);
+  color: var(--home-background);
+}
+.atlas-legend {
+  gap: 8px 16px;
+  margin: 0 0 16px;
+  color: var(--home-secondary);
+  font-size: 12px;
+}
+.atlas-legend > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.atlas-swatch,
+.course-progress-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.course-progress-dot {
+  background: var(--home-ink);
+}
+.atlas-encoding-key,
+.atlas-status-key {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  color: var(--home-secondary);
+  font-size: 12px;
+}
+.atlas-encoding-key {
+  margin: 14px 0 20px;
+}
+.atlas-status-key {
+  gap: 6px;
+}
+.course-atlas.is-enhanced .atlas-group h4 {
+  display: none;
+}
+.atlas-group + .atlas-group {
+  margin-top: 24px;
+}
+.atlas-group h4 {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 12px;
+}
+.atlas-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.course-tile {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) 60px;
+  align-items: center;
+  flex: 0 1 auto;
+  gap: 12px;
+  width: max-content;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 58px;
+  margin: 0;
+  padding: 12px;
+  border: 0;
+  border-radius: 7px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--course-color) 16%, var(--home-background));
+}
+.course-code {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font: 11px/1.5 var(--home-code-font);
+  color: var(--home-secondary);
+  white-space: nowrap;
+}
+.course-title {
+  min-width: 0;
+  max-width: 260px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.course-quarter-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 12px);
+  grid-template-rows: repeat(3, 3px);
+  gap: 3px 4px;
+  width: 60px;
+}
+.course-quarter-mark {
+  border-radius: 1px;
+  background: color-mix(in srgb, var(--home-ink) 14%, transparent);
+}
+.course-quarter-mark.is-active {
+  background: var(--home-secondary);
+}
+.atlas-footnote {
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--home-rule);
+  color: var(--home-secondary);
+  font-size: 12px;
+}
+.about-honors {
+  margin-top: 40px;
+  font-size: 15px;
+}
+@media (max-width: 560px) {
+  .course-tile {
+    gap: 9px;
+    padding: 10px;
+  }
+}
 .note-article {
   max-width: 760px;
   margin-inline: auto;
