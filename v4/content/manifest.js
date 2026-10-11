@@ -40,6 +40,14 @@ const realBodies = [
     href: null,
   },
   {
+    id: 'neutrino-video',
+    label: 'FILM',
+    massClass: 'mid',
+    slot: { x: 0.32, y: -0.62 },
+    kind: 'project',
+    href: null,
+  },
+  {
     id: 'minerva-omnifold-pipeline',
     label: 'MINERVA',
     massClass: 'mid',

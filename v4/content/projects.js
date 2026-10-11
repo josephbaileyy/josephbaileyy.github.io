@@ -1,5 +1,21 @@
 export const projects = Object.freeze([
   Object.freeze({
+    id: 'neutrino-video',
+    title: 'The Proton Hidden in Plastic',
+    summary:
+      'A five-minute animated explainer on how MINERvA measures the proton’s weak-force response using a plastic detector.',
+    work: 'Wrote, narrated, and developed a Manim animation explaining how the different kinematic signatures of carbon and hydrogen let MINERvA statistically measure the free-proton contribution in a plastic detector.',
+    evidence:
+      'Published the film with captions and a source card identifying peer-reviewed results and preprints. Script, storyboard, and animation development used AI assistance; the narration is my own recording.',
+    stack: Object.freeze(['Python', 'Manim', 'FFmpeg', 'science communication']),
+    links: Object.freeze([
+      Object.freeze({
+        label: 'Watch on YouTube',
+        href: 'https://www.youtube.com/watch?v=AqWGbHiEFBw',
+      }),
+    ]),
+  }),
+  Object.freeze({
     id: 'minerva-omnifold-pipeline',
     title: 'MINERvA-OmniFold',
     summary: 'An unbinned machine-learning unfolding pipeline for neutrino cross sections.',

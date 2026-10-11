@@ -20,7 +20,7 @@ npm run test:e2e:lab
 The homepage is rendered at build time by `content/home.js`. Each research item
 has a one-sentence summary and a linked title. Native “Details and links”
 disclosures preserve the full contribution, evidence, and supplementary figures.
-Three projects have visual previews; the remaining three are under “More projects.” Notes are temporarily hidden from the homepage and shared navigation; their existing URLs and Markdown sources remain available. Experience, coursework, and honors live on `/about.html`. Old experience and education anchors redirect there. All
+Four projects have visual previews, including the neutrino film; the remaining three are under “More projects.” Notes are temporarily hidden from the homepage and shared navigation; their existing URLs and Markdown sources remain available. Experience, coursework, and honors live on `/about.html`. Old experience and education anchors redirect there. All
 records and disclosures work without JavaScript. Hash links open any enclosing
 disclosures when JavaScript is available. The homepage loads no Three.js or Rapier.
 
@@ -49,6 +49,8 @@ available. AP credit is listed separately without units.
   when changing facts. Research dates come from the shared records; project dates
   are omitted where none have been supplied.
 - `public/papers/` and `public/resume.pdf` are the directly linked evidence.
+  The CV is the supplied two-page `Joseph_Bailey_CV_2page_2026-10-10.pdf`,
+  copied unchanged to the existing download URL.
 - `public/img/home/with-camera.jpg`, `amcvn-fit.png`, and
   `public/img/unfolding/face2024.png`, `face2025.png` were copied unchanged from
   the user-supplied design handoff. The camera photo remains the social preview.
@@ -77,6 +79,10 @@ available. AP credit is listed separately without units.
   aggregation, BNNeck, and cosine retrieval. The original labels and options
   are retained. Thumbnail frames preserve each figure's aspect ratio. The soccer graph
   is an explicitly labelled illustrative SVG, not measured model output.
+- `public/img/projects/neutrino-video.webp` is an unaltered frame at 1:40 from
+  the supplied V14 platform master of *The Proton Hidden in Plastic*, resized
+  to 960 × 540. The video card links directly to the published YouTube film;
+  it loads no embedded player or third-party script.
 - Add Markdown notes under `src/content/notes/`, with `title`, `date`, and `summary`
   frontmatter. `content/notes.js` shares the existing Markdown renderer with the
   archived universe's generator. At Vite startup, `content/note-pages.js` prepares

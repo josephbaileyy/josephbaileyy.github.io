@@ -88,7 +88,7 @@ try {
   assert.equal(audioResponse.ok(), true);
   assert.match(audioResponse.headers()['content-type'], /audio\/(?:mp4|x-m4a)/);
   assert.equal(await page.locator('#research article').count(), 5);
-  assert.equal(await page.locator('#projects article').count(), 6);
+  assert.equal(await page.locator('#projects article').count(), 7);
   assert.equal(await page.locator('#unfolding-machine').count(), 0);
   assert.equal(
     await page.locator('#unfolding-explanation').evaluate((element) => element.open),
@@ -101,7 +101,7 @@ try {
   const researchLinks = await page.locator('#research article > .entry-heading a').all();
   assert.equal(researchLinks.length, 5);
   for (const anchor of researchLinks) assert.equal(await anchor.isVisible(), true);
-  assert.equal(await page.locator('#projects > .work-list article').count(), 3);
+  assert.equal(await page.locator('#projects > .work-list article').count(), 4);
   assert.equal(await page.locator('#more-projects').evaluate((element) => element.open), false);
   const researchDetails = page.locator('#minerva-omnifold > .record-details');
   assert.equal(await researchDetails.locator('.explanation-body').isVisible(), false);
@@ -274,7 +274,7 @@ try {
   const plain = await noJs.newPage();
   await plain.goto(baseUrl, { waitUntil: 'networkidle' });
   assert.equal(await plain.locator('#research article').count(), 5);
-  assert.equal(await plain.locator('#projects article').count(), 6);
+  assert.equal(await plain.locator('#projects article').count(), 7);
   assert.equal(await plain.locator('#experience article').count(), 0);
   assert.equal(await plain.locator('[data-instagram-slide]:not([hidden])').count(), 1);
   assert.equal(await plain.getByRole('button', { name: 'Next Instagram post' }).isVisible(), false);

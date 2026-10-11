@@ -179,6 +179,8 @@ function researchList() {
 
 function projectList(items, featured = false) {
   const descriptions = {
+    'neutrino-video':
+      'A five-minute animated film about finding the proton’s weak-force response in a plastic neutrino detector.',
     splora: 'Fine-tuning language models using about 1% of their parameters.',
     lord: 'Recognizing the same person across video from different cameras.',
     'soccer-gnn': 'Predicting the next action in a soccer match with graph neural networks.',
@@ -188,7 +190,9 @@ function projectList(items, featured = false) {
   };
   return `<ul class="work-list${featured ? ' project-grid' : ''}">${items
     .map(
-      (item) => `<li><article id="${item.id}"${featured ? ' class="project-card"' : ''}>
+      (
+        item,
+      ) => `<li><article id="${item.id}"${featured ? ` class="project-card${item.id === 'neutrino-video' ? ' video-project' : ''}"` : ''}>
     ${featured ? projectPreview(item) : ''}
     <div class="project-copy"><header class="entry-heading"><h3>${item.links.length ? link({ ...item.links[0], label: item.title }) : escape(item.title)}</h3></header>
     <p>${escape(descriptions[item.id])}</p>
@@ -338,6 +342,8 @@ function instagramCarousel() {
 }
 
 function projectPreview(item) {
+  if (item.id === 'neutrino-video')
+    return `<a class="project-preview preview-video" href="${escape(item.links[0].href)}" target="_blank" rel="noopener noreferrer" aria-label="Watch The Proton Hidden in Plastic on YouTube"><img src="./img/projects/neutrino-video.webp" alt="Frame from The Proton Hidden in Plastic showing hydrogen atoms around carbon nuclei in a plastic molecule" width="960" height="540" loading="lazy"><span class="video-play" aria-hidden="true">▶</span><span class="preview-caption">Watch the film ↗</span></a>`;
   if (item.id === 'splora')
     return `<a class="project-preview preview-splora" href="./papers/splora-poster.pdf" target="_blank" rel="noopener noreferrer" aria-label="View SPLoRA project poster"><img src="./img/projects/splora-chart.webp" alt="Chart from the SPLoRA poster comparing paraphrase detection accuracy across LoRA adapter placements" width="735" height="610" loading="lazy"><span class="preview-caption">From the project poster ↗</span></a>`;
   if (item.id === 'lord')
@@ -388,7 +394,7 @@ function noteList(prefix = './notes/', limit = notes.length) {
 }
 
 export function renderHome() {
-  const featured = ['splora', 'lord', 'soccer-gnn'];
+  const featured = ['splora', 'lord', 'soccer-gnn', 'neutrino-video'];
   return `${siteNavigation()}<header class="introduction" id="top">
     <div class="intro-copy"><h1>Hi, I’m <em>Joseph.</em></h1>
       <p class="intro-lead">${escape(personal.introduction)}</p><p class="intro-personal">${escape(
@@ -410,7 +416,7 @@ export function renderHome() {
   <nav class="page-index" aria-label="On this page"><a href="#research">Research</a><a href="#projects">Projects</a><a href="#instruments">Hobbies</a></nav>
   <section id="research" aria-labelledby="research-heading"><div class="section-heading"><div><h2 id="research-heading">Research</h2></div><a href="./about.html">A little more about me ↗</a></div>${researchList()}</section>
   <section id="projects" aria-labelledby="projects-heading"><div class="section-heading"><div><h2 id="projects-heading">Selected projects</h2></div><span class="section-aside">Code, experiments &amp; what I learned</span></div>${projectList(
-    projects.filter((item) => featured.includes(item.id)),
+    featured.map((id) => projects.find((item) => item.id === id)),
     true,
   )}<details class="explanation more-projects" id="more-projects"><summary>More projects</summary><div class="explanation-body">${projectList(projects.filter((item) => !featured.includes(item.id)))}</div></details></section>
   <section id="instruments" aria-labelledby="instruments-heading"><div class="section-heading"><div><h2 id="instruments-heading">Hobbies</h2></div></div>${personalList()}</section>
