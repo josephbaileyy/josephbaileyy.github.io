@@ -153,45 +153,94 @@ try {
   await summary.focus();
   await page.keyboard.press('Enter');
   await page.locator('[data-demo-view]').waitFor({ state: 'visible' });
+  const image = (selector) => page.locator(selector).evaluate((canvas) => canvas.toDataURL());
   assert.equal(await page.locator('#unfolding-iteration').inputValue(), '0');
-  assert.equal(await page.locator('[data-ess]').textContent(), '100%');
-  const estimateBefore = await page
-    .locator('[data-unfolded]')
-    .evaluate((canvas) => canvas.toDataURL());
-  await page.locator('#unfolding-iteration').fill('8');
-  assert.notEqual(
-    await page.locator('[data-unfolded]').evaluate((canvas) => canvas.toDataURL()),
-    estimateBefore,
+  assert.equal(await page.locator('[data-shared-prior]').inputValue(), 'hurdler');
+  assert.deepEqual(
+    await page
+      .locator('[data-shared-prior] option')
+      .evaluateAll((options) => options.map((option) => option.value)),
+    ['hurdler', 'photo-intensity'],
   );
-  const photoEss = await page.locator('[data-ess]').textContent();
-  assert.equal(photoEss, '42%');
-  const measuredData = () =>
-    page.locator('[data-measured]').evaluate((canvas) => canvas.toDataURL());
-  const measuredBefore = await measuredData();
-  const targetBefore = await page.locator('[data-truth]').evaluate((canvas) => canvas.toDataURL());
-  await page.locator('#unfolding-interactive .record-details > summary').click();
-  await page.locator('[name="unfolding-prior"][value="uniform"]').check();
-  assert.equal(await page.locator('[data-ess]').textContent(), '32%');
+  assert.equal(await page.locator('[data-shared-demo] select').count(), 1);
+  assert.equal(await page.locator('[data-shared-demo] button:visible').count(), 1);
+  assert.equal(await page.locator('.shared-method').evaluate((element) => element.open), false);
+  const initialEstimate = await image('[data-shared-estimate]');
+  const initialData = await image('[data-shared-data]');
+  const reference = await image('[data-shared-reference]');
+  for (const iteration of ['1', '12']) {
+    await page.locator('#unfolding-iteration').fill(iteration);
+    assert.notEqual(await image('[data-shared-estimate]'), initialEstimate);
+    assert.equal(await image('[data-shared-data]'), initialData);
+    assert.equal(await image('[data-shared-reference]'), reference);
+  }
+  assert.equal(await page.locator('[data-shared-play]').innerText(), 'Replay');
+  await summary.click();
+  await summary.click();
+  assert.equal(await page.locator('#unfolding-iteration').inputValue(), '12');
+  await page.locator('[data-shared-prior]').selectOption('photo-intensity');
+  await page.waitForFunction(() => !document.querySelector('[data-shared-prior]').disabled);
+  assert.equal(await page.locator('#unfolding-iteration').inputValue(), '0');
+  assert.equal(await page.locator('#unfolding-iteration').getAttribute('max'), '3');
+  assert.ok(requests.some((url) => url.endsWith('/data/unfolding/photo-intensity-015.bin')));
   assert.equal(
-    await measuredData(),
-    measuredBefore,
-    'Changing the simulation changed the measured data',
+    requests.some((url) => url.includes('photo-intensity-040')),
+    false,
   );
-  assert.equal(
-    await page.locator('[data-truth]').evaluate((canvas) => canvas.toDataURL()),
-    targetBefore,
+  const portraitData = await image('[data-shared-data]');
+  const portraitReference = await image('[data-shared-reference]');
+  const portraitStart = await image('[data-shared-estimate]');
+  await page.locator('[data-shared-play]').click();
+  await page.waitForFunction(
+    () => document.querySelector('[data-shared-play]').textContent === 'Replay',
   );
-  await page.locator('#unfolding-interactive .record-details > summary').click();
+  assert.equal(await page.locator('#unfolding-iteration').inputValue(), '3');
+  assert.notEqual(await image('[data-shared-estimate]'), portraitStart);
+  assert.equal(await image('[data-shared-data]'), portraitData);
+  assert.equal(await image('[data-shared-reference]'), portraitReference);
+  await page.locator('.shared-method > summary').click();
+  const estimateBeforeExplanation = await image('[data-shared-estimate]');
+  assert.match(
+    await page.locator('[data-shared-method-example]').innerText(),
+    /independent detector data/,
+  );
+  await page.locator('.shared-method > summary').click();
+  assert.equal(await image('[data-shared-estimate]'), estimateBeforeExplanation);
+  for (const width of [320, 390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 1000 });
+    assert.ok(
+      await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth),
+      `Demo overflow at ${width}px`,
+    );
+    await page
+      .locator('#unfolding-interactive')
+      .screenshot({ path: `${shotsDir}/omnifold-simple-portrait-${width}.png` });
+  }
+  await page.setViewportSize({ width: 1280, height: 1000 });
+  await page.locator('[data-shared-play]').click();
+  assert.equal(await page.locator('[data-shared-play]').innerText(), 'Pause');
+  await page.waitForFunction(
+    () => Number(document.querySelector('#unfolding-iteration').value) >= 1,
+  );
+  await explanation.click();
+  await page.waitForFunction(
+    () => document.querySelector('[data-shared-play]').textContent === 'Play',
+  );
+  await explanation.click();
+  const pausedEstimate = await image('[data-shared-estimate]');
+  await page.waitForTimeout(300);
+  assert.equal(await image('[data-shared-estimate]'), pausedEstimate);
+  await page.locator('[data-shared-prior]').selectOption('hurdler');
+  await page.waitForFunction(() => !document.querySelector('[data-shared-prior]').disabled);
+  assert.equal(await page.locator('#unfolding-iteration').inputValue(), '0');
+  assert.equal(await page.locator('#unfolding-iteration').getAttribute('max'), '12');
+  assert.equal(await image('[data-shared-data]'), initialData);
+  assert.equal(await image('[data-shared-reference]'), reference);
+  await page.locator('#unfolding-iteration').fill('12');
   await page
     .locator('#unfolding-interactive')
-    .screenshot({ path: `${shotsDir}/unfolding-interactive.png` });
-  await page.screenshot({ path: `${shotsDir}/unfolding-1280.png`, fullPage: true });
-  await summary.click();
-  await summary.click();
-  assert.equal(await page.locator('#unfolding-iteration').inputValue(), '8');
+    .screenshot({ path: `${shotsDir}/omnifold-simple-hurdler.png` });
   await page.setViewportSize({ width: 320, height: 900 });
-  assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
-  await page.screenshot({ path: `${shotsDir}/unfolding-320.png`, fullPage: true });
   await summary.click();
   await page.locator('#athletics summary').first().click();
   assert.equal(await page.locator('.race-plot-mobile').isVisible(), true);
@@ -274,19 +323,30 @@ try {
 
   const fallback = await browser.newContext({ reducedMotion: 'reduce' });
   const failed = await fallback.newPage();
-  const imagePattern = '**/img/unfolding/face2024.png';
-  await failed.route(imagePattern, (route) => route.abort());
+  const replayPattern = '**/data/unfolding/hurdler-040.bin';
+  await failed.route(replayPattern, (route) => route.abort());
   await failed.goto(baseUrl, { waitUntil: 'networkidle' });
   await failed.locator('#unfolding-explanation > summary').click();
   await failed.locator('#unfolding-interactive > summary').click();
   await failed.locator('[data-demo-retry]').waitFor({ state: 'visible' });
   assert.match(await failed.locator('[data-demo-status]').innerText(), /could not load/);
   assert.equal(await failed.locator('#minerva-omnifold > .entry-heading a').isVisible(), true);
-  await failed.unroute(imagePattern);
+  await failed.unroute(replayPattern);
   await failed.locator('[data-demo-retry]').click();
   await failed.locator('[data-demo-view]').waitFor({ state: 'visible' });
   assert.equal(await failed.locator('#unfolding-iteration').inputValue(), '0');
-  console.log('PASS: failed-image fallback, retry, and reduced-motion presentation.');
+  const portraitPattern = '**/data/unfolding/photo-intensity-015.bin';
+  await failed.route(portraitPattern, (route) => route.abort());
+  await failed.locator('[data-shared-prior]').selectOption('photo-intensity');
+  await failed.locator('[data-shared-settings-retry]').waitFor({ state: 'visible' });
+  assert.equal(await failed.locator('[data-shared-prior]').inputValue(), 'hurdler');
+  assert.equal(await failed.locator('#unfolding-iteration').getAttribute('max'), '12');
+  await failed.unroute(portraitPattern);
+  await failed.locator('[data-shared-settings-retry]').click();
+  await failed.waitForFunction(() => !document.querySelector('[data-shared-prior]').disabled);
+  assert.equal(await failed.locator('[data-shared-prior]').inputValue(), 'photo-intensity');
+  assert.equal(await failed.locator('#unfolding-iteration').getAttribute('max'), '3');
+  console.log('PASS: classifier-data loading fallback, retry, and reduced-motion presentation.');
   await fallback.close();
 } finally {
   await browser.close();

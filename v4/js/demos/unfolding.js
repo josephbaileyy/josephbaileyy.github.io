@@ -1,87 +1,173 @@
-import OmniFoldToy from './omnifold-engine.js';
+import { frameAt, loadExperiment } from './omnifold-replay.js';
+import { densityPixels } from './unfolding-density.js';
+
+const examples = {
+  hurdler: {
+    response: '040',
+    description:
+      'The hurdler starts with distorted shape and colors. The detector blurs positions and sometimes confuses color categories.',
+  },
+  'photo-intensity': {
+    response: '015',
+    description:
+      'The portrait uses the original photos as red, green, and blue intensity distributions. Both position and color are learned. The detector adds mild blur and color confusion.',
+  },
+};
+const blend = (a, b, t) => Float32Array.from(a, (value, i) => value + (b[i] - value) * t);
 
 export default async function mountUnfolding(root) {
-  const toy = new OmniFoldToy();
-  const [simulation, truth] = await toy.loadFaces();
-  toy.setupEngine(simulation, truth);
-  await toy.runEngine();
+  let experiment = await loadExperiment();
+  const host = root.querySelector('[data-shared-demo]');
+  const q = (name) => host.querySelector(`[data-shared-${name}]`);
+  const timeline = q('iteration');
+  const play = q('play');
+  const selector = q('prior');
+  const canvases = ['estimate', 'reference', 'reco', 'data'].map(q);
+  for (const canvas of canvases)
+    if (!canvas.getContext('2d')) throw new Error('Canvas is unavailable');
+  root.querySelector('[data-demo-view]').hidden = false;
 
-  const view = root.querySelector('[data-demo-view]');
-  const iteration = root.querySelector('#unfolding-iteration');
-  const iterationValue = root.querySelector('#unfolding-iteration-value');
-  const ess = root.querySelector('[data-ess]');
-  const caption = root.querySelector('[data-result-caption]');
-  const insight = root.querySelector('[data-demo-insight]');
-  let prior = 'y2024';
-
-  // Render data, estimate, and target with identical binning and dot-area scale.
-  const sampleFrame = (xs, ys) => {
-    const { M, ND } = toy.E;
-    const H = new Float32Array(M * M);
-    for (let i = 0; i < ND; i++) {
-      const x = Math.min(M - 1, Math.max(0, Math.floor(xs[i] * M)));
-      const y = Math.min(M - 1, Math.max(0, Math.floor(ys[i] * M)));
-      H[y * M + x]++;
-    }
-    const sorted = Array.from(H).sort((a, b) => a - b);
-    return { H, ref: sorted[Math.floor(0.98 * (M * M - 1))] };
+  let position = 0,
+    playing = false,
+    raf = 0,
+    last = 0;
+  let activeExample = 'hurdler',
+    loading = false,
+    failedExample = null;
+  let fixedImages = new Map();
+  const densityCanvas = document.createElement('canvas');
+  const iterations = () => experiment.recommended_iteration ?? experiment.iterations;
+  const end = () => iterations() * 3;
+  const visible = () => {
+    for (let ancestor = root; ancestor; ancestor = ancestor.parentElement)
+      if (ancestor instanceof HTMLDetailsElement && !ancestor.open) return false;
+    return true;
   };
-  const measuredFrame = sampleFrame(toy.E.rx, toy.E.ry);
-  const targetFrame = sampleFrame(toy.E.tx, toy.E.ty);
-  toy.E.displayRef = Math.max(toy.E.displayRef, measuredFrame.ref, targetFrame.ref);
 
-  function prepare(canvas) {
-    const size = Math.max(1, canvas.getBoundingClientRect().width);
-    const ratio = devicePixelRatio || 1;
-    canvas.width = canvas.height = Math.round(size * ratio);
-    const context = canvas.getContext('2d');
-    if (!context) throw new Error('Canvas is unavailable');
-    context.setTransform(ratio, 0, 0, ratio, 0, 0);
-    context.clearRect(0, 0, size, size);
-    return { context, size };
+  function densityImage(values, fixed = false) {
+    if (fixed && fixedImages.has(values)) return fixedImages.get(values);
+    const canvas = fixed ? document.createElement('canvas') : densityCanvas;
+    canvas.width = canvas.height = experiment.grid;
+    const pixels = densityPixels(
+      values,
+      experiment.grid,
+      experiment.palette,
+      experiment.display_scale,
+      experiment.color_model,
+    );
+    canvas
+      .getContext('2d')
+      .putImageData(new ImageData(pixels, experiment.grid, experiment.grid), 0, 0);
+    if (fixed) fixedImages.set(values, canvas);
+    return canvas;
   }
-
+  function paintDensity(canvas, values, fixed = false) {
+    const width = Math.round(
+      canvas.getBoundingClientRect().width * Math.min(devicePixelRatio || 1, 2),
+    );
+    if (!width) return;
+    if (canvas.width !== width || canvas.height !== width) canvas.width = canvas.height = width;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.clearRect(0, 0, width, width);
+    ctx.drawImage(densityImage(values, fixed), 0, 0, width, width);
+  }
   function paint() {
-    if (!root.open) return;
-    const index = Number(iteration.value);
-    const frame = toy.E.sims[prior].frames[index];
-    const main = prepare(root.querySelector('[data-unfolded]'));
-    toy.halftone(main.context, main.size, frame);
-    const measured = prepare(root.querySelector('[data-measured]'));
-    toy.halftone(measured.context, measured.size, measuredFrame);
-    const actual = prepare(root.querySelector('[data-truth]'));
-    toy.halftone(actual.context, actual.size, targetFrame);
-    iterationValue.value = String(index);
-    ess.value = `${Math.round(frame.ess * 100)}%`;
-    caption.textContent =
-      index === 0
+    if (!visible()) return;
+    const { before, after, fraction } = frameAt(experiment, position);
+    const mix = (key) => (fraction ? blend(before[key], after[key], fraction) : before[key]);
+    paintDensity(q('estimate'), mix('truthH'));
+    paintDensity(q('reco'), mix('recoH'));
+    paintDensity(q('reference'), experiment.reference, true);
+    paintDensity(q('data'), experiment.measured, true);
+    const completed = Math.floor((position + 1e-6) / 3);
+    timeline.max = String(iterations());
+    timeline.value = String(completed);
+    q('iteration-value').textContent = `${completed} / ${iterations()}`;
+    q('stage').textContent =
+      position === 0
         ? 'Starting simulation'
-        : `After ${index} reweighting step${index === 1 ? '' : 's'}`;
-    root
-      .querySelector('[data-unfolded]')
-      .setAttribute(
-        'aria-label',
-        `${prior === 'y2024' ? '2024-photo' : 'Uniform'} starting simulation, iteration ${index}. Effective sample size ${ess.value}. Summed weights in each display cell.`,
-      );
-    insight.textContent =
-      index === 0
-        ? 'At step 0, the estimate is just the starting simulation. Move the slider to change the weights.'
-        : 'Only the middle panel changes. Compare it with the target: the simulation is being reweighted, while the measured data stay fixed.';
+        : `Iteration ${Math.ceil(position / 3)} of ${iterations()}`;
+    timeline.setAttribute(
+      'aria-valuetext',
+      completed === 0 ? 'Starting simulation' : `Iteration ${completed} of ${iterations()}`,
+    );
+    play.textContent = playing ? 'Pause' : position >= end() ? 'Replay' : 'Play';
+    q('method-example').textContent =
+      examples[activeExample].description +
+      (experiment.recommended_iteration
+        ? ` Playback stops at iteration ${iterations()}, selected using independent detector data. Later iterations can amplify fluctuations; reference truth does not choose the stopping point.`
+        : ` Playback shows ${iterations()} iterations.`);
   }
-
-  view.hidden = false;
-  // Check canvas support before attaching listeners, so a failed mount can retry.
-  if (!root.querySelector('[data-unfolded]').getContext('2d'))
-    throw new Error('Canvas is unavailable');
-  iteration.addEventListener('input', paint);
-  root.querySelectorAll('[name="unfolding-prior"]').forEach((input) => {
-    input.addEventListener('change', () => {
-      prior = input.value;
+  function pause() {
+    playing = false;
+    cancelAnimationFrame(raf);
+    raf = 0;
+    play.textContent = position >= end() ? 'Replay' : 'Play';
+  }
+  function frame(now) {
+    if (!playing) return;
+    // Render at most 30 fps. Each saved learning step takes just over half a second.
+    if (now - last >= 1000 / 30) {
+      position = Math.min(end(), position + Math.min(0.1, (now - last) / 1000) / 0.55);
+      last = now;
+      if (position >= end()) pause();
       paint();
-    });
+    }
+    if (playing) raf = requestAnimationFrame(frame);
+  }
+  play.addEventListener('click', () => {
+    if (playing) return pause();
+    if (position >= end()) position = 0;
+    playing = true;
+    last = performance.now();
+    paint();
+    raf = requestAnimationFrame(frame);
   });
-  root.addEventListener('toggle', paint);
-  const observer = new ResizeObserver(paint);
-  observer.observe(view);
+  timeline.addEventListener('input', () => {
+    pause();
+    position = Number(timeline.value) * 3;
+    paint();
+  });
+  async function changeExample(requested = selector.value) {
+    if (loading) return;
+    pause();
+    loading = true;
+    selector.disabled = play.disabled = timeline.disabled = true;
+    q('loading').hidden = false;
+    q('loading').textContent = 'Loading…';
+    q('settings-retry').hidden = true;
+    try {
+      const replacement = await loadExperiment(requested, examples[requested].response);
+      experiment = replacement;
+      activeExample = selector.value = requested;
+      position = 0;
+      fixedImages = new Map();
+      failedExample = null;
+      q('loading').hidden = true;
+      paint();
+    } catch {
+      failedExample = requested;
+      selector.value = activeExample;
+      q('loading').textContent = 'This example could not load. The current one is still available.';
+      q('settings-retry').hidden = false;
+    } finally {
+      loading = false;
+      selector.disabled = play.disabled = timeline.disabled = false;
+    }
+  }
+  selector.addEventListener('change', () => changeExample());
+  q('settings-retry').addEventListener('click', () => changeExample(failedExample));
+  for (let ancestor = root; ancestor; ancestor = ancestor.parentElement)
+    if (ancestor instanceof HTMLDetailsElement)
+      ancestor.addEventListener('toggle', () => {
+        if (!visible()) pause();
+        else paint();
+      });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pause();
+  });
+  new ResizeObserver(paint).observe(host);
   paint();
 }

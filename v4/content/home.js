@@ -69,28 +69,27 @@ function interactiveUnfolding() {
   return `<details class="explanation" id="unfolding-interactive" data-demo="unfolding">
     <summary>Try the interactive version</summary>
     <div class="explanation-body">
-      <p>Move the slider and compare the middle panel with the target on the right. The measured data stay fixed.</p>
+      <p>Watch OmniFold adjust the simulation to match measured data.</p>
       <div data-demo-view hidden>
-        <div class="unfolding-comparison">
-          <figure><canvas data-measured role="img" aria-label="Fixed synthetic measured data"></canvas><figcaption>Measured data <span>Fixed, after detector smearing</span></figcaption></figure>
-          <figure><canvas data-unfolded role="img" aria-label="Current estimate before reweighting"></canvas><figcaption>Current estimate <span data-result-caption>Starting simulation</span></figcaption></figure>
-          <figure><canvas data-truth role="img" aria-label="Known target in this synthetic example"></canvas><figcaption>Toy target <span>Known here for comparison</span></figcaption></figure>
+        <div class="shared-unfolding" data-shared-demo>
+          <div class="shared-toolbar"><label>Example <select data-shared-prior><option value="hurdler">Hurdler</option><option value="photo-intensity">Portrait</option></select></label><output data-shared-stage>Starting simulation</output></div>
+          <div class="shared-portrait-grid">
+            <p class="shared-level">Before the detector</p>
+            <figure><canvas data-shared-estimate role="img" aria-label="Weighted simulation before detection"></canvas><figcaption>Estimate</figcaption></figure>
+            <figure><canvas data-shared-reference role="img" aria-label="Reference truth, shown for comparison only"></canvas><figcaption>Reference truth <span>Never used by the algorithm</span></figcaption></figure>
+            <p class="shared-level">After the detector</p>
+            <figure><canvas data-shared-reco role="img" aria-label="Weighted simulation after detection"></canvas><figcaption>Simulation</figcaption></figure>
+            <figure><canvas data-shared-data role="img" aria-label="Fixed synthetic measured distribution"></canvas><figcaption>Measured data</figcaption></figure>
+          </div>
+          <div class="shared-playback"><button type="button" data-shared-play>Play</button><div class="shared-timeline"><label for="unfolding-iteration">Iteration <output data-shared-iteration-value>0 / 12</output></label><input id="unfolding-iteration" data-shared-iteration type="range" min="0" max="12" step="1" value="0"></div></div>
+          <p class="demo-status" data-shared-loading role="status" hidden></p>
+          <button type="button" class="text-button" data-shared-settings-retry hidden>Try again</button>
+          <details class="shared-method"><summary>How it works</summary><p>Only the event weights change. One classifier compares simulation with measured data after the detector. Its weights are carried to the simulated truth partners. A second classifier learns weights from the truth features, then sends them forward for the next iteration. The reference truth is shown only for comparison.</p><p data-shared-method-example></p><p>These are synthetic distributions, not photo restoration or MINERvA data. The browser replays trained neural-network weights. All four images share a fixed display scale and smoothing filter; the reference never alters the estimate. Acceptance losses, backgrounds, and uncertainties are omitted.</p></details>
         </div>
-        <div class="simple-demo-controls">
-          <label for="unfolding-iteration">Reweighting step <output id="unfolding-iteration-value" for="unfolding-iteration">0</output></label>
-          <input id="unfolding-iteration" type="range" min="0" max="20" step="1" value="0">
-          <p class="demo-insight" data-demo-insight role="status">At step 0, the estimate is just the starting simulation.</p>
-        </div>
-        <details class="explanation record-details"><summary>Change the starting simulation</summary><div class="explanation-body demo-controls">
-          <fieldset><legend>Starting simulation</legend><label><input type="radio" name="unfolding-prior" value="y2024" checked> A different photo of me</label><label><input type="radio" name="unfolding-prior" value="uniform"> Uniform density</label></fieldset>
-          <p>Switch to uniform density to see how the estimate depends on its starting point. Reweighting changes how much each simulated point counts; no point moves.</p>
-          <p>Effective sample size: <output data-ess>100%</output>. This measures how concentrated the weights are, not accuracy.</p>
-        </div></details>
       </div>
       <p class="demo-status" role="status" data-demo-status>The interactive example loads when opened.</p>
-      <button class="text-button" type="button" data-demo-retry hidden>Try loading the example again</button>
+      <button class="text-button" type="button" data-demo-retry hidden>Try again</button>
       <noscript><p>The interactive example needs JavaScript. The visual explanation above works without it.</p></noscript>
-      <p class="limitations">Synthetic point patterns from two photos, not neutrino data or image restoration. All panels use the same dot-area scale, with the largest dots capped. Smoothed histogram ratios stand in for learned classifiers; no acceptance losses, backgrounds, or uncertainty bands are modeled. More steps need not mean a better estimate.</p>
     </div>
   </details>`;
 }
