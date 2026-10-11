@@ -88,7 +88,7 @@ try {
   assert.equal(audioResponse.ok(), true);
   assert.match(audioResponse.headers()['content-type'], /audio\/(?:mp4|x-m4a)/);
   assert.equal(await page.locator('#research article').count(), 5);
-  assert.equal(await page.locator('#projects article').count(), 7);
+  assert.equal(await page.locator('#projects article').count(), 6);
   assert.equal(await page.locator('#unfolding-machine').count(), 0);
   assert.equal(
     await page.locator('#unfolding-explanation').evaluate((element) => element.open),
@@ -274,7 +274,7 @@ try {
   const plain = await noJs.newPage();
   await plain.goto(baseUrl, { waitUntil: 'networkidle' });
   assert.equal(await plain.locator('#research article').count(), 5);
-  assert.equal(await plain.locator('#projects article').count(), 7);
+  assert.equal(await plain.locator('#projects article').count(), 6);
   assert.equal(await plain.locator('#experience article').count(), 0);
   assert.equal(await plain.locator('[data-instagram-slide]:not([hidden])').count(), 1);
   assert.equal(await plain.getByRole('button', { name: 'Next Instagram post' }).isVisible(), false);
@@ -305,7 +305,7 @@ try {
   await plain.getByRole('link', { name: 'About', exact: true }).click();
   assert.equal(await plain.locator('#experience article').count(), 2);
   assert.match(await plain.locator('#education').innerText(), /Expected June 2027/);
-  await plain.getByRole('link', { name: 'Notes', exact: true }).first().click();
+  await plain.goto(new URL('notes/', baseUrl).href);
   await plain.locator('.note-list a').first().click();
   assert.equal(await plain.locator('.archive-note').isVisible(), true);
   assert.match(await plain.locator('.note-body').innerText(), /The seam theorem/);

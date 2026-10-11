@@ -40,14 +40,6 @@ const realBodies = [
     href: null,
   },
   {
-    id: 'prior-personal-site',
-    label: 'SITE',
-    massClass: 'mid',
-    slot: { x: 0.32, y: -0.62 },
-    kind: 'project',
-    href: null,
-  },
-  {
     id: 'minerva-omnifold-pipeline',
     label: 'MINERVA',
     massClass: 'mid',

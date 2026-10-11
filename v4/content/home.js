@@ -182,7 +182,6 @@ function projectList(items, featured = false) {
     splora: 'Fine-tuning language models using about 1% of their parameters.',
     lord: 'Recognizing the same person across video from different cameras.',
     'soccer-gnn': 'Predicting the next action in a soccer match with graph neural networks.',
-    'prior-personal-site': 'An interactive journey from the Milky Way to a desk.',
     'minerva-omnifold-pipeline': 'The code behind my neutrino-unfolding research.',
     'lol-match-prediction': 'Predicting professional League of Legends match outcomes.',
     'systems-security': 'Projects in encrypted chat, smart contracts, and operating systems.',
@@ -340,9 +339,9 @@ function instagramCarousel() {
 
 function projectPreview(item) {
   if (item.id === 'splora')
-    return `<a class="project-preview preview-splora" href="./papers/splora-poster.pdf" target="_blank" rel="noopener noreferrer" aria-label="View SPLoRA project poster"><img src="./img/projects/splora-chart.webp" alt="Chart from the SPLoRA poster comparing paraphrase detection accuracy across LoRA adapter placements" width="693" height="609" loading="lazy"><span class="preview-caption">From the project poster ↗</span></a>`;
+    return `<a class="project-preview preview-splora" href="./papers/splora-poster.pdf" target="_blank" rel="noopener noreferrer" aria-label="View SPLoRA project poster"><img src="./img/projects/splora-chart.webp" alt="Chart from the SPLoRA poster comparing paraphrase detection accuracy across LoRA adapter placements" width="735" height="610" loading="lazy"><span class="preview-caption">From the project poster ↗</span></a>`;
   if (item.id === 'lord')
-    return `<a class="project-preview preview-lord" href="./papers/lord-poster.pdf" target="_blank" rel="noopener noreferrer" aria-label="View LoRD project poster"><img src="./img/projects/lord-model.webp" alt="LoRD model diagram: video frames pass through DINO, temporal aggregation, and BNNeck for cosine retrieval" width="1072" height="284" loading="lazy"><span class="preview-caption">From the project poster ↗</span></a>`;
+    return `<a class="project-preview preview-lord" href="./papers/lord-poster.pdf" target="_blank" rel="noopener noreferrer" aria-label="View LoRD project poster"><img src="./img/projects/lord-architecture.svg" alt="LoRD architecture in two rows: tracklet frames pass through DINO to CLS features, then temporal aggregation, BNNeck, and cosine retrieval" width="360" height="230" loading="lazy"><span class="preview-caption">Architecture from the poster ↗</span></a>`;
   return `<a class="project-preview preview-soccer" href="${escape(item.links[0].href)}" target="_blank" rel="noopener noreferrer" aria-label="View soccer graph neural network project on GitHub"><svg viewBox="0 0 360 210" role="img" aria-label="Illustrative graph connecting players on a soccer pitch"><rect x="18" y="25" width="324" height="162" rx="2" fill="none" stroke="#b7c9b6"/><path d="M180 25v162M18 69h44v73H18m324-73h-44v73h44" fill="none" stroke="#b7c9b6"/><circle cx="180" cy="106" r="28" fill="none" stroke="#b7c9b6"/><path d="M82 113 123 67 172 126 218 73 282 112M82 113l90 13 110-14M123 67l95 6M172 126l60 37" fill="none" stroke="#436448" stroke-width="1.5" stroke-dasharray="4 4"/>${[
     [82, 113],
     [123, 67],
@@ -364,7 +363,6 @@ export function siteNavigation(active = 'home', prefix = './') {
   return `<nav class="site-nav" aria-label="Main navigation"><a class="site-name" href="${prefix}"${active === 'home' ? ' aria-current="page"' : ''}>Joseph Bailey<span class="name-dot" aria-hidden="true">·</span></a><div>${[
     ['home', 'Home', ''],
     ['about', 'About', 'about.html'],
-    ['notes', 'Notes', 'notes/'],
   ]
     .map(
       ([id, label, href]) =>
@@ -376,7 +374,7 @@ export function siteNavigation(active = 'home', prefix = './') {
 }
 
 export function siteFooter(prefix = './') {
-  return `<footer id="contact"><div><p>Research, ideas, or a good conversation.</p><p>${link({ href: `mailto:${profile.email}`, label: profile.email })}</p></div><nav aria-label="More links">${link(profile.links.find((item) => item.id === 'github-link'))}<a href="${prefix}lab/">Visit the lab ↗</a><a href="${prefix}notes/">Notes</a><a href="#top">Back to top ↑</a></nav></footer>`;
+  return `<footer id="contact"><div><p>Research, ideas, or a good conversation.</p><p>${link({ href: `mailto:${profile.email}`, label: profile.email })}</p></div><nav aria-label="More links">${link(profile.links.find((item) => item.id === 'github-link'))}<a href="${prefix}lab/">Visit the lab ↗</a><a href="#top">Back to top ↑</a></nav></footer>`;
 }
 
 function noteList(prefix = './notes/', limit = notes.length) {
@@ -409,14 +407,13 @@ export function renderHome() {
     </div>
     ${instagramCarousel()}
   </header>
-  <nav class="page-index" aria-label="On this page"><a href="#research">Research</a><a href="#projects">Projects</a><a href="#instruments">Outside research</a><a href="#notes">Notes</a></nav>
+  <nav class="page-index" aria-label="On this page"><a href="#research">Research</a><a href="#projects">Projects</a><a href="#instruments">Hobbies</a></nav>
   <section id="research" aria-labelledby="research-heading"><div class="section-heading"><div><h2 id="research-heading">Research</h2></div><a href="./about.html">A little more about me ↗</a></div>${researchList()}</section>
   <section id="projects" aria-labelledby="projects-heading"><div class="section-heading"><div><h2 id="projects-heading">Selected projects</h2></div><span class="section-aside">Code, experiments &amp; what I learned</span></div>${projectList(
     projects.filter((item) => featured.includes(item.id)),
     true,
-  )}<details class="explanation more-projects" id="more-projects"><summary>Four more projects</summary><div class="explanation-body">${projectList(projects.filter((item) => !featured.includes(item.id)))}</div></details></section>
-  <section id="instruments" aria-labelledby="instruments-heading"><div class="section-heading"><div><h2 id="instruments-heading">Outside research</h2></div></div>${personalList()}</section>
-  <section id="notes" aria-labelledby="notes-heading"><div class="section-heading"><div><h2 id="notes-heading">Notes</h2></div><a href="./notes/">All notes ↗</a></div>${noteList('./notes/', 3)}</section>
+  )}<details class="explanation more-projects" id="more-projects"><summary>More projects</summary><div class="explanation-body">${projectList(projects.filter((item) => !featured.includes(item.id)))}</div></details></section>
+  <section id="instruments" aria-labelledby="instruments-heading"><div class="section-heading"><div><h2 id="instruments-heading">Hobbies</h2></div></div>${personalList()}</section>
   ${siteFooter()}`;
 }
 

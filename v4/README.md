@@ -20,7 +20,7 @@ npm run test:e2e:lab
 The homepage is rendered at build time by `content/home.js`. Each research item
 has a one-sentence summary and a linked title. Native “Details and links”
 disclosures preserve the full contribution, evidence, and supplementary figures.
-Three projects have visual previews; the remaining four are under “Four more projects.” Experience, coursework, and honors live on `/about.html`. Old experience and education anchors redirect there. All
+Three projects have visual previews; the remaining three are under “More projects.” Notes are temporarily hidden from the homepage and shared navigation; their existing URLs and Markdown sources remain available. Experience, coursework, and honors live on `/about.html`. Old experience and education anchors redirect there. All
 records and disclosures work without JavaScript. Hash links open any enclosing
 disclosures when JavaScript is available. The homepage loads no Three.js or Rapier.
 
@@ -70,13 +70,17 @@ available. AP credit is listed separately without units.
   remain in `public/fonts/`; the legacy lab keeps its own typography.
 - Instagram photos appear only inside the header widget. The track card uses
   `public/img/home/track-start.png`, copied unchanged from the supplied image. Project previews
-  `public/img/projects/splora-chart.webp` and `lord-model.webp` are excerpts from
-  their respective local posters, linked to the complete PDFs. The soccer graph
+  `public/img/projects/splora-chart.webp` and `lord-model.webp` are complete,
+  high-resolution crops of the original poster figures, linked to the full PDFs.
+  `public/img/projects/lord-architecture.svg` reflows that same architecture into
+  two rows for the LoRD thumbnail: per-frame DINO encoding above temporal
+  aggregation, BNNeck, and cosine retrieval. The original labels and options
+  are retained. Thumbnail frames preserve each figure's aspect ratio. The soccer graph
   is an explicitly labelled illustrative SVG, not measured model output.
 - Add Markdown notes under `src/content/notes/`, with `title`, `date`, and `summary`
   frontmatter. `content/notes.js` shares the existing Markdown renderer with the
   archived universe's generator. At Vite startup, `content/note-pages.js` prepares
-  every note's HTML entry and the sitemap. Notes appear on the homepage and index
+  every note's HTML entry and the sitemap. Notes appear on the notes index
   automatically and are rendered into the production build. Generated note HTML
   wrappers under `notes/` should be committed along with their Markdown source.
   The existing universe write-up is labelled as archived so it does not describe

@@ -304,7 +304,7 @@ try {
 
   assert.equal(await noJavaScriptPage.locator('h1').count(), 1);
   assert.equal(await noJavaScriptPage.locator('#research article').count(), 5);
-  assert.equal(await noJavaScriptPage.locator('#projects article').count(), 7);
+  assert.equal(await noJavaScriptPage.locator('#projects article').count(), 6);
   assert.equal(await noJavaScriptPage.locator('#experience article').count(), 2);
   assert.match(await noJavaScriptPage.locator('body').innerText(), /question under test/i);
   assert.match(await noJavaScriptPage.locator('body').innerText(), /WisdomTree Connect/i);
@@ -332,7 +332,7 @@ try {
     'NO_JAVASCRIPT',
     JSON.stringify({
       research: 5,
-      projects: 7,
+      projects: 6,
       experience: 2,
       hashNavigation: '#research',
       localLinks: localLinkResults,

@@ -56,6 +56,7 @@ describe('v4 production output', () => {
       'img/home/track-start.png',
       'img/projects/splora-chart.webp',
       'img/projects/lord-model.webp',
+      'img/projects/lord-architecture.svg',
       'audio/fugue.m4a',
       'img/home/with-camera.jpg',
       'img/home/amcvn-fit.png',

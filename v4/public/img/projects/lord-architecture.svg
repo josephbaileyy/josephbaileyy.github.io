@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="230" viewBox="0 0 360 230">
+  <title>LoRD architecture in two stages</title>
+  <desc>Each tracklet frame passes through frozen or LoRA-adapted DINO to produce a CLS token. These tokens feed temporal aggregation, then a BNNeck embedding and cosine retrieval. Layout adapted from the original project poster.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+      <path d="m1 1 5 3-5 3" fill="none" stroke="#384348" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+  <g font-family="-apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif" text-anchor="middle">
+    <g font-size="9" fill="#647179" text-anchor="start">
+      <text x="12" y="13">PER-FRAME ENCODING</text>
+      <text x="143" y="13">Frozen or LoRA-adapted</text>
+    </g>
+    <rect x="12" y="57" width="65" height="43" rx="8" fill="#fffdfa" stroke="#c6bdae" stroke-width="1.3"/>
+    <text x="44.5" y="75" font-size="12" font-weight="600" fill="#403e38">Tracklet</text>
+    <text x="44.5" y="90" font-size="10" fill="#7a756b">T frames</text>
+    <g fill="#fcf4e8" stroke="#e1c69b">
+      <rect x="95" y="24" width="29" height="26" rx="6"/>
+      <rect x="95" y="64" width="29" height="26" rx="6"/>
+      <rect x="95" y="104" width="29" height="26" rx="6"/>
+    </g>
+    <g font-size="12" font-weight="600" fill="#94682f">
+      <text x="109.5" y="41">t₁</text>
+      <text x="109.5" y="81">t₂</text>
+      <text x="109.5" y="121">t<tspan font-size="8" baseline-shift="sub">T</tspan></text>
+    </g>
+    <g fill="#e5f1ee" stroke="#b5d7d2">
+      <rect x="143" y="24" width="51" height="26" rx="6"/>
+      <rect x="143" y="64" width="51" height="26" rx="6"/>
+      <rect x="143" y="104" width="51" height="26" rx="6"/>
+    </g>
+    <g font-size="11" font-weight="600" fill="#28766f">
+      <text x="168.5" y="41">DINO</text>
+      <text x="168.5" y="81">DINO</text>
+      <text x="168.5" y="121">DINO</text>
+    </g>
+    <g fill="#f5e9e9" stroke="#dfbcbc">
+      <circle cx="232" cy="37" r="16"/>
+      <circle cx="232" cy="77" r="16"/>
+      <circle cx="232" cy="117" r="16"/>
+    </g>
+    <g font-size="10" font-weight="600" fill="#8c3333">
+      <text x="232" y="40.5">CLS₁</text>
+      <text x="232" y="80.5">CLS₂</text>
+      <text x="232" y="120.5">CLS<tspan font-size="7" baseline-shift="sub">T</tspan></text>
+    </g>
+    <g fill="none" stroke="#384348" stroke-width="1.4" marker-end="url(#arrow)">
+      <path d="M77 78h16"/>
+      <path d="M124 37h17"/>
+      <path d="M124 77h17"/>
+      <path d="M124 117h17"/>
+      <path d="M194 37h19"/>
+      <path d="M194 77h19"/>
+      <path d="M194 117h19"/>
+      <path d="M285 117v24H80v15"/>
+    </g>
+    <path d="M248 37h37v80h-37m0-40h37" fill="none" stroke="#8e9ea4" stroke-width="1.4"/>
+    <g font-size="9" fill="#647179">
+      <text x="319" y="73">Frame</text>
+      <text x="319" y="86">features</text>
+    </g>
+    <g font-size="12" fill="#7a756b">
+      <text x="109.5" y="101">⋮</text>
+      <text x="168.5" y="101">⋮</text>
+      <text x="232" y="101">⋮</text>
+    </g>
+    <rect x="12" y="158" width="136" height="59" rx="8" fill="#fffdfa" stroke="#8c3333" stroke-width="1.7"/>
+    <g font-size="12" font-weight="600" fill="#7e2525">
+      <text x="80" y="177">Temporal</text>
+      <text x="80" y="192">aggregation</text>
+    </g>
+    <text x="80" y="208" font-size="9" fill="#7a756b">mean · proj · attention</text>
+    <g fill="#fffdfa" stroke="#c6bdae" stroke-width="1.3">
+      <rect x="177" y="166" width="76" height="43" rx="8"/>
+      <rect x="282" y="166" width="66" height="43" rx="8"/>
+    </g>
+    <g font-size="12" font-weight="600" fill="#403e38">
+      <text x="215" y="184">BNNeck</text>
+      <text x="315" y="184">Cosine</text>
+    </g>
+    <g font-size="9" fill="#7a756b">
+      <text x="215" y="199">retrieval embed</text>
+      <text x="315" y="199">retrieval</text>
+      <text x="262" y="228">BNNeck · ID + batch-hard triplet</text>
+    </g>
+    <g fill="none" stroke="#384348" stroke-width="1.4" marker-end="url(#arrow)">
+      <path d="M148 187.5h27"/>
+      <path d="M253 187.5h27"/>
+    </g>
+  </g>
+</svg>

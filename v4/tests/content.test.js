@@ -35,7 +35,7 @@ describe('v4 content integrity', () => {
 
   it('contains complete, unique content records', () => {
     expect(research).toHaveLength(5);
-    expect(projects).toHaveLength(7);
+    expect(projects).toHaveLength(6);
     expect(experience).toHaveLength(2);
     expect(education.coursework.length).toBeGreaterThanOrEqual(10);
     expect(education.honors).toHaveLength(4);
@@ -79,7 +79,7 @@ describe('shared chamber manifest', () => {
     expect(manifest).toEqual({ bodies: expect.any(Array) });
     expect(manifest.bodies.length).toBeGreaterThanOrEqual(60);
     expect(manifest.bodies.length).toBeLessThanOrEqual(100);
-    expect(labelled).toHaveLength(15);
+    expect(labelled).toHaveLength(14);
 
     manifest.bodies.forEach((body) => {
       expect(body).toEqual({
@@ -116,7 +116,7 @@ describe('shared chamber manifest', () => {
     const byKind = Object.groupBy(labelled, (body) => body.kind);
     expect(byKind.research).toHaveLength(5);
     expect(byKind.research.every((body) => body.massClass === 'heavy')).toBe(true);
-    expect(byKind.project).toHaveLength(7);
+    expect(byKind.project).toHaveLength(6);
     expect(byKind.project.every((body) => body.massClass === 'mid')).toBe(true);
     expect(byKind.link).toHaveLength(3);
     expect(byKind.link.every((body) => body.massClass === 'light' && body.href)).toBe(true);

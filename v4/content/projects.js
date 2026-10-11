@@ -1,20 +1,5 @@
 export const projects = Object.freeze([
   Object.freeze({
-    id: 'prior-personal-site',
-    title: 'This website',
-    summary: 'A prior Powers-of-Ten journey from the Milky Way to a desk.',
-    work: 'Designed and built a TypeScript and Three.js portfolio with a real star catalog, live Earth-terminator lighting, and an animated AM CVn binary.',
-    evidence:
-      'The prior version joined an immersive WebGL route to structured research content and downloadable evidence.',
-    stack: Object.freeze(['TypeScript', 'Three.js', 'WebGL', 'Playwright', 'Vitest']),
-    links: Object.freeze([
-      Object.freeze({
-        label: 'Source',
-        href: 'https://github.com/josephbaileyy/josephbaileyy.github.io',
-      }),
-    ]),
-  }),
-  Object.freeze({
     id: 'minerva-omnifold-pipeline',
     title: 'MINERvA-OmniFold',
     summary: 'An unbinned machine-learning unfolding pipeline for neutrino cross sections.',
