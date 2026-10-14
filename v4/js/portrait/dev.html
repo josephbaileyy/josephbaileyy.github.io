@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Self, as a Field — standalone fixture</title>
+    <style>
+      :root {
+        --void: #06070a;
+        --shell: #0b0d12;
+        --surface: #12151c;
+        --rule: #232733;
+        --rule-strong: #465064;
+        --text: #eef1f6;
+        --text-soft: #9aa3b2;
+        --charge: #4cf2ff;
+        --mass-heavy: #2f6bff;
+        --mass-mid: #ffb020;
+        --mass-light: #ff3d81;
+        --void-soft: #06070ab8;
+        --void-strong: #06070aeb;
+        --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+        --radius-small: 0.25rem;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body,
+      #portrait {
+        width: 100%;
+        min-width: 0;
+        height: 100%;
+        min-height: 100%;
+        margin: 0;
+        overflow-x: clip;
+        background: var(--void);
+      }
+    </style>
+  </head>
+  <body>
+    <main id="portrait" data-debug="true"></main>
+    <script type="module">
+      import mountPortraitField from './index.js';
+
+      const portrait = mountPortraitField(document.querySelector('#portrait'), {
+        mode: 'idle',
+        seed: 17,
+        onSoundPreference(enabled) {
+          document.querySelector('#portrait').dataset.sound = String(enabled);
+        },
+      });
+      window.portraitField = portrait;
+    </script>
+  </body>
+</html>

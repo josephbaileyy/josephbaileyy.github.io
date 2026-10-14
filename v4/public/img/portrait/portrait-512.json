@@ -1,0 +1,92 @@
+{
+  "bake_date": "2026-07-28",
+  "crop": {
+    "composition": "head-and-shoulders square",
+    "method": "full frame of the pre-cropped square source"
+  },
+  "depth": {
+    "bit_depth": 16,
+    "convention": "relative inverse depth; near=bright (65535), far/background=dark (0)",
+    "measurements": {
+      "face_head_matte_threshold": 128,
+      "face_head_max": 65535,
+      "face_head_min": 0,
+      "face_head_region_normalized": {
+        "bottom": 0.63,
+        "left": 0.18,
+        "right": 0.82,
+        "top": 0.03
+      },
+      "face_head_scale_percentage": 100.0,
+      "face_head_standard_deviation": 19271.051511203354,
+      "vertical_profile": {
+        "values": [
+          0,
+          62406,
+          65535,
+          54371,
+          44407,
+          42212,
+          59772,
+          53804,
+          48952,
+          59419,
+          65535,
+          29846
+        ],
+        "x": 256,
+        "y": [
+          40,
+          70,
+          100,
+          130,
+          155,
+          175,
+          195,
+          215,
+          235,
+          255,
+          285,
+          315
+        ]
+      }
+    },
+    "normalisation": {
+      "far_percentile": 1.0,
+      "far_raw": 4.888065567016602,
+      "focus_region_matte_threshold": 128,
+      "focus_region_normalized": {
+        "bottom": 0.59,
+        "left": 0.38,
+        "right": 0.62,
+        "top": 0.28
+      },
+      "method": "opaque central-face percentiles, clipped linearly",
+      "near_percentile": 99.0,
+      "near_raw": 6.486048994064331
+    }
+  },
+  "dimensions": {
+    "height": 512,
+    "width": 512
+  },
+  "matte": {
+    "bit_depth": 8,
+    "convention": "background=0, opaque subject=255",
+    "method": "border-connected white-seamless extraction with solved soft edge"
+  },
+  "model": {
+    "id": "depth-anything/Depth-Anything-V2-Base-hf",
+    "license": "Apache-2.0",
+    "revision": "b1958afc87fb45a9e3746cb387596094de553ed8",
+    "transformers_version": "5.9.0",
+    "weights_cached_outside_repo": true,
+    "weights_download_bytes": 389916980
+  },
+  "output": {
+    "colour_webp_quality": 90,
+    "long_edge": 512
+  },
+  "seed": 20260728,
+  "source_filename": "portrait-square.jpg"
+}

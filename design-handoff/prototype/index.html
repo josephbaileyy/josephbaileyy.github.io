@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Joseph Bailey — list-first prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #1B1B1A; --muted: #6B6862; --rule: #E3E0D8; --bg: #FBFAF7; --panel: #F1EFE9; --link: #2A4A8F; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: 'Source Serif 4', Georgia, serif; font-size: 18px; line-height: 1.55; }
+  a { color: var(--link); text-underline-offset: 2px; }
+  main { max-width: 1000px; padding: 72px 24px 96px; margin: 0 auto; display: flex; flex-direction: column; gap: 44px; }
+  header { display: flex; justify-content: space-between; align-items: flex-start; gap: 40px; }
+  header h1 { margin: 0 0 10px; font-size: 22px; font-weight: 600; }
+  header p { margin: 0 0 10px; max-width: 600px; }
+  .links { display: flex; gap: 18px; flex-wrap: wrap; }
+  header figure { margin: 0; width: 168px; flex-shrink: 0; }
+  header img { width: 168px; height: 210px; object-fit: cover; display: block; }
+  figcaption { font-size: 14px; color: var(--muted); }
+  header figcaption { font-style: italic; margin-top: 6px; }
+  ul.rows { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--rule); }
+  ul.rows > li { border-top: 1px solid var(--rule); }
+  .row { width: 100%; min-height: 58px; padding: 14px 0; display: flex; align-items: baseline; gap: 20px; background: none; border: 0; text-align: left; cursor: pointer; font: inherit; font-size: 19px; line-height: 1.4; color: var(--ink); }
+  .row .t { flex-grow: 1; } .row .m { font-size: 15px; color: var(--muted); white-space: nowrap; } .row .x { width: 14px; color: var(--muted); }
+  .row[disabled] { cursor: default; }
+  .panel { padding: 4px 0 36px; font-size: 16.5px; line-height: 1.6; }
+  .panel p { margin: 0 0 14px; max-width: 720px; }
+  .unfold { display: flex; gap: 40px; }
+  .unfold .left { width: 420px; flex-shrink: 0; display: flex; flex-direction: column; gap: 12px; }
+  canvas.big { width: 420px; height: 420px; display: block; }
+  input[type=range] { width: 100%; accent-color: var(--ink); }
+  .seg { display: flex; gap: 8px; align-items: center; font-size: 15px; }
+  .seg button { min-height: 40px; padding: 0 12px; font: inherit; font-size: 15px; cursor: pointer; border: 1px solid var(--ink); background: transparent; color: var(--ink); }
+  .seg button[aria-pressed=true] { background: var(--ink); color: var(--bg); }
+  .smalls { display: flex; gap: 16px; margin-bottom: 14px; }
+  .smalls figure { margin: 0; } .smalls canvas { width: 130px; height: 130px; display: block; background: var(--panel); }
+  .linkbtn { padding: 0; border: 0; background: none; font: inherit; color: var(--link); text-decoration: underline; cursor: pointer; }
+  .fine { font-size: 15px; color: #57544E; }
+  canvas.race { width: 100%; max-width: 720px; height: 250px; display: block; margin-bottom: 12px; }
+  img.wide { width: 100%; max-width: 900px; display: block; margin-bottom: 12px; }
+  @media (max-width: 760px) {
+    main { padding-top: 40px; }
+    header { flex-direction: column-reverse; gap: 20px; }
+    .unfold { flex-direction: column; } .unfold .left, canvas.big { width: 100%; height: auto; aspect-ratio: 1; }
+    .row .m { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <h1>Joseph Bailey</h1>
+      <p>Physics B.S. and computer science M.S. at Stanford, finishing in June 2027. I work on machine learning for particle physics, mostly on how to measure things honestly through an imperfect detector. Applying to physics PhD programs this year.</p>
+      <p class="links"><a href="#">CV</a><a href="#">Email</a><a href="#">GitHub</a><a href="#">Stanford Track</a></p>
+    </div>
+    <figure>
+      <img src="assets/photo-camera.jpg" alt="Joseph holding a red film camera in a town square">
+      <figcaption>Summer 2026</figcaption>
+    </figure>
+  </header>
+  <ul class="rows" id="rows"></ul>
+</main>
+
+<template id="tpl-unfold">
+  <div class="panel unfold">
+    <div class="left">
+      <canvas class="big" id="cv-unfold" aria-label="Unfolded portrait: total weight of simulated points in each cell"></canvas>
+      <label for="it">Iteration <span id="it-n">0</span> · effective sample size <span id="ess">…</span></label>
+      <input id="it" type="range" min="0" max="0" step="1" value="0">
+      <div class="seg"><span>Simulation:</span>
+        <button type="button" data-prior="y2024" aria-pressed="true">my 2024 photo</button>
+        <button type="button" data-prior="uniform" aria-pressed="false">uniform</button>
+      </div>
+    </div>
+    <div>
+      <p>This is OmniFold, the method I work on, run on two photos of me.</p>
+      <p>The data are 60,000 points drawn from my 2025 headshot and blurred by a pretend detector. The simulation is my 2024 headshot, blurred the same way. Each iteration reweights the simulated points: first so their blurred version matches the data, then carrying those weights back to where the points really were. The picture is the weights. No point ever moves.</p>
+      <p>My hair grew between the photos. The simulation has very few points where the new hair is, so those few get large weights. That is where the stray big dots and the falling effective sample size come from. Switch to a uniform simulation and the face gets blurrier, because some of the sharpness here is last year’s face. A result can look right because of where you started.</p>
+      <div class="smalls">
+        <figure><canvas id="cv-data" aria-label="The blurred data"></canvas><figcaption>The data</figcaption></figure>
+        <figure><canvas id="cv-truth" aria-label="The truth, hidden until revealed"></canvas><figcaption><button type="button" class="linkbtn" id="truth-btn">Show the truth</button></figcaption></figure>
+      </div>
+      <p class="fine">In the real analysis the points are neutrino interactions in MINERvA, the simulation is a physics event generator, and neural networks do the comparing. Here a smoothed histogram ratio stands in for them; it is what a perfect classifier would learn. <a href="#">The research, properly</a></p>
+    </div>
+  </div>
+</template>
+
+<script src="omnifold-toy.js"></script>
+<script>
+const ROWS = [
+  { id: 'unfold', title: 'Unfolding neutrino cross-sections with machine learning, using MINERvA data', meta: '2026–, with Ben Nachman', kind: 'unfold' },
+  { id: 'x17', title: 'Looking for the X17 particle with Gaussian processes at Jefferson Lab', meta: '2025', kind: 'text', body: 'Used Gaussian-process regression to search collider data for an excess from the hypothetical X17 particle, and presented it at the APS Far West Section meeting at UC Santa Cruz.', link: 'APS talk' },
+  { id: 'slac', title: 'Pileup and di-Higgs detection at a proposed γγ collider, at SLAC', meta: '2024–25', kind: 'text', body: 'On a four-person team simulating and analyzing terabytes of collider data with Delphes and ROOT, and using machine learning to study how pileup affects di-Higgs detection.', link: 'Poster' },
+  { id: 'amcvn', title: 'Timing the variable star AM CVn from 138 CCD exposures', meta: '2026', kind: 'amcvn' },
+  { id: 'ligo', title: 'Laser interferometry and suspension systems at Caltech LIGO', meta: '2023', kind: 'text', body: 'Helped simulate, test and prepare suspension elements, and ran laser-beam interferometry experiments with the analysis in Python.', link: 'Report' },
+  { id: 'race', title: 'Running the 400m hurdles for Stanford', meta: 'Track & Field', kind: 'race' },
+  { id: 'ml', title: 'Machine learning projects: SPLoRA, LoRA vision transformers for re-identification', meta: '', kind: 'text', body: 'Parameter-efficient fine-tuning of language models, and person re-identification across cameras with LoRA-adapted vision transformers.', link: 'Projects' },
+  { id: 'piano', title: 'Playing jazz and classical piano', meta: '', kind: 'none' }
+];
+const SPLITS = [6.09, 10.23, 14.33, 18.49, 22.78, 27.27, 31.89, 36.59, 41.45, 46.26, 52.17];
+const MARKS = [45, 80, 115, 150, 185, 220, 255, 290, 325, 360, 400];
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const toy = new OmniFoldToy();
+let open = 'unfold', prior = 'y2024', it = 0, truth = false, played = false, manual = false;
+
+function render() {
+  const ul = document.getElementById('rows'); ul.innerHTML = '';
+  for (const r of ROWS) {
+    const li = document.createElement('li'), isOpen = open === r.id && r.kind !== 'none';
+    const b = document.createElement('button'); b.className = 'row'; b.type = 'button';
+    if (r.kind === 'none') b.disabled = true; else b.setAttribute('aria-expanded', String(isOpen));
+    b.innerHTML = `<span class="t"></span><span class="m"></span><span class="x">${r.kind === 'none' ? '' : (isOpen ? '−' : '+')}</span>`;
+    b.querySelector('.t').textContent = r.title; b.querySelector('.m').textContent = r.meta;
+    b.onclick = () => { open = open === r.id ? null : r.id; render(); };
+    li.appendChild(b);
+    if (isOpen) li.appendChild(panel(r));
+    ul.appendChild(li);
+  }
+  paint();
+}
+function panel(r) {
+  if (r.kind === 'unfold') {
+    const n = document.getElementById('tpl-unfold').content.cloneNode(true).firstElementChild;
+    n.querySelector('#it').oninput = (e) => { manual = true; it = +e.target.value; paint(); };
+    n.querySelectorAll('[data-prior]').forEach((btn) => btn.onclick = () => { prior = btn.dataset.prior; paint(); });
+    n.querySelector('#truth-btn').onclick = () => { truth = !truth; paint(); };
+    return n;
+  }
+  const d = document.createElement('div'); d.className = 'panel';
+  if (r.kind === 'race') d.innerHTML = '<canvas class="race" id="cv-race" aria-label="Average speed between hurdles, ACC Championships 2025"></canvas><p>ACC Championships 2025, sophomore year: 52.17. Average speed between touchdowns, worked out from my time at each hurdle. Fastest between hurdles 2 and 3 at 8.54 m/s; the run-in from hurdle 10 was the slowest stretch at 6.77 m/s.</p>';
+  if (r.kind === 'amcvn') d.innerHTML = '<img class="wide" src="assets/amcvn-fit.png" alt="AM CVn light curve with a double-wave fit at a period of about 1050 seconds"><p>I reduced 140 V-band CCD images and did differential photometry on the 138 I kept. The variability is consistent with the known 1051-second superhump. Physics 100, spring 2026. <a href="#">Report</a> · <a href="#">Slides</a></p>';
+  if (r.kind === 'text') { const p = document.createElement('p'); p.textContent = r.body + ' '; const a = document.createElement('a'); a.href = '#'; a.textContent = r.link; p.appendChild(a); d.appendChild(p); }
+  return d;
+}
+function frames() { return toy.E ? toy.E.sims[prior].frames : []; }
+function sizeOf(sel) { const el = document.querySelector(sel); return el ? el.getBoundingClientRect().width : 0; }
+function paint() {
+  if (open === 'unfold' && toy.E) {
+    const fr = frames(), k = Math.min(it, fr.length - 1), S = sizeOf('#cv-unfold');
+    let c = S && toy.prep('#cv-unfold', S, S); if (c && fr[k]) toy.halftone(c, S, fr[k]);
+    c = toy.prep('#cv-data', 130, 130); if (c) toy.stipple(c, 130, toy.E.rx, toy.E.ry, 25000, 0.55);
+    c = toy.prep('#cv-truth', 130, 130);
+    if (c) { if (truth) toy.stipple(c, 130, toy.E.tx, toy.E.ty, 25000, 0.55); else { c.strokeStyle = '#C9C5BB'; c.beginPath(); c.moveTo(0, 0); c.lineTo(130, 130); c.moveTo(130, 0); c.lineTo(0, 130); c.stroke(); } }
+    const q = (s) => document.querySelector(s);
+    if (q('#it')) { q('#it').max = String(Math.max(0, fr.length - 1)); q('#it').value = String(k); q('#it-n').textContent = k; q('#ess').textContent = fr[k] ? Math.round(fr[k].ess * 100) + '%' : '…'; }
+    document.querySelectorAll('[data-prior]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.prior === prior)));
+    if (q('#truth-btn')) q('#truth-btn').textContent = truth ? 'Hide the truth' : 'Show the truth';
+  }
+  if (open === 'race') drawRace();
+}
+function autoplay() {
+  if (played) return; played = true;
+  if (reduced) { it = 8; paint(); return; }
+  const t0 = performance.now() + 700;
+  const tick = (now) => { if (manual) return; const u = Math.min(1, Math.max(0, (now - t0) / 3200)); const t = Math.min(Math.round(8 * u), frames().length - 1); if (t !== it) { it = t; paint(); } if (u < 1) requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+}
+function drawRace() {
+  const W = sizeOf('#cv-race'), H = 250, c = W && toy.prep('#cv-race', W, H); if (!c) return;
+  const L = 44, R = 16, T = 16, B = 52, x = (m) => L + m / 400 * (W - L - R), y = (v) => T + (8.8 - v) / (8.8 - 6.5) * (H - T - B);
+  c.font = '13px "Source Serif 4", Georgia, serif'; c.textAlign = 'right'; c.textBaseline = 'middle'; c.strokeStyle = '#E3E0D8'; c.lineWidth = 1; c.fillStyle = '#6B6862';
+  [7, 7.5, 8, 8.5].forEach((v) => { c.beginPath(); c.moveTo(L, y(v) + 0.5); c.lineTo(W - R, y(v) + 0.5); c.stroke(); c.fillText(v.toFixed(1), L - 8, y(v)); });
+  c.textAlign = 'left'; c.fillText('m/s', 4, T);
+  c.strokeStyle = '#1B1B1A'; c.lineWidth = 2.5; c.beginPath(); let pm = 0, pt = 0;
+  MARKS.forEach((m, i) => { const v = (m - pm) / (SPLITS[i] - pt); if (i === 0) c.moveTo(x(pm), y(v)); else c.lineTo(x(pm), y(v)); c.lineTo(x(m), y(v)); pm = m; pt = SPLITS[i]; });
+  c.stroke(); c.textAlign = 'center'; c.textBaseline = 'top';
+  MARKS.forEach((m, i) => { c.strokeStyle = '#8D8A83'; c.lineWidth = 1; c.beginPath(); c.moveTo(x(m) + 0.5, H - B); c.lineTo(x(m) + 0.5, H - B + 6); c.stroke(); c.fillStyle = '#1B1B1A'; c.fillText(i < 10 ? 'H' + (i + 1) : 'finish', x(m), H - B + 10); c.fillStyle = '#6B6862'; c.fillText(SPLITS[i].toFixed(2), x(m), H - B + 28); });
+  c.strokeStyle = '#8D8A83'; c.beginPath(); c.moveTo(L, H - B + 0.5); c.lineTo(W - R, H - B + 0.5); c.stroke();
+}
+render();
+toy.loadFaces((a, b) => { toy.setupEngine(a, b); toy.runEngine(() => { if (frames().length > 8) autoplay(); paint(); }); paint(); });
+addEventListener('resize', paint);
+</script>
+</body>
+</html>
