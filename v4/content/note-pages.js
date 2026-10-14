@@ -25,7 +25,7 @@ export function prepareNotePages(root) {
     if (!/^[\w-]+$/.test(note.slug) || note.slug === 'index')
       throw new Error(`Invalid note slug: ${note.slug}`);
     const filename = path.join(directory, `${note.slug}.html`);
-    const url = `https://josephbaileyy.github.io/notes/${note.slug}.html`;
+    const url = `https://josephrbailey.com/notes/${note.slug}.html`;
     writeIfChanged(
       filename,
       `<!doctype html>
@@ -41,7 +41,7 @@ export function prepareNotePages(root) {
     <meta property="og:title" content="${escape(note.title)}" />
     <meta property="og:description" content="${escape(note.summary)}" />
     <meta property="og:url" content="${url}" />
-    <meta property="og:image" content="https://josephbaileyy.github.io/img/home/with-camera.jpg" />
+    <meta property="og:image" content="https://josephrbailey.com/img/home/with-camera.jpg" />
     <meta name="theme-color" content="#f9f8f3" />
     <link rel="stylesheet" href="../styles/home.css" />
   </head>
@@ -66,7 +66,7 @@ export function prepareNotePages(root) {
     path.join(root, 'public/sitemap.xml'),
     `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${routes.map((route) => `  <url><loc>https://josephbaileyy.github.io${route}</loc></url>`).join('\n')}
+${routes.map((route) => `  <url><loc>https://josephrbailey.com${route}</loc></url>`).join('\n')}
 </urlset>
 `,
   );
