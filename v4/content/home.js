@@ -380,7 +380,7 @@ export function siteNavigation(active = 'home', prefix = './') {
 }
 
 export function siteFooter(prefix = './') {
-  return `<footer id="contact"><div><p>Research, ideas, or a good conversation.</p><p>${link({ href: `mailto:${profile.email}`, label: profile.email })}</p></div><nav aria-label="More links">${link(profile.links.find((item) => item.id === 'github-link'))}<a href="${prefix}lab/">Visit the lab ↗</a><a href="#top">Back to top ↑</a></nav></footer>`;
+  return `<footer id="contact"><div><p>Research, ideas, or a good conversation.</p><p>${link({ href: `mailto:${profile.email}`, label: profile.email })}</p></div><nav aria-label="More links">${link(profile.links.find((item) => item.id === 'github-link'))}<a href="#top">Back to top ↑</a></nav></footer>`;
 }
 
 function noteList(prefix = './notes/', limit = notes.length) {
@@ -427,7 +427,7 @@ export function renderAbout() {
   return `${siteNavigation('about')}<header class="page-header" id="top"><h1>Curiosity, <em>in a few directions.</em></h1><p class="intro-lead">${escape(profile.statement)}</p><p>I also run the 400-meter hurdles for Stanford and play jazz and classical music.</p><p>${link({ ...profile.links.find((item) => item.id === 'resume-link'), label: 'Download my CV ↗' })}</p></header>
     <section id="experience" aria-labelledby="experience-heading"><h2 id="experience-heading">Experience</h2>${experienceList()}</section>
     <section id="education" aria-labelledby="education-heading"><h2 id="education-heading">Education</h2><p>${escape(education.degree)}, ${escape(education.school)}. Expected June 2027.</p>${renderCourseAtlas()}<div class="about-honors"><h3>Honors</h3><ul>${education.honors.map((item) => `<li>${escape(item)}</li>`).join('')}</ul></div></section>
-    <section><p><a href="./#research">Research</a> · <a href="./#instruments">Track and music</a> · <a href="./lab/">The interactive lab</a></p></section>${siteFooter()}`;
+    <section><p><a href="./#research">Research</a> · <a href="./#instruments">Track and music</a></p></section>${siteFooter()}`;
 }
 
 export function renderNotes(slug) {
