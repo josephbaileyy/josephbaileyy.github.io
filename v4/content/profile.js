@@ -4,7 +4,7 @@ export const profile = Object.freeze({
   statement:
     'I am a coterminal B.S. Physics + M.S. Computer Science (AI track) student at Stanford, graduating June 2027. I work on machine learning for fundamental physics — making AI a rigorous, calibrated instrument for science, with honest uncertainties. I am drawn to compact objects, statistical inference, and secure systems.',
   email: 'jrbailey555@gmail.com',
-  site: 'josephbaileyy.github.io',
+  site: 'josephrbailey.com',
   links: Object.freeze([
     Object.freeze({
       id: 'github-link',

@@ -1,118 +1,47 @@
-# josephbaileyy.github.io
+# josephrbailey.com
 
-The current deployed site is the list-first portfolio in `v4/`. Research contributions, dates, reports, and code are readable without JavaScript. The educational unfolding toy loads only when its explanation is opened. The earlier collision chamber is preserved at `/lab/`.
+Joseph Bailey's personal site: a list-first portfolio of research, projects and
+hobbies, with an About page, Markdown notes, and an educational OmniFold demo.
+Hosted on GitHub Pages at [josephrbailey.com](https://josephrbailey.com).
 
-Run `npm run dev`, `npm run build`, and `npm run preview` for the current site. See [v4/README.md](v4/README.md) for content editing and browser checks. The documentation below describes the archived universe version; use `npm run dev:universe` or `npm run build:universe` for it.
-
-## Archived universe site
-
-A personal site that dives from the Milky Way down to my desk, Powers-of-Ten style:
-
-```
-galaxy → solar system → Earth → Stanford → my room → my computer screen
-```
-
-Three.js + TypeScript + Vite, with CesiumJS loaded only when Earth exploration is opened.
+The site lives in [`v4/`](v4/). Its [README](v4/README.md) covers content editing,
+the unfolding demo and the browser checks. Research contributions, dates, reports
+and code are readable without JavaScript, and the interactive demo loads only when
+its explanation is opened.
 
 ## Run it
 
-```bash
+```sh
 npm install
-npm run dev      # local dev server
-npm test         # rig-math invariant tests (seam theorem etc.)
-npm run build    # production build to dist/
-npm run test:e2e # desktop + mobile browser smoke tests (after a build)
+npm run dev       # http://localhost:5177
+npm run build     # production build to v4/dist
+npm run preview   # http://localhost:4177
+npm test          # unit tests
+npm run lint
+npm run test:e2e  # browser checks, with the preview server running
 ```
 
-## How it works
+## Where things are
 
-The camera is one number: `depth ∈ [0, 5]`. The scene at `floor(depth)` is
-mounted at the world origin; the next scene nests inside it at that scene's
-**anchor** (position + scale). The camera flies a rail from the
-scene's rest pose into the anchor with geometric distance interpolation, and
-crossing an integer boundary just re-evaluates everything in the child's
-coordinates — a pure function of depth, no accumulated transforms, so floats
-stay healthy across 21 orders of magnitude. Most hops are genuine flight (you
-really fly to Earth); the galaxy→solar scale cheat is covered by the galaxy
-fading itself out, and Stanford→room flies through the lit dorm window.
-Scene code and textures load on demand, with the current scene's neighbours
-prefetched for smooth travel and a retryable error state if a scene fails.
-The math lives in [src/engine/rig.ts](src/engine/rig.ts), with the seam
-theorem tested in [tests/rig.test.ts](tests/rig.test.ts).
-
-Nice touches: Earth's terminator and city lights are computed from the selected
-UTC time; JPL DE440s ephemerides track the planets and Moon from 1950–2050 at
-literal AU/km scale, with accessible screen-space reticles and time controls;
-the background stars are the real naked-eye catalog (HYG, packed to 30 KB by
-[scripts/pack-stars.mjs](scripts/pack-stars.mjs)) so the constellations are
-correct; the AM CVn binary's accretion stream is animated and its info panel
-plays a synthesized gravitational-wave chirp with the real
-f ∝ (1−t/tc)^(−3/8) law; the monitor at depth 5 runs a little draggable-window
-OS with a working toy terminal.
-
-BaileyOS also includes three hands-on showcase apps: an educational OmniFold
-unfolding visual, a keyboard-accessible WebAudio piano/sax studio, and a
-Stanford 400-meter-hurdles progression log. The matching notebook, music sheet,
-and track spikes in the room route directly to those apps.
-
-## Editing content
-
-- **Portfolio content** — edit `src/content/portfolio.json`. Panels, BaileyOS,
-  terminal files, and the plain page all consume this source.
-- **Notes / writing** — add a markdown file to `src/content/notes/` with
-  `title`, `date`, and `summary` frontmatter. `npm run generate:notes` renders
-  static pages to `public/notes/`, the BaileyOS Notes app data
-  (`src/content/notes.json`), and `public/sitemap.xml`; dev and production
-  builds run this automatically.
-- **Plain page** — `npm run generate:about` regenerates `about.html`; dev and
-  production builds run this automatically.
-- **Live widgets** — `npm run fetch:live` refreshes `src/content/live.json`
-  (public GitHub activity + Letterboxd RSS; keyless). CI runs it before every
-  deploy and on a weekly cron; a failed fetch keeps the committed snapshot.
-- **Resume** — replace `public/resume.pdf`.
-- **Terminal behavior** — `src/ui/fake-os/terminal.ts`.
-
-## Adding a scene
-
-A scene = one module in `src/scenes/` exporting `create(assets)` (and an async
-`load()` if it needs textures) + an entry in
-[src/scenes/registry.ts](src/scenes/registry.ts) with a `restPose` (focus,
-camera direction, 16:10 frame width, fov) and an `anchor` for where the next
-scene nests. Keep `K = parentFrame / (childFrame × anchor.scale)` between ~10
-and ~30 unless the hop deliberately uses physical scale, and make whatever the parent draws at the anchor match the child's
-appearance at swap scale (the parent's stand-in goes in `childProxy`).
+- `v4/content/`: copy and records (research, projects, experience, coursework)
+- `v4/public/`: papers, CV, images, audio, data and fonts served as-is
+- `v4/lab/`: the earlier collision-chamber game, still served at `/lab/`
+- `v4/notes/` and `src/content/notes/`: Markdown notes and their generated pages
+- `scripts/`: build helpers
 
 ## Deploying
 
-Push to `main` → `.github/workflows/deploy.yml` builds and publishes to GitHub
-Pages. One-time setup: **Settings → Pages → Source: "GitHub Actions"**.
+Pushing to `main` runs `.github/workflows/deploy.yml`, which lints, tests, builds
+`v4/` and publishes `v4/dist` to GitHub Pages. The custom domain is configured in
+the repository's Pages settings, with DNS on Cloudflare. See
+[docs/CUSTOM_DOMAIN.md](docs/CUSTOM_DOMAIN.md).
 
-For detailed Earth exploration, create a Cesium ion Community token restricted
-to `https://josephbaileyy.github.io`, then add it as the repository environment
-secret `VITE_CESIUM_ION_TOKEN`. Without it, the Three.js globe remains available
-and the explorer presents a fallback. Ephemeris chunks are checked in under
-`public/ephemeris`; maintainers can regenerate them with
-`python3 scripts/generate-ephemeris.py` after downloading NASA/JPL's `de440s.bsp`
-and `naif0012.tls` kernels to `/tmp` and installing SpiceyPy.
+Page `<link rel="canonical">`, Open Graph URLs, the JSON-LD `url`, `sitemap.xml`
+and `robots.txt` all use `https://josephrbailey.com`; update them together if the
+domain ever changes.
 
-Deep links: `/#/stanford`, `/#/galaxy/am-cvn`, etc. `/about.html` is the
-plain fallback (also shown to no-WebGL visitors).
+## Older versions
 
-Analytics are GoatCounter (cookieless; skipped on localhost and in automated
-browsers): pageviews plus events for depth milestones, tour starts, panel
-opens, and the Earth "you are here" button. One-time setup: register the site
-code `josephbaileyy` at goatcounter.com. Moving to a custom domain someday:
-see [docs/CUSTOM_DOMAIN.md](docs/CUSTOM_DOMAIN.md).
-
-## Credits
-
-Milky Way panorama © ESO/S. Brunier (CC BY 4.0) · planet textures ©
-Solar System Scope (CC BY 4.0) · star catalog: HYG Database (CC BY-SA 4.0) ·
-Earth day/night imagery: NASA.
-Planet and Moon ephemerides: NASA/JPL DE440s via NAIF SPICE · detailed globe:
-CesiumJS, Cesium World Terrain/imagery, and OpenStreetMap buildings with runtime attribution.
-Room social marks and game artwork: Instagram/Meta brand resources · Letterboxd
-brand resources · Fortnite Omega art © Epic Games · Katarina splash art © Riot
-Games · Clash Royale Princess Evolution art © Supercell. This personal fan
-portfolio is not affiliated with or endorsed by those companies. Exact source
-URLs are recorded in [ASSET_SOURCES.md](ASSET_SOURCES.md).
+Earlier iterations of the site are kept in git history rather than the working
+tree: the zoomable universe (`archive/universe-site`), the Event Lens monograph
+(`v3-site`) and the scroll-driven worldline (`worldline-rebuild`).
