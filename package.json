@@ -5,10 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite --config v4/vite.config.js",
-    "generate:about": "node scripts/generate-about.mjs",
-    "generate:notes": "node scripts/generate-notes.mjs",
-    "generate:content": "npm run generate:notes && npm run generate:about",
-    "fetch:live": "node scripts/fetch-live-data.mjs",
     "build": "vite build --config v4/vite.config.js",
     "preview": "vite preview --config v4/vite.config.js",
     "lint": "eslint .",
@@ -18,9 +14,6 @@
     "test:coverage": "vitest run --exclude 'tests/e2e/**' --coverage",
     "test:e2e": "node v4/tests/home-playwright.mjs",
     "test:e2e:coursework": "node v4/tests/course-atlas-playwright.mjs",
-    "build:universe": "npm run generate:content && tsc --noEmit && vite build",
-    "dev:universe": "npm run generate:content && vite",
-    "test:e2e:universe": "playwright test",
     "test:e2e:lab": "node v4/tests/shell-playwright.mjs"
   },
   "devDependencies": {

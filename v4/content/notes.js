@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 
 import { parseFrontmatter, renderMarkdown } from '../../scripts/lib/note-markdown.js';
 
-const directory = new URL('../../src/content/notes/', import.meta.url);
+const directory = new URL('./notes/', import.meta.url);
 export const notes = readdirSync(directory)
   .filter((name) => name.endsWith('.md'))
   .map((name) => {
