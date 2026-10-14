@@ -59,7 +59,6 @@ export function prepareNotePages(root) {
     '/',
     '/about.html',
     '/notes/',
-    '/lab/',
     ...notes.map((note) => `/notes/${note.slug}.html`),
   ];
   writeIfChanged(

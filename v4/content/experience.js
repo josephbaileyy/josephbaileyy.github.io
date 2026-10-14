@@ -2,11 +2,11 @@ export const experience = Object.freeze([
   Object.freeze({
     id: 'wisdomtree',
     role: 'Product Management Intern',
-    org: 'WisdomTree Digital Movement · Digital Assets Team',
+    org: 'WisdomTree · Digital Assets Team',
     location: 'New York, NY',
-    period: 'Jun 2026 — present',
+    period: 'Jun — Aug 2026',
     summary:
-      'Working on WisdomTree Connect, institutional blockchain rails distributing WTGXX, a tokenized government money-market fund. The role spans product management, market research, internal documentation, and product-development discussions.',
+      'Worked on WisdomTree Connect, institutional blockchain rails distributing WTGXX, a tokenized government money-market fund. The role spanned product management, market research, internal documentation, and product-development discussions.',
   }),
   Object.freeze({
     id: 'polytec',
