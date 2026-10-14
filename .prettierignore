@@ -4,6 +4,4 @@ node_modules
 public
 about.html
 package-lock.json
-src/content/notes/
-public/notes/
-src/content/notes.json
+v4/content/notes/

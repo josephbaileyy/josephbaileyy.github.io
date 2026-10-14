@@ -83,14 +83,14 @@ available. AP credit is listed separately without units.
   the supplied V14 platform master of *The Proton Hidden in Plastic*, resized
   to 960 × 540. The video card links directly to the published YouTube film;
   it loads no embedded player or third-party script.
-- Add Markdown notes under `src/content/notes/`, with `title`, `date`, and `summary`
-  frontmatter. `content/notes.js` shares the existing Markdown renderer with the
-  archived universe's generator. At Vite startup, `content/note-pages.js` prepares
+- Add Markdown notes under `content/notes/`, with `title`, `date`, and `summary`
+  frontmatter. `content/notes.js` renders them with the Markdown helper in
+  `scripts/lib/note-markdown.js`. At Vite startup, `content/note-pages.js` prepares
   every note's HTML entry and the sitemap. Notes appear on the notes index
   automatically and are rendered into the production build. Generated note HTML
   wrappers under `notes/` should be committed along with their Markdown source.
-  The existing universe write-up is labelled as archived so it does not describe
-  the new homepage as the older 3D experience.
+  The existing write-up of the earlier 3D universe site is labelled as archived
+  so it does not describe the current homepage.
 - The music card links to the user-supplied Chino Hills HS 2023 indoor drumline
   show and includes the confirmed piano performance of Bach's Fugue No. 2 in
   C minor, BWV 847 (The Well-Tempered Clavier, Book I). The native audio player

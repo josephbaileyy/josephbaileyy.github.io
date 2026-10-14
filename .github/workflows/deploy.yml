@@ -28,22 +28,13 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run lint
-      # Unit suite covers all versions still in the tree (v4, v3, and the root
-      # site). `npm test` excludes tests/e2e/**, which target the v1 root site
-      # that is no longer deployed.
       - run: npm test
-      # The list-first portfolio in v4/ builds to v4/dist. The earlier
-      # collision chamber is included at /lab/. Three older versions stay in
-      # the tree, built by
-      # nothing and deployed by nothing, purely as fallbacks: v3/ (the Event
-      # Lens monograph), worldline/ (the scroll-driven physics worldline), and
-      # the repo root (the zoomable-universe site, whose last deployed state is
-      # on the archive/universe-site branch).
+      # The site lives in v4/ and builds to v4/dist; the collision chamber is
+      # included at /lab/.
       #
-      # Everything fetched at runtime must live under v4/public/. In v3 the JSON
-      # sat in v3/data/, outside publicDir, so vite build never copied it: every
-      # fetch 404'd in production and the hero silently fell back on every load
-      # while the dev server looked perfect. v4/tests/build-output.test.js
+      # Everything fetched at runtime must live under v4/public/: files outside
+      # publicDir are never copied by vite build, so fetches 404 in production
+      # while the dev server looks perfect. v4/tests/build-output.test.js
       # regression-tests that seam.
       - run: npx vite build --config v4/vite.config.js
       - uses: actions/configure-pages@v6
