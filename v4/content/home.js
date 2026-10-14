@@ -379,7 +379,7 @@ export function siteNavigation(active = 'home', prefix = './') {
     )}<a href="${prefix}resume.pdf" target="_blank" rel="noopener noreferrer">CV ↗</a></div></nav>`;
 }
 
-export function siteFooter(prefix = './') {
+export function siteFooter(_prefix = './') {
   return `<footer id="contact"><div><p>Research, ideas, or a good conversation.</p><p>${link({ href: `mailto:${profile.email}`, label: profile.email })}</p></div><nav aria-label="More links">${link(profile.links.find((item) => item.id === 'github-link'))}<a href="#top">Back to top ↑</a></nav></footer>`;
 }
 
