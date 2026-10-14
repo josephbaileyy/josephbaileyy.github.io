@@ -59,6 +59,7 @@ describe('v4 production output', () => {
       'img/projects/lord-architecture.svg',
       'img/projects/neutrino-video.webp',
       'audio/fugue.m4a',
+      'audio/fugue-notes.json',
       'img/home/with-camera.jpg',
       'img/home/amcvn-fit.png',
       'img/unfolding/face2024.png',

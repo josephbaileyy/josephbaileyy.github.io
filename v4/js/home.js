@@ -1,6 +1,8 @@
 import { mountInstagramCarousel } from './components/instagram.js';
+import mountPianoRoll from './components/piano-roll.js';
 
 mountInstagramCarousel(document.querySelector('[data-instagram]'));
+mountPianoRoll(document.querySelector('#music'));
 
 const disclosure = document.querySelector('[data-demo="unfolding"]');
 let loading = false;

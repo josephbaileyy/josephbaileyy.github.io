@@ -1059,32 +1059,79 @@ h1 em {
   color: #c2ceb7;
   transform: rotate(12deg);
 }
+/* Keyboard and falling notes share one tilted stage, so notes fall at the tilt. */
+.piano-stage {
+  position: absolute;
+  left: 26px;
+  right: 26px;
+  top: -36px;
+  bottom: -20px;
+  transform: rotate(-5deg);
+  pointer-events: none;
+}
+.piano-roll {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 92px;
+  width: 100%;
+  height: calc(100% - 92px);
+}
+.piano-roll[hidden] {
+  display: none;
+}
 .piano-keys {
   display: flex;
   position: absolute;
-  bottom: -20px;
-  left: 26px;
-  right: 26px;
+  left: 0;
+  right: 0;
+  bottom: 0;
   height: 92px;
-  transform: rotate(-5deg);
 }
 .piano-keys > span {
   flex: 1;
   background: #fbfaf6;
   border: 1px solid #bfc6b8;
+  border-left-width: 0;
   border-radius: 0 0 3px 3px;
   position: relative;
+  transition: background-color 0.12s ease-out;
 }
-.piano-keys .has-sharp::after {
-  content: '';
+.piano-keys > span:first-child {
+  border-left-width: 1px;
+}
+.piano-keys i {
   position: absolute;
   top: 0;
-  right: -30%;
-  width: 55%;
-  height: 61%;
+  right: -28%;
+  width: 56%;
+  height: 60%;
   background: #303b30;
-  border-radius: 0 0 3px 3px;
+  border-radius: 0 0 2px 2px;
   z-index: 1;
+  transition: background-color 0.12s ease-out;
+}
+.piano-keys > span.is-on {
+  background: #b9cfae;
+  transition-duration: 0s;
+}
+.piano-keys i.is-on {
+  background: #6f9268;
+  transition-duration: 0s;
+}
+.music-symbol,
+.music-word {
+  transition: opacity 0.6s ease;
+}
+.music-word {
+  z-index: 1;
+}
+.music-card.is-playing .music-word {
+  opacity: 0.4;
+}
+.music-card.is-playing .music-symbol {
+  opacity: 0.35;
 }
 .instrument-tags {
   display: flex;

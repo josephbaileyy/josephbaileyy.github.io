@@ -12,6 +12,10 @@ export const personal = {
   saxCaption: 'My sax solo in the Chino Hills HS 2023 indoor drumline show',
   piano: {
     src: './audio/fugue.m4a',
+    // Note-by-note transcription of the recording, drawn as falling notes on play.
+    notes: './audio/fugue-notes.json',
+    // Lowest and highest MIDI pitches in the piece: C2 to C6.
+    range: [36, 84],
     composer: 'J. S. Bach',
     title: 'Fugue No. 2 in C minor, BWV 847',
     collection: 'The Well-Tempered Clavier, Book I',
