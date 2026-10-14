@@ -254,6 +254,18 @@ function raceFigure(records, width, mobile = false) {
   </svg>`;
 }
 
+// White keys across the piece's range, each carrying the black key just above it.
+function pianoKeys(low, high) {
+  const black = (pitch) => [1, 3, 6, 8, 10].includes(pitch % 12);
+  const keys = [];
+  for (let pitch = low; pitch <= high; pitch++) {
+    if (black(pitch)) continue;
+    const sharp = pitch + 1 <= high && black(pitch + 1) ? `<i data-pitch="${pitch + 1}"></i>` : '';
+    keys.push(`<span data-pitch="${pitch}">${sharp}</span>`);
+  }
+  return keys.join('');
+}
+
 function personalList() {
   const csv = readFileSync(
     new URL('../public/data/acc-2025-400mh-splits.csv', import.meta.url),
@@ -279,7 +291,7 @@ function personalList() {
     </article>
     <article class="life-card music-card" id="music">
       <div class="music-visual" aria-hidden="true"><span class="music-symbol">♮</span><span class="music-word">a little<br><em>jazz &amp; classical.</em></span>
-        <div class="piano-keys">${Array.from({ length: 14 }, (_, i) => `<span${[0, 1, 3, 4, 5, 7, 8, 10, 11, 12].includes(i) ? ' class="has-sharp"' : ''}></span>`).join('')}</div>
+        <div class="piano-stage" data-piano-roll data-notes="${personal.piano.notes}"><canvas class="piano-roll" hidden></canvas><div class="piano-keys">${pianoKeys(...personal.piano.range)}</div></div>
       </div>
       <div class="life-copy"><h3>Music, between everything else.</h3><p>${escape(personal.music)}</p><p class="card-link"><a class="personal-link music-link" href="${personal.saxUrl}" target="_blank" rel="noopener noreferrer">${escape(personal.saxCaption)} ↗</a></p>
         <figure class="piano-recording"><figcaption><strong>${escape(personal.piano.composer)} · ${escape(personal.piano.title)}</strong><span>${escape(personal.piano.collection)}</span></figcaption><audio controls preload="none" aria-label="Joseph performing Bach’s Fugue No. 2 in C minor, BWV 847"><source src="${personal.piano.src}" type="audio/mp4"><a href="${personal.piano.src}">Listen to the piano recording</a></audio></figure>

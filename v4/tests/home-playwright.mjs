@@ -84,6 +84,13 @@ try {
     false,
     'Audio fetched before play',
   );
+  assert.equal(
+    requests.some((url) => url.includes('/audio/fugue-notes.json')),
+    false,
+    'Piano notes fetched before play',
+  );
+  assert.equal(await page.locator('#music .piano-keys [data-pitch]').count(), 49);
+  assert.equal(await page.locator('#music .piano-roll').isHidden(), true);
   const audioResponse = await context.request.get(new URL('audio/fugue.m4a', baseUrl).href);
   assert.equal(audioResponse.ok(), true);
   assert.match(audioResponse.headers()['content-type'], /audio\/(?:mp4|x-m4a)/);
