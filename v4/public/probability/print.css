@@ -2,3 +2,6 @@ body{background:white;color:black;font-size:11pt;line-height:1.5}aside,.toolbar,
 .notes textarea{display:none!important}.print-note{display:block;white-space:pre-wrap;overflow-wrap:anywhere;font:10pt/1.5 Georgia;min-height:25pt}.notes{break-inside:auto}.notes-count{display:none}
 @media screen{body{background:#eee}main{max-width:850px;padding:40px;margin:25px auto;background:white}}
 .batch-intro{break-before:page;margin-top:0;padding-top:12pt}.proof-step{break-inside:avoid}.proof:not([open]){display:none}.section-banner{font-size:20pt;padding:12pt}.proof-flow{gap:8pt}
+/* Long guided figures may span pages; keep each individual experiment panel together. */
+.visual:has(.intuition-lab){break-inside:auto}
+.intuition-lab .intuition-panel,.intuition-lab .intuition-metrics{break-inside:avoid}

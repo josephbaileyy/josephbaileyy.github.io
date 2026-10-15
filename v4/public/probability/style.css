@@ -30,3 +30,36 @@
 .borel-explorer .borel-recipe p,.borel-explorer .borel-meaning p{font-size:13px}
 .borel-explorer .borel-meaning{margin-top:18px}
 @media(max-width:480px){.borel-explorer .controls{flex-direction:column}.borel-explorer .borel-choice{flex-direction:column;align-items:flex-start}.borel-explorer .borel-stage{width:100%}.borel-explorer .borel-stage input{flex:1;min-width:80px}}
+
+/* Guided experiments: controls, linked views, exact readouts, then reflection. */
+.intuition-lab{container-type:inline-size;--lab-ink:#35483e;font:14px/1.65 system-ui;color:var(--lab-ink)}
+.intuition-lab .controls{display:grid;grid-template-columns:1fr;gap:14px;align-items:stretch}
+.intuition-lab .controls label{display:grid;grid-template-columns:minmax(125px,1fr) minmax(80px,1.3fr) 3ch;gap:10px;font:13px/1.5 system-ui;align-items:center}
+.intuition-lab .controls input[type=range]{width:100%;min-width:0;height:32px}
+.intuition-lab .controls select{grid-column:2 / -1;width:100%;min-width:0;font-size:13px;padding:8px}
+.intuition-lab output{font-variant-numeric:tabular-nums}
+.intuition-lab .intuition-prompt{margin:0 0 3px;padding:12px 14px;border-left:3px solid #976318;background:#f5f0e5;font:14px/1.65 system-ui;color:#4c422f}
+.intuition-actions{display:flex;flex-wrap:wrap;gap:7px}
+.intuition-lab button{min-height:40px;padding:7px 11px;font:12px/1.4 system-ui}
+.intuition-lab button:disabled{opacity:.5;cursor:default}
+.intuition-panel{padding:16px 0 8px;border-top:1px solid var(--line)}
+.intuition-panel h4{margin:0 0 10px;font:600 14px/1.5 system-ui;color:var(--lab-ink)}
+.intuition-lab svg{max-height:none;overflow:visible}
+.intuition-lab svg text{font:16px system-ui;fill:var(--lab-ink)}
+.intuition-lab svg[data-scrub]{cursor:crosshair;touch-action:pan-y}
+.intuition-lab .intuition-note{margin:7px 0 5px;font:12px/1.7 system-ui;color:#586259}
+.intuition-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px;margin:10px 0 18px}
+.intuition-metrics>div{background:#f0f5f1;border:1px solid #c1d1c6;border-radius:5px;padding:12px}
+.intuition-metrics span{display:block;font-size:11px;color:#455a4c}
+.intuition-metrics strong{display:block;margin-top:5px;font:600 22px/1.4 system-ui;color:#285e4b;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.intuition-equation{padding:16px;text-align:center;background:#f5f0e5;border-radius:4px;font:18px/1.7 system-ui;color:#4c422f}
+.intuition-lab .result{font-size:13px;line-height:1.8}
+.intuition-reflection{margin-top:16px}
+.intuition-reflection summary{font-weight:600}
+.intuition-reflection p{font:14px/1.8 system-ui;margin:12px 0 0}
+.intuition-compare{display:grid;grid-template-columns:1fr;gap:8px}
+.intuition-compare p{font:13px system-ui;margin:0 0 4px}
+@container (min-width:650px){.intuition-compare{grid-template-columns:1fr 1fr}}
+@container (max-width:320px){.intuition-lab .controls label{grid-template-columns:1fr 3ch}.intuition-lab .controls input[type=range]{grid-column:1;grid-row:2}.intuition-lab .controls output{grid-column:2;grid-row:2}.intuition-lab .controls select{grid-column:1 / -1}.intuition-metrics strong{font-size:19px}}
+@media print{.intuition-lab .intuition-actions,.intuition-lab [data-experiment="play"]{display:none}.intuition-lab .intuition-panel,.intuition-metrics{break-inside:avoid}.intuition-lab{container-type:normal}}
+@container (max-width:400px){.intuition-lab svg text{font-size:20px}.intuition-lab svg .sweep-label{font-size:16px}}

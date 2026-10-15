@@ -1,7 +1,7 @@
 import {entries as integral} from './section-1-3-1.js';
 import {entries as inequalities} from './section-1-3-2.js';
-import {entries as convergence} from './section-1-3-3.js';
-import {entries as integrability} from './section-1-3-4.js';
+import {entries as convergence} from './section-1-3-3.js?v=intuition1';
+import {entries as integrability} from './section-1-3-4.js?v=intuition1';
 import {entries as densities} from './section-1-3-5.js';
 import {entries as moments} from './section-1-3-6.js';
 import {entries as first} from './chapter-1.js';
@@ -9,7 +9,7 @@ import {entries as generated} from './section-1-1-2.js?v=borel1';
 import {entries as measures} from './section-1-1-3.js';
 import {entries as variables} from './section-1-2-1.js';
 import {entries as closure} from './section-1-2-2.js';
-import {entries as laws} from './section-1-2-3.js';
+import {entries as laws} from './section-1-2-3.js?v=intuition1';
 export const sections=[
  {n:'1.1.1',anchor:'reading',title:'The probability space',entries:first},
  {n:'1.1.2',anchor:'section-1-1-2',title:'Generated and Borel σ-algebras',entries:generated,intro:'We now specify an event space by the questions it must contain. Closure then determines the smallest compatible σ-algebra. This leads from finite partitions to Borel sets and product spaces.'},

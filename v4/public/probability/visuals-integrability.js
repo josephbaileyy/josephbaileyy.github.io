@@ -1,3 +1,4 @@
+import {mountUI} from './visuals-intuition.js?v=intuition1';
 // Analytic models for 1.3.4–1.3.6. Plot samples only draw curves; displayed integrals use formulas.
 const green='#507b61',gold='#b58a48',pale='#d8e8df',ink='#464a40',grid='#c9cfc4';
 const fmt=x=>Number(x).toFixed(4);
@@ -17,6 +18,7 @@ function spikeDrawing(n,family,M){let s=spike(n,family),a=axes(1,Math.max(1,s.he
 export function mountVisual(root,name,{svg,setup,range}){
 switch(name){
 case'int-bounded':setup(root,range('n','Sequence index n',1,100,5),v=>[svg(spikeDrawing(v.n,2),230),`Bound K = 1. E|Xₙ| = E|Xₙ−0| = 1/n = <strong>${fmt(1/v.n)}</strong>.`]);break;
+case'int-ui-lab': mountUI(root,{setup,range}); break;
 case'int-ui':setup(root,select('family','Spike family',['Height n; mean 1','Height √n; mean 1/√n'])+range('n','Preview through index N',1,100,15)+range('M','Tail cutoff M',0,20,5,.5),v=>{let finite=0;for(let n=1;n<=v.n;n++)finite=Math.max(finite,spikeTail(n,v.M,v.family));return[svg(spikeDrawing(v.n,v.family,v.M),230),`Displayed Xₙ has mean ${fmt(spike(v.n,v.family).mean)}. Tail maximum among n≤N: <strong>${fmt(finite)}</strong>.<br>Supremum over <strong>all</strong> n≥1: <strong>${fmt(infiniteSpikeTail(v.M,v.family))}</strong>. ${v.family?'The infinite supremum tends to zero as M increases.':'It stays one however large M becomes.'}`]});break;
 case'int-reciprocal':setup(root,range('power','log₁₀(y)',-5,1,-1,.1),v=>{let y=10**v.power,a=curve(x=>x===0?0:-x*Math.log(x),1,.4),t=Math.min(y,1),value=y<1?-y*Math.log(y):0;a.body+=`<circle cx="${a.X(t)}" cy="${a.Y(value)}" r="5" fill="${gold}"/>`+label(65,22,'Uniform X: y E[X⁻¹ 1_{X>y}]');return[svg(a.body,230),`y = ${y.toPrecision(4)}; expectation = <strong>${value.toPrecision(5)}</strong>. For y≥1 it is exactly zero. Curve shown on 0≤y≤1.`]});break;
 case'int-log-spike':setup(root,range('n','Number of roof terms, through N',2,100,12),v=>{const max=Math.max(2/Math.log(2),v.n/Math.log(v.n)),a=axes(1,max);let body=a.body;for(let k=2;k<=v.n;k++){let height=Math.max(2/Math.log(2),k/Math.log(k)),left=k===v.n?0:1/(k+1),right=1/k;body+=`<rect x="${a.X(left)}" y="${a.Y(height)}" width="${490*(right-left)}" height="${190-a.Y(height)}" fill="${pale}" stroke="${green}" stroke-width=".7"/>`}body+=label(65,22,'Finite roof max(X₂,…,Xₙ)');return[svg(body,230),`E Xₙ = <strong>${fmt(1/Math.log(v.n))}</strong>; integral of the finite roof = <strong>${fmt(roofIntegral(v.n))}</strong>. The infinite roof has infinite integral.`]});break;
