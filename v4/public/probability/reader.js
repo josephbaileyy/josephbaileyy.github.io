@@ -19,13 +19,15 @@ export function initReader({entries,sections,id,toast}){
 
  // Browser history carries the reading position, independent of personal notes.
  const historyKey='probabilityReader';
+ const fitRevision='comfortable-text-90';
+ const restoredZoom=p=>p.fitRevision===fitRevision?(p.zoom||1):1;
  const historyTrail=history.state?.[historyKey]?.trail||crypto.randomUUID();
  let historyIndex=history.state?.[historyKey]?.index||0;
  let historyEnd=historyIndex, restoring=false, pendingRestore=null, positionTimer;
  try{historyEnd=Math.max(historyIndex,Number(sessionStorage.getItem(historyTrail))||0)}catch{}
  let lastURL=location.href;
  history.scrollRestoration='manual';
- function position(){return {index:historyIndex,trail:historyTrail,entry:active?.n||null,page:pageNumber,split,zoom,
+ function position(){return {index:historyIndex,trail:historyTrail,entry:active?.n||null,page:pageNumber,split,zoom,fitRevision,
   pane:body.dataset.mobilePane||'companion',sourceTop:source.scrollTop,sourceLeft:source.scrollLeft,
   companionTop:companion.scrollTop,windowTop:window.scrollY};}
  function rememberPosition(){
@@ -57,7 +59,7 @@ export function initReader({entries,sections,id,toast}){
   if(!pendingRestore)return;
   restoreReadingPosition();
   const p=pendingRestore;pendingRestore=null;
-  source.scrollTo({top:p.sourceTop||0,left:p.sourceLeft||0,behavior:'instant'});
+  if(p.fitRevision===fitRevision)source.scrollTo({top:p.sourceTop||0,left:p.sourceLeft||0,behavior:'instant'});
   restoring=false;rememberPosition();
  }
  for(const target of [source,companion,window])target.addEventListener('scroll',()=>{
@@ -128,7 +130,8 @@ export function initReader({entries,sections,id,toast}){
    const right=boxes.length?Math.max(...boxes.map(b=>b.right)):base.width;
    const top=boxes.length?Math.min(...boxes.map(b=>b.top)):0;
    const padding=parseFloat(getComputedStyle(source).paddingLeft);
-   const scale=Math.max(200,source.clientWidth-2*padding)/Math.max(base.width*.5,right-left)*drawingZoom;
+   // Leave a little breathing room: 90% of the former edge-to-edge text fit.
+   const scale=.9*Math.max(200,source.clientWidth-2*padding)/Math.max(base.width*.5,right-left)*drawingZoom;
    const viewport=page.getViewport({scale}), density=Math.min(devicePixelRatio||1,2);
    const canvas=document.createElement('canvas');canvas.width=Math.floor(viewport.width*density);canvas.height=Math.floor(viewport.height*density);
    canvas.style.width=`${viewport.width}px`;canvas.style.height=`${viewport.height}px`;canvas.setAttribute('aria-label',`Original course notes, page ${pageNumber}`);
@@ -222,7 +225,7 @@ export function initReader({entries,sections,id,toast}){
   const e=entryForHash();const n=Number(new URLSearchParams(location.search).get('page'));
   if(p){
    restoring=true;pendingRestore={...p,readingRestored:false};historyIndex=p.index;historyEnd=Math.max(historyEnd,historyIndex);
-   active=entries.find(e=>e.n===p.entry)||null;pageNumber=p.page;zoom=p.zoom||1;split=p.split;
+   active=entries.find(e=>e.n===p.entry)||null;pageNumber=p.page;zoom=restoredZoom(p);split=p.split;
    setPane(p.pane);updateSelection();applyView();restoreReadingPosition();if(!split)finishRestore();
   }else{
    split=new URLSearchParams(location.search).get('view')!=='continuous';
@@ -243,6 +246,6 @@ export function initReader({entries,sections,id,toast}){
  setPane('companion');
  const initial=entryForHash();if(initial){active=initial;pageNumber=sourcePage(initial)}else if(params.has('page')){const n=Number(params.get('page'));if(Number.isInteger(n)&&n>=1&&n<=386){pageNumber=n;active=entries.find(e=>coversPage(e,n))||null}}
  const saved=history.state?.[historyKey];
- if(saved){restoring=true;pendingRestore={...saved,readingRestored:false};active=entries.find(e=>e.n===saved.entry)||null;pageNumber=saved.page;zoom=saved.zoom||1;setPane(saved.pane);historyEnd=Math.max(historyEnd,saved.index)}
+ if(saved){restoring=true;pendingRestore={...saved,readingRestored:false};active=entries.find(e=>e.n===saved.entry)||null;pageNumber=saved.page;zoom=restoredZoom(saved);setPane(saved.pane);historyEnd=Math.max(historyEnd,saved.index)}
  updateSelection();applyView();restoreReadingPosition();if(!split)finishRestore();rememberPosition();historyButtons();
 }

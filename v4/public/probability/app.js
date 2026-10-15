@@ -2,7 +2,7 @@ import {mountVisual as mountIntegration} from './visuals-integration.js?v=fe7d5b
 import {mountVisual as mountInequalities} from './visuals-inequalities.js?v=509c0e7b299c';
 import {mountVisual as mountConvergence} from './visuals-convergence.js?v=7da4942f19e6';
 import {mountVisual as mountIntegrability} from './visuals-integrability.js?v=293f265d483e';
-import {initReader} from './reader.js?v=66ced59344ee';
+import {initReader} from './reader.js?v=a6f3f56ec652';
 import {linkDefinitions} from './definitions.js?v=0438be2d17f8';
 import {entries,sections} from './content/book.js?v=1b8d12dafe86';
 import {mountVisual as mountGenerated} from './visuals-generated.js';

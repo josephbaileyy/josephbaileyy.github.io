@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "d5709d3f918eff7f6ced4e7f838b7d192b51aead",
+  "sourceCommit": "2b6c8de48a0305728e5a7e2c16c068abbd2a9dc5",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "5d968f37e15adaabc3c2e7b886edafc91847a29e7defb3404bf956b86b4e09e3"
+      "sha256": "a347a380760217f962641710775283e53850ac55fb85ad3c5bda2d42eda87b12"
     },
     {
       "file": "content/book.js",
@@ -68,7 +68,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "430aae5061fb223acdb33ef2e38d74c15393258eb88a95933ccc34f68bda5353"
+      "sha256": "2599b82ba1a040ffebb15e75eeff982f1b5fdd35618b0d112affd6854c493a68"
     },
     {
       "file": "math.js",
@@ -88,7 +88,7 @@
     },
     {
       "file": "reader.js",
-      "sha256": "66ced59344eec4c71b26e623c5f6c2b6604d27d51aa06415f8039301269aef93"
+      "sha256": "a6f3f56ec652259f1a94a4bc607f174d2bbd5ca7c1fc26b64a147f7a109a9dbe"
     },
     {
       "file": "source/230anotes.pdf",
