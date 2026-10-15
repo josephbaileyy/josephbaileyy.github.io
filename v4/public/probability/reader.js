@@ -1,4 +1,5 @@
 import {sourcePage,coversPage,sourceHeading} from './reader-state.js?v=5ec7f9401e64';
+import {readPageText} from './pdf-text.js';
 // Reader state lives separately from the mathematical content and annotations.
 export function initReader({entries,sections,id,toast}){
  const $=s=>document.querySelector(s), body=document.body;
@@ -29,7 +30,8 @@ export function initReader({entries,sections,id,toast}){
  history.scrollRestoration='manual';
  function position(){return {index:historyIndex,trail:historyTrail,entry:active?.n||null,page:pageNumber,split,zoom,fitRevision,
   pane:body.dataset.mobilePane||'companion',sourceTop:source.scrollTop,sourceLeft:source.scrollLeft,
-  companionTop:companion.scrollTop,windowTop:window.scrollY};}
+  companionTop:companion.scrollTop,windowTop:window.scrollY,
+  sourceReady:$('.pdf-loading').hidden&&$('.pdf-error').hidden&&!!source.querySelector(`canvas[aria-label="Original course notes, page ${pageNumber}"]`)};}
  function rememberPosition(){
   clearTimeout(positionTimer);if(restoring)return;
   history.replaceState({...history.state,[historyKey]:position()},'',location.href);
@@ -59,7 +61,8 @@ export function initReader({entries,sections,id,toast}){
   if(!pendingRestore)return;
   restoreReadingPosition();
   const p=pendingRestore;pendingRestore=null;
-  if(p.fitRevision===fitRevision)source.scrollTo({top:p.sourceTop||0,left:p.sourceLeft||0,behavior:'instant'});
+  // A failed load leaves zero scroll offsets, not a real reading position.
+  if(p.fitRevision===fitRevision&&(p.sourceReady??(p.sourceTop>0||p.sourceLeft>0)))source.scrollTo({top:p.sourceTop||0,left:p.sourceLeft||0,behavior:'instant'});
   restoring=false;rememberPosition();
  }
  for(const target of [source,companion,window])target.addEventListener('scroll',()=>{
@@ -100,7 +103,7 @@ export function initReader({entries,sections,id,toast}){
  }
  async function loadPDF(){
   if(!pdf){
-   if(!pdfLibrary){pdfLibrary=import('./vendor/pdfjs/pdf.min.mjs').then(lib=>{lib.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.min.mjs',import.meta.url).href;return lib})}
+   if(!pdfLibrary){pdfLibrary=import('./vendor/pdfjs/pdf.legacy.min.mjs').then(lib=>{lib.GlobalWorkerOptions.workerSrc=new URL('./vendor/pdfjs/pdf.worker.legacy.min.mjs',import.meta.url).href;return lib})}
    const lib=await pdfLibrary;
    if(!pdf)pdf=lib.getDocument({url:new URL('./source/230anotes.pdf',import.meta.url).href,cMapUrl:new URL('./vendor/pdfjs/cmaps/',import.meta.url).href,cMapPacked:true,standardFontDataUrl:new URL('./vendor/pdfjs/standard_fonts/',import.meta.url).href,wasmUrl:new URL('./vendor/pdfjs/wasm/',import.meta.url).href}).promise;
   }
@@ -121,7 +124,7 @@ export function initReader({entries,sections,id,toast}){
    const page=await documentPDF.getPage(pageNumber);if(current!==revision)return;
    const base=page.getViewport({scale:1});
    // Fit the printed text, rather than the PDF's wide paper margins.
-   const text=await page.getTextContent();if(current!==revision)return;
+   const text=await readPageText(page);if(current!==revision)return;
    const boxes=text.items.filter(item=>item.str?.trim()).map(item=>{
     const [x,y]=base.convertToViewportPoint(item.transform[4],item.transform[5]);
     return {left:x,right:x+item.width,top:y-item.height};

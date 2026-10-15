@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "2b6c8de48a0305728e5a7e2c16c068abbd2a9dc5",
+  "sourceCommit": "7a843c441e62f15de5b55f1bd639e1704df80051",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "a347a380760217f962641710775283e53850ac55fb85ad3c5bda2d42eda87b12"
+      "sha256": "3bd4cc71c09d2270e44a24aa2f35d6dd61898c88a9f7d0223dc844edce8b208b"
     },
     {
       "file": "content/book.js",
@@ -68,11 +68,15 @@
     },
     {
       "file": "index.html",
-      "sha256": "2599b82ba1a040ffebb15e75eeff982f1b5fdd35618b0d112affd6854c493a68"
+      "sha256": "c788ab21778e6e576362e6c8170916a0c3f69b24252ec5dc38cb8530fc924180"
     },
     {
       "file": "math.js",
       "sha256": "93a6079c75cbc61156422e61c2947b182fad348a07d2817a2ef80e4da7800a61"
+    },
+    {
+      "file": "pdf-text.js",
+      "sha256": "597c997efaa42a96cebf7534a4481f661982ae100832ad740c926aa149eb1e3a"
     },
     {
       "file": "print.css",
@@ -88,7 +92,7 @@
     },
     {
       "file": "reader.js",
-      "sha256": "a6f3f56ec652259f1a94a4bc607f174d2bbd5ca7c1fc26b64a147f7a109a9dbe"
+      "sha256": "edca92feff0a4c18f5ad315a4ba015c5f39a8eac4c411cebcf3ecf1bb9719558"
     },
     {
       "file": "source/230anotes.pdf",
@@ -444,7 +448,7 @@
     },
     {
       "file": "vendor/pdfjs/README.md",
-      "sha256": "27fb4b3309e6d8b118b95c26b84a95a5418b4897d57645f851d716828082aabf"
+      "sha256": "2ab7a523550f42cd1c0e6c270fec56ea52da9d4051653d278795cd9c78205ea9"
     },
     {
       "file": "vendor/pdfjs/cmaps/78-EUC-H.bcmap",
@@ -1123,12 +1127,12 @@
       "sha256": "543923bead225732aba30976690ee89095a19628277b5863efecc2c728d5d7bf"
     },
     {
-      "file": "vendor/pdfjs/pdf.min.mjs",
-      "sha256": "57456c8e0c81e46be31174b499ef77f2b9f5ee46d04412ba627320a36755d4c2"
+      "file": "vendor/pdfjs/pdf.legacy.min.mjs",
+      "sha256": "bccc24ea711db8e44503629519904a5292d73b9daaa214bbe7cdcc282b0f4259"
     },
     {
-      "file": "vendor/pdfjs/pdf.worker.min.mjs",
-      "sha256": "9536359f1b8367850d485731ca1d5e45c159a7b7a0912325e539937aa21ceb18"
+      "file": "vendor/pdfjs/pdf.worker.legacy.min.mjs",
+      "sha256": "145d2dd3ab0c86151011dba95acfa2d5336e2accd59388ea43dbee0efddaaec6"
     },
     {
       "file": "vendor/pdfjs/standard_fonts/FoxitDingbats.pfb",
