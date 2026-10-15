@@ -41,6 +41,14 @@ no unit counts. Full titles are available as native hover text, and exact quarte
 names remain in screen-reader text. Without JavaScript, all five areas remain
 available. AP credit is listed separately without units.
 
+## Probability reader
+
+`/probability/` is the standalone, login-free probability companion, linked from
+shared navigation. Its runtime lives in `public/probability/` and is copied as-is
+through Vite. Edit the canonical private course repository, then use
+`scripts/sync-probability.mjs` as documented in the root README. Do not independently
+rewrite this snapshot or add personal notes to it.
+
 ## Content and assets
 
 - `content/research.js`, `projects.js`, `experience.js`, and `education.js` hold

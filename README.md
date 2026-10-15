@@ -40,6 +40,31 @@ Page `<link rel="canonical">`, Open Graph URLs, the JSON-LD `url`, `sitemap.xml`
 and `robots.txt` all use `https://josephrbailey.com`; update them together if the
 domain ever changes.
 
+## Probability reader
+
+The public, login-free reader is served at
+[**josephrbailey.com/probability/**](https://josephrbailey.com/probability/), linked
+from the shared navigation. The complete standalone runtime is copied unchanged
+into `v4/public/probability/`; Vite includes it in the Pages artifact. It includes
+the original course PDF, local PDF.js/KaTeX assets, and the latest verified
+explanations and visualizations. Personal annotations are never part of the copy.
+Notes from the former private Site require Export/Import because the origin changed.
+
+The canonical editable source remains the private probability-notebook-230a
+repository. After verifying and committing a course change there, refresh this
+public snapshot with:
+
+```sh
+node scripts/sync-probability.mjs /path/to/probability-companion
+npm run lint && npm test && npm run build
+```
+
+The script records the source commit and asset hashes in
+`docs/probability-snapshot.json`. The production-output check verifies that all
+reader files survive the portfolio build unchanged. Commit the refreshed assets
+and manifest here and push to `main`; wait for the Pages deployment to succeed.
+Never copy local annotation exports, credentials, research extracts, or `.git/`.
+
 ## Older versions
 
 Earlier iterations of the site are kept in git history rather than the working

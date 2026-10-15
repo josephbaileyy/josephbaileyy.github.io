@@ -12,6 +12,8 @@ export default tseslint.config(
       'public',
       'coverage',
       'design-handoff/**',
+      // Canonical course runtime (including vendored PDF.js/KaTeX) is verified upstream.
+      'v4/public/probability/**',
     ],
   },
   js.configs.recommended,

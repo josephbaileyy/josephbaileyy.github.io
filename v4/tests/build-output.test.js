@@ -2,6 +2,7 @@ import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } 
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 
 import { afterAll, describe, expect, it } from 'vitest';
 import { build } from 'vite';
@@ -99,5 +100,18 @@ describe('v4 production output', () => {
     expect(lab).toContain('href="../papers/neutrino-unfolding.pdf"');
     expect(lab).toContain('href="../resume.pdf"');
     expect(existsSync(path.join(outputDir, 'assets'))).toBe(true);
+
+    // Vite must copy the complete standalone reader unchanged beneath its public
+    // subpath: bundling only its HTML would lose dynamic modules, fonts or the PDF.
+    const snapshot = JSON.parse(
+      readFileSync(path.join(v4Root, '../docs/probability-snapshot.json'), 'utf8'),
+    );
+    expect(snapshot.files.length).toBeGreaterThan(100);
+    for (const { file, sha256 } of snapshot.files) {
+      const shipped = readFileSync(path.join(outputDir, 'probability', file));
+      expect(createHash('sha256').update(shipped).digest('hex'), file).toBe(sha256);
+    }
+    expect(html).toContain('href="./probability/"');
+    expect(about).toContain('href="./probability/"');
   });
 });
