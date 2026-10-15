@@ -4,8 +4,9 @@ import {mountVisual as mountConvergence} from './visuals-convergence.js?v=7da494
 import {mountVisual as mountIntegrability} from './visuals-integrability.js?v=293f265d483e';
 import {initReader} from './reader.js?v=edca92feff0a';
 import {linkDefinitions} from './definitions.js?v=0438be2d17f8';
-import {entries,sections} from './content/book.js?v=1b8d12dafe86';
+import {entries,sections} from './content/book.js?v=borel1';
 import {mountVisual as mountGenerated} from './visuals-generated.js';
+import {mountVisual as mountBorel} from './visuals-borel.js?v=borel1';
 import {mountVisual as mountMeasures} from './visuals-1-1-3.js';
 import {mountVisual as mountEventualBound} from './visuals-eventual-bound.js';
 import {mountVisual as mountRV} from './visuals-rv.js';
@@ -33,7 +34,7 @@ function pills(root,labels,initial,callback){root.innerHTML=labels.map((l,i)=>`<
 const helpers={svg,setup,range,bar,esc,renderMath};
 for(const root of document.querySelectorAll('[data-visual]')){const name=root.dataset.visual;
 if(name==='proof-map'){const e=entries.find(e=>e.n===root.closest('.entry').dataset.entry);root.innerHTML='<div class="proof-flow">'+(e.map||[]).map((step,i)=>`<div class="proof-step"><span class="step-number">${i+1}</span><div><b>${safeMath(step.title)}</b><div>${safeMath(step.body)}</div></div></div>`).join('')+'</div>';continue;}
-if([mountIntegration,mountInequalities,mountConvergence,mountIntegrability,mountGenerated,mountMeasures,mountRV,mountLaws,mountEventualBound].some(mount=>mount(root,name,helpers)))continue;
+if([mountIntegration,mountInequalities,mountConvergence,mountIntegrability,mountGenerated,mountBorel,mountMeasures,mountRV,mountLaws,mountEventualBound].some(mount=>mount(root,name,helpers)))continue;
 switch(name){
 case 'algebra':{root.innerHTML='<div class="small">Ω = {a, b, c, d} · Select blocks to form A.</div><div class="choices"></div><div class="drawing"></div><div class="result" aria-live="polite"></div>';pills($('.choices',root),['{a, b}','{c, d}'],1,m=>{const sets=['∅','{a,b}','{c,d}','Ω'];$('.drawing',root).innerHTML=svg([0,1].map(i=>`<rect x="${40+i*280}" y="20" width="240" height="80" rx="38" fill="${m&(1<<i)?'#d8e8df':'#f0eee7'}" stroke="#b9c8b7"/><text x="${160+i*280}" y="67" text-anchor="middle">${i?'c　　　　 d':'a　　　　 b'}</text>`).join(''));$('.result',root).textContent=`A = ${sets[m]}　 ·　 Aᶜ = ${sets[3^m]}　 ·　 A ∪ Aᶜ = Ω. Available events: ∅, {a,b}, {c,d}, Ω.`});break}
 case 'measure':{setup(root,range('total','Total mass',0,3,1,.1)+'<label>Event<select data-control="event" aria-label="Event"><option value="3">{a,b}</option><option value="12">{c,d}</option><option value="15">Ω</option><option value="0">∅</option></select></label>',v=>{let w=[.1,.2,.3,.4].map(x=>x*v.total);return [bar(w,['a','b','c','d'],w.map((_,i)=>v.event&(1<<i)?'#47795f':'#dfddd3')),`μ(A) = ${fmt(mass(v.event,w))}; μ(Ω) = ${fmt(v.total)}. ${v.total===1?'This is a probability measure.':'This is a measure; its total mass is not 1.'}`]});break}

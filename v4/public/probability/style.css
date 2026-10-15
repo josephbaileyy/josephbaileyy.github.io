@@ -10,3 +10,23 @@
  #eventual-bound #eb-detail{min-height:38px}
 
 #eventual-bound .controls .bound-field{display:grid;gap:4px;flex:1;min-width:130px} #eventual-bound .controls input{width:100%;min-width:0} #eventual-bound .bound-legend{display:flex;flex-wrap:wrap;gap:12px} #eventual-bound svg{max-height:none} #eventual-bound svg text{font-size:12px}
+
+/* Borel sets: finite geometry paired with an exact construction. */
+.borel-explorer .controls{align-items:flex-start}
+.borel-explorer .borel-choice,.borel-explorer .borel-stage{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.borel-explorer .borel-choice select{max-width:100%;min-width:0}
+.borel-explorer .borel-selected{display:flex;flex-direction:column;gap:5px;margin:14px 0;font-size:14px}
+.borel-explorer .borel-selected span{font-size:12px;color:var(--muted)}
+.borel-explorer .borel-drawing{width:100%;min-width:0}
+.borel-explorer svg{max-height:none}
+.borel-explorer svg text{font-size:12px;fill:var(--ink)}
+.borel-explorer .borel-axis{stroke:var(--line);stroke-width:2}
+.borel-explorer .borel-fill,.borel-explorer .borel-in{fill:var(--green)}
+.borel-explorer .borel-in,.borel-explorer .borel-out{stroke:var(--green);stroke-width:1.5}
+.borel-explorer .borel-out{fill:#fffefa}
+.borel-explorer .borel-recipe{border-top:1px solid var(--line);margin-top:20px;padding-top:17px;overflow-wrap:anywhere}
+.borel-explorer .borel-recipe .katex{font-size:1em}
+.borel-explorer .borel-recipe>div{overflow-x:auto;padding:5px 0}
+.borel-explorer .borel-recipe p,.borel-explorer .borel-meaning p{font-size:13px}
+.borel-explorer .borel-meaning{margin-top:18px}
+@media(max-width:480px){.borel-explorer .controls{flex-direction:column}.borel-explorer .borel-choice{flex-direction:column;align-items:flex-start}.borel-explorer .borel-stage{width:100%}.borel-explorer .borel-stage input{flex:1;min-width:80px}}

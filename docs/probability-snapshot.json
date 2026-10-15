@@ -1,14 +1,14 @@
 {
-  "sourceCommit": "7a843c441e62f15de5b55f1bd639e1704df80051",
+  "sourceCommit": "4a6ed2bcb9898e385a69645dd70d72199719d269",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "3bd4cc71c09d2270e44a24aa2f35d6dd61898c88a9f7d0223dc844edce8b208b"
+      "sha256": "f941f2fac1fc63713b635e31d68dc1a3b38e5b1d4ae23c4bfa6188053c18515a"
     },
     {
       "file": "content/book.js",
-      "sha256": "1b8d12dafe865098c384eb3074257aafccba245fd0763966c53f9a801e896a6c"
+      "sha256": "55c97402dfc03c747d535a94b1ffafe2983fd8ac0246ec4abaa61da4fd144655"
     },
     {
       "file": "content/chapter-1.js",
@@ -16,7 +16,7 @@
     },
     {
       "file": "content/section-1-1-2.js",
-      "sha256": "b558af9341140c66797a2daaa656e7249b02706746ebe2487c8721153910fec0"
+      "sha256": "92de907ed44857c96765725d36336c8a77825e311429418eada4822dbd9f9981"
     },
     {
       "file": "content/section-1-1-3.js",
@@ -68,7 +68,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "c788ab21778e6e576362e6c8170916a0c3f69b24252ec5dc38cb8530fc924180"
+      "sha256": "2850586cbed4a65fe65d3a61f7b97e0554ea0cc3b0f5689df68026983e60db0c"
     },
     {
       "file": "math.js",
@@ -104,7 +104,7 @@
     },
     {
       "file": "style.css",
-      "sha256": "d13b30663cc13e7e624996373436fdb4acb7dcd41291717b851e3690babcb07e"
+      "sha256": "8c63dd0a6f6d2b7419c685d16b8b5cee7aae3a08ea346c0fdb1289c0057613a6"
     },
     {
       "file": "vendor/KATEX-LICENSE",
@@ -1253,6 +1253,10 @@
     {
       "file": "visuals-1-1-3.js",
       "sha256": "24b4875d5bb2cfb19edaf4c1cab87448a6f61a5d69dc979d1e7d74c3bae926a0"
+    },
+    {
+      "file": "visuals-borel.js",
+      "sha256": "d860e46494ce0710af5ba29af4b7ee892840d229d1bac68b21b41e2bed3a13ba"
     },
     {
       "file": "visuals-convergence.js",

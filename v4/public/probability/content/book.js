@@ -5,7 +5,7 @@ import {entries as integrability} from './section-1-3-4.js';
 import {entries as densities} from './section-1-3-5.js';
 import {entries as moments} from './section-1-3-6.js';
 import {entries as first} from './chapter-1.js';
-import {entries as generated} from './section-1-1-2.js';
+import {entries as generated} from './section-1-1-2.js?v=borel1';
 import {entries as measures} from './section-1-1-3.js';
 import {entries as variables} from './section-1-2-1.js';
 import {entries as closure} from './section-1-2-2.js';
