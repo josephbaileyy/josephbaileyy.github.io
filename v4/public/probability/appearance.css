@@ -1,0 +1,128 @@
+/* Reading schemes affect the interface; diagram colors retain their mathematical roles. */
+:root {
+  --reading-font: Georgia, 'Times New Roman', serif;
+  --control-border: #bdc8be;
+  --surface: #fffefa;
+  --soft: #edf2eb;
+  --radius: 4px;
+}
+:root[data-theme=minimal] {
+  --paper: #ffffff; --ink: #24262a; --muted: #62676e; --line: #e1e4e7;
+  --green: #304f70; --pale: #f1f5f8; --gold: #776339;
+  --surface: #ffffff; --soft: #f3f5f7; --control-border: #838d9a; --radius: 4px;
+  --reading-font: Charter, 'Bitstream Charter', Georgia, serif;
+}
+:root[data-theme=paper] {
+  --paper: #faf7ef; --ink: #302d28; --muted: #70685d; --line: #e0d9cb;
+  --green: #795238; --pale: #f1ece1; --gold: #856a38;
+  --surface: #fffdf7; --soft: #f0ebe0; --control-border: #948572; --radius: 3px;
+  --reading-font: Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif;
+}
+:root[data-theme=studio] {
+  --paper: #ffffff; --ink: #242c32; --muted: #596775; --line: #dce3e8;
+  --green: #245d77; --pale: #eaf2f6; --gold: #80683d;
+  --surface: #ffffff; --soft: #edf3f7; --control-border: #778c9b; --radius: 9px;
+  --reading-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+:root[data-font=georgia] { --reading-font: Georgia, 'Times New Roman', serif; }
+:root[data-font=palatino] { --reading-font: Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif; }
+:root[data-font=sans] { --reading-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+body, .notes textarea { font-family: var(--reading-font); }
+/* Keep controls recognizable and mathematical typography in KaTeX unchanged. */
+html:not([data-theme=original]) :is(button, .import-button, select, .tools-menu>summary) {
+  border: 1px solid var(--control-border); border-radius: var(--radius);
+  color: var(--green); background: var(--surface);
+}
+html:not([data-theme=original]) button:hover:not(:disabled) { background: var(--soft); }
+html:not([data-theme=original]) :is(button, a, summary, input, select, textarea):focus-visible {
+  outline: 3px solid var(--green); outline-offset: 3px;
+}
+html:not([data-theme=original]) aside { background: var(--soft); }
+html:not([data-theme=original]) :is(.toolbar, .split-view .companion-heading, .page-controls, .page-entries, .pane-heading) { background: var(--paper); }
+html:not([data-theme=original]) :is(.split-view .source-pane, .pdf-loading, .split-view .pane-divider) { background: var(--soft); }
+html:not([data-theme=original]) .split-view .pane-divider { border-color: var(--line); }
+html:not([data-theme=original]) #toc a { color: var(--muted); }
+html:not([data-theme=original]) #toc a b { color: inherit; }
+html:not([data-theme=original]) #toc a.active { background: var(--pale); color: var(--green); }
+html:not([data-theme=original]) #toc .toc-group summary { color: var(--ink); }
+html:not([data-theme=original]) #toc .section-jump { color: var(--green)!important; }
+html:not([data-theme=original]) :is(.page-entries, .visual-head, .caption, #toc .toc-group) { border-color: var(--line); }
+html:not([data-theme=original]) .statement { background: var(--soft); border-left: 2px solid var(--control-border); }
+html:not([data-theme=original]) .visual { background: var(--surface); border-radius: var(--radius); }
+html:not([data-theme=original]) .visual-head { color: var(--muted); }
+html:not([data-theme=original]) .caption { background: var(--paper); }
+html:not([data-theme=original]) .result { background: var(--pale); color: var(--ink); }
+html:not([data-theme=original]) :is(.proof-step, .flow .step, .set-list span) { background: var(--soft); border-color: var(--line); }
+html:not([data-theme=original]) :is(.proof-step b, .flow .step b) { color: var(--ink); }
+html:not([data-theme=original]) .source-remark { color: var(--muted); border-color: var(--control-border); }
+html:not([data-theme=original]) .notes textarea { background: var(--surface); border-color: var(--control-border); color: var(--ink); }
+html:not([data-theme=original]) .section-banner { background: var(--soft); color: var(--ink); font-family: var(--reading-font); }
+html:not([data-theme=original]) .definition-link { text-decoration-color: var(--green); }
+html:not([data-theme=original]) .visual-body input { accent-color: var(--green); }
+html:not([data-theme=original]) :is(.entry-meta, .label, .visual-head, .pane-heading strong) { letter-spacing: .7px; }
+html:not([data-theme=original]) .entry-meta { color: var(--muted); }
+html:not([data-theme=original]) :is(.label, .visual-head, .entry-meta, .pane-heading strong) { font-size: 11px; }
+html:not([data-theme=original]) :is(.statement, .hint-content) { line-height: 1.8; }
+html[data-theme=minimal] .statement { background: transparent; padding-left: 20px; }
+html[data-theme=minimal] .visual { border-width: 1px 0; border-radius: 0; }
+html[data-theme=minimal] .visual-head { padding-left: 0; padding-right: 0; }
+html[data-theme=minimal] .caption { padding-left: 0; padding-right: 0; }
+html[data-theme=minimal] aside { background: var(--paper); }
+html[data-theme=paper] .entry h3 { font-size: 32px; }
+html[data-theme=studio] .entry h3 { font-weight: 600; letter-spacing: -.7px; font-size: 28px; }
+html[data-theme=studio] :is(.statement, .plain, .hint-content) { font-size: 16px; line-height: 1.85; }
+html[data-theme=studio] .visual-head { background: var(--soft); font-weight: 600; }
+/* Optional control treatments work with every palette. */
+html[data-buttons=outlined] :is(button, .import-button, .tools-menu>summary),
+html[data-buttons=soft] :is(button, .import-button, .tools-menu>summary) {
+  border: 1px solid var(--control-border); color: var(--green); background: var(--surface);
+  border-radius: var(--radius);
+}
+html[data-buttons=soft] :is(button, .import-button, .tools-menu>summary) { background: var(--soft); border-radius: 12px; }
+html[data-buttons=outlined] :is(button, .import-button, .tools-menu>summary) { border-radius: 3px; }
+html :is(.pill, .entry-choice, .mobile-tabs button)[aria-pressed=true] { background: var(--green); color: white; border-color: var(--green); }
+html :is(.pill, .entry-choice, .mobile-tabs button)[aria-pressed=true]:hover { background: var(--green); color: white; }
+/* Appearance is a small, dismissible control panel, never part of the lesson. */
+.appearance-menu { border: 0; padding: 0; font: 13px/1.5 system-ui; letter-spacing: 0; }
+.appearance-menu>summary { display: flex; align-items: center; min-height: 36px; padding: 7px 10px; border: 1px solid var(--control-border); border-radius: var(--radius); color: var(--green); background: var(--surface); font: 12px/1.4 system-ui; list-style: none; }
+.appearance-menu>summary::-webkit-details-marker { display: none; }
+.appearance-menu[open]>summary { outline: 2px solid var(--green); outline-offset: 2px; }
+.toolbar .appearance-panel { display: block; position: fixed; z-index: 40; right: 16px; top: calc(var(--toolbar-height, 64px) + 10px); width: min(360px, calc(100vw - 32px)); max-height: calc(100dvh - var(--toolbar-height, 64px) - 28px); overflow-y: auto; padding: 20px; background: var(--paper); color: var(--ink); border: 1px solid var(--control-border); border-radius: 12px; box-shadow: 0 12px 42px #18252f26; }
+.appearance-panel h2 { font: 600 18px/1.3 system-ui; margin: 0 0 6px; }
+.appearance-panel p { font: 12px/1.6 system-ui; color: var(--muted); margin: 0 0 16px; }
+.appearance-panel fieldset { border: 0; margin: 0 0 16px; padding: 0; }
+.appearance-panel legend, .appearance-field { font: 600 12px/1.5 system-ui; margin-bottom: 8px; }
+.toolbar .scheme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.scheme-choice { position: relative; display: block; cursor: pointer; }
+.scheme-choice input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.scheme-card { display: block; border: 1px solid #838d9a; border-radius: 7px; padding: 10px; color: #30343a; background: white; }
+.scheme-card strong { display: block; font: 500 23px/1.3 Georgia; margin-bottom: 7px; }
+.scheme-card b { display: block; font: 600 12px/1.5 system-ui; }
+.scheme-card small { display: block; font: 11px/1.5 system-ui; }
+.scheme-choice input:checked+.scheme-card { outline: 2px solid var(--green); outline-offset: 1px; }
+.scheme-choice input:checked+.scheme-card b::after { content: ' ✓'; }
+.scheme-choice input:focus-visible+.scheme-card { outline: 3px solid var(--green); outline-offset: 3px; }
+.scheme-card.original { background: #fbfaf6; color: #315e4e; }
+.scheme-card.minimal strong { font-family: Charter, Georgia, serif; }
+.scheme-card.paper { background: #faf7ef; color: #795238; }
+.scheme-card.paper strong { font-family: Palatino, 'Palatino Linotype', serif; }
+.scheme-card.studio { background: #edf3f7; color: #245d77; }
+.scheme-card.studio strong { font: 600 23px/1.3 system-ui; }
+.appearance-field { display: block; }
+.appearance-field select { display: block; width: 100%; margin: 5px 0 14px; padding: 9px; min-height: 44px; font: 13px system-ui; border: 1px solid var(--control-border); border-radius: 4px; background: var(--surface); color: var(--ink); }
+.toolbar .appearance-footer { display: flex; justify-content: space-between; margin-top: 16px; }
+.appearance-footer button { min-height: 40px; }
+.appearance-panel #appearance-status { margin: 12px 0 0; }
+.appearance-panel .appearance-note { border-top: 1px solid var(--line); padding-top: 12px; }
+@media(max-width:1250px) { .toolbar .notebook-title { display: none; } }
+@media(max-width:600px) {
+  .toolbar { flex-wrap: wrap; }
+  .toolbar .reader-controls { flex-basis: 100%; }
+  .appearance-menu { margin-left: auto; }
+  .appearance-menu>summary { min-height: 44px; }
+  .tools-menu>summary { max-width: none; min-height: 44px; }
+  .split-view .toolbar { gap: 6px; }
+  html[data-theme=paper] .entry h3 { font-size: 29px; }
+}
+@media print { .appearance-menu { display: none!important; } }
+.print-layout .appearance-menu { display: none!important; }

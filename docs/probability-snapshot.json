@@ -1,10 +1,18 @@
 {
-  "sourceCommit": "4a6ed2bcb9898e385a69645dd70d72199719d269",
+  "sourceCommit": "60f661d878c50a130cad542003f3e8196d1c075e",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
       "sha256": "f941f2fac1fc63713b635e31d68dc1a3b38e5b1d4ae23c4bfa6188053c18515a"
+    },
+    {
+      "file": "appearance.css",
+      "sha256": "345d186f6daa2a7dd8e8f4cfabbfcd8e16e0abc3d20f32f7560b5f025712b769"
+    },
+    {
+      "file": "appearance.js",
+      "sha256": "73c8bb2a34ceff8bf33898654d94e3ffb7ba9088269e70ab8056c1caced2c640"
     },
     {
       "file": "content/book.js",
@@ -68,7 +76,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "2850586cbed4a65fe65d3a61f7b97e0554ea0cc3b0f5689df68026983e60db0c"
+      "sha256": "93dacae937df64f59daf683c829069cd87d3e6fa5e3b1d928ac4c592cb8ee227"
     },
     {
       "file": "math.js",
