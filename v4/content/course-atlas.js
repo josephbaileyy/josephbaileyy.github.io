@@ -46,6 +46,6 @@ export function renderCourseAtlas() {
         return `<div class="atlas-group" data-atlas-group="${area.id}"><h4>${escape(area.label)}</h4><div class="atlas-legend" aria-label="Subjects">${subjects.map(([, label, color]) => `<span><span class="atlas-swatch" style="background-color:${color}" aria-hidden="true"></span>${escape(label)}</span>`).join('')}</div><ul class="atlas-grid" aria-label="${escape(area.label)} courses">${group.map(renderCourse).join('')}</ul></div>`;
       })
       .join('')}</div>
-    <div class="atlas-footnote"><p>As of ${courseworkAsOf}. AP credit: Chemistry, Calculus BC, Physics 1 &amp; 2.</p></div>
+    <div class="atlas-footnote"><p>As of ${courseworkAsOf}.</p></div>
   </div>`;
 }
