@@ -415,7 +415,6 @@ export function renderHome() {
           `<a class="personal-link music-link" href="${personal.saxUrl}" target="_blank" rel="noopener noreferrer" aria-label="Watch my sax solo in the Chino Hills HS 2023 indoor drumline show">variety of ensembles</a>`,
         )}</p>
       <nav aria-label="Contact and profile links">${links([{ ...profile.links.find((item) => item.id === 'resume-link'), label: 'CV (PDF)' }, profile.links.find((item) => item.id === 'contact-link'), profile.links.find((item) => item.id === 'github-link')])}</nav>
-      <p class="currently"><span class="status-dot" aria-hidden="true"></span><span>Currently exploring neutrino unfolding<br>with Prof. Benjamin Nachman.</span></p>
     </div>
     ${instagramCarousel()}
   </header>

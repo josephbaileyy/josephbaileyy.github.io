@@ -2,7 +2,7 @@
 // easy to revise independently of the layout. Only established facts go live.
 export const personal = {
   introduction:
-    'I study physics and computer science at Stanford. Most of my research is about using machine learning to correct physics measurements for detector effects, and checking how much the corrected result can be trusted.',
+    'I study physics and computer science at Stanford. Right now I’m working on neutrino physics, using machine learning to undo the distortions a detector adds to its measurements.',
   outside:
     'I also compete for Stanford Track & Field as a {track}, and I play classical and jazz piano and saxophone in a {sax}.',
   music:
