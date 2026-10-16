@@ -23,6 +23,8 @@ function listFiles(directory, prefix = '') {
 }
 
 describe('v4 production output', () => {
+  // This test builds the entire site and hashes every reader asset. Hosted
+  // runners can exceed Vitest's five-second unit-test default during the build.
   it('ships fonts, licences, evidence, and statically rendered content', async () => {
     await build({
       configFile: path.join(v4Root, 'vite.config.js'),
@@ -113,5 +115,5 @@ describe('v4 production output', () => {
     }
     expect(html).toContain('href="./probability/"');
     expect(about).toContain('href="./probability/"');
-  });
+  }, 30_000);
 });
