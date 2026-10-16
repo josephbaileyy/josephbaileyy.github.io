@@ -56,7 +56,7 @@ describe('v4 production output', () => {
       'about.html',
       'notes/index.html',
       'notes/how-this-site-works.html',
-      'img/home/track-start.png',
+      'img/home/track-start.webp',
       'img/projects/splora-chart.webp',
       'img/projects/lord-model.webp',
       'img/projects/lord-architecture.svg',
@@ -81,7 +81,7 @@ describe('v4 production output', () => {
     const about = readFileSync(path.join(outputDir, 'about.html'), 'utf8');
     expect(about).toContain('Coterminal B.S. Physics');
     expect(html).toContain(
-      'whether high-dimensional unbinned unfolding reduces structural model bias is the question under test',
+      'The main question is whether unfolding many variables at once, without binning, reduces the bias that comes from the simulation model.',
     );
     expect(about).toContain('WisdomTree Connect');
     expect(html).toContain('BWV 847');
@@ -96,7 +96,8 @@ describe('v4 production output', () => {
     expect(note).toContain('The seam theorem');
     expect(note).toContain('earlier universe version');
     expect(note).not.toContain('<!-- NOTE_CONTENT:');
-    expect(html).toContain('Try the interactive version');
+    expect(html).toContain('Try the interactive demo');
+    expect(html).not.toContain('Details and links');
     const lab = readFileSync(path.join(outputDir, 'lab/index.html'), 'utf8');
     expect(lab).toContain('id="unfolding-machine"');
     expect(lab).toContain('href="../papers/neutrino-unfolding.pdf"');

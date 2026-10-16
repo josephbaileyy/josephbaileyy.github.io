@@ -504,6 +504,22 @@ summary {
   width: 100%;
   height: auto;
 }
+.research-figure-wrap {
+  margin: 18px 0 0;
+}
+.research-figure-wrap figcaption {
+  margin-top: 8px;
+  color: var(--home-secondary);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.unfolding-demo {
+  margin: 28px 0 8px;
+}
+.unfolding-demo h4 {
+  margin: 0 0 6px;
+  font-size: 15px;
+}
 .limitations {
   max-width: none;
 }
@@ -1715,7 +1731,7 @@ time,
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-top: 12px;
+  margin: 0 0 18px;
 }
 .shared-playback button {
   min-width: 74px;

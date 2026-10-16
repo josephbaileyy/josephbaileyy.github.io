@@ -2,11 +2,11 @@
 // easy to revise independently of the layout. Only established facts go live.
 export const personal = {
   introduction:
-    'I study physics and computer science at Stanford. My work brings machine learning into fundamental physics, where the measurements—and their uncertainties—matter.',
+    'I study physics and computer science at Stanford. Most of my research is about using machine learning to correct physics measurements for detector effects, and checking how much the corrected result can be trusted.',
   outside:
-    'I compete for Stanford Track & Field as a {track}. In my free time, I enjoy playing classical and jazz piano and saxophone in a {sax}.',
+    'I also compete for Stanford Track & Field as a {track}, and I play classical and jazz piano and saxophone in a {sax}.',
   music:
-    'In my free time, I enjoy playing classical and jazz piano and saxophone in a variety of ensembles.',
+    'I play classical piano (I finished MTAC Level 10) and jazz on alto saxophone, plus some flute and clarinet. The recording below is me playing a Bach fugue.',
   trackUrl: 'https://gostanford.com/sports/track-field/roster/player/joseph-bailey',
   saxUrl: 'https://www.youtube.com/watch?v=ry0rKeoQI0o',
   saxCaption: 'My sax solo in the Chino Hills HS 2023 indoor drumline show',

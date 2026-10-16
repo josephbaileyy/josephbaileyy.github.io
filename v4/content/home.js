@@ -30,49 +30,41 @@ const sentences = {
   'minerva-omnifold': {
     title: 'Neutrino unfolding with machine learning',
     brief:
-      'With Prof. Benjamin Nachman, I’m testing how well machine learning can correct for detector effects in MINERvA neutrino data.',
-    contribution:
-      'I am implementing and evaluating OmniFold on MINERvA neutrino-scattering data with Prof. Benjamin Nachman, comparing it with iterative Bayesian unfolding through closure tests, generator stress tests, and bootstrap resampling.',
-    evidence:
-      'Work in progress: whether high-dimensional unbinned unfolding reduces structural model bias is the question under test.',
+      'With Prof. Benjamin Nachman, I’m applying OmniFold, a machine-learning unfolding method, to MINERvA neutrino-scattering data. I compare it with iterative Bayesian unfolding, the standard method, using closure tests, generator stress tests, and bootstrap resampling.',
+    status:
+      'This is still in progress, and it’s funded by a 2026 Stanford Major Grant. The main question is whether unfolding many variables at once, without binning, reduces the bias that comes from the simulation model.',
   },
   'x17-bump-hunting': {
     title: 'Searching for the hypothetical X17 particle',
     brief:
-      'At Jefferson Lab, I used Gaussian processes to search for a possible particle signal amid background noise.',
-    contribution:
-      'At Jefferson Lab, I applied Gaussian-process regression to model invariant-mass backgrounds and search for localized excesses, then presented the study at the APS Far West Section meeting at UC Santa Cruz.',
+      'At Jefferson Lab, I used Gaussian-process regression to model the background in invariant-mass spectra, so I could look for a small excess from the X17 without assuming a fixed background shape. I presented the study at the APS Far West Section meeting at UC Santa Cruz.',
   },
   'collider-ml-slac': {
     title: 'Machine learning for a proposed Higgs factory',
-    brief: 'At SLAC, I studied how overlapping collisions affect the search for Higgs-boson pairs.',
-    contribution:
-      'At SLAC, I worked on a four-person XCC Higgs-factory proposal, analyzing simulation data with Delphes, ROOT, and HPC systems and developing machine-learning methods to study pileup effects.',
+    brief:
+      'At SLAC, I was on a four-person team working on a proposal for the XCC, a photon–photon collider that would serve as a Higgs factory. I analyzed simulation data with Delphes, ROOT, and HPC systems, and worked on machine-learning methods to study how pileup (overlapping collisions) affects the search for Higgs-boson pairs.',
   },
   'am-cvn-photometry': {
     title: 'Measuring the variability of AM CVn',
     brief:
-      'From telescope images, I recovered the star’s known roughly 17.5-minute brightness variation.',
-    contribution:
-      'For Stanford’s observational astrophysics course, I reduced 140 V-band CCD images and performed differential photometry on 138 retained exposures, recovering variability consistent with the known 1051-second positive-superhump family.',
+      'For Stanford’s observational astrophysics course, I reduced 140 V-band CCD images of AM CVn and did differential photometry on the 138 I kept. The light curve shows variability consistent with the star’s known 1051-second (about 17.5-minute) superhump signal.',
   },
   'ligo-suspensions': {
     title: 'Interferometry at Caltech LIGO',
     brief:
-      'I supported suspension testing and analyzed laser-interferometry experiments for gravitational-wave detectors.',
-    contribution:
-      'I supported suspension simulation and testing and conducted laser-beam interferometry experiments with Python analysis, documenting the work in a technical note.',
+      'At Caltech’s LIGO Laboratory, I helped with suspension simulation and testing for gravitational-wave detectors and ran laser-interferometry experiments, which I analyzed in Python. I wrote the work up in a technical note.',
   },
 };
 
 function interactiveUnfolding() {
-  return `<details class="explanation" id="unfolding-interactive" data-demo="unfolding">
-    <summary>Try the interactive version</summary>
-    <div class="explanation-body">
-      <p>Watch OmniFold adjust the simulation to match measured data.</p>
+  return `<div class="unfolding-demo" id="unfolding-interactive">
+    <h4>Try the interactive demo</h4>
+    <div>
+      <p>Press play to watch OmniFold adjust the simulation until it matches the measured data.</p>
       <div data-demo-view hidden>
         <div class="shared-unfolding" data-shared-demo>
           <div class="shared-toolbar"><label>Example <select data-shared-prior><option value="hurdler">Hurdler</option><option value="photo-intensity">Portrait</option></select></label><output data-shared-stage>Starting simulation</output></div>
+          <div class="shared-playback"><button type="button" data-shared-play>Play</button><div class="shared-timeline"><label for="unfolding-iteration">Iteration <output data-shared-iteration-value>0 / 12</output></label><input id="unfolding-iteration" data-shared-iteration type="range" min="0" max="12" step="1" value="0"></div></div>
           <div class="shared-portrait-grid">
             <p class="shared-level">Before the detector</p>
             <figure><canvas data-shared-estimate role="img" aria-label="Weighted simulation before detection"></canvas><figcaption>Estimate</figcaption></figure>
@@ -81,17 +73,16 @@ function interactiveUnfolding() {
             <figure><canvas data-shared-reco role="img" aria-label="Weighted simulation after detection"></canvas><figcaption>Simulation</figcaption></figure>
             <figure><canvas data-shared-data role="img" aria-label="Fixed synthetic measured distribution"></canvas><figcaption>Measured data</figcaption></figure>
           </div>
-          <div class="shared-playback"><button type="button" data-shared-play>Play</button><div class="shared-timeline"><label for="unfolding-iteration">Iteration <output data-shared-iteration-value>0 / 12</output></label><input id="unfolding-iteration" data-shared-iteration type="range" min="0" max="12" step="1" value="0"></div></div>
           <p class="demo-status" data-shared-loading role="status" hidden></p>
           <button type="button" class="text-button" data-shared-settings-retry hidden>Try again</button>
           <details class="shared-method"><summary>How it works</summary><p>Only the event weights change. One classifier compares simulation with measured data after the detector. Its weights are carried to the simulated truth partners. A second classifier learns weights from the truth features, then sends them forward for the next iteration. The reference truth is shown only for comparison.</p><p data-shared-method-example></p><p>These are synthetic distributions, not photo restoration or MINERvA data. The browser replays trained neural-network weights. All four images share a fixed display scale and smoothing filter; the reference never alters the estimate. Acceptance losses, backgrounds, and uncertainties are omitted.</p></details>
         </div>
       </div>
-      <p class="demo-status" role="status" data-demo-status>The interactive example loads when opened.</p>
+      <p class="demo-status" role="status" data-demo-status>Loading the interactive example…</p>
       <button class="text-button" type="button" data-demo-retry hidden>Try again</button>
       <noscript><p>The interactive example needs JavaScript. The visual explanation above works without it.</p></noscript>
     </div>
-  </details>`;
+  </div>`;
 }
 
 function unfoldDisclosure() {
@@ -115,8 +106,8 @@ function unfoldDisclosure() {
       values: [1, 3, 7, 17, 34, 61, 83, 61, 34, 17, 7, 3, 1],
     },
   ];
-  return `<details class="explanation" id="unfolding-explanation">
-    <summary>What is unfolding?</summary>
+  return `<details class="explanation" id="unfolding-explanation" data-demo="unfolding">
+    <summary>What is unfolding? See the interactive demo</summary>
     <div class="explanation-body unfolding-explainer">
       <p class="unfolding-takeaway">Estimate the physics before the detector changes what we see.</p>
       <figure>
@@ -136,9 +127,9 @@ function unfoldDisclosure() {
         <figcaption>A schematic of detector smearing and unfolding, not MINERvA data. All panels share the same scale; the estimate is approximate.</figcaption>
       </figure>
       <p>OmniFold changes how much each simulated event counts, using its paired descriptions before and after detection. Those weights are learned by comparing simulation with measured data.</p>
-      <p class="limitations">The starting simulation and detector model matter. The result is an estimate with uncertainties; individual measured events do not get their original values back.</p>
-      <p class="method-link">${link({ href: 'https://arxiv.org/abs/1911.09107', label: 'Read the OmniFold method' })}</p>
       ${interactiveUnfolding()}
+      <p class="limitations">The starting simulation and detector model matter. The result is an estimate with uncertainties, and individual measured events don’t get their original values back.</p>
+      <p class="method-link">${link({ href: 'https://arxiv.org/abs/1911.09107', label: 'Read the OmniFold method' })}</p>
     </div>
   </details>`;
 }
@@ -165,12 +156,9 @@ function researchList() {
       return `<li><article id="${id}">
       <header class="entry-heading"><h3>${link({ ...evidence[0], label: copy.title })}</h3><p class="entry-date">${escape(item.period)}</p></header>
       <p>${escape(copy.brief)}</p>
-      <details class="explanation record-details"><summary>Details and links</summary><div class="explanation-body">
-        <p>${escape(copy.contribution)}</p>
-        ${copy.evidence ? `<p class="research-status">${escape(copy.evidence)}</p>` : ''}
-        ${links(evidence)}
-        ${id === 'am-cvn-photometry' ? `<figure class="explanation-body"><img class="research-figure" src="./img/home/amcvn-fit.png" alt="AM CVn V-band differential-photometry light curve with a double-wave fit near a 1050-second period" width="1180" height="270" loading="lazy"><figcaption>Observed differential photometry and the fitted model from my PHYSICS 100 project, spring 2026. The fit is not an independent measurement of every feature in the light curve.</figcaption></figure>` : ''}
-      </div></details>
+      ${copy.status ? `<p class="research-status">${escape(copy.status)}</p>` : ''}
+      ${links(evidence)}
+      ${id === 'am-cvn-photometry' ? `<figure class="research-figure-wrap"><img class="research-figure" src="./img/home/amcvn-fit.png" alt="AM CVn V-band differential-photometry light curve with a double-wave fit near a 1050-second period" width="1180" height="270" loading="lazy"><figcaption>Observed differential photometry and the fitted model from my PHYSICS 100 project, spring 2026. The fit is not an independent measurement of every feature in the light curve.</figcaption></figure>` : ''}
       ${id === 'minerva-omnifold' ? unfoldDisclosure() : ''}
     </article></li>`;
     })
@@ -180,13 +168,18 @@ function researchList() {
 function projectList(items, featured = false) {
   const descriptions = {
     'neutrino-video':
-      'A five-minute animated film about finding the proton’s weak-force response in a plastic neutrino detector.',
-    splora: 'Fine-tuning language models using about 1% of their parameters.',
-    lord: 'Recognizing the same person across video from different cameras.',
-    'soccer-gnn': 'Predicting the next action in a soccer match with graph neural networks.',
-    'minerva-omnifold-pipeline': 'The code behind my neutrino-unfolding research.',
-    'lol-match-prediction': 'Predicting professional League of Legends match outcomes.',
-    'systems-security': 'Projects in encrypted chat, smart contracts, and operating systems.',
+      'A five-minute animated film about how MINERvA measures the proton’s weak-force response inside a plastic detector. I narrated it and animated it in Manim, with AI help on the script and storyboard.',
+    splora:
+      'Fine-tuning GPT-2 with LoRA while training about 1% of its parameters. It reached 0.888 dev accuracy on paraphrase detection and 41.94 chrF on Shakespearean sonnet generation.',
+    lord: 'Matching the same person across video from different cameras, using DINO vision transformers with LoRA adapters and temporal attention. We evaluated it on the MARS benchmark.',
+    'soccer-gnn':
+      'Predicting the next action in a soccer match by treating each possession as a graph. We compared GraphSAGE with a Relational Graph Transformer and wrote a blog post about it.',
+    'minerva-omnifold-pipeline':
+      'The code behind my neutrino-unfolding research: OmniFold on MINERvA data, with closure tests, generator stress tests, bootstrap resampling, and bias–variance checks.',
+    'lol-match-prediction':
+      'Predicting professional League of Legends match outcomes from draft, gold, and objective data, with calibrated win probabilities compared against baselines.',
+    'systems-security':
+      'A 2-of-3 multisig Ethereum wallet in Solidity, an end-to-end encrypted chat client using the Double Ratchet, and Pintos operating-system work on scheduling, system calls, and virtual memory.',
   };
   return `<ul class="work-list${featured ? ' project-grid' : ''}">${items
     .map(
@@ -196,7 +189,7 @@ function projectList(items, featured = false) {
     ${featured ? projectPreview(item) : ''}
     <div class="project-copy"><header class="entry-heading"><h3>${item.links.length ? link({ ...item.links[0], label: item.title }) : escape(item.title)}</h3></header>
     <p>${escape(descriptions[item.id])}</p>
-    <details class="explanation record-details"><summary>Details and links</summary><div class="explanation-body"><p>${escape(item.work)}</p><p class="project-evidence">${escape(item.evidence)}</p>${links(item.links)}</div></details></div>
+    ${links(item.links)}</div>
   </article></li>`,
     )
     .join('')}</ul>`;
@@ -275,7 +268,7 @@ function personalList() {
   return `<div class="personal-grid">
     <article class="life-card track-card" id="athletics">
       <a class="life-photo" href="https://gostanford.com/sports/track-field/roster/player/joseph-bailey" target="_blank" rel="noopener noreferrer" aria-label="Joseph’s Stanford Track & Field profile">
-        <img src="./img/home/track-start.png" alt="Joseph in his Stanford uniform at the start line against a red backdrop" width="1672" height="941" loading="lazy">
+        <img src="./img/home/track-start.webp" alt="Joseph in his Stanford uniform at the start line against a red backdrop" width="1672" height="941" loading="lazy">
         <span class="race-stamp"><strong>52.17</strong><span>400 m hurdles · ACC 2025</span></span>
       </a>
       <div class="life-copy"><h3>One lap. Ten hurdles.</h3>
@@ -293,7 +286,7 @@ function personalList() {
       <div class="music-visual" aria-hidden="true"><span class="music-symbol">♮</span><span class="music-word">a little<br><em>jazz &amp; classical.</em></span>
         <div class="piano-stage" data-piano-roll data-notes="${personal.piano.notes}"><canvas class="piano-roll" hidden></canvas><div class="piano-keys">${pianoKeys(...personal.piano.range)}</div></div>
       </div>
-      <div class="life-copy"><h3>Music, between everything else.</h3><p>${escape(personal.music)}</p><p class="card-link"><a class="personal-link music-link" href="${personal.saxUrl}" target="_blank" rel="noopener noreferrer">${escape(personal.saxCaption)} ↗</a></p>
+      <div class="life-copy"><h3>Piano and saxophone</h3><p>${escape(personal.music)}</p><p class="card-link"><a class="personal-link music-link" href="${personal.saxUrl}" target="_blank" rel="noopener noreferrer">${escape(personal.saxCaption)} ↗</a></p>
         <figure class="piano-recording"><figcaption><strong>${escape(personal.piano.composer)} · ${escape(personal.piano.title)}</strong><span>${escape(personal.piano.collection)}</span></figcaption><audio controls preload="none" aria-label="Joseph performing Bach’s Fugue No. 2 in C minor, BWV 847"><source src="${personal.piano.src}" type="audio/mp4"><a href="${personal.piano.src}">Listen to the piano recording</a></audio></figure>
         <ul class="instrument-tags" aria-label="Instruments"><li>Piano</li><li>Alto saxophone</li><li>Flute</li><li>Clarinet</li></ul>
       </div>
@@ -304,15 +297,15 @@ function personalList() {
 function experienceList() {
   const brief = {
     wisdomtree:
-      'Product management and research for WisdomTree Connect, an institutional digital-assets platform.',
-    polytec: 'Statistical tools for vibration analysis and 3D-printed laboratory equipment.',
+      'I worked on WisdomTree Connect, which distributes WTGXX, a tokenized government money-market fund, to institutions. I did product management and market research, wrote internal documentation, and took part in product-development discussions.',
+    polytec:
+      'I wrote Python, MATLAB, and Octave tools that customers used to analyze vibration data, and I modeled and 3D-printed tools for the lab.',
   };
   return `<ul class="work-list">${experience
     .map(
       (item) => `<li><article id="${item.id}">
     <header class="entry-heading"><h3>${escape(item.role)} at ${item.id === 'wisdomtree' ? 'WisdomTree' : escape(item.org)}</h3><p class="entry-date">${escape(item.period)}</p></header>
     <p>${escape(brief[item.id])}</p>
-    <details class="explanation record-details"><summary>Details</summary><div class="explanation-body"><p>${escape(item.summary)}</p></div></details>
   </article></li>`,
     )
     .join('')}</ul>`;
@@ -393,7 +386,7 @@ export function siteNavigation(active = 'home', prefix = './') {
 }
 
 export function siteFooter(_prefix = './') {
-  return `<footer id="contact"><div><p>Research, ideas, or a good conversation.</p><p>${link({ href: `mailto:${profile.email}`, label: profile.email })}</p></div><nav aria-label="More links">${link(profile.links.find((item) => item.id === 'github-link'))}<a href="#top">Back to top ↑</a></nav></footer>`;
+  return `<footer id="contact"><div><p>Feel free to email me about research, or anything else on here.</p><p>${link({ href: `mailto:${profile.email}`, label: profile.email })} · ${link({ href: `mailto:${profile.personalEmail}`, label: profile.personalEmail })}</p></div><nav aria-label="More links">${link(profile.links.find((item) => item.id === 'github-link'))}<a href="#top">Back to top ↑</a></nav></footer>`;
 }
 
 function noteList(prefix = './notes/', limit = notes.length) {
@@ -401,7 +394,7 @@ function noteList(prefix = './notes/', limit = notes.length) {
     .slice(0, limit)
     .map(
       (note) =>
-        `<li><a href="${prefix}${escape(note.slug)}.html"><div><h3>${escape(note.title)}</h3><p>${escape(note.summary)}</p></div><time datetime="${escape(note.date)}">${new Date(`${note.date}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}<span aria-hidden="true"> ↗</span></time></a></li>`,
+        `<li><a href="${prefix}${escape(note.slug)}.html"><div><h3>${escape(note.title)}</h3><p>${escape(note.summary)}</p></div><time datetime="${escape(note.date)}">${new Date(`${note.date}T12:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })}</time></a></li>`,
     )
     .join('')}</ul>`;
 }
@@ -427,7 +420,7 @@ export function renderHome() {
     ${instagramCarousel()}
   </header>
   <nav class="page-index" aria-label="On this page"><a href="#research">Research</a><a href="#projects">Projects</a><a href="#instruments">Hobbies</a></nav>
-  <section id="research" aria-labelledby="research-heading"><div class="section-heading"><div><h2 id="research-heading">Research</h2></div><a href="./about.html">A little more about me ↗</a></div>${researchList()}</section>
+  <section id="research" aria-labelledby="research-heading"><div class="section-heading"><div><h2 id="research-heading">Research</h2></div><a href="./about.html">A little more about me</a></div>${researchList()}</section>
   <section id="projects" aria-labelledby="projects-heading"><div class="section-heading"><div><h2 id="projects-heading">Selected projects</h2></div><span class="section-aside">Code, experiments &amp; what I learned</span></div>${projectList(
     featured.map((id) => projects.find((item) => item.id === id)),
     true,

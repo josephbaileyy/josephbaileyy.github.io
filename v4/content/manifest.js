@@ -101,7 +101,7 @@ const realBodies = [
     massClass: 'light',
     slot: { x: -0.79, y: 0.7 },
     kind: 'link',
-    href: 'mailto:jrbailey555@gmail.com',
+    href: 'mailto:josephrb@stanford.edu',
   },
   {
     id: 'resume-link',

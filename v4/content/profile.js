@@ -2,8 +2,9 @@ export const profile = Object.freeze({
   name: 'Joseph Bailey',
   tagline: 'Making AI an honest instrument for physics',
   statement:
-    'I am a coterminal B.S. Physics + M.S. Computer Science (AI track) student at Stanford, graduating June 2027. I work on machine learning for fundamental physics — making AI a rigorous, calibrated instrument for science, with honest uncertainties. I am drawn to compact objects, statistical inference, and secure systems.',
-  email: 'jrbailey555@gmail.com',
+    'I’m a coterminal student at Stanford, finishing a B.S. in Physics and an M.S. in Computer Science (AI track) in June 2027. My research is on machine-learning unfolding for neutrino measurements: estimating what happened before the detector distorted the data, and checking how much that estimate depends on the simulation behind it. I’m also interested in compact objects, statistical inference, and secure systems.',
+  email: 'josephrb@stanford.edu',
+  personalEmail: 'jrbailey555@gmail.com',
   site: 'josephrbailey.com',
   links: Object.freeze([
     Object.freeze({
@@ -22,7 +23,7 @@ export const profile = Object.freeze({
       id: 'contact-link',
       label: 'Email',
       description: 'For research, engineering, and collaboration.',
-      href: 'mailto:jrbailey555@gmail.com',
+      href: 'mailto:josephrb@stanford.edu',
     }),
     Object.freeze({
       id: 'tfrrs-link',
