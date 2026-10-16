@@ -271,7 +271,7 @@ function personalList() {
         <img src="./img/home/track-start.webp" alt="Joseph in his Stanford uniform at the start line against a red backdrop" width="1672" height="941" loading="lazy">
         <span class="race-stamp"><strong>52.17</strong><span>400 m hurdles · ACC 2025</span></span>
       </a>
-      <div class="life-copy"><h3>One lap. Ten hurdles.</h3>
+      <div class="life-copy"><h3>The 400-meter hurdles</h3>
         <p>I compete in the 400-meter hurdles for Stanford Track &amp; Field in NCAA Division I. I ran 52.17 seconds at the 2025 ACC Championships.</p>
         <details class="explanation"><summary>Split times from that race</summary><div class="explanation-body">
         <figure>${raceFigure(intervals, 720)}${raceFigure(intervals, 320, true)}<figcaption>My real race: average speed between recorded hurdle touchdowns, using nominal hurdle distances. The first interval includes the start; the last runs from hurdle 10 to the finish. These are interval averages, not instantaneous speeds.</figcaption></figure>
@@ -420,7 +420,7 @@ export function renderHome() {
     ${instagramCarousel()}
   </header>
   <nav class="page-index" aria-label="On this page"><a href="#research">Research</a><a href="#projects">Projects</a><a href="#instruments">Hobbies</a></nav>
-  <section id="research" aria-labelledby="research-heading"><div class="section-heading"><div><h2 id="research-heading">Research</h2></div><a href="./about.html">A little more about me</a></div>${researchList()}</section>
+  <section id="research" aria-labelledby="research-heading"><div class="section-heading"><div><h2 id="research-heading">Research</h2></div><a href="./about.html">About me</a></div>${researchList()}</section>
   <section id="projects" aria-labelledby="projects-heading"><div class="section-heading"><div><h2 id="projects-heading">Selected projects</h2></div><span class="section-aside">Code, experiments &amp; what I learned</span></div>${projectList(
     featured.map((id) => projects.find((item) => item.id === id)),
     true,
@@ -430,7 +430,7 @@ export function renderHome() {
 }
 
 export function renderAbout() {
-  return `${siteNavigation('about')}<header class="page-header" id="top"><h1>Curiosity, <em>in a few directions.</em></h1><p class="intro-lead">${escape(profile.statement)}</p><p>I also run the 400-meter hurdles for Stanford and play jazz and classical music.</p><p>${link({ ...profile.links.find((item) => item.id === 'resume-link'), label: 'Download my CV ↗' })}</p></header>
+  return `${siteNavigation('about')}<header class="page-header" id="top"><h1>A bit more <em>about me.</em></h1><p class="intro-lead">${escape(profile.statement)}</p><p>I also run the 400-meter hurdles for Stanford and play jazz and classical music.</p><p>${link({ ...profile.links.find((item) => item.id === 'resume-link'), label: 'Download my CV ↗' })}</p></header>
     <section id="experience" aria-labelledby="experience-heading"><h2 id="experience-heading">Experience</h2>${experienceList()}</section>
     <section id="education" aria-labelledby="education-heading"><h2 id="education-heading">Education</h2><p>${escape(education.degree)}, ${escape(education.school)}. Expected June 2027.</p>${renderCourseAtlas()}<div class="about-honors"><h3>Honors</h3><ul>${education.honors.map((item) => `<li>${escape(item)}</li>`).join('')}</ul></div></section>
     <section><p><a href="./#research">Research</a> · <a href="./#instruments">Track and music</a></p></section>${siteFooter()}`;
