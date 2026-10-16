@@ -78,7 +78,7 @@ export function initReader({entries,sections,id,toast}){
   document.querySelectorAll('.toc-group').forEach((group,i)=>{if(sections[i].n===active?.subsection)group.open=true});
   const index=entries.indexOf(active);
   $('#entry-prev').disabled=index<=0;$('#entry-next').disabled=index<0||index===entries.length-1;
-  $('#entry-position').textContent=active?`${index+1} / ${entries.length}`:'Companion ends at p. 30';
+  $('#entry-position').textContent=active?`${index+1} / ${entries.length}`:'Companion ends at p. 70';
   $('#companion-label').textContent=active?`${active.type} ${active.n}`:`Source p. ${pageNumber}`;
   $('.companion-empty').classList.toggle('is-visible',!active);
   const choices=entries.filter(e=>coversPage(e,pageNumber));

@@ -1,3 +1,6 @@
+import {entries as independence} from './section-1-4-1.js';
+import {entries as products} from './section-1-4-2.js';
+import {entries as fubini} from './section-1-4-3.js';
 import {entries as integral} from './section-1-3-1.js';
 import {entries as inequalities} from './section-1-3-2.js';
 import {entries as convergence} from './section-1-3-3.js?v=intuition1';
@@ -22,6 +25,9 @@ export const sections=[
  {n:'1.3.3',anchor:'section-1-3-3',title:'Convergence, limits and expectation',entries:convergence,intro:'Compare convergence modes and examine exactly when limits can pass through expectation.'},
  {n:'1.3.4',anchor:'section-1-3-4',title:'L¹-convergence and uniform integrability',entries:integrability,intro:'Control the mass in large values to connect convergence in probability with convergence in mean.'},
  {n:'1.3.5',anchor:'section-1-3-5',title:'Expectation, density and Riemann integral',entries:densities,intro:'Move between weighted measures, laws, densities and ordinary integrals.'},
- {n:'1.3.6',anchor:'section-1-3-6',title:'Mean, variance and moments',entries:moments,intro:'Measure location and spread, and calculate moments of familiar distributions.'}
+ {n:'1.3.6',anchor:'section-1-3-6',title:'Mean, variance and moments',entries:moments,intro:'Measure location and spread, and calculate moments of familiar distributions.'},
+ {n:'1.4.1',anchor:'section-1-4-1',title:'Definition and conditions for independence',entries:independence,sectionStart:'1.4 · Independence and product measures',intro:'Compare joint probabilities with products, distinguish pairwise from mutual independence, and follow information into the tail.'},
+ {n:'1.4.2',anchor:'section-1-4-2',title:'Product measures and Kolmogorov’s theorem',entries:products,intro:'Build joint laws from rectangle masses and extend consistent finite observations to an infinite sequence.'},
+ {n:'1.4.3',anchor:'section-1-4-3',title:'Fubini’s theorem and its application',entries:fubini,intro:'Integrate by slices, turn tails into moments, and use convolution to add independent variables.'}
 ];
 export const entries=sections.flatMap(s=>s.entries.map(e=>({...e,subsection:s.n})));

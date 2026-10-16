@@ -28,7 +28,14 @@ export const definitions = [
  ['1.2.40', 'Probability density', ['probability density functions','probability density function','probability density','densities','density']],
  ['1.2.42', 'Lebesgue singular function', ['Lebesgue singular function','singular functions','singular function']],
  ['1.2.46', 'Triviality for a measure', ['P-trivial','P-degenerate','μ-trivial']],
- ['1.2.48', 'Support of a law', ['support']]
+ ['1.2.48', 'Support of a law', ['support']],
+ ['1.4.1', 'Independence', ['independence','independent']],
+ ['1.4.2', 'Mutual independence', ['mutual independence','mutually independent']],
+ ['1.4.9', 'Tail sigma-algebra', ['tail sigma-algebra','tail σ-algebra']],
+ ['1.4.19', 'Product measure', ['product measures','product measure']],
+ ['1.4.24', 'Measurable isomorphism', ['Borel-isomorphism','Borel isomorphism']],
+ ['1.4.34', 'Convolution', ['convolution']],
+ ['1.4.45', 'Gamma density', ['gamma density','gamma densities']]
 ].map(([entry,label,aliases])=>({entry,label,aliases}));
 
 export function definitionMatcher(entry, entries) {

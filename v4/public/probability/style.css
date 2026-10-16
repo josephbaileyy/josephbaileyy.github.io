@@ -63,3 +63,16 @@
 @container (max-width:320px){.intuition-lab .controls label{grid-template-columns:1fr 3ch}.intuition-lab .controls input[type=range]{grid-column:1;grid-row:2}.intuition-lab .controls output{grid-column:2;grid-row:2}.intuition-lab .controls select{grid-column:1 / -1}.intuition-metrics strong{font-size:19px}}
 @media print{.intuition-lab .intuition-actions,.intuition-lab [data-experiment="play"]{display:none}.intuition-lab .intuition-panel,.intuition-metrics{break-inside:avoid}.intuition-lab{container-type:normal}}
 @container (max-width:400px){.intuition-lab svg text{font-size:20px}.intuition-lab svg .sweep-label{font-size:16px}}
+
+/* Section 1.4: numerical tables stay readable on narrow companion panes. */
+.ind-table-wrap{max-width:100%;overflow-x:auto;margin:12px 0}
+.ind-table{width:100%;border-collapse:collapse;font:13px/1.5 system-ui,sans-serif;text-align:center;color:#343a35}
+.ind-table caption{text-align:left;margin-bottom:10px;color:var(--ink)}
+.ind-table th,.ind-table td{padding:10px 8px;border:1px solid #c8cec6;min-width:48px}
+.ind-table th{font-weight:600;background:#f1f2ec}
+.ind-table td{background:#fff}
+.ind-contributions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}
+.ind-contributions>div{padding:18px;background:#d8e8df;color:#343a35;text-align:center}
+
+.ind-lab svg{max-height:none}
+.ind-prompt{font:14px/1.6 system-ui;color:var(--ink);margin:0 0 18px}
