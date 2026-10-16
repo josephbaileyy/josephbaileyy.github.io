@@ -1,4 +1,4 @@
-import { courseAreas, courseQuarters, courses, courseworkAsOf } from './coursework.js';
+import { courseAreas, courseQuarters, courses } from './coursework.js';
 import { courseColorStyle, courseSubjects, courseYears, courseStatus } from './course-colors.js';
 
 const escape = (value) =>
@@ -34,9 +34,9 @@ function renderCourse(course) {
 
 export function renderCourseAtlas() {
   return `<div class="course-atlas" data-course-atlas>
-    <div class="atlas-heading"><h3>Course atlas</h3><p>${courses.length} courses</p></div>
+    <div class="atlas-heading"><h3>Courses</h3><p>${courses.length} courses</p></div>
     <div class="atlas-controls" data-atlas-controls hidden><div class="atlas-areas" role="group" aria-label="Course areas">${courseAreas.map(({ id, label }) => `<button type="button" data-atlas-area="${id}" aria-pressed="${id === 'ai'}">${escape(label)}</button>`).join('')}</div></div>
-    <div class="atlas-encoding-key"><span class="atlas-status-key"><span class="course-progress-dot" aria-hidden="true"></span>In progress</span><span class="atlas-year-key">Columns: ${courseYears.map(escape).join(' · ')}<br>Rows: Autumn · Winter · Spring</span></div>
+    <div class="atlas-encoding-key"><span class="atlas-status-key"><span class="course-progress-dot" aria-hidden="true"></span>In progress</span><span class="atlas-year-key"><span>Columns: ${courseYears.map(escape).join(' · ')}</span><span>Rows: Autumn · Winter · Spring</span></span></div>
     <div class="atlas-groups">${courseAreas
       .map((area) => {
         const group = courses.filter((course) => course.area === area.id);
@@ -46,6 +46,5 @@ export function renderCourseAtlas() {
         return `<div class="atlas-group" data-atlas-group="${area.id}"><h4>${escape(area.label)}</h4><div class="atlas-legend" aria-label="Subjects">${subjects.map(([, label, color]) => `<span><span class="atlas-swatch" style="background-color:${color}" aria-hidden="true"></span>${escape(label)}</span>`).join('')}</div><ul class="atlas-grid" aria-label="${escape(area.label)} courses">${group.map(renderCourse).join('')}</ul></div>`;
       })
       .join('')}</div>
-    <div class="atlas-footnote"><p>As of ${courseworkAsOf}.</p></div>
   </div>`;
 }

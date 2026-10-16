@@ -79,11 +79,10 @@ describe('v4 production output', () => {
 
     const html = readFileSync(path.join(outputDir, 'index.html'), 'utf8');
     const about = readFileSync(path.join(outputDir, 'about.html'), 'utf8');
-    expect(about).toContain('Coterminal B.S. Physics');
-    expect(html).toContain(
-      'The main question is whether unfolding many variables at once, without binning, reduces the bias that comes from the simulation model.',
-    );
-    expect(about).toContain('WisdomTree Connect');
+    expect(html).toContain('Coterm B.S. Physics');
+    expect(about).toContain('url=./#experience');
+    expect(html).toContain('Neutrino unfolding with machine learning');
+    expect(html).toContain('WisdomTree Connect');
     expect(html).toContain('BWV 847');
     expect(html).toContain('ry0rKeoQI0o');
     expect(html).not.toContain('<!-- RESEARCH_CONTENT -->');
@@ -115,6 +114,5 @@ describe('v4 production output', () => {
       expect(createHash('sha256').update(shipped).digest('hex'), file).toBe(sha256);
     }
     expect(html).toContain('href="./probability/"');
-    expect(about).toContain('href="./probability/"');
   }, 30_000);
 });

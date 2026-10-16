@@ -57,7 +57,6 @@ export function prepareNotePages(root) {
   }
   const routes = [
     '/',
-    '/about.html',
     '/notes/',
     '/probability/',
     ...notes.map((note) => `/notes/${note.slug}.html`),

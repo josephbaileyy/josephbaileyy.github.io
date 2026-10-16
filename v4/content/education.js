@@ -1,6 +1,6 @@
 export const education = Object.freeze({
   school: 'Stanford University',
-  degree: 'Coterminal B.S. Physics + M.S. Computer Science (AI track)',
+  degree: 'Coterm B.S. Physics + M.S. Computer Science (AI track)',
   period: 'Expected June 2027',
   coursework: Object.freeze([
     'Quantum Mechanics I–II',

@@ -1,8 +1,10 @@
 import { mountInstagramCarousel } from './components/instagram.js';
 import mountPianoRoll from './components/piano-roll.js';
+import { mountCourseAtlas } from './components/course-atlas.js';
 
 mountInstagramCarousel(document.querySelector('[data-instagram]'));
 mountPianoRoll(document.querySelector('#music'));
+mountCourseAtlas(document.querySelector('[data-course-atlas]'));
 
 const disclosure = document.querySelector('[data-demo="unfolding"]');
 let loading = false;
@@ -54,16 +56,3 @@ function revealLinkedExplanation() {
 
 addEventListener('hashchange', revealLinkedExplanation);
 revealLinkedExplanation();
-
-// Keep previously shared experience and education anchors useful after the move.
-function redirectMovedSection() {
-  if (
-    document.querySelector('.introduction') &&
-    ['#experience', '#education', '#wisdomtree', '#polytec'].includes(location.hash)
-  ) {
-    location.replace(new URL(`./about.html${location.hash}`, location.href));
-  }
-}
-
-addEventListener('hashchange', redirectMovedSection);
-redirectMovedSection();

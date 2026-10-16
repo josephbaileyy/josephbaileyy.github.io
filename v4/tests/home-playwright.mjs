@@ -110,9 +110,6 @@ try {
   for (const anchor of researchLinks) assert.equal(await anchor.isVisible(), true);
   assert.equal(await page.locator('#projects > .work-list article').count(), 4);
   assert.equal(await page.locator('#more-projects').evaluate((element) => element.open), false);
-  const researchStatus = page.locator('#minerva-omnifold > .research-status');
-  assert.equal(await researchStatus.isVisible(), true);
-  assert.match(await researchStatus.innerText(), /bias that comes from the simulation model/);
   assert.equal(await page.locator('.record-details').count(), 0);
 
   for (const width of [320, 390, 768, 1280, 1920]) {
@@ -150,7 +147,6 @@ try {
     requests.some((url) => /\/img\/unfolding\//.test(url)),
     false,
   );
-  await page.locator('.unfolding-takeaway').click();
   await page
     .locator('.unfolding-explainer')
     .screenshot({ path: `${shotsDir}/unfolding-visual.png` });
@@ -246,8 +242,6 @@ try {
     .screenshot({ path: `${shotsDir}/omnifold-simple-hurdler.png` });
   await page.setViewportSize({ width: 320, height: 900 });
   await summary.click();
-  await page.locator('#athletics summary').first().click();
-  assert.equal(await page.locator('.race-plot-mobile').isVisible(), true);
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   await page.screenshot({ path: `${shotsDir}/race-320.png`, fullPage: true });
 
@@ -261,7 +255,7 @@ try {
   assert.equal(await page.locator('#more-projects').evaluate((element) => element.open), true);
   assert.equal(await page.locator('#systems-security').isVisible(), true);
   await page.goto(new URL('#experience', baseUrl).href);
-  await page.waitForURL('**/about.html#experience');
+  assert.equal(new URL(page.url()).pathname, '/');
   assert.equal(await page.locator('#experience article').count(), 2);
   await page.reload();
   assert.equal(await page.locator('#experience article').count(), 2);
@@ -279,20 +273,14 @@ try {
   await plain.goto(baseUrl, { waitUntil: 'networkidle' });
   assert.equal(await plain.locator('#research article').count(), 5);
   assert.equal(await plain.locator('#projects article').count(), 7);
-  assert.equal(await plain.locator('#experience article').count(), 0);
+  assert.equal(await plain.locator('#experience article').count(), 2);
   assert.equal(await plain.locator('[data-instagram-slide]:not([hidden])').count(), 1);
   assert.equal(await plain.getByRole('button', { name: 'Next Instagram post' }).isVisible(), false);
   assert.equal(await plain.locator('.instagram-profile').isVisible(), true);
-  assert.match(
-    await plain.locator('body').innerText(),
-    /bias that comes from the simulation model/,
-  );
   await plain.locator('#unfolding-explanation > summary').click();
   assert.equal(await plain.locator('.unfolding-story').isVisible(), true);
   assert.match(await plain.locator('#unfolding-explanation').innerText(), /needs JavaScript/);
   assert.equal(await plain.locator('[data-demo-view]').isVisible(), false);
-  await plain.locator('#athletics summary').first().click();
-  assert.equal(await plain.locator('.race-plot-mobile').isVisible(), true);
   const localLinks = await plain
     .locator('a')
     .evaluateAll((anchors) => [
@@ -307,7 +295,8 @@ try {
     assert.equal(response.ok(), true, `${url} returned ${response.status()}`);
     if (url.endsWith('.pdf')) assert.match(response.headers()['content-type'], /pdf/);
   }
-  await plain.getByRole('link', { name: 'About', exact: true }).click();
+  await plain.goto(new URL('about.html#education', baseUrl).href);
+  await plain.waitForURL('**/#experience');
   assert.equal(await plain.locator('#experience article').count(), 2);
   assert.match(await plain.locator('#education').innerText(), /Expected June 2027/);
   await plain.goto(new URL('notes/', baseUrl).href);
@@ -322,7 +311,7 @@ try {
     );
   }
   console.log(
-    `PASS: no-JavaScript research, disclosures, race plot, and ${localLinks.length} local evidence links.`,
+    `PASS: no-JavaScript research, disclosures, and ${localLinks.length} local evidence links.`,
   );
   await noJs.close();
 

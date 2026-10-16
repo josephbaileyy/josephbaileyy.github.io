@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs';
-
 import { education } from './education.js';
 import { renderCourseAtlas } from './course-atlas.js';
 import { experience } from './experience.js';
@@ -31,8 +29,6 @@ const sentences = {
     title: 'Neutrino unfolding with machine learning',
     brief:
       'With Prof. Benjamin Nachman, I’m applying OmniFold, a machine-learning unfolding method, to MINERvA neutrino-scattering data. I compare it with iterative Bayesian unfolding, the standard method, using closure tests, generator stress tests, and bootstrap resampling.',
-    status:
-      'This is still in progress, and it’s funded by a 2026 Stanford Major Grant. The main question is whether unfolding many variables at once, without binning, reduces the bias that comes from the simulation model.',
   },
   'x17-bump-hunting': {
     title: 'Searching for the hypothetical X17 particle',
@@ -109,7 +105,6 @@ function unfoldDisclosure() {
   return `<details class="explanation" id="unfolding-explanation" data-demo="unfolding">
     <summary>What is unfolding? See the interactive demo</summary>
     <div class="explanation-body unfolding-explainer">
-      <p class="unfolding-takeaway">Estimate the physics before the detector changes what we see.</p>
       <figure>
         <div class="unfolding-story">${stages
           .map(
@@ -124,7 +119,6 @@ function unfoldDisclosure() {
         </div>`,
           )
           .join('')}</div>
-        <figcaption>A schematic of detector smearing and unfolding, not MINERvA data. All panels share the same scale; the estimate is approximate.</figcaption>
       </figure>
       <p>OmniFold changes how much each simulated event counts, using its paired descriptions before and after detection. Those weights are learned by comparing simulation with measured data.</p>
       ${interactiveUnfolding()}
@@ -220,33 +214,6 @@ export function raceIntervals(csv) {
     });
 }
 
-function raceFigure(records, width, mobile = false) {
-  const height = 230;
-  const left = 44;
-  const right = width - 24;
-  const bottom = 185;
-  const x = (distance) => left + (distance / 400) * (right - left);
-  const y = (speed) => 38 + ((8.8 - speed) / 2.3) * (bottom - 38);
-  const path = records
-    .map(
-      (record, i) =>
-        `${i ? 'L' : 'M'}${x(record.startM).toFixed(2)},${y(record.speed).toFixed(2)}L${x(record.distanceM).toFixed(2)},${y(record.speed).toFixed(2)}`,
-    )
-    .join('');
-  return `<svg class="race-plot ${mobile ? 'race-plot-mobile' : 'race-plot-desktop'}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Average speed between touchdowns at the 2025 ACC Championships: fastest between hurdles 2 and 3, 8.54 meters per second; final interval, 6.77 meters per second">
-    <text x="0" y="19">Mean speed (m/s)</text>
-    ${[7, 7.5, 8, 8.5].map((speed) => `<path class="plot-grid" d="M${left} ${y(speed)}H${right}"/><text x="${left - 8}" y="${y(speed) + 4}" text-anchor="end">${speed.toFixed(1)}</text>`).join('')}
-    <path class="plot-line" d="${path}"/>
-    ${records
-      .filter((_, i) => !mobile || i % 2 === 0)
-      .map(
-        (record) =>
-          `<text x="${x(record.distanceM)}" y="210" text-anchor="${record.mark === 'Finish' ? 'end' : 'middle'}">${record.mark}</text>`,
-      )
-      .join('')}
-  </svg>`;
-}
-
 // White keys across the piece's range, each carrying the black key just above it.
 function pianoKeys(low, high) {
   const black = (pitch) => [1, 3, 6, 8, 10].includes(pitch % 12);
@@ -260,11 +227,6 @@ function pianoKeys(low, high) {
 }
 
 function personalList() {
-  const csv = readFileSync(
-    new URL('../public/data/acc-2025-400mh-splits.csv', import.meta.url),
-    'utf8',
-  );
-  const intervals = raceIntervals(csv);
   return `<div class="personal-grid">
     <article class="life-card track-card" id="athletics">
       <a class="life-photo" href="https://gostanford.com/sports/track-field/roster/player/joseph-bailey" target="_blank" rel="noopener noreferrer" aria-label="Joseph’s Stanford Track & Field profile">
@@ -272,13 +234,7 @@ function personalList() {
         <span class="race-stamp"><strong>52.17</strong><span>400 m hurdles · ACC 2025</span></span>
       </a>
       <div class="life-copy"><h3>The 400-meter hurdles</h3>
-        <p>I compete in the 400-meter hurdles for Stanford Track &amp; Field in NCAA Division I. I ran 52.17 seconds at the 2025 ACC Championships.</p>
-        <details class="explanation"><summary>Split times from that race</summary><div class="explanation-body">
-        <figure>${raceFigure(intervals, 720)}${raceFigure(intervals, 320, true)}<figcaption>My real race: average speed between recorded hurdle touchdowns, using nominal hurdle distances. The first interval includes the start; the last runs from hurdle 10 to the finish. These are interval averages, not instantaneous speeds.</figcaption></figure>
-        <p>The fastest interval was between hurdles 2 and 3, at 8.54 m/s. The 40-meter run-in took 5.91 seconds, averaging 6.77 m/s.</p>
-        <details><summary>Recorded times and calculation</summary><div class="table-wrap"><table><caption>ACC Championships 2025. Speed = nominal interval distance ÷ elapsed interval time.</caption><thead><tr><th scope="col">Mark</th><th scope="col">Distance (m)</th><th scope="col">Time (s)</th><th scope="col">Mean speed (m/s)</th></tr></thead><tbody>${intervals.map((record) => `<tr><th scope="row">${record.mark}</th><td>${record.distanceM}</td><td>${record.cumulativeS.toFixed(2)}</td><td>${record.speed.toFixed(2)}</td></tr>`).join('')}</tbody></table></div></details>
-        ${links([profile.links.find((item) => item.id === 'tfrrs-link'), { href: './data/acc-2025-400mh-splits.csv', label: 'Recorded splits (CSV)' }])}
-      </div></details>
+        <p>I compete in the 400-meter hurdles for Stanford’s NCAA Division I Track &amp; Field. My personal best is 52.17 seconds, run at the 2025 ACC Championships.</p>
         <p class="card-link">${link({ href: 'https://gostanford.com/sports/track-field/roster/player/joseph-bailey', label: 'Stanford Track & Field ↗' })}</p>
       </div>
     </article>
@@ -373,7 +329,6 @@ function projectPreview(item) {
 export function siteNavigation(active = 'home', prefix = './') {
   return `<nav class="site-nav" aria-label="Main navigation"><a class="site-name" href="${prefix}"${active === 'home' ? ' aria-current="page"' : ''}>Joseph Bailey<span class="name-dot" aria-hidden="true">·</span></a><div>${[
     ['home', 'Home', ''],
-    ['about', 'About', 'about.html'],
     ['probability', 'Probability', 'probability/'],
   ]
     .map(
@@ -418,21 +373,16 @@ export function renderHome() {
     </div>
     ${instagramCarousel()}
   </header>
-  <nav class="page-index" aria-label="On this page"><a href="#research">Research</a><a href="#projects">Projects</a><a href="#instruments">Hobbies</a></nav>
-  <section id="research" aria-labelledby="research-heading"><div class="section-heading"><div><h2 id="research-heading">Research</h2></div><a href="./about.html">About me</a></div>${researchList()}</section>
+  <nav class="page-index" aria-label="On this page"><a href="#research">Research</a><a href="#projects">Projects</a><a href="#experience">Experience</a><a href="#education">Education</a><a href="#instruments">Hobbies</a></nav>
+  <section id="research" aria-labelledby="research-heading"><div class="section-heading"><div><h2 id="research-heading">Research</h2></div></div>${researchList()}</section>
   <section id="projects" aria-labelledby="projects-heading"><div class="section-heading"><div><h2 id="projects-heading">Selected projects</h2></div><span class="section-aside">Code, experiments &amp; what I learned</span></div>${projectList(
     featured.map((id) => projects.find((item) => item.id === id)),
     true,
   )}<details class="explanation more-projects" id="more-projects"><summary>More projects</summary><div class="explanation-body">${projectList(projects.filter((item) => !featured.includes(item.id)))}</div></details></section>
+  <section id="experience" aria-labelledby="experience-heading"><div class="section-heading"><div><h2 id="experience-heading">Experience</h2></div></div>${experienceList()}</section>
+  <section id="education" aria-labelledby="education-heading"><div class="section-heading"><div><h2 id="education-heading">Education</h2></div></div><p>${escape(education.degree)}, ${escape(education.school)}. Expected June 2027.</p>${renderCourseAtlas()}<div class="about-honors"><h3>Honors</h3><ul>${education.honors.map((item) => `<li>${escape(item)}</li>`).join('')}</ul></div></section>
   <section id="instruments" aria-labelledby="instruments-heading"><div class="section-heading"><div><h2 id="instruments-heading">Hobbies</h2></div></div>${personalList()}</section>
   ${siteFooter()}`;
-}
-
-export function renderAbout() {
-  return `${siteNavigation('about')}<header class="page-header" id="top"><h1>A bit more <em>about me.</em></h1><p class="intro-lead">${escape(profile.statement)}</p><p>I also run the 400-meter hurdles for Stanford and play jazz and classical music.</p><p>${link({ ...profile.links.find((item) => item.id === 'resume-link'), label: 'Download my CV ↗' })}</p></header>
-    <section id="experience" aria-labelledby="experience-heading"><h2 id="experience-heading">Experience</h2>${experienceList()}</section>
-    <section id="education" aria-labelledby="education-heading"><h2 id="education-heading">Education</h2><p>${escape(education.degree)}, ${escape(education.school)}. Expected June 2027.</p>${renderCourseAtlas()}<div class="about-honors"><h3>Honors</h3><ul>${education.honors.map((item) => `<li>${escape(item)}</li>`).join('')}</ul></div></section>
-    <section><p><a href="./#research">Research</a> · <a href="./#instruments">Track and music</a></p></section>${siteFooter()}`;
 }
 
 export function renderNotes(slug) {

@@ -1326,6 +1326,11 @@ footer nav {
 .atlas-status-key {
   gap: 6px;
 }
+.atlas-year-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 18px;
+}
 .course-atlas.is-enhanced .atlas-group h4 {
   display: none;
 }

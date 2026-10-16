@@ -4,23 +4,23 @@ export const courseworkAsOf = 'October 10, 2026';
 export const courseAreas = [
   {
     id: 'ai',
-    label: 'AI & learning',
+    label: 'AI',
   },
   {
     id: 'physics',
-    label: 'Physics & space',
+    label: 'Physics',
   },
   {
     id: 'math',
-    label: 'Math & information',
+    label: 'Math',
   },
   {
     id: 'systems',
-    label: 'Systems & security',
+    label: 'CS',
   },
   {
     id: 'beyond',
-    label: 'Beyond STEM',
+    label: 'More',
   },
 ];
 export const courseQuarters = [

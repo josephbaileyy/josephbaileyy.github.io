@@ -15,7 +15,7 @@ try {
   page.on('response', (response) => {
     if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`);
   });
-  await page.goto(new URL('about.html#education', baseUrl).href, { waitUntil: 'networkidle' });
+  await page.goto(new URL('#education', baseUrl).href, { waitUntil: 'networkidle' });
   const atlas = page.locator('[data-course-atlas]');
   const visibleCourses = () => atlas.locator('[data-course-code]:visible');
   const area = (label) => atlas.getByRole('button', { name: label, exact: true });
@@ -44,11 +44,11 @@ try {
   );
   const codes = new Set();
   for (const [label, count] of [
-    ['AI & learning', 7],
-    ['Physics & space', 20],
-    ['Math & information', 11],
-    ['Systems & security', 6],
-    ['Beyond STEM', 13],
+    ['AI', 7],
+    ['Physics', 20],
+    ['Math', 11],
+    ['CS', 6],
+    ['More', 13],
   ]) {
     await area(label).click();
     assert.equal(await visibleCourses().count(), count);
@@ -61,7 +61,7 @@ try {
   }
   assert.equal(codes.size, 57);
 
-  await area('Physics & space').focus();
+  await area('Physics').focus();
   await page.keyboard.press('Enter');
   assert.equal(await visibleCourses().count(), 20);
   const research = atlas.locator('[data-course-code="PHYSICS 190"]');
@@ -88,7 +88,7 @@ try {
       ),
     [['2026–27', 'Autumn']],
   );
-  await area('AI & learning').click();
+  await area('AI').click();
 
   for (const width of [320, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 1000 });
@@ -116,7 +116,7 @@ try {
     if ([390, 1280].includes(width))
       await atlas.screenshot({ path: `${shotsDir}/atlas-${width}.png` });
   }
-  await area('Physics & space').click();
+  await area('Physics').click();
   await atlas.screenshot({ path: `${shotsDir}/atlas-physics.png` });
   assert.deepEqual(errors, []);
   await context.close();
@@ -126,7 +126,7 @@ try {
     viewport: { width: 390, height: 900 },
   });
   const plain = await noJs.newPage();
-  await plain.goto(new URL('about.html#education', baseUrl).href);
+  await plain.goto(new URL('#education', baseUrl).href);
   assert.equal(await plain.locator('[data-course-code]:visible').count(), 57);
   assert.equal(await plain.locator('[data-atlas-controls]').isVisible(), false);
   assert.equal(await plain.locator('.course-quarter-mark.is-active').count(), 61);
