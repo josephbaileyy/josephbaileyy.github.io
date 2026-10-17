@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "da8dede800e07ad1458ed95effde0b574ad90259",
+  "sourceCommit": "d994e14998dd28f6fe3fccc73f9600b3258f1d84",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "68e40443a278763929841766bd4a51f2fc99fbe42813aa5b06e12375c0ed30f2"
+      "sha256": "2c021e74e85d0d3a478907abbacbb6d7a9802d907d3bf0a51f677b4f86922d7e"
     },
     {
       "file": "appearance.css",
@@ -20,63 +20,63 @@
     },
     {
       "file": "content/chapter-1.js",
-      "sha256": "8f47d98acbe72968c2d529589341e65da1ffe067313b86921e3bf493c919f4b1"
+      "sha256": "4b80d802d6615b7c14a1f7b54b3dba730959203e116350eac3af701516808899"
     },
     {
       "file": "content/section-1-1-2.js",
-      "sha256": "92de907ed44857c96765725d36336c8a77825e311429418eada4822dbd9f9981"
+      "sha256": "9d8a2160990c56a76ebde50b46bcc86e799dbc4502afd91cb2c78f229e3c1f9e"
     },
     {
       "file": "content/section-1-1-3.js",
-      "sha256": "8f774c518a12bdc1e6471b07f5f0c1298c1593fc36c4f0385d2710a9e607d2bd"
+      "sha256": "e463bfba6f171b18dca24da083f3dd2ea37c3f8a6b96bb0e1d8cf91ac088dec2"
     },
     {
       "file": "content/section-1-2-1.js",
-      "sha256": "4dceddf31daac74ec9ffab0aba37c10f431465be335d74e9c9f3009b9df109a0"
+      "sha256": "ac2c88a4b8227e30781bc129a74baf0131ab6d495fb6477db05899654b761801"
     },
     {
       "file": "content/section-1-2-2.js",
-      "sha256": "7c041b64e77e5f53a3e38dc44786afa543c37dd8d157aa837573aab87ddb2a40"
+      "sha256": "19d672e693d3818d8b50d8a7fcce3ed3d1ded8a71b703de6253879921cd49880"
     },
     {
       "file": "content/section-1-2-3.js",
-      "sha256": "db60e526439d0aa464d7eefd4aa3892026cf5ed501322c865639bb2bbdca9111"
+      "sha256": "99549dee54d4d5adab9273582acc14030e3ab7bfdafe6fb05ca0ca4f699180ff"
     },
     {
       "file": "content/section-1-3-1.js",
-      "sha256": "003ec3b9fd850dc0c5b65708b978edc8484f1e3e6c110a420643ce7b27bcda80"
+      "sha256": "c00306e2854b50ea638873ba09a41ea9f8dccc3c3b368397148608da3832b2bd"
     },
     {
       "file": "content/section-1-3-2.js",
-      "sha256": "d4e0163f848e9c521850493440eea56502f27ccfbb196c097a57cca1e84cd485"
+      "sha256": "2b6d12d5a04bf7b8b9e1ee9dbc008eed410f60bd543fc1fa3d77c142c0f2a6c1"
     },
     {
       "file": "content/section-1-3-3.js",
-      "sha256": "951d6c1cc409f44af63ba6745d7217ac99b64ea15cc80a124729153e36ff0dc8"
+      "sha256": "73cfb240b998c3627f3974ba900ad75c9adf00eab6632aab086d4342fcb91361"
     },
     {
       "file": "content/section-1-3-4.js",
-      "sha256": "cbdb5c473c916b3c8040c42e18c7deb0b024a9c02e5f8e8d20fbad21fedfb95e"
+      "sha256": "4eefdb2c5f5eae222dbbf9de35735191783b0d7256c1593414d985acdb87ccd9"
     },
     {
       "file": "content/section-1-3-5.js",
-      "sha256": "9a4316f840e73b9c2edc87b507861e47c89a934ae41ada13f1ae57bb01b0626d"
+      "sha256": "9fd2fea570cf3064fbf1a974b73e427c137ce5ef7cad4d724f38f22371fffc43"
     },
     {
       "file": "content/section-1-3-6.js",
-      "sha256": "88b90660ded998db490b72c2bf8be1e222f2444bb266995c535a7b9c17b1ff9a"
+      "sha256": "06407e2b8fb11a9f473c26a4d39b258b082e4c0d902bd9a6fdbdbce41de5d897"
     },
     {
       "file": "content/section-1-4-1.js",
-      "sha256": "1b238bcb2847d3a08704c8646448dbb12e4d1273eb5ba2dc5fb557beb559cf08"
+      "sha256": "f2469afae0c3d715dca6873d2e219a64bd063de0c126bff8f7c85e241a24529b"
     },
     {
       "file": "content/section-1-4-2.js",
-      "sha256": "e6c3cc36e9a9844ef34a05ef4587b39144a6070ae00852164ec5101195ffc9ab"
+      "sha256": "4ebc8e59963d08a338c6a09e6f2a8f7b0958bb6c7c1db865d84977a3eec0c181"
     },
     {
       "file": "content/section-1-4-3.js",
-      "sha256": "8453e2edab60db69c39ea546a44e9e36289865639a2202d54a519b0fef5a0b5f"
+      "sha256": "191f990f36416c8ae68f64b3383b7da2fde56565f7fb8ce344a54d05929548b8"
     },
     {
       "file": "definitions.js",
@@ -92,7 +92,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "67c07da3284864225f32f8d06f2870e816618d324e1d29eacc90ce4a462f79de"
+      "sha256": "44875365172ffb6bea23501bc4c0dd6127da7ec6754b5c40a2f21d7f4e2b7d8f"
     },
     {
       "file": "intuition-models.js",

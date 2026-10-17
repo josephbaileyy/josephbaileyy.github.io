@@ -4,6 +4,25 @@ import { mountCourseAtlas } from './components/course-atlas.js';
 
 mountInstagramCarousel(document.querySelector('[data-instagram]'));
 mountPianoRoll(document.querySelector('#music'));
+
+// The recording stays unloaded with the page. Once the music card is close to
+// the viewport, fetch only its metadata so the player shows the real duration
+// instead of 0:00.
+const recording = document.querySelector('#music audio');
+if (recording && 'IntersectionObserver' in window) {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      if (!entries.some((entry) => entry.isIntersecting)) return;
+      observer.disconnect();
+      if (recording.preload === 'none' && recording.paused && !recording.currentTime) {
+        recording.preload = 'metadata';
+        recording.load();
+      }
+    },
+    { rootMargin: '300px 0px' },
+  );
+  observer.observe(recording);
+}
 mountCourseAtlas(document.querySelector('[data-course-atlas]'));
 
 const disclosure = document.querySelector('[data-demo="unfolding"]');

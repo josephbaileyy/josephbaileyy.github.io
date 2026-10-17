@@ -152,7 +152,7 @@ function researchList() {
       <p>${escape(copy.brief)}</p>
       ${copy.status ? `<p class="research-status">${escape(copy.status)}</p>` : ''}
       ${links(evidence)}
-      ${id === 'am-cvn-photometry' ? `<figure class="research-figure-wrap"><img class="research-figure" src="./img/home/amcvn-fit.png" alt="AM CVn V-band differential-photometry light curve with a double-wave fit near a 1050-second period" width="1180" height="270" loading="lazy"><figcaption>Observed differential photometry and the fitted model from my PHYSICS 100 project, spring 2026. The fit is not an independent measurement of every feature in the light curve.</figcaption></figure>` : ''}
+      ${id === 'am-cvn-photometry' ? `<figure class="research-figure-wrap"><img class="research-figure" src="./img/home/amcvn-fit.png" alt="AM CVn V-band light curve over about 111 minutes: brightness varies by a few percent, with a two-harmonic fit at a 1050-second period" width="1180" height="330" loading="lazy"><figcaption>AM CVn’s brightness over about 111 minutes of V-band imaging, with a two-harmonic (double-wave) fit at the superhump period. PHYSICS 100, spring 2026.</figcaption></figure>` : ''}
       ${id === 'minerva-omnifold' ? unfoldDisclosure() : ''}
     </article></li>`;
     })

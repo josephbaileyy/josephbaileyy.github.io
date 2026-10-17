@@ -73,6 +73,14 @@ export default async function mountUnfolding(root) {
     ctx.clearRect(0, 0, width, width);
     ctx.drawImage(densityImage(values, fixed), 0, 0, width, width);
   }
+  // The slider counts completed iterations; the stage label only describes
+  // what is happening, so the two never show different iteration numbers.
+  function stageLabel(completed) {
+    if (position === 0) return 'Starting simulation';
+    if (position >= end()) return `Finished after ${iterations()} iterations`;
+    if (position % 3 > 1e-6) return playing ? 'Reweighting…' : 'Paused';
+    return `After iteration ${completed}`;
+  }
   function paint() {
     if (!visible()) return;
     const { before, after, fraction } = frameAt(experiment, position);
@@ -85,10 +93,7 @@ export default async function mountUnfolding(root) {
     timeline.max = String(iterations());
     timeline.value = String(completed);
     q('iteration-value').textContent = `${completed} / ${iterations()}`;
-    q('stage').textContent =
-      position === 0
-        ? 'Starting simulation'
-        : `Iteration ${Math.ceil(position / 3)} of ${iterations()}`;
+    q('stage').textContent = stageLabel(completed);
     timeline.setAttribute(
       'aria-valuetext',
       completed === 0 ? 'Starting simulation' : `Iteration ${completed} of ${iterations()}`,
@@ -105,6 +110,7 @@ export default async function mountUnfolding(root) {
     cancelAnimationFrame(raf);
     raf = 0;
     play.textContent = position >= end() ? 'Replay' : 'Play';
+    q('stage').textContent = stageLabel(Math.floor((position + 1e-6) / 3));
   }
   function frame(now) {
     if (!playing) return;
