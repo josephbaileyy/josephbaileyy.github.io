@@ -29,7 +29,7 @@ export const research = Object.freeze([
   }),
   Object.freeze({
     id: 'collider-ml-slac',
-    title: 'Machine learning for pileup mitigation in γγ collider di-Higgs detection',
+    title: 'Pileup characterization for γγ collider di-Higgs detection',
     role: 'Undergraduate Researcher',
     venue: 'SLAC National Accelerator Laboratory',
     period: 'Jun 2024 — Jan 2025',
@@ -37,10 +37,10 @@ export const research = Object.freeze([
     question:
       'How do pileup backgrounds affect di-Higgs event reconstruction at a proposed γγ collider, the XCC Higgs factory?',
     method:
-      'Worked on a four-person collider proposal, analyzing terabytes of simulation data with Delphes, ROOT, and Unix HPC systems and developing machine-learning methods to study pileup effects on di-Higgs detection.',
+      'Did most of the pileup study myself, within the four-person XCC project. Generated 1.5 million di-Higgs signal events with Delphes fast simulation and ROOT, with and without pileup (an average of 6.81 events per bunch crossing), and characterized how pileup changes jet multiplicity, jet transverse momentum, and jet response. Machine-learning approaches were exploratory.',
     result:
-      'Contributed collider-simulation and pileup-machine-learning work to the four-person XCC Higgs-factory proposal documented in the project poster.',
-    tags: Object.freeze(['SLAC', 'collider ML', 'Delphes', 'ROOT', 'Higgs factory']),
+      'Pileup concentrates in the forward region; pileup subtraction plus removing all objects with |cos θ| > 0.8 worked best, suppressing pileup while preserving the signal.',
+    tags: Object.freeze(['SLAC', 'pileup', 'Delphes', 'ROOT', 'Higgs factory']),
     links: Object.freeze([
       Object.freeze({
         label: 'Poster (PDF)',
@@ -50,17 +50,18 @@ export const research = Object.freeze([
   }),
   Object.freeze({
     id: 'x17-bump-hunting',
-    title: 'Gaussian-process bump hunting for X17 particle searches',
+    title: 'Gaussian-process bump hunting for a planned X17 search',
     role: 'Undergraduate Researcher',
-    venue: 'Jefferson Lab · APS Far West Section, UC Santa Cruz',
+    venue:
+      'Stanford, in collaboration with Jefferson Lab’s X17 experiment · APS Far West Section, UC Santa Cruz',
     period: '2025',
     current: false,
     question:
-      'Can non-parametric Gaussian-process regression search for resonant excesses from the hypothetical X17 particle without imposing a parametric background model?',
+      'Can non-parametric Gaussian-process regression search for a resonant excess from the hypothetical X17 particle without imposing a parametric background model?',
     method:
-      'Applied Gaussian-process regression to model invariant-mass backgrounds and search for localized resonance excesses.',
+      'Built on an existing Gaussian-process bump-hunting implementation and adapted it to Jefferson Lab’s X17 search, testing it on simulated invariant-mass spectra with signal injected over a background scaled to a 40-day run, so the background is learned rather than fixed in advance.',
     result:
-      'Presented the Gaussian-process bump-hunting study at the APS Far West Section meeting at UC Santa Cruz.',
+      'Developed a Gaussian-process bump-hunting package for Jefferson Lab’s X17 search ahead of its 2026 run; presented the study at the APS Far West Section meeting at UC Santa Cruz.',
     tags: Object.freeze([
       'Gaussian processes',
       'Jefferson Lab',
@@ -83,11 +84,11 @@ export const research = Object.freeze([
     period: 'Spring 2026',
     current: false,
     question:
-      'Can ground-based differential CCD photometry recover the 1051-second positive-superhump family of the AM CVn cataclysmic variable?',
+      'Can a single night of ground-based differential CCD photometry recover the known 1051-second superhump of AM CVn?',
     method:
-      'Acquired 140 V-band CCD images, performed AAVSO differential photometry on 138 retained exposures, and analyzed the resulting time-series light curve.',
+      'Took 140 V-band CCD images of AM CVn in a single 111-minute observation, calibrated them, and performed differential photometry against AAVSO comparison stars.',
     result:
-      'Retained 138 of 140 exposures and recovered the known 1051-second positive-superhump family in the AM CVn light curve.',
+      'Recovered the known 1051-second superhump signal, caused by tidal interactions and the precession of AM CVn’s helium-rich accretion disc.',
     tags: Object.freeze([
       'observational astrophysics',
       'photometry',

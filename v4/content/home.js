@@ -33,17 +33,17 @@ const sentences = {
   'x17-bump-hunting': {
     title: 'Searching for the hypothetical X17 particle',
     brief:
-      'At Jefferson Lab, I used Gaussian-process regression to model the background in invariant-mass spectra, so I could look for a small excess from the X17 without assuming a fixed background shape. I presented the study at the APS Far West Section meeting at UC Santa Cruz.',
+      'In collaboration with Jefferson Lab’s X17 experiment, I developed a Gaussian-process bump-hunting package for its search, building on an existing implementation, ahead of the experiment’s 2026 run. It looks for a small excess from the X17 in invariant-mass spectra without assuming a fixed background shape, and I tested it on simulated spectra with injected signal. I presented the study at the APS Far West Section meeting at UC Santa Cruz.',
   },
   'collider-ml-slac': {
-    title: 'Machine learning for a proposed Higgs factory',
+    title: 'Pileup at a proposed Higgs factory',
     brief:
-      'At SLAC, I was on a four-person team working on a proposal for the XCC, a photon–photon collider that would serve as a Higgs factory. I analyzed simulation data with Delphes, ROOT, and HPC systems, and worked on machine-learning methods to study how pileup (overlapping collisions) affects the search for Higgs-boson pairs.',
+      'At SLAC, I was one of four people working on the XCC, a proposed photon–photon collider that would serve as a Higgs factory. I did most of the pileup study myself, characterizing pileup (overlapping collisions) in Delphes fast simulations of Higgs-boson pairs. I also explored machine-learning methods, but the main result was simpler: pileup subtraction plus removing all objects with |cos θ| > 0.8 worked best.',
   },
   'am-cvn-photometry': {
     title: 'Measuring the variability of AM CVn',
     brief:
-      'For Stanford’s observational astrophysics course, I reduced 140 V-band CCD images of AM CVn and did differential photometry on the 138 I kept. The light curve shows variability consistent with the star’s known 1051-second (about 17.5-minute) superhump signal.',
+      'For Stanford’s observational astrophysics course, from a single night’s 111-minute observation of 140 V-band CCD images, we recovered AM CVn’s known 1051-second (about 17.5-minute) superhump signal, caused by tidal interactions and the precession of its helium-rich accretion disc.',
   },
   'ligo-suspensions': {
     title: 'Interferometry at Caltech LIGO',
@@ -234,7 +234,7 @@ function personalList() {
         <span class="race-stamp"><strong>52.17</strong><span>400 m hurdles · ACC 2025</span></span>
       </a>
       <div class="life-copy"><h3>The 400-meter hurdles</h3>
-        <p>I compete in the 400-meter hurdles for Stanford’s NCAA Division I Track &amp; Field. My personal best is 52.17 seconds, run at the 2025 ACC Championships.</p>
+        <p>I compete in the 400-meter hurdles for Stanford’s NCAA Division I Track &amp; Field. My personal best is 52.17 seconds, which I ran at the 2025 ACC Championships.</p>
         <p class="card-link">${link({ href: 'https://gostanford.com/sports/track-field/roster/player/joseph-bailey', label: 'Stanford Track & Field ↗' })}</p>
       </div>
     </article>
@@ -253,7 +253,7 @@ function personalList() {
 function experienceList() {
   const brief = {
     wisdomtree:
-      'I worked on WisdomTree Connect, which distributes WTGXX, a tokenized government money-market fund, to institutions. I did product management and market research, wrote internal documentation, and took part in product-development discussions.',
+      'In WisdomTree’s Digital Assets division, I worked on WisdomTree Connect, the institutional platform for WisdomTree’s tokenized funds, including WTGXX, a tokenized government money-market fund. WisdomTree’s tokenized fund assets are now upwards of $1.2 billion. I did product management and market research, wrote internal documentation, and took part in product-development discussions.',
     polytec:
       'I wrote Python, MATLAB, and Octave tools that customers used to analyze vibration data, and I modeled and 3D-printed tools for the lab.',
   };
