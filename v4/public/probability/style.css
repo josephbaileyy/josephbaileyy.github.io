@@ -76,3 +76,28 @@
 
 .ind-lab svg{max-height:none}
 .ind-prompt{font:14px/1.6 system-ui;color:var(--ink);margin:0 0 18px}
+
+/* Proof figures keep the construction next to the argument it explains. */
+.proof-lab{container-type:inline-size;font:14px/1.7 system-ui;color:#34483d}
+.proof-lab .controls{display:grid;grid-template-columns:1fr;gap:13px;align-items:stretch}
+.proof-lab .controls>div{display:grid;gap:13px}
+.proof-lab .controls label{display:grid;grid-template-columns:minmax(120px,1fr) minmax(80px,1.2fr) 3ch;align-items:center;gap:8px;min-width:0;font-size:13px}
+.proof-lab .controls input[type=range]{width:100%;min-width:0;min-height:32px}
+.proof-lab .controls select{grid-column:2 / -1;width:100%;min-width:0;white-space:normal;padding:7px;font-size:13px}
+.proof-lab [hidden]{display:none!important}
+.proof-lab svg{max-height:none}
+.proof-lab svg text{font:16px system-ui;fill:#34483d}
+.proof-panel{border-top:1px solid var(--line);padding:16px 0 6px}
+.proof-panel h4{font:600 14px/1.6 system-ui;margin:0 0 15px;color:#315e4e}
+.proof-note{font:13px/1.7 system-ui;margin:10px 0 12px}
+.proof-equation{font:15px/1.7 system-ui;text-align:center;background:#f5f0e5;color:#51432f;padding:13px;margin:12px 0;border-radius:4px;overflow-wrap:anywhere}
+.proof-table-wrap{max-width:100%;overflow-x:auto}
+.proof-table{border-collapse:collapse;width:100%;font:12px/1.6 system-ui;text-align:left;font-variant-numeric:tabular-nums}
+.proof-table caption{text-align:left;margin:10px 0}
+.proof-table th,.proof-table td{border:1px solid #c5cfc4;padding:8px;font-weight:400}
+.proof-table thead th{background:#eff2eb;font-weight:600}
+.proof-table .proof-selected{background:#e5eee6}
+.proof-legend,.proof-values{display:flex;flex-wrap:wrap;gap:10px 16px;padding:0;list-style:none;font:12px/1.6 system-ui}
+.proof-legend span{display:inline-block;width:10px;height:10px;margin-right:6px}
+@container(max-width:360px){.proof-lab .controls label{grid-template-columns:minmax(0,1fr) 3ch}.proof-lab .controls input[type=range]{grid-column:1;grid-row:2}.proof-lab .controls output{grid-column:2;grid-row:2}.proof-lab .controls select{grid-column:1 / -1}.proof-lab svg text{font-size:19px}}
+@media print{.proof-lab{container-type:normal}.proof-panel,.proof-equation{break-inside:avoid}}

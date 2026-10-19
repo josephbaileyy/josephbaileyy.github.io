@@ -13,7 +13,7 @@ $$L^q(\Omega,\mathcal F,\mathbf P)=\{X:\|X\|_q=(\mathbf E|X|^q)^{1/q}<\infty\}.$
 plain:'The signed mean can be small because positive and negative contributions balance. Integrability asks whether their combined absolute size is finite.',
 caption:'The three displayed outcomes have masses 1/4, 1/2, 1/4. All values here are finite, so every displayed moment is finite.',
 after:r`The notes initially describe $L^q$ as a collection of random variables. The quantity $\|X\|_q$ vanishes exactly when $X=0$ almost surely; it is a norm after identifying variables equal almost surely.`},
-{n:'1.3.3',type:'Lemma',title:'Different decompositions give the same integral',page:'32',deps:['1.3.1','1.1.29'],visual:'int-refinement',
+{n:'1.3.3',proofVisual:'proof-refinement',proofCaption:'Refine all overlapping events into the same disjoint cells. Each cell keeps its height in either representation, so the weighted total stays fixed.',type:'Lemma',title:'Different decompositions give the same integral',page:'32',deps:['1.3.1','1.1.29'],visual:'int-refinement',
 statement:r`The value $\mu_0(\varphi)$ is well defined for each $\varphi\in\mathrm{SF}_+$. It is unchanged by equality $\mu$-almost everywhere; it satisfies $\mu_0(\varphi+\psi)=\mu_0(\varphi)+\mu_0(\psi)$ and $\mu_0(c\varphi)=c\mu_0(\varphi)$ for $c\geq0$; and $\varphi\leq\psi$ implies $\mu_0(\varphi)\leq\mu_0(\psi)$.`,
 plain:'Overlapping event descriptions can look different while describing exactly the same heights. Refine the events into disjoint pieces to see why their weighted sums agree.',
 caption:'A=[0,3/4] and B=[1/4,1] have length 3/4. The overlap [1/4,3/4] carries both heights. Endpoints have zero measure.',

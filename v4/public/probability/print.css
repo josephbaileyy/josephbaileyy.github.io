@@ -5,3 +5,5 @@ body{background:white;color:black;font-size:11pt;line-height:1.5}aside,.toolbar,
 /* Long guided figures may span pages; keep each individual experiment panel together. */
 .visual:has(.intuition-lab){break-inside:auto}
 .intuition-lab .intuition-panel,.intuition-lab .intuition-metrics{break-inside:avoid}
+.visual:has(.proof-lab){break-inside:auto}
+.proof-lab .proof-panel,.proof-lab .proof-equation{break-inside:avoid}
