@@ -178,3 +178,22 @@ body:not(.split-view) .fubini-lab{scroll-margin-top:80px}
 
 .fubini-axis-reading{font:12px/1.4 system-ui;text-align:center;margin:3px 0;color:var(--ink)}
 .fubini-pictures .fubini-profile h5{color:#986729}
+
+/* Each Fubini proof claim keeps its reason beside the operation it uses. */
+.fubini-proof-goal{background:var(--pale);padding:14px;border-radius:4px;margin:0 0 14px;font:14px/1.6 system-ui}
+.fubini-proof-goal h4,.fubini-proof-claim h4{font:600 16px/1.5 system-ui;color:var(--green);margin:0 0 8px}
+.fubini-proof-goal p{margin:6px 0}
+.fubini-proof-goal ol{padding-left:22px;margin:8px 0}
+.fubini-proof-goal li{padding:3px 0}
+.fubini-proof-claim p{font:14px/1.65 system-ui;margin:8px 0 12px}
+.fubini-proof-pictures{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fubini-proof-pictures section{min-width:0}
+.fubini-proof-pictures h5{font:12px/1.5 system-ui;margin:6px 0;text-align:center;color:var(--green);min-height:36px}
+.fubini-proof-pictures svg{width:100%;height:auto;max-height:240px}
+.fubini-proof-actions{position:sticky;top:60px;z-index:2;background:var(--paper);padding:8px 0;display:flex;align-items:center;justify-content:space-between;gap:6px;margin:10px 0 16px;font:12px system-ui}
+.fubini-proof-actions button{font-size:12px;padding:8px}
+.fubini-proof-print{display:none}
+@container(max-width:350px){.fubini-proof-pictures{grid-template-columns:1fr}.fubini-proof-pictures h5{min-height:0}.fubini-proof-pictures svg{max-height:230px}}
+@media print{.fubini-proof-lab>.controls,.fubini-proof-lab>.drawing,.fubini-proof-lab>.result,.fubini-proof-actions{display:none!important}.fubini-proof-print{display:block}.fubini-proof-print>section{break-inside:avoid}.fubini-proof-pictures{grid-template-columns:1fr 1fr}}
+
+body:not(.split-view) .fubini-proof-actions{top:68px}

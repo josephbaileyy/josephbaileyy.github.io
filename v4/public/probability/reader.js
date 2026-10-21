@@ -1,4 +1,4 @@
-import {sourcePage,coversPage,sourceHeading} from './reader-state.js?v=5ec7f9401e64';
+import {sourcePage,coversPage,sourceHeading,bodyTextSize,matchedSplit} from './reader-state.js?v=curves2';
 import {readPageText} from './pdf-text.js';
 // Reader state lives separately from the mathematical content and annotations.
 export function initReader({entries,sections,id,toast}){
@@ -10,6 +10,7 @@ export function initReader({entries,sections,id,toast}){
  const entryForHash=()=>entries.find(e=>'#'+id(e.n)===location.hash)||sections.find(s=>'#'+s.anchor===location.hash)?.entries[0];
  const stored=(key,fallback)=>{try{return localStorage.getItem(key)??fallback}catch{return fallback}};
  const persist=(key,value)=>{try{localStorage.setItem(key,String(value))}catch{}};
+ let matchText=stored('probability-notebook-layout','matched')==='matched';
  const ratio=Number(stored('probability-notebook-split','54'));
  layout.style.setProperty('--split',`${Number.isFinite(ratio)?Math.max(30,Math.min(70,ratio)):54}%`);
  body.classList.toggle('nav-hidden',stored('probability-notebook-contents','hidden')==='hidden');
@@ -20,7 +21,7 @@ export function initReader({entries,sections,id,toast}){
 
  // Browser history carries the reading position, independent of personal notes.
  const historyKey='probabilityReader';
- const fitRevision='comfortable-text-90';
+ const fitRevision='matched-explanation-1';
  const restoredZoom=p=>p.fitRevision===fitRevision?(p.zoom||1):1;
  const historyTrail=history.state?.[historyKey]?.trail||crypto.randomUUID();
  let historyIndex=history.state?.[historyKey]?.index||0;
@@ -97,7 +98,7 @@ export function initReader({entries,sections,id,toast}){
   active=entries.find(item=>item.n===e.n)||e;const changed=pageNumber!==sourcePage(e);pageNumber=sourcePage(e);
   if(push)setPane('companion');
   updateSelection({scrollSource:scrollSource&&!changed});companion.scrollTop=0;
-  if(split&&(changed||!pdf))drawPage({scrollSource});
+  if(split&&(changed||!pdf||matchText))drawPage({scrollSource});
   if(!split)document.getElementById(id(e.n)).scrollIntoView({behavior:'instant'});
   if(push)rememberPosition();
  }
@@ -133,7 +134,15 @@ export function initReader({entries,sections,id,toast}){
    const right=boxes.length?Math.max(...boxes.map(b=>b.right)):base.width;
    const top=boxes.length?Math.min(...boxes.map(b=>b.top)):0;
    const padding=parseFloat(getComputedStyle(source).paddingLeft);
-   // Leave a little breathing room: 90% of the former edge-to-edge text fit.
+   if(matchText&&!matchMedia('(max-width:900px)').matches){
+    const guide=$('.entry.is-selected .walkthrough-story p')||$('.entry.is-selected .plain')||$('.plain');
+    const pct=matchedSplit({width:layout.clientWidth,textWidth:Math.max(base.width*.5,right-left),sourceFont:bodyTextSize(text.items),guideFont:parseFloat(getComputedStyle(guide).fontSize),padding});
+    // Set the pane width before measuring it for the PDF render. The observer
+    // may schedule one further render, but the stable ratio prevents a loop.
+    layout.style.setProperty('--split',`${pct}%`);
+    $('.pane-divider').setAttribute('aria-valuenow',String(Math.round(pct)));
+   }
+   // Leave a little breathing room around the printed text.
    const scale=.9*Math.max(200,source.clientWidth-2*padding)/Math.max(base.width*.5,right-left)*drawingZoom;
    const viewport=page.getViewport({scale}), density=Math.min(devicePixelRatio||1,2);
    const canvas=document.createElement('canvas');canvas.width=Math.floor(viewport.width*density);canvas.height=Math.floor(viewport.height*density);
@@ -203,6 +212,7 @@ export function initReader({entries,sections,id,toast}){
  }
  function buttonZoom(value){const pane=source.getBoundingClientRect();zoomAnchor=null;changeZoom(value,pane.left+pane.width/2,pane.top+pane.height/2)}
  $('#zoom-out').onclick=()=>buttonZoom(zoom-.25);$('#zoom-in').onclick=()=>buttonZoom(zoom+.25);
+ $('#match-text').onclick=()=>{matchText=true;persist('probability-notebook-layout','matched');clearTimeout(zoomTimer);zoomAnchor=null;zoom=1;drawPage()};
  $('#zoom-fit').onclick=()=>{clearTimeout(zoomTimer);zoomAnchor=null;zoom=1;drawPage()};
  // Trackpads send pinch as control-wheel; ordinary two-finger scrolling stays native.
  source.addEventListener('wheel',event=>{
@@ -238,12 +248,12 @@ export function initReader({entries,sections,id,toast}){
   historyButtons();
  }
  window.addEventListener('popstate',fromURL);window.addEventListener('hashchange',fromURL);
- function setRatio(value){const pct=Math.max(30,Math.min(70,value));layout.style.setProperty('--split',`${pct}%`);$('.pane-divider').setAttribute('aria-valuenow',String(Math.round(pct)));persist('probability-notebook-split',pct);scheduleResize()}
+ function setRatio(value){matchText=false;persist('probability-notebook-layout','manual');const pct=Math.max(30,Math.min(70,value));layout.style.setProperty('--split',`${pct}%`);$('.pane-divider').setAttribute('aria-valuenow',String(Math.round(pct)));persist('probability-notebook-split',pct);scheduleResize()}
  const divider=$('.pane-divider');divider.setAttribute('aria-valuenow',String(Math.round(Number.parseFloat(layout.style.getPropertyValue('--split')))));
  divider.addEventListener('pointerdown',event=>{divider.setPointerCapture(event.pointerId);body.classList.add('resizing');event.preventDefault()});
  divider.addEventListener('pointermove',event=>{if(!divider.hasPointerCapture(event.pointerId))return;const bounds=layout.getBoundingClientRect();setRatio((event.clientX-bounds.left)/bounds.width*100)});
  divider.addEventListener('pointerup',event=>{if(divider.hasPointerCapture(event.pointerId))divider.releasePointerCapture(event.pointerId);body.classList.remove('resizing');scheduleResize()});
- divider.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home'].includes(event.key)){event.preventDefault();setRatio(event.key==='Home'?54:Number.parseFloat(layout.style.getPropertyValue('--split'))+(event.key==='ArrowLeft'?-3:3))}});
+ divider.addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home'].includes(event.key)){event.preventDefault();if(event.key==='Home')$('#match-text').click();else setRatio(Number.parseFloat(layout.style.getPropertyValue('--split'))+(event.key==='ArrowLeft'?-3:3))}});
  function scheduleResize(){clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(split&&$('.source-pane').clientWidth){if(!restoring&&$('.pdf-page canvas')){pendingRestore=position();restoring=true}drawPage()}},180)}
  new ResizeObserver(scheduleResize).observe($('.source-pane'));
  setPane('companion');

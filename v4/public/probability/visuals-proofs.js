@@ -6,7 +6,7 @@ const f=x=>Number(x.toFixed(5)).toString();
 const text=(x,y,s,anchor='start')=>`<text x="${x}" y="${y}" text-anchor="${anchor}">${s}</text>`;
 const line=(x1,y1,x2,y2,color='#8d9b91',dash='')=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="2" ${dash?'stroke-dasharray="5 4"':''}/>`;
 const box=(x,y,w,h,fill,stroke='white')=>`<rect x="${x}" y="${y}" width="${Math.max(0,w)}" height="${Math.max(0,h)}" fill="${fill}" stroke="${stroke}"/>`;
-const svg=(body,h=340,label='')=>`<svg viewBox="0 0 600 ${h}" role="img" aria-label="${label}">${body}</svg>`;
+const svg=(body,h=340,label='',w=600)=>`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${label}">${body}</svg>`;
 const select=(name,label,options)=>`<label>${label}<select data-control="${name}" aria-label="${label}">${options.map((s,i)=>`<option value="${i}">${s}</option>`).join('')}</select></label>`;
 const panel=(title,body,note='')=>`<section class="proof-panel"><h4>${title}</h4>${body}${note?`<p class="proof-note">${note}</p>`:''}</section>`;
 const equation=s=>`<div class="proof-equation">${s}</div>`;
@@ -86,30 +86,47 @@ function fatouProof(v){
  const future=Array.from({length:6},(_,i)=>{const j=n+i;return `<li>k=${j}: ${f(fatouSequence(j,v.x))}</li>`;}).join('');
  return [panel('Discard early functions; the lower envelope rises',svg(b,365,'Increasing tail infimum below a later oscillating function, with one outcome fixed'),`On (0,1], fₖ(s) = s+1−1/k, with an extra 1 on the left half for odd k and on the right half for even k. Gold shows f${k}; green shows h${n}. Dashed: liminf fₖ(s) = s+1.`)+`<p class="proof-note">At the selected s = ${f(v.x)}, the next six values are:</p><ul class="proof-values">${future}</ul>`+equation(`h${n}(${f(v.x)}) = ${f(hn)} ≤ f${k}(${f(v.x)}) = ${f(fk)}`)+equation(`∫h${n} = ${f(integral)} ≤ ∫f${k} = 2−1/${k} = ${f(2-1/k)}`),'The exact tail infimum is hₙ(s) = s+1−1/j, where j is the first unlifted index at or after n (n or n+1). Both parities occur in every infinite tail; the six values are only a preview. Increasing n makes hₙ ↑ s+1, so MON gives ∫liminf fₙ = 1.5, while liminf∫fₙ = 2. For the signed theorem subtract the integrable lower bound g first; apply the result to −fₙ for reverse Fatou.'];
 }
+const fubiniClaims=[
+ ['Rectangle indicators satisfy all three goals.', 'Start with finite measures and bounded h. Fix x. The section is either 1ᴮ or zero, so it is measurable. Its integral is the step function μ₂(B)1ᴬ(x), also measurable. Integrating that step gives μ₁(A)μ₂(B), exactly the product measure of A×B.'],
+ ['Adding functions preserves all three goals.', 'The overlap has height 1 + 2 = 3. Integrating a slice adds its contributions, including the overlap: F₍a·h+b·k₎ = aFₕ + bFₖ. Measurability and both integrals respect the same linear combination. At this stage the measures are finite and the functions bounded, so subtraction is safe.'],
+ ['Increasing bounded limits preserve all three goals.', 'On the grid interior, hₙ = (⌊2ⁿx⌋ + ⌊2ⁿy⌋)/2ⁿ rises toward x+y (top/right null edges use adjacent cell values); the dashed profile is Fₕ(x) = x+1/2. Measurable sections stay measurable under increasing limits. MON in y gives Fₕₙ ↑ Fₕ, making Fₕ measurable; MON on the product and in x carries the integral identity to the limit.'],
+ ['Truncation and exhaustion reach every nonnegative h.', 'Choose finite-measure Aₙ ↑ X and Bₙ ↑ Y. Then hₙ = (h ∧ n)1₍Aₙ×Bₙ₎ ↑ h. Each hₙ belongs to the finite, bounded case. Apply MON inside each slice and again to the two outer integrals. The picture takes h = 1 on the unbounded quadrant: the squares grow and both totals tend to infinity.'],
+ ['Absolute integrability makes subtraction legitimate.', 'For h = x−y, green contributes h⁺ and gold contributes h⁻. Their nonnegative slice integrals are x²/2 and (1−x)²/2. Subtracting gives Fₕ(x) = x−1/2. In general ∫|h| &lt; ∞ makes Fₕ⁺ + Fₕ⁻ finite almost everywhere, so this subtraction never asks for ∞−∞ outside a null set.']
+];
 function fubiniProof(v){
- const m=fubiniModel(v.stage,v.n),p=plane(85,40,450,230),x=v.x;
- let b=frame(p);
- if(v.stage<2){m.parents.slice(0,v.stage?2:1).forEach((r,i)=>{b+=drawRect(p,r,pale[i]);});if(v.stage===1)b+=drawRect(p,intersect(...m.parents),pale[2]);}
- else {const N=v.stage===2?m.N:16;for(let i=0;i<N;i++)for(let j=0;j<N;j++){const r=rectangle(i/N,(i+1)/N,j/N,(j+1)/N),z=m.value((i+.5)/N,(j+.5)/N),alpha=Math.min(1,Math.abs(z)/2);b+=drawRect(p,r,`rgba(${z<0?'154,104,40':'49,94,78'},${.12+.75*alpha})`);}}
- b+=line(p.X(x),p.Y(0),p.X(x),p.Y(1),colors[2])+text(85,328,'Integrate each vertical slice → Fₕ(x)');
- const base=510,Y=t=>base-70*t;
- b+=line(p.X(0),base,p.X(1),base)+text(74,base+5,'0','end')+text(74,Y(1)+5,'1','end')+text(85,575,'x = 0')+text(535,575,'1','end');
- const breaks=v.stage<2?[0,.1,.4,.65,.9,1]:Array.from({length:(v.stage===2?m.N:1)+1},(_,i)=>i/(v.stage===2?m.N:1));
- for(let i=0;i<breaks.length-1;i++){
-  const a=breaks[i],c=breaks[i+1],z=m.slice((a+c)/2);
-  if(v.stage===3)b+=`<polygon points="${p.X(a)},${base} ${p.X(c)},${base} ${p.X(c)},${Y(c-.5)} ${p.X(a)},${Y(a-.5)}" fill="${pale[0]}"/>`+line(p.X(a),Y(a-.5),p.X(c),Y(c-.5),colors[0]);
-  else b+=box(p.X(a),Y(z),p.w*(c-a),70*z,pale[0])+line(p.X(a),Y(z),p.X(c),Y(z),colors[0]);
+ const stage=v.stage,m=fubiniModel([0,1,2,2,3][stage],v.n),p=plane(45,20,190,190),x=v.x;
+ let b=frame(p,false),profile='',formula='',bridge='';
+ if(stage===3){
+  const n=v.n,extent=5,r=rectangle(0,n/extent,0,n/extent),next=rectangle(0,(n+1)/extent,0,(n+1)/extent);
+  b+=outline(p,next,colors[1])+drawRect(p,r,pale[0])+outline(p,r,colors[0]);
+  b+=text(p.X(n/extent),p.Y(0)+22,`n = ${n}`,'middle')+text(p.X(0)-8,p.Y(n/extent)+5,String(n),'end')+text(p.X(1),245,'x → ∞','end')+text(45,13,'y → ∞');
+  profile=line(45,210,235,210)+line(45,20,45,210)+box(45,210-190*n/extent,190*n/extent,190*n/extent,pale[0])+text(235,245,'x → ∞','end')+text(35,210-190*n/extent,String(n),'end');
+  formula=`For 0 &lt; x ≤ ${n}, Fₕₙ(x) = ${n}; elsewhere 0.  ∫hₙ = ${n}² = ${n*n} = ∫Fₕₙ`;
+ }else{
+  if(stage<2){m.parents.slice(0,stage?2:1).forEach((r,i)=>{b+=drawRect(p,r,pale[i]);});if(stage===1)b+=drawRect(p,intersect(...m.parents),pale[2])+text(p.X(.525),p.Y(.55),'3','middle');}
+  else{const N=stage===2?m.N:16;for(let i=0;i<N;i++)for(let j=0;j<N;j++){const r=rectangle(i/N,(i+1)/N,j/N,(j+1)/N),z=m.value((i+.5)/N,(j+.5)/N);b+=drawRect(p,r,`rgba(${z<0?'154,104,40':'49,94,78'},${.12+.75*Math.min(1,Math.abs(z)/2)})`);}}
+  b+=line(p.X(x),p.Y(0),p.X(x),p.Y(1),colors[2])+text(45,239,'0')+text(235,239,'x = 1','end')+text(35,25,'y = 1','end');
+  const base=stage===4?150:210,Y=z=>base-75*z;
+  profile=line(45,base,235,base)+line(45,20,45,220)+text(35,base+4,'0','end')+text(235,245,'x = 1','end');
+  const breaks=stage<2?[0,.1,.4,.65,.9,1]:Array.from({length:(stage===2?m.N:1)+1},(_,i)=>i/(stage===2?m.N:1));
+  for(let i=0;i<breaks.length-1;i++){
+   const a=breaks[i],c=breaks[i+1],z=m.slice((a+c)/2);
+   if(stage===4){
+    const us=Array.from({length:81},(_,i)=>i/80),curve=(fn,color,dash='')=>`<polyline points="${us.map(u=>`${p.X(u)},${Y(fn(u))}`).join(' ')}" fill="none" stroke="${color}" stroke-width="2" ${dash?'stroke-dasharray="4 3"':''}/>`;
+    profile+=curve(u=>u*u/2,colors[0],'dash')+curve(u=>(1-u)**2/2,colors[1],'dash')+curve(u=>u-.5,colors[2]);
+   }else profile+=box(p.X(a),Y(z),p.w*(c-a),75*z,pale[0])+line(p.X(a),Y(z),p.X(c),Y(z),colors[0]);
+  }
+  if(stage===2)profile+=line(p.X(0),Y(.5),p.X(1),Y(1.5),colors[1],true);
+  profile+=line(p.X(x),base,p.X(x),Y(m.slice(x)),colors[2])+text(140,269,`F(${f(x)}) = ${f(m.slice(x))}`,'middle');
+  formula=stage===4?'∫h⁺ = 1/6,  ∫h⁻ = 1/6;  ∫h = 0 = ∫Fₕ':stage===2?`∫hₙ = 1 − 2⁻${v.n} = ${f(m.total)} = ∫Fₕₙ  ↑  1 = ∫h`:`∫h = ${f(m.total)} = ∫Fₕ`;
  }
- b+=line(p.X(x),350,p.X(x),560,colors[2])+text(310,610,`Fₕ(${f(x)}) = ${f(m.slice(x))}`,'middle');
- const titles=['1 · A rectangle indicator','2 · Linear combinations and the monotone-class bridge','3 · Increase nonnegative approximants','4 · Subtract the positive and negative parts'];
- const notes=[
-  'h = 1₍A×B₎. A vertical slice is 1ᴮ when x ∈ A, and zero otherwise. Thus Fₕ(x) = μ₂(B)1ᴬ(x).',
-  'Shown: h = 1₍A×B₎ + 2·1₍C×D₎; overlap has height 3. Linearity preserves the slice identity. Closure under bounded increasing limits, together with the functional monotone-class theorem (1.2.7), reaches every bounded product-measurable function.',
-  `Here hₙ(x,y) = [⌊2ⁿx⌋ + ⌊2ⁿy⌋]/2ⁿ off the null top/right edges (assigned the adjacent cell values). It increases to x+y almost everywhere; n=${v.n}. MON passes through the slice integral and then the outer integral.`,
-  'Here h = x−y. Green and gold mark positive and negative values. ∫h⁺ = ∫h⁻ = 1/6 and ∫|h| = 1/3, so subtraction is justified. The lower profile is Fₕ(x) = x−1/2.'
- ];
- const general=v.stage===2?'For general sigma-finite spaces, exhaust X and Y by increasing finite-measure sets and truncate h: (h∧n)1₍Aₙ×Bₙ₎ ↑ h. The finite-measure case plus MON proves the nonnegative result.':v.stage===3?'For general integrable h, the nonnegative theorem makes the two inner integrals finite almost everywhere; choose a measurable value on the exceptional sections and subtract.':'The argument verifies three things together: measurable sections, a measurable slice-integral function Fₕ, and equality of the double integral with ∫Fₕ.';
- return [panel(titles[v.stage],svg(b,635,'A function on the product space and its integrated slice profile'),notes[v.stage])+equation(`∫h d(μ₁×μ₂) = ${f(m.total)} = ∫Fₕ dμ₁`),general];
+ const labels=['h = 1₍A×B₎','h = 1₍A×B₎ + 2·1₍C×D₎','hₙ = (⌊2ⁿx⌋ + ⌊2ⁿy⌋)/2ⁿ','hₙ = 1 on (0,n]²; zero outside','h = x−y · green + / gold −'];
+ const rightLabels=['Fₕ = μ₂(B)1ᴬ','Fₕ = F₁ + 2F₂','Fₕₙ ↑ Fₕ · dashed limit','Fₕₙ = n on (0,n]; zero outside','solid: Fₕ⁺ − Fₕ⁻ · dashed: parts'];
+ if(stage===1)bridge='This establishes the vector-space part of the argument. The next step supplies closure under increasing limits.';
+ if(stage===2)bridge='Now use the <a href="#entry-1-2-7" class="definition-link">functional monotone-class theorem (1.2.7)</a>: the class satisfying the three goals is a vector space, contains every rectangle indicator, and is closed under bounded increasing nonnegative limits. Since rectangles form a generating pi-system, the class contains every bounded product-measurable h. The dyadic picture shows the limit operation; the theorem supplies the extension to all bounded h.';
+ if(stage===4)bridge='The exceptional set {Fₕ⁺ + Fₕ⁻ = ∞} is measurable and null. Set Fₕ = 0 there; subtract the two finite outer integrals. Exchanging X and Y repeats the argument and gives the other order of integration.';
+ const pictures=`<div class="fubini-proof-pictures"><section><h5>${labels[stage]}</h5>${svg(b,280,'Function on the product space for this proof step',280)}</section><section><h5>${rightLabels[stage]}</h5>${svg(profile,280,'Slice integral and the operation preserving the proof goals',280)}</section></div>`;
+ return [`<section class="fubini-proof-claim"><h4>Claim ${stage+1} · ${fubiniClaims[stage][0]}</h4><p><b>Why:</b> ${fubiniClaims[stage][1]}</p></section>${pictures}${equation(formula)}`,bridge||'Track the selected slice in both pictures. The same operation acts on h and on its slice integral.'];
 }
 export function mountVisual(root,name,{range,setup}){
  if(!['product-union','product-proof','proof-refinement','proof-fatou','proof-fubini'].includes(name))return false;
@@ -118,8 +135,19 @@ export function mountVisual(root,name,{range,setup}){
  if(name==='product-proof')setup(root,select('step','Proof step',['Intersection closure','Complement closure','Equation 1.4.2: same E','Countable sums: two integrations'])+`<div data-proof-controls="0">${range('shift','Move C horizontally',0,.8,.4,.05)}</div><div data-proof-controls="1">${select('scheme','Complement partition',['Four surrounding pieces','Three products (as in the notes)','Two products'])}</div><div data-proof-controls="2">${select('shape','Set E',['One rectangle','Two separated rectangles'])}${range('level','Refinement level',1,3,1)}</div><div data-proof-controls="3">${range('n','First n strips',1,8,3)}${range('x','Fix x for the slice',0,1,.4,.01)}</div>`,productProof);
  if(name==='proof-refinement')setup(root,range('a','Weight a on A',0,3,1,.25)+range('b','Weight b on B',0,3,2,.25)+range('c','Weight c on C',0,3,.5,.25),refinementProof);
  if(name==='proof-fatou')setup(root,range('n','Start of tail n',1,16,2)+range('later','Inspect k = n + offset',0,8,0)+range('x','Fix outcome s',.01,1,.3,.01),fatouProof);
- if(name==='proof-fubini')setup(root,select('stage','Proof stage',['Rectangle indicator','Linear combinations → monotone class','Nonnegative limits and exhaustion','Signed integrable functions'])+`<div data-proof-controls="2">${range('n','Approximation level n',1,4,2)}</div>`+range('x','Fix x for the slice',0,1,.45,.01),fubiniProof);
- const sync=()=>{const input=root.querySelector('[data-control="step"], [data-control="stage"]');if(input)root.querySelectorAll('[data-proof-controls]').forEach(el=>{el.hidden=el.dataset.proofControls!==input.value;});};
+ if(name==='proof-fubini'){
+  root.classList?.add('fubini-proof-lab');
+  setup(root,select('stage','Proof claim',['1 · Rectangles','2 · Add functions','3 · Increasing limits → all bounded h','4 · Nonnegative h on sigma-finite spaces','5 · Subtract integrable parts'])+`<div data-proof-controls="2,3">${range('n','Approximation level n',1,4,2)}</div><div data-proof-controls="0,1,2,4">${range('x','Fix x for the slice',0,1,.45,.01)}</div>`,fubiniProof);
+  const controls=root.querySelector('.controls');
+  if(controls){const goal=document.createElement('section');goal.className='fubini-proof-goal';goal.innerHTML='<h4>What we want to show</h4><p>For measurable h on a product of sigma-finite spaces, with h ≥ 0 or ∫|h| &lt; ∞:</p><ol><li>Every section y ↦ h(x,y) is measurable.</li><li>Fₕ(x) = ∫h(x,y)dμ₂(y) is measurable.</li><li>∫h d(μ₁×μ₂) = ∫Fₕ dμ₁.</li></ol><p>In the signed case, define Fₕ measurably on the exceptional null set. Swapping x and y gives the other order. In the exploration above, Fₕ was called L.</p>';controls.before(goal);
+   const actions=document.createElement('div');actions.className='fubini-proof-actions';actions.innerHTML='<button type="button" data-claim-prev>Previous claim</button><span></span><button type="button" data-claim-next>Next claim</button>';controls.after(actions);
+   const input=controls.querySelector('[data-control="stage"]');
+   const syncClaims=()=>{actions.querySelector('[data-claim-prev]').disabled=+input.value===0;actions.querySelector('[data-claim-next]').disabled=+input.value===4;actions.querySelector('span').textContent=`${+input.value+1} / 5`;};
+   actions.addEventListener('click',event=>{if(event.target.closest('[data-claim-prev]'))input.value=String(+input.value-1);else if(event.target.closest('[data-claim-next]'))input.value=String(+input.value+1);else return;root.dispatchEvent(new Event('change',{bubbles:true}));});root.addEventListener('change',syncClaims);syncClaims();
+   const transcript=document.createElement('div');transcript.className='fubini-proof-print';transcript.innerHTML=fubiniClaims.map((_,stage)=>{const [drawing,reason]=fubiniProof({stage,n:2,x:.45});return `<section>${drawing}<p>${reason}</p></section>`;}).join('');root.append(transcript);
+  }
+ }
+ const sync=()=>{const input=root.querySelector('[data-control="step"], [data-control="stage"]');if(input)root.querySelectorAll('[data-proof-controls]').forEach(el=>{el.hidden=!el.dataset.proofControls.split(',').includes(input.value);});};
  root.addEventListener?.('change',sync);sync();
  return true;
 }

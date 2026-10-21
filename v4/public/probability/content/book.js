@@ -1,6 +1,6 @@
 import {entries as independence} from './section-1-4-1.js';
 import {entries as products} from './section-1-4-2.js?v=proofs1';
-import {entries as fubini} from './section-1-4-3.js?v=walkthrough5';
+import {entries as fubini} from './section-1-4-3.js?v=curves2';
 import {entries as integral} from './section-1-3-1.js?v=navigation2';
 import {entries as inequalities} from './section-1-3-2.js';
 import {entries as convergence} from './section-1-3-3.js?v=navigation2';

@@ -1,4 +1,4 @@
-import {mountFubini} from './visuals-fubini.js?v=axes1';
+import {mountFubini} from './visuals-fubini.js?v=curves2';
 import {jointTable,binaryLaw,blockTable,mod3Rows,uniformSum,tent,smoothTent,gammaDensity,gammaTail,poissonBounds,primeProducts} from './independence-models.js?v=fubini3';
 const GREEN='#315e4e',GOLD='#986729',PALE='#d8e8df',GRID='#c8cec6',INK='#343a35';
 const fmt=x=>Math.abs(x)<1e-12?'0':Number(x.toPrecision(5)).toString();

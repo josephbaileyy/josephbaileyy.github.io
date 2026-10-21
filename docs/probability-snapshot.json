@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "624980a09aedba4687490111e40a23e6355fe621",
+  "sourceCommit": "2f03ad5f28e89142b176f7f9a7a32ed30f1ffba4",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "32b855f27305d75e07cd77bfd4fc4c1296d8008a21d06c10ca5e9be8221b7b3d"
+      "sha256": "4c7dd949cf9c94cf919fe15304734b7434f7b628af9cc74e1e24f7db8a72f97d"
     },
     {
       "file": "appearance.css",
@@ -16,7 +16,7 @@
     },
     {
       "file": "content/book.js",
-      "sha256": "155205ad8eac38b1902d28b3be4c6dba6a62034de2cf1e00a35ca4bc5a251d9e"
+      "sha256": "24181416d50baf3f53acdfebfc1fc2af3157c22b267a37fb3b12a22352b76278"
     },
     {
       "file": "content/chapter-1.js",
@@ -76,7 +76,7 @@
     },
     {
       "file": "content/section-1-4-3.js",
-      "sha256": "dd7fcda07fe447e40a2a1030c34174dd79c6d92180e39c252cbc7ff00003617f"
+      "sha256": "7bbcfb21316b744eb7164065ed54e94a832d87bb4e7501e5d4320913543d3e87"
     },
     {
       "file": "definitions.js",
@@ -96,7 +96,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "0caeb269a86e2558da05ed8748341b810fe1a7f5c9f1899a1f2c3286105325c7"
+      "sha256": "037c10cbd0ebbe24a70b877ba5ab19ff971d042500b14ab41b7cf7461dac1db2"
     },
     {
       "file": "intuition-models.js",
@@ -112,7 +112,7 @@
     },
     {
       "file": "print.css",
-      "sha256": "b0a3077bc55edfc23bff0447ee716f0a17bff87107830098291524d82db320a0"
+      "sha256": "25145295d44a3eba97d59e8779a590bb5b04a3b627c18a38afbecaede48c82d8"
     },
     {
       "file": "proof-models.js",
@@ -120,15 +120,15 @@
     },
     {
       "file": "reader-state.js",
-      "sha256": "5ec7f9401e64df949820c08d34835dea85f5891ede7ffe67814d25af65243bdf"
+      "sha256": "e7844a5aa5a9224bec56a3685e6bbc2d015d9dcb46ed89d7513de0b66e03a72b"
     },
     {
       "file": "reader.css",
-      "sha256": "0e57fafde72d5d09314f4b1108625041c898acf46d23aaf2653ae31506dc1dde"
+      "sha256": "a43e4406d9a6785c2bcedc74cf1e2656fd537246b07a449dfd1673f1b07043ae"
     },
     {
       "file": "reader.js",
-      "sha256": "5024a53f84ae3bb746bd9be9004caf7878c3d6bb49b2abf8c2b7c525171a4417"
+      "sha256": "59d1d028b201a06bb2834da4808be58655a9817a9a0580c84948a1de1e26bbb8"
     },
     {
       "file": "source/230anotes.pdf",
@@ -140,7 +140,7 @@
     },
     {
       "file": "style.css",
-      "sha256": "cc9130fd3f26442355190ebe8d68ef32f82b10fa2b7373fe8327816f4f88542e"
+      "sha256": "e6d5f4f7d6bf0c2731d9dd4b15316aa0f028ac585ba72bc39348a5815ecda782"
     },
     {
       "file": "vendor/KATEX-LICENSE",
@@ -1308,7 +1308,7 @@
     },
     {
       "file": "visuals-fubini.js",
-      "sha256": "955100b86e7fd9ce5336a80e39c3c21254f247d1857b3e8c992b1d7342c4558d"
+      "sha256": "f55f262c3d7e50fa24e384fb18682f7d0aff2d4e4419c543d74b6857f04109b8"
     },
     {
       "file": "visuals-generated.js",
@@ -1316,7 +1316,7 @@
     },
     {
       "file": "visuals-independence.js",
-      "sha256": "ccedce5f5ec043954bb75de7db18fdd021e010ca2e8108ca482077551b7c5a3e"
+      "sha256": "2aad63dab56e76b7c3a2fbde91621d233d4bab52164a1d9144a5d87e31b6f3cc"
     },
     {
       "file": "visuals-inequalities.js",
@@ -1336,7 +1336,7 @@
     },
     {
       "file": "visuals-proofs.js",
-      "sha256": "e1f22d0937f8487299bff8e5f5adc6748e5ce99df12bfc111b87c1ffca476441"
+      "sha256": "fbd037f34182276f2800f6d99591e09600d7a4dcce7355539aea2b8d519d7741"
     },
     {
       "file": "visuals-random-times.js",

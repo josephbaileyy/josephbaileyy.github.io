@@ -130,3 +130,5 @@ body.print-layout{overflow:auto;height:auto}.print-layout .main-wrap,.print-layo
 }
 html:has(body.split-view){scroll-behavior:auto}
 .split-view .source-scroll,.split-view .companion-pane{scroll-behavior:auto}
+/* On phone tabs the PDF fits its width; pinch/zoom handles the reading size. */
+@media(max-width:900px){#match-text{display:none}}

@@ -17,3 +17,8 @@ body{background:white;color:black;font-size:11pt;line-height:1.5}aside,.toolbar,
 .walkthrough-print .fubini-pictures section{display:block!important}
 .walkthrough-print .fubini-pictures svg{max-height:180px}
 .theorem-details>summary{display:none}
+
+.fubini-proof-lab>.controls,.fubini-proof-lab>.drawing,.fubini-proof-lab>.result,.fubini-proof-actions{display:none!important}
+.fubini-proof-print{display:block}
+.fubini-proof-print>section{break-inside:avoid;margin-bottom:16pt}
+.fubini-proof-pictures{display:grid;grid-template-columns:1fr 1fr}
