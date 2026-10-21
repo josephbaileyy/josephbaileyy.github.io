@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "4bd5ee569fedead7cfb16f962c3824c676bd9748",
+  "sourceCommit": "e621d23bdf4629860575f264b9eb0bb1c428dc0a",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
@@ -96,7 +96,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "7adeb0db92c295a0eaf50528d7c2f6533b221ecea2849ecae0c20bd3e3ed194d"
+      "sha256": "41d52333a55367fe1217d62cb2bba4584a06581ab52190adfb2d893a801a292b"
     },
     {
       "file": "intuition-models.js",
@@ -140,7 +140,7 @@
     },
     {
       "file": "style.css",
-      "sha256": "6b4161ec917473607622f037993782d3dfb7c774da2af1dd5f2c02273a228638"
+      "sha256": "81275c67751ca99dfff514e20564ca51238e09623114982e811a41281cc90ee2"
     },
     {
       "file": "vendor/KATEX-LICENSE",
