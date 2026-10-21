@@ -168,10 +168,13 @@
  .fubini-pictures svg{max-height:205px}
  .fubini-picture-switch{display:flex;gap:5px;margin:8px 0 0}
  .fubini-picture-switch button{padding:6px 9px;font-size:12px}
- .fubini-pictures h5{display:none}
+ .fubini-pictures h5{display:block}
  .fubini-lab .controls input{width:110px}
  .fubini-equation{font-size:15px}
 }
 body:not(.split-view) .walkthrough-context{top:68px}
 body:not(.split-view) .fubini-lab{scroll-margin-top:80px}
 @media print{.walkthrough-context{position:static}.walkthrough-print{display:block}.walkthrough-print>section{break-inside:avoid}.fubini-lab>.controls,.fubini-lab>.drawing,.fubini-lab>.result,.walkthrough-context,.walkthrough-story,.walkthrough-more,.walkthrough-challenge,.fubini-picture-switch{display:none!important}.walkthrough-print .fubini-pictures{display:grid;grid-template-columns:1fr 1fr}.walkthrough-print .fubini-pictures section{display:block!important}.walkthrough-print .fubini-pictures svg{max-height:180px}}
+
+.fubini-axis-reading{font:12px/1.4 system-ui;text-align:center;margin:3px 0;color:var(--ink)}
+.fubini-pictures .fubini-profile h5{color:#986729}

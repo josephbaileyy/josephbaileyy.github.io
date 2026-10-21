@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "e621d23bdf4629860575f264b9eb0bb1c428dc0a",
+  "sourceCommit": "624980a09aedba4687490111e40a23e6355fe621",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "885e561ed9551f0c2cc29d48fee9ff3aa2285bc3b1170bae7cbcc91daac442a2"
+      "sha256": "32b855f27305d75e07cd77bfd4fc4c1296d8008a21d06c10ca5e9be8221b7b3d"
     },
     {
       "file": "appearance.css",
@@ -96,7 +96,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "41d52333a55367fe1217d62cb2bba4584a06581ab52190adfb2d893a801a292b"
+      "sha256": "0caeb269a86e2558da05ed8748341b810fe1a7f5c9f1899a1f2c3286105325c7"
     },
     {
       "file": "intuition-models.js",
@@ -140,7 +140,7 @@
     },
     {
       "file": "style.css",
-      "sha256": "81275c67751ca99dfff514e20564ca51238e09623114982e811a41281cc90ee2"
+      "sha256": "cc9130fd3f26442355190ebe8d68ef32f82b10fa2b7373fe8327816f4f88542e"
     },
     {
       "file": "vendor/KATEX-LICENSE",
@@ -1308,7 +1308,7 @@
     },
     {
       "file": "visuals-fubini.js",
-      "sha256": "d9da24e5fbe94cf325a2871a07c6cdaaa35b97e11affa914006d6f66ee344092"
+      "sha256": "955100b86e7fd9ce5336a80e39c3c21254f247d1857b3e8c992b1d7342c4558d"
     },
     {
       "file": "visuals-generated.js",
@@ -1316,7 +1316,7 @@
     },
     {
       "file": "visuals-independence.js",
-      "sha256": "d349de1157451f6303981da4b47389db81fc8d6d6439c43f38cd7c16736e1eea"
+      "sha256": "ccedce5f5ec043954bb75de7db18fdd021e010ca2e8108ca482077551b7c5a3e"
     },
     {
       "file": "visuals-inequalities.js",

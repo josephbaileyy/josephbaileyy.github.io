@@ -1,5 +1,5 @@
 import {mountVisual as mountProofs} from './visuals-proofs.js?v=proofs1';
-import {mountVisual as mountIndependence} from './visuals-independence.js?v=walkthrough5';
+import {mountVisual as mountIndependence} from './visuals-independence.js?v=axes1';
 import {mountVisual as mountIntegration} from './visuals-integration.js?v=fe7d5bc51817';
 import {mountVisual as mountInequalities} from './visuals-inequalities.js?v=509c0e7b299c';
 import {mountVisual as mountConvergence} from './visuals-convergence.js?v=navigation2';
