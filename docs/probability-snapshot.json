@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "77e6b8c409c0d4ba3634f924f112c661c26cc4cd",
+  "sourceCommit": "4bd5ee569fedead7cfb16f962c3824c676bd9748",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "169160aee2ca21172cf9dd0cd26cfd94c938dec07710895fc5a266ba5c4bde6c"
+      "sha256": "885e561ed9551f0c2cc29d48fee9ff3aa2285bc3b1170bae7cbcc91daac442a2"
     },
     {
       "file": "appearance.css",
@@ -16,7 +16,7 @@
     },
     {
       "file": "content/book.js",
-      "sha256": "88e8e09c14f5f284bfea48db58ad11c8601ae7edee300a2211d23d6f97f06341"
+      "sha256": "155205ad8eac38b1902d28b3be4c6dba6a62034de2cf1e00a35ca4bc5a251d9e"
     },
     {
       "file": "content/chapter-1.js",
@@ -76,7 +76,7 @@
     },
     {
       "file": "content/section-1-4-3.js",
-      "sha256": "8e141149e2f6744dba295308d197aecf83008b42cdbb6a650eab4334e59b6ab6"
+      "sha256": "dd7fcda07fe447e40a2a1030c34174dd79c6d92180e39c252cbc7ff00003617f"
     },
     {
       "file": "definitions.js",
@@ -96,7 +96,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "bf54a83a43bfc565339ed09442ec0cefb257fce356fec5eb70fad96eee5ed18a"
+      "sha256": "7adeb0db92c295a0eaf50528d7c2f6533b221ecea2849ecae0c20bd3e3ed194d"
     },
     {
       "file": "intuition-models.js",
@@ -112,7 +112,7 @@
     },
     {
       "file": "print.css",
-      "sha256": "9f4c471bc60eafb7c4bdb7b93950e0f7a30177343f1a66900bfe78b071b2d00d"
+      "sha256": "b0a3077bc55edfc23bff0447ee716f0a17bff87107830098291524d82db320a0"
     },
     {
       "file": "proof-models.js",
@@ -140,7 +140,7 @@
     },
     {
       "file": "style.css",
-      "sha256": "18d965f75710bb2b97a3560a08086cfef0a41e42330311d20505642d314db6c6"
+      "sha256": "6b4161ec917473607622f037993782d3dfb7c774da2af1dd5f2c02273a228638"
     },
     {
       "file": "vendor/KATEX-LICENSE",
@@ -1307,12 +1307,16 @@
       "sha256": "9feb8ea3729e0a38eb8c01674f2e0340fa7bb14413b8d92bc66103e61e0a2d45"
     },
     {
+      "file": "visuals-fubini.js",
+      "sha256": "d9da24e5fbe94cf325a2871a07c6cdaaa35b97e11affa914006d6f66ee344092"
+    },
+    {
       "file": "visuals-generated.js",
       "sha256": "fd297625fdce546ff3cd1165e01a79eaca563a679a449c8a99d14e9ed85607a8"
     },
     {
       "file": "visuals-independence.js",
-      "sha256": "cde2e2b81bb2b1383a8ab42833589119c500a59ea6029e8f15b2ae6fd9771f32"
+      "sha256": "d349de1157451f6303981da4b47389db81fc8d6d6439c43f38cd7c16736e1eea"
     },
     {
       "file": "visuals-inequalities.js",

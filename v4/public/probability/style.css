@@ -116,19 +116,61 @@
 @media(max-width:420px){#entry-search{padding:16px}.toolbar .reader-controls{flex-wrap:wrap}}
 @media print{#go-to-entry,#entry-search{display:none!important}}
 
-/* Fubini: connect the geometric slice, its length, and the outer integral. */
-.fubini-lab{container-type:inline-size}
-.fubini-lab .controls{display:grid;gap:12px}
-.fubini-lab .controls label{display:flex;flex-wrap:wrap;min-width:0}
-.fubini-lab .controls select{max-width:100%;min-width:0}
-.fubini-lab .controls input{flex:1;min-width:80px;max-width:240px;min-height:32px}
-.fubini-lab .controls button{min-height:40px}
-.fubini-actions{display:flex;flex-wrap:wrap;gap:8px}
-.fubini-lab .fubini-example,.fubini-panel p{font:14px/1.65 system-ui}
-.fubini-panel{border-top:1px solid var(--line);padding-top:16px;margin-top:18px}
-.fubini-panel h4{font:600 15px/1.5 system-ui;margin:0 0 8px;color:var(--green)}
-.fubini-panel svg{max-height:none}
-.fubini-panel svg text{font-size:16px}
-.fubini-lab .result p{margin:8px 0}
-@container (max-width:340px){.fubini-panel svg text{font-size:20px}}
-@media print{.fubini-lab .controls button{display:none}.fubini-panel{break-inside:avoid}}
+/* Guided entries keep a working example together; the full theorem follows. */
+.entry.guided-entry h3{font-size:26px;margin:8px 0 10px}
+.guided-entry .prereqs{margin:8px 0}
+.entry.guided-entry>.plain{font-size:17px;line-height:1.55;margin:12px 0}
+.entry.guided-entry>.visual{margin:16px 0;overflow:visible}
+.guided-entry>.visual>.visual-head,.guided-entry>.visual>.caption{display:none}
+.entry.guided-entry .visual-body{padding:14px;overflow:visible}
+.fubini-lab{container-type:inline-size;scroll-margin-top:60px;font:14px/1.55 system-ui}
+.walkthrough-context{position:sticky;top:60px;scroll-margin-top:60px;z-index:2;background:var(--paper);padding:0 0 8px;border-bottom:1px solid var(--line)}
+.walkthrough-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+.walkthrough-steps button{padding:8px 5px;font-size:12px;line-height:1.3;min-height:40px}
+.walkthrough-steps button span{display:inline-grid;place-items:center;width:18px;height:18px;border:1px solid currentColor;border-radius:50%;margin-right:3px}
+.walkthrough-steps button[aria-pressed=true],.fubini-picture-switch button[aria-pressed=true]{background:var(--green);color:white}
+.walkthrough-anchor{font:12px/1.5 system-ui;margin-top:8px;color:var(--muted)}
+.walkthrough-story h4{font:600 16px/1.4 system-ui;margin:12px 0 6px;color:var(--green)}
+.walkthrough-story p{margin:6px 0;font:14px/1.55 system-ui}
+.walkthrough-story .walkthrough-task{color:var(--green);font-size:13px;font-weight:550}
+.fubini-lab .controls{display:flex;gap:8px;align-items:center;margin:12px 0 4px}
+.fubini-lab .controls label{font:12px system-ui;display:flex;gap:8px;align-items:center;flex-wrap:wrap;min-width:0}
+.fubini-lab .controls input{width:125px;min-height:32px}
+.fubini-lab .controls output{width:3ch;font-variant-numeric:tabular-nums}
+.fubini-lab .controls select{min-width:0;max-width:100%;font:12px system-ui;padding:6px}
+.fubini-sweep-actions{display:flex;gap:5px}
+.fubini-sweep-actions button{padding:7px 9px;font:12px system-ui}
+.fubini-pictures{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:6px 0}
+.fubini-pictures section{min-width:0}
+.fubini-pictures h5{font:550 12px/1.4 system-ui;text-align:center;color:var(--green);margin:4px 0}
+.fubini-pictures svg{width:100%;height:auto;max-height:180px}
+.fubini-pictures svg text{font:16px system-ui;fill:var(--ink)}
+.fubini-picture-switch{display:none}
+.fubini-lab .result{margin:8px 0;padding:9px 12px}
+.fubini-reading{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px;font-size:12px}
+.fubini-equation{font-size:16px;text-align:center;margin-top:5px}
+.walkthrough-more{margin-top:8px;padding:9px 0 0}
+.walkthrough-more p{font:15px/1.7 Georgia;margin:10px 0 2px}
+.walkthrough-challenge{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+.walkthrough-challenge p{margin:5px 0;font:13px/1.5 system-ui}
+.walkthrough-challenge>div{display:flex;gap:6px}
+.walkthrough-feedback:empty{display:none}
+.walkthrough-feedback{padding:8px 10px;background:var(--pale)}
+.walkthrough-print{display:none}
+.theorem-details .statement{margin-top:12px;font-size:16px}
+@container(max-width:365px){
+ .walkthrough-steps button{font-size:11px;padding:6px 3px}
+ .walkthrough-steps button span{display:block;margin:0 auto 4px}
+ .walkthrough-story p{font-size:14px}
+ .fubini-pictures{grid-template-columns:1fr}
+ .fubini-pictures[data-picture="0"] .fubini-profile,.fubini-pictures[data-picture="1"] .fubini-region{display:none}
+ .fubini-pictures svg{max-height:205px}
+ .fubini-picture-switch{display:flex;gap:5px;margin:8px 0 0}
+ .fubini-picture-switch button{padding:6px 9px;font-size:12px}
+ .fubini-pictures h5{display:none}
+ .fubini-lab .controls input{width:110px}
+ .fubini-equation{font-size:15px}
+}
+body:not(.split-view) .walkthrough-context{top:68px}
+body:not(.split-view) .fubini-lab{scroll-margin-top:80px}
+@media print{.walkthrough-context{position:static}.walkthrough-print{display:block}.walkthrough-print>section{break-inside:avoid}.fubini-lab>.controls,.fubini-lab>.drawing,.fubini-lab>.result,.walkthrough-context,.walkthrough-story,.walkthrough-more,.walkthrough-challenge,.fubini-picture-switch{display:none!important}.walkthrough-print .fubini-pictures{display:grid;grid-template-columns:1fr 1fr}.walkthrough-print .fubini-pictures section{display:block!important}.walkthrough-print .fubini-pictures svg{max-height:180px}}

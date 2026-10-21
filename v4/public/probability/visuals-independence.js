@@ -1,4 +1,5 @@
-import {fubiniSlices,jointTable,binaryLaw,blockTable,mod3Rows,uniformSum,tent,smoothTent,gammaDensity,gammaTail,poissonBounds,primeProducts} from './independence-models.js?v=fubini3';
+import {mountFubini} from './visuals-fubini.js?v=walkthrough5';
+import {jointTable,binaryLaw,blockTable,mod3Rows,uniformSum,tent,smoothTent,gammaDensity,gammaTail,poissonBounds,primeProducts} from './independence-models.js?v=fubini3';
 const GREEN='#315e4e',GOLD='#986729',PALE='#d8e8df',GRID='#c8cec6',INK='#343a35';
 const fmt=x=>Math.abs(x)<1e-12?'0':Number(x.toPrecision(5)).toString();
 const txt=(x,y,s,anchor='start')=>`<text x="${x}" y="${y}" text-anchor="${anchor}" style="font-size:13px;fill:${INK}">${s}</text>`;
@@ -26,6 +27,7 @@ function play(root,key){
 function presets(root,pairs){const controls=root.querySelector('.controls');if(!controls)return;for(const [label,values]of pairs){const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',()=>{for(const [k,v]of Object.entries(values)){const input=root.querySelector(`[data-control="${k}"]`);if(input)input.value=v}root.dispatchEvent(new Event('input',{bubbles:true}))});controls.append(b)}}
 export function mountVisual(root,name,{svg,setup,range}){
  if(!name.startsWith('ind-'))return false;
+ if(name==='ind-fubini')return mountFubini(root,{svg,setup,range});
  root.classList?.add('ind-lab');
  const p=()=>range('p','P(X=1)',0,1,.5,.05),q=()=>range('q','P(Y=1)',0,1,.5,.05);
  switch(name){
@@ -43,36 +45,6 @@ export function mountVisual(root,name,{svg,setup,range}){
  case 'ind-primes':setup(root,range('s','Exponent s (>1)',1.2,4,2,.1)+range('n','Number of primes',1,20,6),v=>{const m=primeProducts(v.s,v.n);let b=txt(40,25,'Finite product after each successive prime');m.products.forEach((p,i)=>{b+=`<circle cx="${50+500*i/Math.max(1,v.n-1)}" cy="${190-145*p}" r="4" fill="${GREEN}"/>`});b+=line(50,40,50,190)+line(50,190,550,190)+txt(42,49,'1','end')+txt(42,194,'0','end')+txt(50,210,'First prime: 2')+txt(550,210,`Last: ${m.primes.at(-1)}`,'end')+line(50,190-145*m.upper,550,190-145*m.upper,GOLD)+txt(40,238,'Gold: upper bound on the infinite-product limit');return [svg(b,260),`Through prime ${m.primes.at(-1)}: product=${fmt(m.products.at(-1))}. Integral-test bounds from 1,000 zeta terms give ${(Math.floor(m.lower*1e6)/1e6).toFixed(6)} ≤ 1/ζ(s) ≤ ${(Math.ceil(m.upper*1e6)/1e6).toFixed(6)}. Finite prime products decrease to that limit.`]});break;
  case 'ind-rectangle':setup(root,range('a','Width a',0,1,.7,.05)+range('b','Height b',0,1,.5,.05)+range('n','Subdivisions per side',1,8,3),v=>{let b=rect(100,30,360,270,'#f0f2eb');for(let i=0;i<v.n;i++)for(let j=0;j<v.n;j++)b+=rect(100+i*360*v.a/v.n,300-(j+1)*270*v.b/v.n,360*v.a/v.n,270*v.b/v.n,(i+j)%2?PALE:'#b3cebd');b+=txt(100,325,'0')+txt(460,325,'1','end')+txt(90,35,'1','end');return [svg(b,350),`Area a×b=${fmt(v.a*v.b)}. ${v.n**2} disjoint pieces each have area ${fmt(v.a*v.b/v.n**2)}. Their sum is unchanged.`]});break;
  case 'ind-isomorphism':setup(root,range('a','Selected subset (binary mask)',0,7,3),v=>{let b=txt(80,25,'State space S')+txt(400,25,'Borel subset T');['red','blue','green'].forEach((s,i)=>{const on=v.a&(1<<i);b+=rect(60,45+i*65,130,42,on?PALE:'#f0f2eb')+rect(395,45+i*65,130,42,on?PALE:'#f0f2eb')+txt(125,72+i*65,s,'middle')+txt(460,72+i*65,String(i*2),'middle')+line(200,66+i*65,385,66+i*65,on?GREEN:GRID)});return [svg(b,260),'A subset and its image carry the same mass under a transported law. Both g and g⁻¹ must be measurable; finite discrete spaces make that automatic.']});break;
- case 'ind-fubini':
-  root.classList?.add('fubini-lab');
-  setup(root,select('a','Region',['x + y ≤ z','x + 2y ≤ z'])+range('z','Boundary z',0,3,1,.02)+select('dir','Add slices',['Vertical: integrate y first','Horizontal: integrate x first'])+range('t','Sweep up to t',0,1,.4,.01),v=>{
-   const a=v.a+1,m=fubiniSlices(v.z,a,v.t,v.dir),horizontal=!!v.dir;
-   const X=x=>80+280*x,Y=y=>320-280*y;
-   const polygon=(points,color,opacity=1)=>points.length?`<polygon points="${points.map(([x,y])=>`${X(x)},${Y(y)}`).join(' ')}" fill="${color}" opacity="${opacity}"/>`:'';
-   let region=rect(80,40,280,280,'#f0f2eb')+polygon(m.polygon,PALE)+polygon(m.sweptPolygon,GOLD,.3);
-   region+=line(80,320,360,320,INK)+line(80,40,80,320,INK);
-   region+=horizontal?line(80,Y(v.t),360,Y(v.t),GRID):line(X(v.t),320,X(v.t),40,GRID);
-   region+=horizontal?line(80,Y(v.t),X(m.length),Y(v.t),GOLD):line(X(v.t),320,X(v.t),Y(m.length),GOLD);
-   region+=txt(80,343,'0')+txt(360,343,'x = 1','end')+txt(70,48,'y = 1','end');
-   const P=u=>80+280*u,Q=l=>165-120*l;
-   const knots=[0,1,...(horizontal?[v.z/a,(v.z-1)/a]:[v.z,v.z-a])].filter(u=>u>=0&&u<=1).sort((a,b)=>a-b);
-   const points=knots.map(u=>`${P(u)},${Q(m.profile(u))}`),cut=[...knots.filter(u=>u<v.t),v.t];
-   let profile=`<polygon points="80,165 ${points.join(' ')} 360,165" fill="${PALE}"/>`;
-   profile+=`<polygon points="80,165 ${cut.map(u=>`${P(u)},${Q(m.profile(u))}`).join(' ')} ${P(v.t)},165" fill="${GOLD}" opacity=".3"/>`;
-   profile+=line(80,45,80,165,INK)+line(80,165,360,165,INK)+`<polyline points="${points.join(' ')}" fill="none" stroke="${GREEN}" stroke-width="3"/>`;
-   profile+=line(P(v.t),165,P(v.t),Q(m.length),GOLD)+`<circle cx="${P(v.t)}" cy="${Q(m.length)}" r="5" fill="${GOLD}"/>`;
-   profile+=txt(80,24,'Slice length L(t)')+txt(67,50,'1','end')+txt(67,170,'0','end')+txt(80,191,'0')+txt(360,191,horizontal?'y = 1':'x = 1','end');
-   const picture=(body,height,label)=>`<svg viewBox="0 0 420 ${height}" role="img" aria-label="${label}">${body.replaceAll('font-size:13px;','')}</svg>`;
-   const inner=horizontal?'∫₀¹ h(x,t) dx':'∫₀¹ h(t,y) dy',formula=horizontal?'max(0, min(1, z − a·t))':'max(0, min(1, (z − t)/a))';
-   return [`<p class="fubini-example">Here h(x,y) is 1 in the green region x + ${a===1?'y':'2y'} ≤ z and 0 elsewhere in the unit square. Both measures are ordinary length, so ∫∫h is the green area.</p>
-    <section class="fubini-panel"><h4>1 · Cut the region</h4><p>The gold segment fixes ${horizontal?'y = t and runs across x':'x = t and runs along y'}. Its length is the inner integral.</p>${picture(region,360,'Unit square with green region, gold slice and swept area')}</section>
-    <section class="fubini-panel"><h4>2 · Turn each length into a height</h4><p>The gold dot records that same segment’s length. Move t to trace the curve.</p>${picture(profile,210,'Slice lengths and the area accumulated up to the selected slice')}</section>`,
-    `<p><strong>Inner integral:</strong> L(${fmt(v.t)}) = ${inner} = ${fmt(m.length)}.</p><p>L(t) = ${formula}, with a = ${a}.</p><p><strong>Outer integral:</strong> ∫₀¹ L(t) dt = ${fmt(m.total)} = ∫∫ h(x,y) dx dy.</p><p>The gold shading has accumulated ${fmt(m.swept)} up to t = ${fmt(v.t)}, in both pictures. Sweep to 1 to collect the full area.</p><p>${a===1?'Try the x + 2y region: the two directions then give different length curves.':'Switch directions: the length curve changes, while its total area stays the same.'}</p>`];
-  });
-  presets(root,[['Reset triangle',{a:0,z:1,t:.4,dir:0}],['Try an uneven region',{a:1,z:1,t:.4}],['Finish the sweep',{t:1}]]);
-  play(root,'t');
-  {const controls=root.querySelector('.controls');if(controls){const actions=document.createElement('div');actions.className='fubini-actions';actions.append(...controls.querySelectorAll('button'));controls.append(actions);}}
-  break;
  case 'ind-expectation':setup(root,p()+q()+select('h','Integrand',['Product xy','Square of sum (x+y)²']),v=>{const cells=jointTable(v.p,v.q).cells;let total=0;const weighted=cells.map((r,x)=>r.map((w,y)=>{const a=w*(v.h?(x+y)**2:x*y);total+=a;return a}));return [`<p class="small">Weighted cell contributions (these are not probabilities)</p>`+`<div class="ind-contributions">${weighted.map((r,i)=>r.map((w,j)=>`<div>(${i},${j})<br><b>${fmt(w)}</b></div>`).join('')).join('')}</div>`,`E[h(X,Y)]=${fmt(total)}. ${v.h?`E(X+Y)² = p+q+2pq = ${fmt(v.p+v.q+2*v.p*v.q)}.`:`EX·EY = pq = ${fmt(v.p*v.q)}.`}`]});break;
  case 'ind-layer':setup(root,range('p','Power p',1,4,1,.25)+range('y','Horizontal cut y',0,3,1.5,.05),v=>{const heights=[.5,1.5,3],weights=[.2,.5,.3],moment=heights.reduce((s,h,i)=>s+weights[i]*h**v.p,0),tail=weights.reduce((s,w,i)=>s+(heights[i]>v.y?w:0),0);let b=txt(40,25,'Values (bar widths are probabilities)');let x=50;heights.forEach((h,i)=>{b+=rect(x,200-h*50,500*weights[i],h*50)+txt(x+250*weights[i],225,`${weights[i]} at ${h}`,'middle');x+=500*weights[i]});b+=line(50,200-50*v.y,550,200-50*v.y,GOLD);b+=txt(40,265,'Survival P(Y > y) as the cut moves upward');const X=y=>50+500*y/3,Y=p=>390-95*p;let points=[[0,1],[.5,1],[.5,.8],[1.5,.8],[1.5,.3],[3,.3],[3,0]];b+=`<polyline points="${points.map(([x,y])=>`${X(x)},${Y(y)}`).join(' ')}" fill="none" stroke="${GREEN}" stroke-width="3"/>`+line(X(v.y),290,X(v.y),390,GOLD)+`<circle cx="${X(v.y)}" cy="${Y(tail)}" r="5" fill="${GOLD}"/>`+txt(50,415,'y=0')+txt(550,415,'y=3','end');return [svg(b,435),`Strict tail at y=${v.y}: ${fmt(tail)}. E[Yᵖ]=0.2·0.5ᵖ+0.5·1.5ᵖ+0.3·3ᵖ=${fmt(moment)}. The integral of p·y^(p−1) times this staircase has the same exact value.`]});break;
  case 'ind-convolution':setup(root,range('a','Uniform width a',.25,2,1,.25)+range('b','Uniform width b',.25,2,1,.25)+range('z','Sum location z',0,4,1,.02),v=>{const l=Math.max(0,v.z-v.a),r=Math.min(v.b,v.z),overlap=Math.max(0,r-l),a=chart([z=>uniformSum(z,v.a,v.b)],4,1/Math.max(v.a,v.b),{labels:['Green curve: density of X+Y; horizontal axis is z']});let b=a.body+line(a.X(v.z),a.Y(0),a.X(v.z),a.Y(uniformSum(v.z,v.a,v.b)),GOLD)+txt(50,280,'Overlap on the y axis (interval supports)');const X=x=>50+500*x/4;b+=rect(X(0),300,500*v.b/4,17,PALE)+rect(X(Math.max(0,v.z-v.a)),330,500*(v.z-Math.max(0,v.z-v.a))/4,17,'#eadcc5');if(overlap)b+=rect(X(l),360,500*overlap/4,17,GREEN);b+=txt(50,405,'Rows: [0,b], visible part of [z−a,z], their intersection.');return [svg(b,425),`Overlap length=${fmt(overlap)}. fₓ₊ᵧ(${fmt(v.z)})=${fmt(overlap/(v.a*v.b))}. Support is [0,${fmt(v.a+v.b)}]; total density area is 1. Portions of the shifted interval below zero are outside this display.`]});play(root,'z');break;
@@ -94,7 +66,6 @@ export function mountVisual(root,name,{svg,setup,range}){
  'ind-cdf':'Predict: will a lower-left rectangle have the same mass for independent uniforms and for Y=X?',
  'ind-blocks':'Predict: what changes when the two sums share one input?',
  'ind-convolution':'Predict: where is the overlap largest, and what happens when the two widths differ?',
- 'ind-fubini':'Try this: sweep the triangle from 0 to 1. Then switch directions. What stays the same?' ,
  'ind-smoothing':'Predict: where will averaging change this tent the most?',
  'ind-gamma-sum':'Predict: how will adding a waiting time change the density’s location and spread?'
  };

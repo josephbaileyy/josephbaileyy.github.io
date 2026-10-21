@@ -7,3 +7,13 @@ body{background:white;color:black;font-size:11pt;line-height:1.5}aside,.toolbar,
 .intuition-lab .intuition-panel,.intuition-lab .intuition-metrics{break-inside:avoid}
 .visual:has(.proof-lab){break-inside:auto}
 .proof-lab .proof-panel,.proof-lab .proof-equation{break-inside:avoid}
+
+/* Guided lessons print as a complete linear explanation, with the theorem. */
+.visual:has(.fubini-lab){break-inside:auto}
+.fubini-lab>.controls,.fubini-lab>.drawing,.fubini-lab>.result,.walkthrough-context,.walkthrough-story,.walkthrough-more,.walkthrough-challenge,.fubini-picture-switch{display:none!important}
+.walkthrough-print{display:block}
+.walkthrough-print>section{break-inside:avoid;margin-bottom:16pt}
+.walkthrough-print .fubini-pictures{display:grid;grid-template-columns:1fr 1fr}
+.walkthrough-print .fubini-pictures section{display:block!important}
+.walkthrough-print .fubini-pictures svg{max-height:180px}
+.theorem-details>summary{display:none}
