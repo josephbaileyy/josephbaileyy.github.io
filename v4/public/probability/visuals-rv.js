@@ -1,3 +1,4 @@
+import {mountAlmostSure} from './visuals-pointwise.js';
 const G='#507b61',P='#d8e8df',B='#b58a48',L='#c9cfc4';
 const names=['a','b','c','d'];
 export function simpleValues(a,b){return [a,a+b,b,0]}
@@ -24,7 +25,6 @@ case 'rv-composition':{
 setup(root,'<label>Final set B<select aria-label="Final set B" data-control="kind"><option value="0">{low}</option><option value="1">{high}</option></select></label>',v=>{let final=v.kind?'high':'low';return [`<div class="proof-flow"><div class="proof-step"><b>B = {${final}}</b></div><div class="proof-step"><b>f⁻¹(B) = ${v.kind?'{1}':'{0,2}'}</b><p>f(0)=low, f(1)=high, f(2)=low</p></div><div class="proof-step"><b>X⁻¹(f⁻¹(B)) = ${v.kind?'{b,c}':'{a,d}'}</b><p>X(a)=0, X(b)=X(c)=1, X(d)=2</p></div></div>`,`The same outcomes satisfy f(X(ω)) ∈ B. Preimages travel backward through the two mappings. All subsets are measurable in this finite example.`]});return true;}
 case 'rv-limits':{
 setup(root,'<label>Sequence<select aria-label="Sequence" data-control="kind"><option value="0">xₙ=1/n</option><option value="1">xₙ=(−1)ⁿ</option><option value="2">xₙ=n</option></select></label>'+range('n','Tail starts at N',1,16,4),v=>{const f=k=>v.kind===0?1/k:v.kind===1?(-1)**k:k,[lo,hi]=tailBounds(v.kind,v.n),Y=y=>v.kind===2?190-y*7:110-y*70;return [svg(Array.from({length:24},(_,i)=>`<circle cx="${30+i*23}" cy="${Y(f(i+1))}" r="4" fill="${i+1>=v.n?G:L}"/>`).join('')+`<line x1="${30+(v.n-1)*23}" x2="${30+(v.n-1)*23}" y1="20" y2="210" stroke="${B}"/>${txt(300,238,'Terms n=1,…,24; green marks the chosen tail')}`,255),`For the entire infinite tail n≥${v.n}: inf = ${lo}, sup = ${hi===Infinity?'∞':hi}. ${v.kind===0?'liminf = limsup = 0.':v.kind===1?'liminf = −1, limsup = 1; no limit.':'liminf = limsup = +∞ (extended-real convergence).'} These exact tail bounds come from the formulas, not the 24 plotted terms.`]});return true;}
-case 'rv-as':{
-setup(root,range('p','Mass of exceptional outcome z',0,.5,0,.05)+range('n','Sequence index n',1,20,4),v=>{let values=[1/v.n,2/v.n,-1/v.n,(-1)**v.n];return [signed(svg,values,['a','b','c','z'])+`<p class="small">Masses of a,b,c: ${( (1-v.p)/3).toFixed(3)} each. Mass of z: ${v.p}. At a,b,c the values are 1/n,2/n,−1/n; at z they alternate.</p>`,`Convergence event = {a,b,c}, with probability ${1-v.p}. ${v.p===0?'Convergence to 0 holds almost surely, but fails at z.':'Convergence to 0 does not hold almost surely: the failure set has positive mass.'}`]});return true;}
+case 'rv-as': mountAlmostSure(root,{setup,range}); return true;
 default:return false;
 }}

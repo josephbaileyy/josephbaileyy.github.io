@@ -22,3 +22,6 @@ body{background:white;color:black;font-size:11pt;line-height:1.5}aside,.toolbar,
 .fubini-proof-print{display:block}
 .fubini-proof-print>section{break-inside:avoid;margin-bottom:16pt}
 .fubini-proof-pictures{display:grid;grid-template-columns:1fr 1fr}
+.visual:has(.pointwise-lab){break-inside:auto}
+.pointwise-lab>.controls,.pointwise-lab>.drawing,.pointwise-lab>.result{display:none!important}
+.pw-print{display:block}.pw-print section{break-inside:avoid;margin-bottom:16pt}

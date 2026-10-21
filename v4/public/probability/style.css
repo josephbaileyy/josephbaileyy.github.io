@@ -225,3 +225,35 @@ body:not(.split-view) .fubini-proof-actions{top:68px}
 @media print{.machine-lab>.controls,.machine-lab>.drawing,.machine-lab>.result{display:none!important}.machine-print{display:block}.machine-print>.machine-stage{break-inside:avoid;margin-bottom:28px}.machine-pictures{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}}
 .print-layout .machine-lab>.controls,.print-layout .machine-lab>.drawing,.print-layout .machine-lab>.result{display:none}
 .print-layout .machine-print{display:block}
+
+/* Fixed-outcome paths and the pointwise ordering required by MON. */
+.pointwise-lab{container-type:inline-size;color:var(--ink);font:14px/1.65 system-ui}
+.pointwise-lab h4{font:600 15px/1.5 system-ui;color:var(--green);margin:16px 0 8px}
+.pointwise-lab .controls{align-items:start;gap:12px}
+.pointwise-lab .controls label{display:grid;gap:5px;flex:1;min-width:145px;font-size:13px}
+.pointwise-lab .controls select{width:100%;min-width:0;font:13px system-ui;padding:8px;background:var(--paper);color:var(--ink);border:1px solid var(--control-border);border-radius:4px}
+.pointwise-lab .controls input[type=range]{width:100%;min-width:100px}
+.pointwise-lab .controls output{font-variant-numeric:tabular-nums}
+.pointwise-lab .pw-space{flex-basis:100%;margin:0;font-size:12px;color:var(--muted)}
+.pointwise-lab .pw-question{flex-basis:100%;margin:0;font-size:15px;color:var(--green)}
+.pointwise-lab .pw-identity{padding:10px 12px;background:var(--pale);margin:8px 0}
+.pw-identity span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.pointwise-lab .pw-axis-label{font-size:12px;margin:10px 0 0;color:var(--muted)}
+.pointwise-lab svg{max-height:280px;margin:auto}
+.pointwise-lab svg text{font:14px system-ui;fill:var(--ink)}
+.pw-axis{stroke:var(--muted);fill:none}.pw-grid{stroke:var(--line);stroke-width:1}
+.pw-path{fill:none;stroke:var(--green);stroke-width:2.5;stroke-linejoin:round}
+.pw-path.pw-exception{stroke:var(--gold)}.pw-next{fill:none;stroke:var(--ink);stroke-width:2;stroke-dasharray:6 4}
+.pw-area{fill:var(--pale)}.pw-lost{fill:var(--gold);fill-opacity:.4}
+.pw-tracker{stroke:var(--muted);stroke-dasharray:2 4}.pw-dot{fill:var(--green)}.pw-gold-dot{fill:var(--gold)}
+.pw-open{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
+.pointwise-lab .pw-reading{font-size:13px;margin:8px 0 14px}
+.pw-mass-bar{display:flex;height:20px;border:1px solid var(--green);margin:12px 0}
+.pw-mass-bar span:first-child{background:var(--green)}.pw-mass-bar span+span{background:repeating-linear-gradient(135deg,var(--gold) 0 3px,var(--paper) 3px 6px)}
+.pw-masses{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px;margin:10px 0}
+.pw-masses span{min-width:0}.pw-masses b{display:block;font-size:13px;margin-bottom:3px}
+.pw-legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:12px;margin:6px 0}
+.pw-integrals{border-block:1px solid var(--line);padding:10px 0;margin:14px 0;display:grid;gap:5px;font-size:14px}
+.pw-reason p{font-size:14px}.pw-print{display:none}
+@container(max-width:350px){.pointwise-lab .controls label{min-width:100%}.pw-masses{grid-template-columns:1fr;gap:8px}}
+@media print{.pointwise-lab>.controls,.pointwise-lab>.drawing,.pointwise-lab>.result{display:none!important}.pw-print{display:block}.pw-print section{break-inside:avoid;margin-bottom:16pt}}
