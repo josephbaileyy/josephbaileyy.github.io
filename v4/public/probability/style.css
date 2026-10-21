@@ -227,7 +227,7 @@ body:not(.split-view) .fubini-proof-actions{top:68px}
 .print-layout .machine-print{display:block}
 
 /* Fixed-outcome paths and the pointwise ordering required by MON. */
-.pointwise-lab{container-type:inline-size;color:var(--ink);font:14px/1.65 system-ui}
+.pointwise-lab{--pw-trace:#80602d;container-type:inline-size;color:var(--ink);font:14px/1.65 system-ui}
 .pointwise-lab h4{font:600 15px/1.5 system-ui;color:var(--green);margin:16px 0 8px}
 .pointwise-lab .controls{align-items:start;gap:12px}
 .pointwise-lab .controls label{display:grid;gap:5px;flex:1;min-width:145px;font-size:13px}
@@ -243,9 +243,9 @@ body:not(.split-view) .fubini-proof-actions{top:68px}
 .pointwise-lab svg text{font:14px system-ui;fill:var(--ink)}
 .pw-axis{stroke:var(--muted);fill:none}.pw-grid{stroke:var(--line);stroke-width:1}
 .pw-path{fill:none;stroke:var(--green);stroke-width:2.5;stroke-linejoin:round}
-.pw-path.pw-exception{stroke:var(--gold)}.pw-next{fill:none;stroke:var(--ink);stroke-width:2;stroke-dasharray:6 4}
+.pw-path.pw-exception{stroke:var(--pw-trace)}.pw-next{fill:none;stroke:var(--ink);stroke-width:2;stroke-dasharray:6 4}
 .pw-area{fill:var(--pale)}.pw-lost{fill:var(--gold);fill-opacity:.4}
-.pw-tracker{stroke:var(--muted);stroke-dasharray:2 4}.pw-dot{fill:var(--green)}.pw-gold-dot{fill:var(--gold)}
+.pw-tracker{stroke:var(--muted);stroke-dasharray:2 4}.pw-dot{fill:var(--green)}.pw-gold-dot{fill:var(--pw-trace)}
 .pw-open{fill:var(--paper);stroke:var(--ink);stroke-width:1.5}
 .pointwise-lab .pw-reading{font-size:13px;margin:8px 0 14px}
 .pw-mass-bar{display:flex;height:20px;border:1px solid var(--green);margin:12px 0}
