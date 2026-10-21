@@ -33,6 +33,7 @@ export const definitions = [
  ['1.2.46', 'Triviality for a measure', ['P-trivial','P-degenerate','μ-trivial']],
  ['1.2.48', 'Support of a law', ['support']],
 
+ ['1.3.6', 'Standard machine', ['standard machine','standard-machine']],
  ['1.3.13', 'Markov’s inequality', ['Markov’s inequality', "Markov's inequality", 'Markov inequality', 'Markov']],
  ['1.3.14', 'Chebyshev’s inequality / exponential bound', ['Chebyshev’s inequality', "Chebyshev's inequality", 'Chebyshev inequality', 'Chebyshev', 'exponential Markov bound']],
  ['1.3.15', 'Jensen’s inequality', ['Jensen’s inequality', "Jensen's inequality", 'Jensen inequality', 'Jensen']],

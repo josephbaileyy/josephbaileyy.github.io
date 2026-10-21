@@ -69,8 +69,8 @@ button:disabled{opacity:.4;cursor:default}
 body.print-layout{overflow:auto;height:auto}.print-layout .main-wrap,.print-layout .reader-layout{display:block;height:auto}.print-layout .main-wrap{margin:0}.print-layout .source-pane,.print-layout .pane-divider,.print-layout .companion-heading,.print-layout .companion-nav,.print-layout .companion-empty,.print-layout .mobile-tabs{display:none!important}.print-layout .companion-pane{overflow:visible}.print-layout main> :not(#entries),.print-layout .entry,.print-layout .batch-intro{display:block}.print-layout main{max-width:850px;padding:40px}
 
 /* Definition links remain recognizable without distracting from the mathematics. */
-.definition-link{text-decoration-line:underline;text-decoration-style:dotted;text-decoration-color:#8aa995;text-decoration-thickness:1px}
-.definition-link:hover,.definition-link:focus-visible{background:var(--pale);text-decoration-style:solid}
+.definition-link{text-decoration:none;text-decoration-thickness:1px}
+.definition-link:hover,.definition-link:focus-visible{text-decoration-line:underline;text-decoration-style:solid}
 .tools-menu{border:0;padding:0;position:relative;font:12px system-ui;letter-spacing:0}
 .tools-menu>summary{display:none}
 .toolbar .reader-controls{flex-wrap:wrap}

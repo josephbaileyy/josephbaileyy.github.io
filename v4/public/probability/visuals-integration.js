@@ -1,3 +1,4 @@
+import {mountMachine} from './visuals-standard-machine.js?v=machine1';
 const green='#507b61',gold='#b58a48',pale='#d8e8df';
 const text=(x,y,s)=>`<text x="${x}" y="${y}" style="font-size:13px">${s}</text>`;
 const f=x=>Number(x).toFixed(4);
@@ -5,7 +6,8 @@ export const staircaseIntegral=n=>(1-2**(-n))/2;
 export const distinctFaces=n=>6*(1-(5/6)**n);
 export function matchingMoment(n,k){let count=1;for(let j=0;j<k;j++)count*=n-j;return {count,probability:1/count,expectation:1}}
 export function signedTotals(a){const values=[-a,1,3],weights=[.25,.5,.25];return {values,positive:1.25,negative:a/4,mean:1.25-a/4,absolute:1.25+a/4}}
-export function mountVisual(root,name,{svg,setup,range,bar}){
+export function mountVisual(root,name,{svg,setup,range,bar,renderMath}){
+ if(mountMachine(root,name,{setup,range,renderMath}))return true;
  switch(name){
  case 'int-staircase':setup(root,range('n','Dyadic level n',0,7,2),v=>{const m=2**v.n;let b=text(45,20,'Lower simple function φₙ(x) ≤ x')+`<line x1="45" y1="190" x2="555" y2="190" stroke="#999"/><line x1="45" y1="190" x2="555" y2="40" stroke="${gold}" stroke-width="2"/>`;for(let j=0;j<m;j++)b+=`<rect x="${45+510*j/m}" y="${190-150*j/m}" width="${510/m}" height="${150*j/m}" fill="${pale}" stroke="${green}" stroke-width=".6"/>`;b+=`<circle cx="555" cy="40" r="3" fill="${green}"/>`+text(40,213,'0')+text(548,213,'1')+text(55,244,'Green area: ∫φₙ dλ       Gold line: f(x)=x');return [svg(b,268),`∫φₙ dλ = ${f(staircaseIntegral(v.n))}. ∫x dλ = 0.5000. Exact deficit = 1/${2*m}. Increasing n refines every interval and raises the staircase.`]});return true;
  case 'int-signed':setup(root,range('a','Magnitude of negative value',0,10,3,.25),v=>{const t=signedTotals(v.a);let b=text(40,20,'Outcome         Probability          Value        Contribution to EX');t.values.forEach((x,i)=>{const y=55+i*50;b+=text(45,y,['a','b','c'][i])+text(175,y,[.25,.5,.25][i])+text(315,y,x)+text(440,y,f(x*[.25,.5,.25][i]));});b+=text(40,215,`Positive total ${f(t.positive)}    Negative total ${f(t.negative)}`);return [svg(b,240),`EX = ${f(t.mean)}; E|X| = ${f(t.absolute)}. At a = 5, EX is zero while E|X| = 2.5: cancellation is not absence of mass.`]});return true;

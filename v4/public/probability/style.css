@@ -197,3 +197,31 @@ body:not(.split-view) .fubini-lab{scroll-margin-top:80px}
 @media print{.fubini-proof-lab>.controls,.fubini-proof-lab>.drawing,.fubini-proof-lab>.result,.fubini-proof-actions{display:none!important}.fubini-proof-print{display:block}.fubini-proof-print>section{break-inside:avoid}.fubini-proof-pictures{grid-template-columns:1fr 1fr}}
 
 body:not(.split-view) .fubini-proof-actions{top:68px}
+
+/* The standard machine: function classes and the operations connecting them. */
+.machine-lab{container-type:inline-size;color:var(--ink)}
+.machine-intro{margin:0 0 18px;font-size:14px}
+.machine-lab .controls{align-items:start;gap:12px}
+.machine-lab .controls label{display:grid;gap:6px}
+.machine-lab select{max-width:100%;width:100%;font:inherit;color:var(--ink);background:var(--paper);padding:8px;border:1px solid var(--line);border-radius:4px}
+.machine-level[hidden]{display:none}
+.machine-kicker{color:var(--green);font:10px system-ui;letter-spacing:1.3px;margin:20px 0 6px}
+.machine-stage h4{font:23px/1.3 Georgia;margin:0 0 12px;color:var(--ink)}
+.machine-stage h5{font:600 13px/1.5 system-ui;margin:0 0 8px;color:var(--green)}
+.machine-stage p{font-size:14px;line-height:1.75}
+.machine-formula,.machine-identity{overflow-x:auto;padding:10px 0}
+.machine-identity{border-bottom:1px solid var(--line)}
+.machine-example{color:var(--muted)}
+.machine-pictures{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:14px}
+.machine-pictures section{min-width:0;background:var(--paper);border:1px solid var(--line);border-radius:4px;padding:12px}
+.machine-pictures svg{width:100%;max-height:none}
+.machine-pictures svg text{font:22px system-ui;fill:var(--ink)}
+.machine-pictures p,.machine-stage .machine-legend{font-size:12px;margin:6px 0}
+.machine-total{padding:12px;margin:14px 0;background:var(--pale);border-radius:4px;overflow-wrap:anywhere;font:14px/1.7 system-ui;color:var(--green)}
+.machine-bridge{border-left:3px solid var(--gold);padding:10px 14px;margin:18px 0 0}
+.machine-bridge p{margin:0}
+.machine-print{display:none}
+@container(max-width:330px){.machine-lab .controls label{font-size:11px}.machine-stage h4{font-size:21px}.machine-pictures section{padding:8px}}
+@media print{.machine-lab>.controls,.machine-lab>.drawing,.machine-lab>.result{display:none!important}.machine-print{display:block}.machine-print>.machine-stage{break-inside:avoid;margin-bottom:28px}.machine-pictures{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}}
+.print-layout .machine-lab>.controls,.print-layout .machine-lab>.drawing,.print-layout .machine-lab>.result{display:none}
+.print-layout .machine-print{display:block}

@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "2f03ad5f28e89142b176f7f9a7a32ed30f1ffba4",
+  "sourceCommit": "44fa010fbd4f5fbee1b8a3a2f0f0e067753c48ec",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "4c7dd949cf9c94cf919fe15304734b7434f7b628af9cc74e1e24f7db8a72f97d"
+      "sha256": "54f5f00abb2c5358b1cca10fb1393c88719f23f35ec3b7e12f02fd36d03fd838"
     },
     {
       "file": "appearance.css",
@@ -16,7 +16,7 @@
     },
     {
       "file": "content/book.js",
-      "sha256": "24181416d50baf3f53acdfebfc1fc2af3157c22b267a37fb3b12a22352b76278"
+      "sha256": "9091b123e06f332bfd2c5f6f084bd13597132bdea646edc4451f1642f53d55cc"
     },
     {
       "file": "content/chapter-1.js",
@@ -44,7 +44,7 @@
     },
     {
       "file": "content/section-1-3-1.js",
-      "sha256": "434b3bfbb0c9f8953dd23b4d97e8d5f0c03fecec4bda2da1ef891f901e38f96f"
+      "sha256": "b4b0d46d7d131dccf311336b8716f3ff538e0536235d61958ca59d98878ffda1"
     },
     {
       "file": "content/section-1-3-2.js",
@@ -80,7 +80,7 @@
     },
     {
       "file": "definitions.js",
-      "sha256": "78cbc90624a19588855a1b98740c4e0a38c9c1f84f52c4265c7802b405884ce9"
+      "sha256": "96520788ba5b095d8fd4060ceec01f1ff6652336d195d4cf4df6490cb51df2d4"
     },
     {
       "file": "entry-search.js",
@@ -96,7 +96,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "037c10cbd0ebbe24a70b877ba5ab19ff971d042500b14ab41b7cf7461dac1db2"
+      "sha256": "17622b8166b7010322a5587f2e0b363fb2b2fa9705e0b1821694f1e11190d943"
     },
     {
       "file": "intuition-models.js",
@@ -124,7 +124,7 @@
     },
     {
       "file": "reader.css",
-      "sha256": "a43e4406d9a6785c2bcedc74cf1e2656fd537246b07a449dfd1673f1b07043ae"
+      "sha256": "47f9e8cc74c631453db8d069ce24f0a63a76db294f1c4deb3f6dbcb7a39f05b3"
     },
     {
       "file": "reader.js",
@@ -140,7 +140,7 @@
     },
     {
       "file": "style.css",
-      "sha256": "e6d5f4f7d6bf0c2731d9dd4b15316aa0f028ac585ba72bc39348a5815ecda782"
+      "sha256": "cfbc8570890f1cdc581887eb79753cc9058091c338ce4dc2cfbf22773677a63f"
     },
     {
       "file": "vendor/KATEX-LICENSE",
@@ -1328,7 +1328,7 @@
     },
     {
       "file": "visuals-integration.js",
-      "sha256": "fe7d5bc51817d06099cfdbc550dfe6e7deb579c3399b0859af8a83891a52f80f"
+      "sha256": "d4c216bc24a705428121828855bdcef6a7c9bf996ba54de92432437cf8ab8935"
     },
     {
       "file": "visuals-intuition.js",
@@ -1345,6 +1345,10 @@
     {
       "file": "visuals-rv.js",
       "sha256": "8bbe0f281a90d935dd0c9e5d774a172ce01659173581537b0b52643b473744e1"
+    },
+    {
+      "file": "visuals-standard-machine.js",
+      "sha256": "630cb9849a1549f08d559d4096a7b13f8965aecb8a61b23bfaea1a8db99a6f08"
     }
   ]
 }

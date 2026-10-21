@@ -1,13 +1,13 @@
 import {mountVisual as mountProofs} from './visuals-proofs.js?v=curves2';
 import {mountVisual as mountIndependence} from './visuals-independence.js?v=curves2';
-import {mountVisual as mountIntegration} from './visuals-integration.js?v=fe7d5bc51817';
+import {mountVisual as mountIntegration} from './visuals-integration.js?v=machine1';
 import {mountVisual as mountInequalities} from './visuals-inequalities.js?v=509c0e7b299c';
 import {mountVisual as mountConvergence} from './visuals-convergence.js?v=navigation2';
 import {mountVisual as mountIntegrability} from './visuals-integrability.js?v=intuition1';
 import {initReader} from './reader.js?v=curves2';
-import {linkDefinitions} from './definitions.js?v=walkthrough5';
+import {linkDefinitions} from './definitions.js?v=machine1';
 import {initEntrySearch} from './entry-search.js?v=navigation2';
-import {entries,sections} from './content/book.js?v=curves2';
+import {entries,sections} from './content/book.js?v=machine1';
 import {mountVisual as mountGenerated} from './visuals-generated.js';
 import {mountVisual as mountBorel} from './visuals-borel.js?v=borel1';
 import {mountVisual as mountMeasures} from './visuals-1-1-3.js';
