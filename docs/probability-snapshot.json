@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "828204abc4b77c59d759a47763dad15a4935fad6",
+  "sourceCommit": "77e6b8c409c0d4ba3634f924f112c661c26cc4cd",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "05a9397575b4b531e75c887bc14702e8c28dcb81c5cefc3bd199c00c65f72b8c"
+      "sha256": "169160aee2ca21172cf9dd0cd26cfd94c938dec07710895fc5a266ba5c4bde6c"
     },
     {
       "file": "appearance.css",
@@ -16,7 +16,7 @@
     },
     {
       "file": "content/book.js",
-      "sha256": "c402133dddaf1ae6253e20a67e70f2a82e4254511b3a546c9097cfbb83e46df4"
+      "sha256": "88e8e09c14f5f284bfea48db58ad11c8601ae7edee300a2211d23d6f97f06341"
     },
     {
       "file": "content/chapter-1.js",
@@ -76,11 +76,11 @@
     },
     {
       "file": "content/section-1-4-3.js",
-      "sha256": "af1f30ace72372d42918f2362fc151930b81663833288acdffdac8fd677e7b8e"
+      "sha256": "8e141149e2f6744dba295308d197aecf83008b42cdbb6a650eab4334e59b6ab6"
     },
     {
       "file": "definitions.js",
-      "sha256": "86f171e5c129e61db23bb2e695cecdb59878787fd8cbf543c1a2764cf261e703"
+      "sha256": "78cbc90624a19588855a1b98740c4e0a38c9c1f84f52c4265c7802b405884ce9"
     },
     {
       "file": "entry-search.js",
@@ -92,11 +92,11 @@
     },
     {
       "file": "independence-models.js",
-      "sha256": "0dc751fc698fe265ba0d61247425bf762f9e0d35c5c3d1e465296bded7055b60"
+      "sha256": "e1adbf135f2639e9a95a4a94513542c466a392d440b6df2f4ef25fe981ee1cc6"
     },
     {
       "file": "index.html",
-      "sha256": "76a25fc11b1e83d88e17e8563be45a8ed7256522a48f1fee5ddf713478a3efe3"
+      "sha256": "bf54a83a43bfc565339ed09442ec0cefb257fce356fec5eb70fad96eee5ed18a"
     },
     {
       "file": "intuition-models.js",
@@ -140,7 +140,7 @@
     },
     {
       "file": "style.css",
-      "sha256": "b77ef5acccd72cbe3ea1d508418f756f25c0e5f7f9a339f49afdf46af27dbcde"
+      "sha256": "18d965f75710bb2b97a3560a08086cfef0a41e42330311d20505642d314db6c6"
     },
     {
       "file": "vendor/KATEX-LICENSE",
@@ -1312,7 +1312,7 @@
     },
     {
       "file": "visuals-independence.js",
-      "sha256": "a8f34989ad271fc332038594e64b294b705ba7ade3ccd4e822faef19d54a55bc"
+      "sha256": "cde2e2b81bb2b1383a8ab42833589119c500a59ea6029e8f15b2ae6fd9771f32"
     },
     {
       "file": "visuals-inequalities.js",

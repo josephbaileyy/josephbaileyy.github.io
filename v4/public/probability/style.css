@@ -115,3 +115,20 @@
 .entry-search-results strong{font-size:12px}.entry-search-results small{color:var(--muted);font-size:12px}
 @media(max-width:420px){#entry-search{padding:16px}.toolbar .reader-controls{flex-wrap:wrap}}
 @media print{#go-to-entry,#entry-search{display:none!important}}
+
+/* Fubini: connect the geometric slice, its length, and the outer integral. */
+.fubini-lab{container-type:inline-size}
+.fubini-lab .controls{display:grid;gap:12px}
+.fubini-lab .controls label{display:flex;flex-wrap:wrap;min-width:0}
+.fubini-lab .controls select{max-width:100%;min-width:0}
+.fubini-lab .controls input{flex:1;min-width:80px;max-width:240px;min-height:32px}
+.fubini-lab .controls button{min-height:40px}
+.fubini-actions{display:flex;flex-wrap:wrap;gap:8px}
+.fubini-lab .fubini-example,.fubini-panel p{font:14px/1.65 system-ui}
+.fubini-panel{border-top:1px solid var(--line);padding-top:16px;margin-top:18px}
+.fubini-panel h4{font:600 15px/1.5 system-ui;margin:0 0 8px;color:var(--green)}
+.fubini-panel svg{max-height:none}
+.fubini-panel svg text{font-size:16px}
+.fubini-lab .result p{margin:8px 0}
+@container (max-width:340px){.fubini-panel svg text{font-size:20px}}
+@media print{.fubini-lab .controls button{display:none}.fubini-panel{break-inside:avoid}}

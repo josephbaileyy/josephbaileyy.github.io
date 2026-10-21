@@ -16,3 +16,24 @@ export function gammaDensity(x,n,rate){if(x<0)return 0;if(x===0)return n===1?rat
 export function gammaTail(x,n,rate){let term=1,total=1;for(let j=1;j<n;j++){term*=rate*x/j;total+=term}return Math.exp(-rate*x)*total}
 export function poissonBounds(lambda,gamma){const a=(1+gamma)/2,I=Math.min(a*Math.log(a)-a+1,gamma-a+a*Math.log(a/gamma));return {I,independent:Math.exp(-lambda*(Math.sqrt(gamma)-1)**2),arbitrary:Math.min(1,2*Math.exp(-lambda*I))}}
 export function primeProducts(s,count){const primes=[];for(let k=2;primes.length<count;k++)if(!primes.some(p=>k%p===0))primes.push(k);let product=1;const products=primes.map(p=>(product*=1-p**(-s)));const N=1000;let sum=0;for(let k=1;k<=N;k++)sum+=k**(-s);return {primes,products,lower:1/(sum+N**(1-s)/(s-1)),upper:1/(sum+(N+1)**(1-s)/(s-1))}}
+
+// Length measure on [0,1]², h(x,y)=1{x+a*y <= z}. Positive-part
+// antiderivatives keep both the full and swept areas exact at every cutoff.
+export function fubiniSlices(z,a,t,dir=0){
+ const positiveSquare=u=>Math.max(0,u)**2;
+ const boxArea=(w,h)=>(positiveSquare(z)-positiveSquare(z-w)-positiveSquare(z-a*h)+positiveSquare(z-w-a*h))/(2*a);
+ const length=dir?Math.max(0,Math.min(1,z-a*t)):Math.max(0,Math.min(1,(z-t)/a));
+ const clip=(points,inside,value)=>{
+  const out=[];
+  for(let i=0;i<points.length;i++){
+   const p=points[i],q=points[(i+1)%points.length],u=value(p),v=value(q);
+   if(inside(u))out.push(p);
+   if(inside(u)!==inside(v)){const r=u/(u-v);out.push([p[0]+r*(q[0]-p[0]),p[1]+r*(q[1]-p[1])]);}
+  }
+  return out;
+ };
+ const polygon=clip([[0,0],[1,0],[1,1],[0,1]],u=>u<=0,([x,y])=>x+a*y-z);
+ const sweptPolygon=clip(polygon,u=>u<=0,p=>p[dir?1:0]-t);
+ return {length,total:boxArea(1,1),swept:dir?boxArea(1,t):boxArea(t,1),polygon,sweptPolygon,
+  profile:u=>dir?Math.max(0,Math.min(1,z-a*u)):Math.max(0,Math.min(1,(z-u)/a))};
+}
