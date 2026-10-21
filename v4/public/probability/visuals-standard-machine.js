@@ -46,7 +46,7 @@ function plot(stage,n,weighted=false,sharedScale=false){
  b+=`<text x="490" y="${labelsY}">x</text>`;
  // Open/closed endpoints distinguish the half-open indicator intervals.
  if(stage<2){
-  const points=stage===0?[[.5,0,true],[.5,1,false],[1,1,true]]:[[0,1,false],[.5,1,true],[.5,2,false],[1,2,true]];
+  const points=stage===0?[[.5,0,true],[.5,1,false],[1,1,true]]:[[0,1,false],[0,0,true],[.5,1,true],[.5,2,false],[1,2,true]];
   for(const [x,y,closed] of points)b+=`<circle cx="${X(x)}" cy="${Y(y*weight(x))}" r="3" fill="${closed?green:'white'}" stroke="${green}"/>`;
  }
  if(stage===2)b+=`<circle cx="${X(1)}" cy="${Y(2*weight(1))}" r="3" fill="${green}"/>`;

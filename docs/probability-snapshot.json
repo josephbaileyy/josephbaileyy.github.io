@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "44fa010fbd4f5fbee1b8a3a2f0f0e067753c48ec",
+  "sourceCommit": "d593127fad7313297ca066fc953abadbf4869aa2",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
@@ -1348,7 +1348,7 @@
     },
     {
       "file": "visuals-standard-machine.js",
-      "sha256": "630cb9849a1549f08d559d4096a7b13f8965aecb8a61b23bfaea1a8db99a6f08"
+      "sha256": "da3c8642d9c99a3d1222c87bc43e3d3990bbf6855aeb04d354c0c0c17c5f3966"
     }
   ]
 }
