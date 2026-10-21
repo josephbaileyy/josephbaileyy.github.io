@@ -1,10 +1,10 @@
 const r = String.raw;
 export const entries = [
-{n:'1.1.26',type:'Example',title:'Uniform probability is length',page:'12',deps:['1.1.2','1.1.17'],visual:'extension-length',
+{n:'1.1.26',type:'Example',title:'Lebesgue measure assigns length',page:'12',deps:['1.1.2','1.1.17'],visual:'extension-length',
 statement:r`The <em>uniform probability measure</em> on $(0,1]$ is denoted $U$. For a finite union $F=\bigcup_{k=1}^{r}(a_k,b_k]$, where $0\leq a_1<b_1<a_2<b_2<\cdots<a_r<b_r\leq1$, it satisfies
 $$U(F)=\sum_{k=1}^{r}(b_k-a_k).$$
 It is the restriction of Lebesgue measure $\lambda$ to $\mathcal B_{(0,1]}$. Here $\lambda$ is the unique Borel measure on $\mathbb R$ with the same interval-length rule, without the restrictions $0\leq a_1$ and $b_r\leq1$; $\lambda(\mathbb R)=\infty$.`,
-plain:'On the unit interval, probability is length. The lengths of disjoint interval pieces add, and the whole interval has length one. Extending this rule to every Borel set needs the theorem coming later in this subsection.',
+plain:r`Lebesgue measure is the usual notion of length extended from intervals to Borel sets: $\lambda((a,b])=b-a$ for any finite $a<b$. It adds the lengths of disjoint pieces, gives each singleton length zero, and gives all of $\mathbb R$ infinite measure. Restricting it to $(0,1]$ gives uniform probability, because that interval has length one. The extension theorem below constructs this measure.`,
 caption:'Move the endpoint of the first interval. Open circles mark excluded left endpoints and filled circles included right endpoints. The displayed probabilities are exact interval lengths.',
 after:r`<strong>Source clarification.</strong> The source calls $\mathcal B_{(0,1]}$ a “sub-σ-algebra of $\mathcal B$.” Precisely, it is the <em>trace</em> $\{B\cap(0,1]:B\in\mathcal B\}$, a σ-algebra on $(0,1]$; it does not contain the universe $\mathbb R$. Existence and uniqueness of the length measure are established below.`,
 },
