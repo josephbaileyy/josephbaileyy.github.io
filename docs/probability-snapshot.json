@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "a4964661d38a23b2ef82ca7fcc79820ed316ab49",
+  "sourceCommit": "0667c62d5d7194f435053d4dd89575d17cdef80f",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "5d58fa77c72bfe0bc859607387b7498a4c3c84d0a40767bcd593cc11c1c2e1ba"
+      "sha256": "655111ec58724d7fdf5f3b89ff2564badfc7f3756d4943979364d5ab7abab397"
     },
     {
       "file": "appearance.css",
@@ -87,6 +87,18 @@
       "sha256": "5ade4d56c626cdbb27e99f5980ee9ff0e320fa94ee03ed1d3217059916fedddd"
     },
     {
+      "file": "fubini-prototypes-page.js",
+      "sha256": "fd2b6d5cb49d409e75895296b996e032e4a163066337da606b181b5f3848c852"
+    },
+    {
+      "file": "fubini-prototypes.css",
+      "sha256": "706e2fe55e71c8414214bba6c7e268afa7ed724cd53447477707f70007e1db55"
+    },
+    {
+      "file": "fubini-prototypes.html",
+      "sha256": "45b2b960db89c4245dc56aae9fad8280595edc803e06ed67163cce1bced02d06"
+    },
+    {
       "file": "icon.svg",
       "sha256": "98b37e46a8dfa408b11b5cc31cde7598fc3d5245275e76161123442b03e7e7c7"
     },
@@ -96,7 +108,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "90750afaf1b1a6e6260aa74a2633d18a94842c31cd7b57613963c50e7a677c05"
+      "sha256": "faf14c3a5296ec69d11ce00fcd664261891bc1afb114b54b70d2d8e0e09ab626"
     },
     {
       "file": "intuition-models.js",
@@ -1305,6 +1317,10 @@
     {
       "file": "visuals-eventual-bound.js",
       "sha256": "9feb8ea3729e0a38eb8c01674f2e0340fa7bb14413b8d92bc66103e61e0a2d45"
+    },
+    {
+      "file": "visuals-fubini-prototypes.js",
+      "sha256": "9159324f6319779bbd49d12e578a1949fe0f40cc3de8967be2576fd11e7a9620"
     },
     {
       "file": "visuals-fubini.js",

@@ -1,0 +1,68 @@
+/* Scoped so the comparison can also live inside entry 1.4.28. */
+.fubini-prototypes{container-type:inline-size;min-width:0;--fp-blue:#326b85;--fp-purple:#696191;font:16px/1.65 var(--reading-font,Georgia,serif)}
+.fubini-prototypes [hidden]{display:none!important}
+.fubini-prototypes h3{font-size:clamp(23px,4cqi,31px);line-height:1.2;letter-spacing:-.5px;margin:24px 0 12px;color:var(--ink)}
+.fubini-prototypes h4{font-size:19px;line-height:1.5;margin:18px 0 12px}
+.fubini-prototypes p{margin:10px 0 16px}
+.fubini-prototypes button{min-height:44px;font-size:13px;white-space:normal}
+.fp-example{font:13px/1.7 system-ui;color:var(--muted);border-left:2px solid var(--line);padding-left:15px}
+.fp-example strong{display:block;color:var(--ink);font-weight:500}
+.fp-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:24px 0 20px}
+.fp-tabs button{background:transparent;text-align:left;border:1px solid var(--line);padding:12px}
+.fp-tabs button span{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+.fp-tabs button[aria-selected=true]{border-color:var(--green);background:var(--pale);box-shadow:inset 0 -2px var(--green)}
+.fp-direction,.fp-question-nav{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0}
+.fp-direction button[aria-pressed=true],.fp-question-nav button[aria-pressed=true],.fp-answer-options button[aria-pressed=true]{background:var(--pale);border-color:var(--green);box-shadow:inset 0 -2px var(--green)}
+.fp-range{display:grid;grid-template-columns:1fr auto;gap:4px 10px;font:13px/1.5 system-ui;margin:18px 0}
+.fp-range input{grid-column:1;grid-row:2;width:100%;min-width:0;accent-color:var(--green);min-height:32px;margin:0}
+.fp-range output{grid-column:2;grid-row:2;min-width:3em;align-self:center;font-variant-numeric:tabular-nums;text-align:right}
+.fp-hands-workspace{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:25px;align-items:center}
+.fp-moving-drawing{touch-action:pan-y;min-width:0}
+.fp-movable{width:100%;display:block;max-height:none!important;cursor:ew-resize;user-select:none}
+.fp-movable[data-drag=y]{cursor:ns-resize}
+.fp-movable text{font:16px system-ui;fill:var(--ink)}
+.fp-drag-hint{font:12px/1.5 system-ui;color:var(--muted)}
+.fp-move-result{font:13px/1.6 system-ui;font-variant-numeric:tabular-nums}
+.fp-move-result p{margin:6px 0}
+.fp-numeric{font-size:16px!important}
+.fp-invariant{display:grid;border-top:1px solid var(--line);margin-top:16px;padding-top:14px;font:13px/1.6 system-ui}
+.fp-invariant strong{font:24px/1.4 Georgia,serif;color:#76501e}
+.fp-formula{font:15px/1.7 Georgia,serif;overflow-wrap:anywhere}
+.fp-panel details,.fp-comparison{border-top:1px solid var(--line);margin:24px 0 0;padding:15px 0}
+.fp-panel summary,.fp-comparison summary{cursor:pointer;font:14px/1.5 system-ui;color:var(--green)}
+.fp-panel details p,.fp-comparison p{font-size:14px}
+.fp-paired-drawing,.fp-prediction-drawing{padding:12px 0}
+.fubini-prototypes .fubini-pictures{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.fubini-prototypes .fubini-pictures section{display:block!important;min-width:0}
+.fubini-prototypes .fubini-pictures h5{font:12px/1.5 system-ui;margin:0 0 8px;min-height:0;color:var(--ink);text-align:center}
+.fubini-prototypes .fubini-pictures svg{width:100%;height:auto;max-height:280px;display:block}
+.fubini-prototypes .fubini-pictures svg text{font:12px system-ui;fill:var(--ink)}
+.fubini-prototypes .fubini-axis-reading{font:12px/1.6 system-ui;text-align:center;color:var(--ink);margin:4px 0}
+.fp-paired-drawing svg[data-drag=x]{cursor:ew-resize;touch-action:pan-y}
+.fp-paired-drawing svg[data-drag=y]{cursor:ns-resize;touch-action:pan-x}
+.fp-linked-equation{display:flex;align-items:center;flex-wrap:wrap;gap:7px;padding:16px 0;border-top:1px solid var(--line)}
+.fp-linked-equation button{display:grid;gap:4px;text-align:left}
+.fp-linked-equation button b{font-size:17px;font-weight:500;font-variant-numeric:tabular-nums}
+.fp-linked-equation [data-term=upper]{color:var(--fp-upper)}
+.fp-linked-equation [data-term=lower]{color:var(--fp-lower)}
+.fp-linked-equation button[aria-pressed=true]{background:var(--pale);outline:2px solid currentColor;outline-offset:1px}
+.fp-term-explanation{font:14px/1.7 system-ui;min-height:3.4em}
+.fp-panel[data-term=upper] .fp-upper-point{r:7;stroke:var(--fp-upper);stroke-width:4}
+.fp-panel[data-term=lower] .fp-lower-point{r:7;stroke:var(--fp-lower);stroke-width:4}
+.fp-panel[data-term=gap] .fubini-profile svg circle{r:7;stroke:#76501e;stroke-width:2}
+.fp-answer-options{display:grid;gap:8px;margin:12px 0}
+.fp-answer-options button{text-align:left;padding:12px}
+.fp-skip{margin:4px 0 12px;background:transparent!important}
+.fp-prediction-feedback:empty{display:none}
+.fp-prediction-feedback{border-left:3px solid var(--green);background:var(--pale);padding:12px 16px;font-size:15px}
+.fubini-prototypes .fp-before-answer .fubini-profile,.fp-before-answer .fubini-axis-reading{display:none!important}
+.fp-before-answer .fubini-pictures{grid-template-columns:1fr}
+.fp-before-answer .fubini-region{max-width:350px;margin:auto;width:100%}
+.fp-print{display:none}
+.fp-entry-comparison{border:1px solid var(--line);padding:15px 18px;margin:20px 0}
+.fp-entry-comparison>summary{font:14px/1.6 system-ui;color:var(--green);cursor:pointer}
+.fp-entry-comparison>p{font-size:14px}
+.fp-comparison{margin-top:30px}
+@container(max-width:650px){.fp-hands-workspace{grid-template-columns:1fr;gap:0}.fp-moving-drawing{max-width:410px;margin:auto;width:100%}}
+@container(max-width:500px){.fp-tabs{gap:5px}.fp-tabs button{font-size:12px;padding:9px 7px}.fubini-prototypes .fubini-pictures{grid-template-columns:1fr;gap:16px}.fubini-prototypes .fubini-pictures svg{max-height:240px}.fp-term-explanation{min-height:0}}
+@media print{.fp-screen{display:none!important}.fp-print{display:block}.fp-print .fubini-pictures{grid-template-columns:1fr 1fr}.fp-print .fubini-pictures svg{max-height:180px}.fp-entry-comparison:not([open]){display:none}.fp-entry-comparison>summary,.fp-entry-comparison>p{display:none}.fp-print p,.fp-print .fubini-pictures{break-inside:avoid}}

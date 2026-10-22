@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Three interactive approaches to Fubini's theorem: move the picture, read linked equations, or predict and explore.">
+  <title>Three ways into Fubini · Probability</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="vendor/katex.min.css">
+  <link rel="stylesheet" href="appearance.css">
+  <link rel="stylesheet" href="fubini-prototypes.css">
+  <style>
+    :root{--paper:#fbfaf6;--ink:#252e29;--muted:#667068;--line:#dcded6;--green:#315e4e;--pale:#edf2eb}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.7 var(--reading-font,Georgia,serif)}a{color:var(--green);text-underline-offset:3px}button,input,select{font:inherit}button{background:var(--surface,#fffefa);border:1px solid var(--control-border,#bdc8be);border-radius:var(--radius,4px);padding:8px 12px;color:var(--green);cursor:pointer}button:hover{background:var(--pale)}:focus-visible{outline:3px solid #986729;outline-offset:4px}.fp-page{max-width:960px;padding:28px 36px 70px;margin:auto}.fp-page-header{display:flex;justify-content:space-between;align-items:center;gap:12px;font:13px/1.5 system-ui;border-bottom:1px solid var(--line);padding-bottom:20px}.fp-theme{display:flex;align-items:center;gap:6px}.fp-theme select{font-size:13px;max-width:115px;padding:7px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:4px}.fp-kicker{font:11px/1.5 system-ui;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:30px 0 10px}h1{font-size:clamp(30px,5vw,46px);font-weight:400;line-height:1.12;letter-spacing:-1px;margin:0 0 16px;max-width:760px}.fp-intro{max-width:660px;margin:0 0 28px}.fp-shared-source{margin-top:28px;border-top:1px solid var(--line);padding-top:20px}.fp-shared-source details{margin:16px 0}.fp-shared-source summary{color:var(--green);cursor:pointer}.fp-source-body{font-size:15px}.katex-display{overflow:auto;padding:8px 0}.fp-bottom-link{font:13px/1.5 system-ui;margin-top:35px}.fp-page .fp-skip-link{position:absolute;left:-9999px}.fp-page .fp-skip-link:focus{position:static}@media(max-width:600px){.fp-page{padding:20px 18px 45px}.fp-page-header{align-items:flex-start}.fp-page-header>a{max-width:150px}.fp-theme{font-size:12px}.fp-kicker{margin-top:24px}.fp-intro{font-size:16px}}@media print{.fp-page{padding:0;max-width:none}.fp-page-header,.fp-intro,.fp-bottom-link{display:none}body{background:white;color:black;font-size:11pt}h1{font-size:24pt}.fp-shared-source summary{display:none}.fp-shared-source details:not([open]){display:none}@page{margin:17mm}}
+  </style>
+  <script>
+    (()=>{let theme='original';try{theme=JSON.parse(localStorage.getItem('probability-notebook-appearance-v1'))?.theme||theme}catch{}const requested=new URLSearchParams(location.search).get('theme');if(requested)theme=requested;document.documentElement.dataset.theme=['original','minimal','paper','studio'].includes(theme)?theme:'original'})();
+  </script>
+  <script defer src="vendor/katex.min.js"></script>
+  <script defer src="vendor/contrib/auto-render.min.js"></script>
+  <script type="module" src="fubini-prototypes-page.js"></script>
+</head>
+<body>
+  <main class="fp-page">
+    <a class="fp-skip-link" href="#comparison">Skip to the explanations</a>
+    <header class="fp-page-header"><a class="fp-reader-link" href="./#entry-1-4-28">← Current Fubini explanation</a><label class="fp-theme">Theme <select aria-label="Preview reading theme"><option value="original">Original</option><option value="minimal">Minimal</option><option value="paper">Paper</option><option value="studio">Studio</option></select></label></header>
+    <p class="fp-kicker">1.4.28 · Fubini’s theorem · Design comparison</p>
+    <h1>One region.<br>Three ways to understand it.</h1>
+    <p class="fp-intro">Move the picture, follow the equation, or test a prediction. Switch between the versions to see which helps the connection click. Each version keeps your place while you compare.</p>
+    <div id="comparison"></div>
+    <section class="fp-shared-source" aria-label="Shared theorem and proof">
+      <details class="fp-theorem"><summary>Full statement and hypotheses · <a href="source/230anotes.pdf#page=63">source pp. 63–65</a></summary><div class="fp-source-body"></div></details>
+      <details class="fp-proof"><summary>Written proof outline</summary><div class="fp-source-body"></div></details>
+      <p class="fp-bottom-link"><a class="fp-reader-link" href="./#entry-1-4-28">Return to the reader for the proof figures and personal notes →</a></p>
+    </section>
+    <noscript><p>These explanations need JavaScript. The <a href="source/230anotes.pdf#page=63">original theorem and proof</a> remain available in the course PDF.</p></noscript>
+  </main>
+</body>
+</html>
