@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "0667c62d5d7194f435053d4dd89575d17cdef80f",
+  "sourceCommit": "1a28c24d68941b5a5d9c6d9beaa41302cf97d8d2",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "655111ec58724d7fdf5f3b89ff2564badfc7f3756d4943979364d5ab7abab397"
+      "sha256": "be0c2d9556f599d8d3558b9f8add9e1748dc1f3995fd9b42890432f401e52e6a"
     },
     {
       "file": "appearance.css",
@@ -83,6 +83,18 @@
       "sha256": "96520788ba5b095d8fd4060ceec01f1ff6652336d195d4cf4df6490cb51df2d4"
     },
     {
+      "file": "design-prototypes-page.js",
+      "sha256": "4f71da9234dfd12f7c38604d76286c88fb31dcb175ab9b0138577731d417d688"
+    },
+    {
+      "file": "design-prototypes.css",
+      "sha256": "bbb2b9ba86201bd36c0c80320e9ca1efe9c704aad06d0bde2aceba1724c6fa55"
+    },
+    {
+      "file": "design-prototypes.html",
+      "sha256": "a0939bc321ac19ec333a653b4ad7797b3928df0309cc4a260baaedaee07775df"
+    },
+    {
       "file": "entry-search.js",
       "sha256": "5ade4d56c626cdbb27e99f5980ee9ff0e320fa94ee03ed1d3217059916fedddd"
     },
@@ -108,7 +120,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "faf14c3a5296ec69d11ce00fcd664261891bc1afb114b54b70d2d8e0e09ab626"
+      "sha256": "9e36accdc7327c4795a095205ef69dd1aa05766125998084166e4c551e641b8c"
     },
     {
       "file": "intuition-models.js",
@@ -129,6 +141,14 @@
     {
       "file": "proof-models.js",
       "sha256": "89f8f49ccf11b30569366a1eb60d60417987d1626070f9b2897729362fe79bc7"
+    },
+    {
+      "file": "prototype-lessons.js",
+      "sha256": "dcb67888bb472409b8082b73d180dc727b5f3756ef08d41a5cb388ed2146b06c"
+    },
+    {
+      "file": "prototype-models.js",
+      "sha256": "54825c7f491a0f29b009ec1a5242532bcdbad7d98e58f2927b43ee9a5fc63cbb"
     },
     {
       "file": "reader-state.js",
@@ -1309,6 +1329,10 @@
     {
       "file": "visuals-convergence.js",
       "sha256": "f6ce5e1d0f7a7eab1e387f932eb2f9760c86255ff1aa9a3d188742041f76bf46"
+    },
+    {
+      "file": "visuals-design-prototypes.js",
+      "sha256": "49cd6a288d6bcdac794318b27fa6d5aee6608610314c940ca1f62522c8008a31"
     },
     {
       "file": "visuals-distributions.js",

@@ -16,6 +16,7 @@ import {mountVisual as mountRV} from './visuals-rv.js?v=pointwise1';
 import {mountVisual as mountLaws} from './visuals-distributions.js?v=intuition1';
 import {sum,mass,poisson,distance,almostMass} from './math.js';
 import {installFubiniPrototypes} from './visuals-fubini-prototypes.js';
+import {installDesignPrototypes} from './visuals-design-prototypes.js';
 const $=(s,root=document)=>root.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const id=n=>'entry-'+n.replaceAll('.','-');
@@ -60,6 +61,7 @@ $('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try
 function preparePrint(){document.querySelectorAll('.notes,.theorem-details').forEach(d=>{d.dataset.wasOpen=String(d.open);d.open=true;d.querySelectorAll('.print-note').forEach(p=>p.remove());d.querySelectorAll('textarea').forEach(t=>{const p=document.createElement('div');p.className='print-note';p.textContent=t.value||'________________________________________________';t.after(p)})})}function restorePrint(){document.querySelectorAll('.notes,.theorem-details').forEach(d=>d.open=d.dataset.wasOpen==='true')}window.addEventListener('beforeprint',preparePrint);window.addEventListener('afterprint',restorePrint);if(new URLSearchParams(location.search).has('print')){document.getElementById('print-style').media='all';preparePrint();}
 const observer=new IntersectionObserver(items=>{const visible=items.filter(x=>x.isIntersecting);if(visible.length&&!document.body.classList.contains('split-view')){document.querySelectorAll('#toc a').forEach(a=>{const active=a.hash==='#'+visible[0].target.id;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current')})}},{rootMargin:'-80px 0px -65% 0px'});document.querySelectorAll('.entry').forEach(a=>observer.observe(a));
 installFubiniPrototypes(document.getElementById('entry-1-4-28'));
+installDesignPrototypes(document.getElementById('entries'));
 linkDefinitions(document.getElementById('entries'),entries);
 renderMath(document.body);if(!storageOK)toast('Browser storage is unavailable. Export notes before leaving.');
 function revealLinkedSection(){const linkedEntry=entries.find(e=>'#'+id(e.n)===location.hash);const section=linkedEntry?.subsection||sections.find(s=>'#'+s.anchor===location.hash)?.n;if(section)document.querySelectorAll('.toc-group').forEach((g,i)=>g.open=sections[i].n===section);}revealLinkedSection();window.addEventListener('hashchange',revealLinkedSection);
