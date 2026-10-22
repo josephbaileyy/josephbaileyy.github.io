@@ -29,7 +29,7 @@
 :root[data-font=sans] { --reading-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
 body, .notes textarea { font-family: var(--reading-font); }
 /* Keep controls recognizable and mathematical typography in KaTeX unchanged. */
-html:not([data-theme=original]) :is(button, .import-button, select, .tools-menu>summary) {
+html:not([data-theme=original]) :is(button, .import-button, select) {
   border: 1px solid var(--control-border); border-radius: var(--radius);
   color: var(--green); background: var(--surface);
 }
@@ -38,7 +38,7 @@ html:not([data-theme=original]) :is(button, a, summary, input, select, textarea)
   outline: 3px solid var(--green); outline-offset: 3px;
 }
 html:not([data-theme=original]) aside { background: var(--soft); }
-html:not([data-theme=original]) :is(.toolbar, .split-view .companion-heading, .page-controls, .page-entries, .pane-heading) { background: var(--paper); }
+html:not([data-theme=original]) :is(.toolbar, .page-controls, .page-entries) { background: var(--paper); }
 html:not([data-theme=original]) :is(.split-view .source-pane, .pdf-loading, .split-view .pane-divider) { background: var(--soft); }
 html:not([data-theme=original]) .split-view .pane-divider { border-color: var(--line); }
 html:not([data-theme=original]) #toc a { color: var(--muted); }
@@ -59,9 +59,9 @@ html:not([data-theme=original]) .notes textarea { background: var(--surface); bo
 html:not([data-theme=original]) .section-banner { background: var(--soft); color: var(--ink); font-family: var(--reading-font); }
 html:not([data-theme=original]) .definition-link { text-decoration-color: var(--green); }
 html:not([data-theme=original]) .visual-body input { accent-color: var(--green); }
-html:not([data-theme=original]) :is(.entry-meta, .label, .visual-head, .pane-heading strong) { letter-spacing: .7px; }
+html:not([data-theme=original]) :is(.entry-meta, .label, .visual-head) { letter-spacing: .7px; }
 html:not([data-theme=original]) .entry-meta { color: var(--muted); }
-html:not([data-theme=original]) :is(.label, .visual-head, .entry-meta, .pane-heading strong) { font-size: 11px; }
+html:not([data-theme=original]) :is(.label, .visual-head, .entry-meta) { font-size: 11px; }
 html:not([data-theme=original]) :is(.statement, .hint-content) { line-height: 1.8; }
 html[data-theme=minimal] .statement { background: transparent; padding-left: 20px; }
 html[data-theme=minimal] .visual { border-width: 1px 0; border-radius: 0; }
@@ -73,13 +73,13 @@ html[data-theme=studio] .entry h3 { font-weight: 600; letter-spacing: -.7px; fon
 html[data-theme=studio] :is(.statement, .plain, .hint-content) { font-size: 16px; line-height: 1.85; }
 html[data-theme=studio] .visual-head { background: var(--soft); font-weight: 600; }
 /* Optional control treatments work with every palette. */
-html[data-buttons=outlined] :is(button, .import-button, .tools-menu>summary),
-html[data-buttons=soft] :is(button, .import-button, .tools-menu>summary) {
+html[data-buttons=outlined] :is(button, .import-button),
+html[data-buttons=soft] :is(button, .import-button) {
   border: 1px solid var(--control-border); color: var(--green); background: var(--surface);
   border-radius: var(--radius);
 }
-html[data-buttons=soft] :is(button, .import-button, .tools-menu>summary) { background: var(--soft); border-radius: 12px; }
-html[data-buttons=outlined] :is(button, .import-button, .tools-menu>summary) { border-radius: 3px; }
+html[data-buttons=soft] :is(button, .import-button) { background: var(--soft); border-radius: 12px; }
+html[data-buttons=outlined] :is(button, .import-button) { border-radius: 3px; }
 html :is(.pill, .entry-choice, .mobile-tabs button)[aria-pressed=true] { background: var(--green); color: white; border-color: var(--green); }
 html :is(.pill, .entry-choice, .mobile-tabs button)[aria-pressed=true]:hover { background: var(--green); color: white; }
 /* Appearance is a small, dismissible control panel, never part of the lesson. */
@@ -116,13 +116,23 @@ html :is(.pill, .entry-choice, .mobile-tabs button)[aria-pressed=true]:hover { b
 .appearance-panel .appearance-note { border-top: 1px solid var(--line); padding-top: 12px; }
 @media(max-width:1250px) { .toolbar .notebook-title { display: none; } }
 @media(max-width:600px) {
-  .toolbar { flex-wrap: wrap; }
-  .toolbar .reader-controls { flex-basis: 100%; }
+  .toolbar { flex-wrap: nowrap; }
   .appearance-menu { margin-left: auto; }
   .appearance-menu>summary { min-height: 44px; }
-  .tools-menu>summary { max-width: none; min-height: 44px; }
   .split-view .toolbar { gap: 6px; }
   html[data-theme=paper] .entry h3 { font-size: 29px; }
 }
 @media print { .appearance-menu { display: none!important; } }
 .print-layout .appearance-menu { display: none!important; }
+
+/* Occasional settings and backups stay behind a single reading menu. */
+.toolbar .reading-layout { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px; }
+.reading-customize .appearance-field:first-of-type { margin-top:14px; }
+.toolbar .note-backup { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0; }
+.note-backup button { min-height:44px; }
+#reader-about { margin-top:16px; }
+#reader-about p { margin-top:12px; }
+.appearance-menu { flex-shrink:0; }
+@media(max-width:600px){.appearance-menu>summary{padding:7px;font-size:11px}}
+
+#appearance-status:empty{display:none}

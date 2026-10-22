@@ -15,8 +15,6 @@ export function initReader({entries,sections,id,toast}){
  layout.style.setProperty('--split',`${Number.isFinite(ratio)?Math.max(30,Math.min(70,ratio)):54}%`);
  body.classList.toggle('nav-hidden',stored('probability-notebook-contents','hidden')==='hidden');
  if(params.has('print'))body.classList.add('print-layout');
- const toolsMenu=$('.tools-menu'), compactTools=matchMedia('(max-width:1100px)');
- const arrangeTools=()=>{toolsMenu.open=!compactTools.matches};arrangeTools();compactTools.addEventListener('change',arrangeTools);
  new ResizeObserver(()=>body.style.setProperty('--toolbar-height',`${$('.toolbar').offsetHeight}px`)).observe($('.toolbar'));
 
  // Browser history carries the reading position, independent of personal notes.
@@ -79,12 +77,10 @@ export function initReader({entries,sections,id,toast}){
   document.querySelectorAll('.toc-group').forEach((group,i)=>{if(sections[i].n===active?.subsection)group.open=true});
   const index=entries.indexOf(active);
   $('#entry-prev').disabled=index<=0;$('#entry-next').disabled=index<0||index===entries.length-1;
-  $('#entry-position').textContent=active?`${index+1} / ${entries.length}`:'Companion ends at p. 70';
-  $('#companion-label').textContent=active?`${active.type} ${active.n}`:`Source p. ${pageNumber}`;
   $('.companion-empty').classList.toggle('is-visible',!active);
   const choices=entries.filter(e=>coversPage(e,pageNumber));
   $('#page-entries').replaceChildren();
-  const label=document.createElement('span');label.textContent=choices.length?'ON THIS PAGE':'No companion entries on this page';$('#page-entries').append(label);
+  const label=document.createElement('span');label.textContent=choices.length?'On this page':'No companion entries';$('#page-entries').append(label);
   for(const e of choices){const b=document.createElement('button');b.className='entry-choice';b.textContent=e.n;b.title=`${e.type}: ${e.title}`;b.setAttribute('aria-label',`${e.type} ${e.n}: ${e.title}`);b.setAttribute('aria-pressed',String(e.n===active?.n));b.onclick=()=>select(e,{scrollSource:true});$('#page-entries').append(b)}
   highlightSource(scrollSource);
  }

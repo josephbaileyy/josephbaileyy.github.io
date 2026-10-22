@@ -72,6 +72,9 @@
       if (returnFocus) menu.querySelector('summary').focus();
     }
     document.getElementById('appearance-done').addEventListener('click', () => close(true));
+    for (const id of ['view-toggle', 'fullscreen']) {
+      document.getElementById(id).addEventListener('click', () => close(true));
+    }
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && menu.open) { close(true); event.preventDefault(); }
     });
@@ -80,6 +83,12 @@
     });
     menu.addEventListener('focusout', event => {
       if (event.relatedTarget && !menu.contains(event.relatedTarget)) close();
+    });
+    document.getElementById('open-about').addEventListener('click', () => {
+      menu.open = true;
+      const about = document.getElementById('reader-about');
+      about.open = true;
+      about.querySelector('summary').focus();
     });
     sync();
   });
