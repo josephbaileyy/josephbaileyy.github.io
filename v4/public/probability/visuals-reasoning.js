@@ -132,12 +132,19 @@ function mountMachine(root){
   root.dataset.bridge='0';typeset(root);
 }
 
-export function mountReasoningRevision(root,topic){
-  root.classList.add('reasoning-revision');root.dataset.topic=topic;
+export function mountReasoningGuide(root,topic){
+  root.classList.add('reasoning-guide');root.dataset.topic=topic;
   ({fatou:mountFatou,cdf:mountCDF,machine:mountMachine})[topic](root);
   if(topic==='fatou'){
     const extension=root.querySelector('.rr-extension');let wasOpen=false;
     window.addEventListener('beforeprint',()=>{wasOpen=extension.open;extension.open=true});
     window.addEventListener('afterprint',()=>extension.open=wasOpen);
   }
+}
+
+// Used by the same numbered-entry renderer as the other course visuals.
+export function mountVisual(root,name){
+  const topic={'guide-cdf':'cdf','guide-fatou':'fatou','guide-machine':'machine'}[name];
+  if(!topic)return false;
+  mountReasoningGuide(root,topic);return true;
 }

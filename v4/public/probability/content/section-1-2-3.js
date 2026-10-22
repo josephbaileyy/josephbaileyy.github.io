@@ -14,11 +14,11 @@ plain:'Two variables have the same law when all Borel questions about their valu
 caption:'On four equally likely outcomes, the selector changes Y between X and 1−X. Both choices give mass 1/2 to 0 and to 1, while the probability of pointwise agreement changes from 1 to 0. Equal laws can also be compared on different probability spaces; almost sure equality requires a common space.',
 after:r`<strong>Source check.</strong> If $X=Y$ almost surely, then for every Borel $B$, $\{X\in B\}\mathbin{\triangle}\{Y\in B\}\subseteq\{X\ne Y\}$, so their probabilities agree and $X\overset D=Y$. The converse fails in the visual.`,
 },
-{n:'1.2.36',type:'Definition',title:'Accumulate all mass to the left',page:'26',deps:['1.2.34'],visual:'dist-cdf',
+{n:'1.2.36',type:'Definition',title:'Accumulate all mass to the left',page:'26',deps:['1.2.34'],visual:'guide-cdf',
 statement:r`The <em>distribution function</em> $F_X$ of a real-valued random variable $X$ is
 $$F_X(\alpha)=\mathbf P(\{\omega:X(\omega)\leq\alpha\})=\mathcal P_X(( -\infty,\alpha]),\qquad\forall\alpha\in\mathbb R.$$`,
-plain:'Move a threshold from left to right. The cumulative distribution function, or CDF, is the total probability at or below that threshold. The endpoint is included.',
-caption:'Initially the masses are 0.2 at −1, 0.5 at 1, and 0.3 at 3. Vary the mass p at 1; the other masses are 0.4(1−p) and 0.6(1−p). Filled dots show the CDF value at each jump; open dots show the excluded left limit.',
+plain:'',
+caption:'',
 },
 {n:'1.2.37',type:'Theorem',title:'Exactly which curves are distribution functions?',page:'26–27',deps:['1.1.4','1.1.26','1.2.36'],visual:'dist-quantile',
 statement:r`A function $F:\mathbb R\to[0,1]$ is a distribution function of some random variable if and only if

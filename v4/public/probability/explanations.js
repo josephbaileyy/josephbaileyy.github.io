@@ -1,6 +1,4 @@
-import {lessons,styles} from './prototype-lessons.js';
-import {mountDesignPrototypes} from './visuals-design-prototypes.js?v=bridges2';
-import {mountReasoningRevision} from './visuals-reasoning-revision.js';
+import {mountReasoningGuide} from './visuals-reasoning.js';
 import {entries as cdfEntries} from './content/section-1-2-3.js';
 import {entries as machineEntries} from './content/section-1-3-1.js';
 import {entries as fatouEntries} from './content/section-1-3-3.js';
@@ -9,23 +7,21 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const rich=s=>s.replace(/\$\$[\s\S]*?\$\$|\$[^$]*?\$/g,esc);
 const typeset=node=>window.renderMathInElement(node,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});
 const warmFonts=node=>Promise.all([...new Set([...node.querySelectorAll('.katex *')].map(e=>getComputedStyle(e).font).filter(Boolean))].map(font=>document.fonts.load(font)));
-const params=new URLSearchParams(location.search),mounted=new Set(),styleByTopic={};let current='fatou';
-const earlier=params.get('version')==='earlier';
+const lessons={fatou:{number:'1.3.33'},cdf:{number:'1.2.36'},machine:{number:'1.3.7'}};
+const params=new URLSearchParams(location.search),mounted=new Set();let current='fatou';
 const revisedTitles={fatou:'Why introduce the tail infimum?',cdf:'Add the mass at or below α.',machine:'How does the identity extend beyond indicators?'};
-const startingStyle=styles.some(s=>s.id===params.get('style'))?params.get('style'):'explore';
 const nav=document.getElementById('topics'),panels=document.getElementById('topic-panels');
 nav.innerHTML=Object.entries(lessons).map(([topic,l])=>`<button type="button" role="tab" data-topic="${topic}" id="topic-${topic}" aria-controls="panel-${topic}" aria-selected="false" tabindex="-1">${l.number}<br><small>${topic==='fatou'?'Fatou':topic==='cdf'?'CDF':'Standard machine'}</small></button>`).join('');
 panels.innerHTML=Object.keys(lessons).map(topic=>`<section class="ep-topic-panel" role="tabpanel" id="panel-${topic}" aria-labelledby="topic-${topic}" hidden></section>`).join('');
 const theme=document.querySelector('.ep-theme select');theme.value=document.documentElement.dataset.theme;
-const syncURL=()=>{const url=new URL(location.href);url.searchParams.set('topic',current);if(earlier)url.searchParams.set('style',styleByTopic[current]||startingStyle);else{url.searchParams.delete('style');url.searchParams.delete('version')}history.replaceState(history.state,'',url);document.querySelector('.ep-reader-link').href=`./?theme=${theme.value}#entry-${lessons[current].number.replaceAll('.','-')}`};
+const syncURL=()=>{const url=new URL(location.href);url.searchParams.set('topic',current);url.searchParams.delete('style');url.searchParams.delete('version');history.replaceState(history.state,'',url);document.querySelector('.ep-reader-link').href=`./?theme=${theme.value}#entry-${lessons[current].number.replaceAll('.','-')}`};
 function mount(topic){
   const l=lessons[topic],entry=entries[topic].find(e=>e.n===l.number),panel=document.getElementById(`panel-${topic}`);
   const source=`<div class="ep-source-body">${rich(entry.statement)}</div>`;
-  panel.innerHTML=`<h2>${earlier?l.title:revisedTitles[topic]}</h2>${topic==='machine'?`<div class="ep-problem">${source}</div><details class="ep-solution-gate"><summary>Reveal solution</summary><div class="ep-solution-body"><div class="ep-host"></div><details class="ep-written"><summary>Concise written solution</summary><div class="ep-source-body">${rich(entry.solution)}</div></details></div></details>`:`<details class="ep-source"><summary>${topic==='cdf'?'Source definition':'Full statement and hypotheses'}</summary>${source}</details><div class="ep-host"></div>${entry.proof?`<details class="ep-written"><summary>Concise written proof</summary><div class="ep-source-body">${rich(entry.proof)}</div></details>`:''}`}<p class="ep-source-link"><a href="source/230anotes.pdf#page=${String(entry.page).split('–')[0]}">Original course source · p. ${entry.page}</a></p><p class="ep-earlier-link"><a href="design-prototypes.html?topic=${topic}${earlier?'':'&version=earlier&style=explore'}">${earlier?'Open the revised explanation':'Earlier A/B/C prototypes'}</a></p>`;
+  panel.innerHTML=`<h2>${revisedTitles[topic]}</h2>${topic==='machine'?`<div class="ep-problem">${source}</div><details class="ep-solution-gate"><summary>Reveal solution</summary><div class="ep-solution-body"><div class="ep-host"></div><details class="ep-written"><summary>Concise written solution</summary><div class="ep-source-body">${rich(entry.solution)}</div></details></div></details>`:`<details class="ep-source"><summary>${topic==='cdf'?'Source definition':'Full statement and hypotheses'}</summary>${source}</details><div class="ep-host"></div>${entry.proof?`<details class="ep-written"><summary>Concise written proof</summary><div class="ep-source-body">${rich(entry.proof)}</div></details>`:''}`}<p class="ep-source-link"><a href="source/230anotes.pdf#page=${String(entry.page).split('–')[0]}">Original course source · p. ${entry.page}</a></p>`;
   const initialize=()=>{
     const host=panel.querySelector('.ep-host');if(host.dataset.mounted)return;
-    if(earlier)mountDesignPrototypes(host,topic,{initial:styleByTopic[topic]||startingStyle,onSelect:style=>{styleByTopic[topic]=style;if(current===topic)syncURL()}});
-    else mountReasoningRevision(host,topic);
+    mountReasoningGuide(host,topic);
     host.dataset.mounted='true';
     warmFonts(panel);
   };
