@@ -16,7 +16,7 @@ import {mountVisual as mountRV} from './visuals-rv.js?v=pointwise1';
 import {mountVisual as mountLaws} from './visuals-distributions.js?v=intuition1';
 import {sum,mass,poisson,distance,almostMass} from './math.js';
 import {installFubiniPrototypes} from './visuals-fubini-prototypes.js';
-import {installDesignPrototypes} from './visuals-design-prototypes.js';
+import {installDesignPrototypes} from './visuals-design-prototypes.js?v=bridges2';
 const $=(s,root=document)=>root.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const id=n=>'entry-'+n.replaceAll('.','-');

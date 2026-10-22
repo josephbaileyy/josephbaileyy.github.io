@@ -1,5 +1,6 @@
 import {cdfPrototype, fatouPrototype, machinePrototype} from './prototype-models.js';
 import {lessons, styles} from './prototype-lessons.js';
+import {mountReasoningRevision} from './visuals-reasoning-revision.js';
 
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const rich=s=>s.replace(/\$\$[\s\S]*?\$\$|\$[^$]*?\$/g,esc);
@@ -221,9 +222,9 @@ export function installDesignPrototypes(entriesRoot){
   for(const [topic,lesson] of Object.entries(lessons)){
     const entry=entriesRoot.querySelector(`#entry-${lesson.number.replaceAll('.','-')}`);if(!entry)continue;
     const wrapper=document.createElement('details');wrapper.className='ep-entry-wrapper';
-    wrapper.innerHTML=`<summary>${topic==='cdf'?'Compare three ways to read this definition':'Compare three ways to follow the '+(topic==='machine'?'solution':'proof')}</summary><p><a href="design-prototypes.html?topic=${topic}">Open the full comparison →</a></p><div class="ep-embedded"></div>`;
+    wrapper.innerHTML=`<summary>${topic==='cdf'?'Read the CDF in one diagram':topic==='fatou'?'Why the tail infima increase':'How the identity extends between function classes'}</summary><p><a href="design-prototypes.html?topic=${topic}">Open this explanation in a full page →</a></p><div class="ep-embedded"></div>`;
     if(topic==='cdf')entry.querySelector('figure.visual').after(wrapper);
     else entry.querySelector(topic==='machine'?'.solution':'.proof').append(wrapper);
-    wrapper.addEventListener('toggle',()=>{if(wrapper.open&&!wrapper.dataset.mounted){mountDesignPrototypes(wrapper.querySelector('.ep-embedded'),topic);wrapper.dataset.mounted='true'}});
+    wrapper.addEventListener('toggle',()=>{if(wrapper.open&&!wrapper.dataset.mounted){mountReasoningRevision(wrapper.querySelector('.ep-embedded'),topic);wrapper.dataset.mounted='true'}});
   }
 }
