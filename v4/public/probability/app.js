@@ -6,6 +6,8 @@ import {mountVisual as mountConvergence} from './visuals-convergence.js?v=naviga
 import {mountVisual as mountIntegrability} from './visuals-integrability.js?v=intuition1';
 import {initReader} from './reader.js?v=quiet1';
 import {linkDefinitions} from './definitions.js?v=machine1';
+import {createStudyCards} from './study-cards.js?v=study1';
+import {initStudy} from './study.js?v=study1';
 import {initEntrySearch} from './entry-search.js?v=concept-search1';
 import {entries,sections} from './content/book.js?v=main-guides1';
 import {mountVisual as mountGenerated} from './visuals-generated.js';
@@ -19,6 +21,7 @@ import {mountVisual as mountReasoning} from './visuals-reasoning.js';
 const $=(s,root=document)=>root.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const id=n=>'entry-'+n.replaceAll('.','-');
+const studyCards=createStudyCards(entries);
 for(const e of entries){for(const k of ['statement','after','solution','proof','plain','caption','proofCaption'])if(e[k])e[k]=e[k].replace(/\$\$[\s\S]*?\$\$|\$[^$]*?\$/g,esc);if(e.hints)e.hints=e.hints.map(h=>h.replace(/\$\$[\s\S]*?\$\$|\$[^$]*?\$/g,esc));}
 const key='probability-notebook-notes-v1';let notes={};let storageOK=true;
 try{notes=JSON.parse(localStorage.getItem(key)||'{}');if(!notes||typeof notes!=='object'||Array.isArray(notes))notes={}}catch{storageOK=false}
@@ -64,4 +67,5 @@ renderMath(document.body);if(!storageOK)toast('Browser storage is unavailable. E
 function revealLinkedSection(){const linkedEntry=entries.find(e=>'#'+id(e.n)===location.hash);const section=linkedEntry?.subsection||sections.find(s=>'#'+s.anchor===location.hash)?.n;if(section)document.querySelectorAll('.toc-group').forEach((g,i)=>g.open=sections[i].n===section);}revealLinkedSection();window.addEventListener('hashchange',revealLinkedSection);
 initReader({entries,sections,id,toast});
 initEntrySearch(entries);
+initStudy({cards:studyCards,sections,renderRich(root,html){root.innerHTML=safeMath(html);renderMath(root)}});
 if(location.hash&&!document.body.classList.contains('split-view'))setTimeout(()=>document.getElementById(location.hash.slice(1))?.scrollIntoView(),100);

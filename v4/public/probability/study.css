@@ -1,0 +1,60 @@
+/* The opaque backdrop keeps the reading pane from giving away recall answers. */
+#study-dialog{width:min(760px,calc(100vw - 32px));max-height:92dvh;overflow:auto;overscroll-behavior:contain;padding:28px 34px;border:1px solid var(--line);border-radius:12px;background:var(--paper);color:var(--ink);font:16px/1.65 Georgia,'Times New Roman',serif}
+#study-dialog::backdrop{background:var(--paper)}
+.study-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}
+#study-dialog h2{font:28px/1.25 Georgia;margin:0}
+#study-dialog h3{font:30px/1.3 Georgia;margin:12px 0 16px;overflow-wrap:break-word}
+#study-dialog h4{font:600 14px/1.5 system-ui;margin:0 0 12px}
+#study-dialog p{margin:12px 0}
+#study-dialog button{min-height:44px;font:13px/1.4 system-ui}
+#study-dialog label{display:block;font:600 13px/1.5 system-ui;margin:16px 0 6px}
+#study-dialog label span{font-weight:400;color:var(--muted)}
+#study-dialog select,#study-dialog textarea{width:100%;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:5px;background:var(--paper);color:var(--ink);font:16px/1.5 system-ui}
+#study-dialog textarea{resize:vertical;min-height:96px;max-height:35dvh}
+.study-options{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.study-options>div{min-width:0}
+#study-dialog .study-primary{background:var(--green);border-color:var(--green);color:white;margin-top:16px;padding:11px 18px}
+#study-dialog .study-primary:hover{filter:brightness(.93)}
+.study-counts,.study-local,.study-progress,.study-kind,.study-entry-links,.study-related,.study-how{font:13px/1.6 system-ui;color:var(--muted)}
+.study-how{border-top:1px solid var(--line);padding-top:16px;margin-top:24px}
+.study-how summary{cursor:pointer;color:var(--green)}
+#study-dialog .study-local{margin:20px 0 0}
+.study-progress{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding-bottom:12px}
+.study-progress button{white-space:nowrap;flex-shrink:0;border:0;background:none;text-decoration:underline;text-underline-offset:3px}
+.study-kind{letter-spacing:.06em;text-transform:uppercase}
+#study-dialog .study-kind{margin-top:24px}
+.study-question{margin-bottom:20px}
+.study-question h3:focus,#study-answer h4:focus,.study-summary h3:focus{outline:none}
+.study-prompt{color:var(--muted)}
+#study-answer{margin-top:24px;border-top:1px solid var(--line);padding-top:22px}
+.study-definition{background:var(--pale);border-left:3px solid var(--green);padding:18px 20px;overflow-wrap:break-word}
+.study-definition ol{padding-left:22px}
+.study-definition li+li{margin-top:8px}
+#study-dialog .katex-display{max-width:100%;overflow-x:auto;overflow-y:hidden;padding:3px 0}
+.study-check{padding:20px 0 6px}
+.study-check ul{padding-left:22px;margin:0;font-size:15px}
+.study-check li+li{margin-top:8px}
+.study-source{font-size:15px;padding:14px 0;border-top:1px solid var(--line)}
+.study-source>summary{font:13px/1.5 system-ui;color:var(--green);cursor:pointer}
+.study-source-statement{margin-top:16px;overflow-wrap:break-word}
+.study-source-remark{font-size:14px;color:var(--muted)}
+.study-entry-links{display:grid;gap:6px;padding-top:8px}
+.study-rating{border:0;padding:0;margin:22px 0 4px;display:flex;flex-wrap:wrap;gap:10px}
+.study-rating legend{font:600 14px/1.5 system-ui;padding:0;margin-bottom:12px;color:var(--ink)}
+.study-rating button{flex:1;min-width:80px}
+#study-dialog [data-study-rate=got]{border-color:var(--green);font-weight:600}
+.study-summary>button{margin-right:10px}
+#study-dialog [role=status]{font:13px/1.6 system-ui;color:var(--ink);margin:16px 0 0}
+#study-dialog [role=status]:empty{display:none}
+[data-study-mobile],[data-study-menu]{display:none}
+@media(max-width:600px){
+ #study-dialog{width:calc(100vw - 16px);max-height:96dvh;padding:18px 20px}
+ #study-dialog h2{font-size:25px}#study-dialog h3{font-size:27px}
+ .study-options{gap:10px}.study-definition{padding:14px}
+ .reader-controls>[data-open-study]{display:none}
+ .reading-layout [data-study-menu]{display:block}
+ .companion-nav [data-study-mobile]{display:block}
+}
+@media(max-width:350px){.study-options{grid-template-columns:1fr;gap:0}#study-dialog{padding:16px}.study-progress{font-size:12px}.study-summary>button{display:block;width:100%}}
+@media print{#study-dialog,[data-open-study]{display:none!important}}
+.print-layout #study-dialog,.print-layout [data-open-study]{display:none!important}

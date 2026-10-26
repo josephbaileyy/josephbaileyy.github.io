@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "b03f8d0c3f0f56d6cb5d138343b86606184152dd",
+  "sourceCommit": "436ed46b9740428756cdc0318e346a17a12655f8",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "605c6d7cc0240d01fc3333d0f7664432f9b73fe379feb19f79253817260ddd31"
+      "sha256": "92b2df4edd8631b89f2cd5e8cd274ddb261af26684f6c4f6be12fc6cca4fb1d0"
     },
     {
       "file": "appearance.css",
@@ -112,7 +112,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "d4d6a7acfbc8ba4f983213a628421a932752b8d14b3350f0e53715dd94496a52"
+      "sha256": "380390f4eca0904950caae59d770c46aa6d1835d4bfb54cf85cb015e36c4a70e"
     },
     {
       "file": "intuition-models.js",
@@ -157,6 +157,22 @@
     {
       "file": "source/README.md",
       "sha256": "ea5bd16cfde279c24f5b47943e312a1fe0cfaac788a1f3afbb04e6b18b9333ab"
+    },
+    {
+      "file": "study-cards.js",
+      "sha256": "4710545f5d4b422fba7c6432b56de99e598b1ffa3a871061d1c5062b155f0186"
+    },
+    {
+      "file": "study-state.js",
+      "sha256": "43b226eeb6281ec936d31ce7895974279028e3053adbbd9ae2309199cd12a25f"
+    },
+    {
+      "file": "study.css",
+      "sha256": "f8d863128af7566c66bb222ef4a8a61f061b2698bfa9cc646a5042c145ae9853"
+    },
+    {
+      "file": "study.js",
+      "sha256": "d004a3da170bb0ce44ebb7be394f3e9b0bfde5808bf68dcd4968b1792e19ad68"
     },
     {
       "file": "style.css",
