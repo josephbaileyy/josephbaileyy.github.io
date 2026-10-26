@@ -6,7 +6,7 @@ import {mountVisual as mountConvergence} from './visuals-convergence.js?v=naviga
 import {mountVisual as mountIntegrability} from './visuals-integrability.js?v=intuition1';
 import {initReader} from './reader.js?v=quiet1';
 import {linkDefinitions} from './definitions.js?v=machine1';
-import {initEntrySearch} from './entry-search.js?v=navigation2';
+import {initEntrySearch} from './entry-search.js?v=concept-search1';
 import {entries,sections} from './content/book.js?v=main-guides1';
 import {mountVisual as mountGenerated} from './visuals-generated.js';
 import {mountVisual as mountBorel} from './visuals-borel.js?v=borel1';
