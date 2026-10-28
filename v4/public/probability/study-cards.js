@@ -58,6 +58,12 @@ const specs=[
  ['1.4.24','isomorphism','Measurable isomorphism',['Bijection with measurable map and measurable inverse.'],r`An isomorphism between measurable spaces is a bijection $g:S\to T$ for which both $g$ and $g^{-1}$ are measurable.`],
  ['1.4.24','b-isomorphic','B-isomorphic space',['Isomorphic to a Borel subset of the real line with the induced Borel σ-algebra.'],r`A measurable space is $\mathcal B$-isomorphic if it is measurably isomorphic to a Borel subset $T\subseteq\mathbb R$ equipped with its induced Borel σ-algebra.`],
  ['1.4.34','convolution','Convolution',['For functions, integrate f(z−y)g(y).','For laws, integrate translated-set masses.','The law of an independent sum is the convolution.']],
+ ['2.1.1','covariance','Covariance',['Both variables have finite second moments.','Expected product of centered values.'],r`For $X,Y\in L^2$, $$\operatorname{Cov}(X,Y)=\mathbf E[(X-\mathbf EX)(Y-\mathbf EY)]=\mathbf E(XY)-\mathbf EX\mathbf EY.$$`],
+ ['2.1.1','uncorrelated','Uncorrelated family',['Every member is in L².','Every pair of distinct indices has covariance zero.'],r`A family $\{X_\alpha\}\subset L^2$ is uncorrelated when $\operatorname{Cov}(X_\alpha,X_\beta)=0$ for every $\alpha\ne\beta$.`],
+ ['2.2.1','limsup-events','Limit superior of events',['Every tail contains a hit.','Intersection of tail unions.'],r`$$\limsup_n A_n=\bigcap_{m\ge1}\bigcup_{n\ge m}A_n=\{A_n\text{ infinitely often}\}.$$`],
+ ['2.2.1','liminf-events','Limit inferior of events',['Some tail consists entirely of hits.','Union of tail intersections.'],r`$$\liminf_n A_n=\bigcup_{m\ge1}\bigcap_{n\ge m}A_n=\{A_n\text{ eventually}\}.$$`],
+ ['2.3.5','empirical-cdf','Empirical distribution function',['Average of indicators with the threshold included.'],r`$$F_n(x)=\frac1n\sum_{i=1}^n\mathbf1_{\{X_i\le x\}}.$$`],
+ ['2.3.7','renewal-count','Renewal counting process',['Positive waiting times; partial sums are arrival times.','Count arrivals at or before t, including equality.'],r`For $T_0=0$, $T_n=\sum_{i\le n}\tau_i$, $$N_t=\sup\{n\ge0:T_n\le t\}.$$`],
  ['1.4.45','gamma','Gamma density',['Positive shape and rate.','Include the normalization and positive support.']]
 ];
 const comparisons=[

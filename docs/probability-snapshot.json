@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "436ed46b9740428756cdc0318e346a17a12655f8",
+  "sourceCommit": "546bbb6ceef2fcadc5558d922363bbc06214c474",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "92b2df4edd8631b89f2cd5e8cd274ddb261af26684f6c4f6be12fc6cca4fb1d0"
+      "sha256": "64275de2e3f639e19eca6cb96b6c577dacd07bc47b0339d20e48c23351f9a52b"
     },
     {
       "file": "appearance.css",
@@ -16,7 +16,7 @@
     },
     {
       "file": "content/book.js",
-      "sha256": "e455d7fb9734dc8c73d8c23c7f7e8f2b2eb353c0ca52ad546bbd6cb517a7cf95"
+      "sha256": "3b4599ad9d73cfeee85e08e16a1a3c2a4c257346577d5966daea0632032d876a"
     },
     {
       "file": "content/chapter-1.js",
@@ -79,8 +79,20 @@
       "sha256": "7bbcfb21316b744eb7164065ed54e94a832d87bb4e7501e5d4320913543d3e87"
     },
     {
+      "file": "content/section-2-1.js",
+      "sha256": "b36a13e51df9012503f4b4a399ffe0f70bb8509c300244cdfb66de7cedd92a75"
+    },
+    {
+      "file": "content/section-2-2.js",
+      "sha256": "b5f156135ed96ddf93032f46975abea6e1bf09e76b9479a6f4663f8cfb382731"
+    },
+    {
+      "file": "content/section-2-3.js",
+      "sha256": "a3e32ac9f1834f39625c6665756c463e948d0fedf378a3b76f76c100142c6a1e"
+    },
+    {
       "file": "definitions.js",
-      "sha256": "96520788ba5b095d8fd4060ceec01f1ff6652336d195d4cf4df6490cb51df2d4"
+      "sha256": "4d5fe996396e8d5fb90b0b6020ae6a4a25d3b6dfc8713425d012589be2a78c27"
     },
     {
       "file": "design-prototypes.html",
@@ -88,7 +100,7 @@
     },
     {
       "file": "entry-search.js",
-      "sha256": "664d9475d5e54f774d9a9c99de099edc514164391a0b57e9a49b37a8e2eb0a07"
+      "sha256": "3ad54b96eabb76bca333e57fcdcefa364199303176f5354699a75158b8139066"
     },
     {
       "file": "explanations.html",
@@ -112,7 +124,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "380390f4eca0904950caae59d770c46aa6d1835d4bfb54cf85cb015e36c4a70e"
+      "sha256": "1fec619ff2d9a0a3c2c7e61eb81787ab184267543ebb6e599db000fc9fc905ad"
     },
     {
       "file": "intuition-models.js",
@@ -160,7 +172,7 @@
     },
     {
       "file": "study-cards.js",
-      "sha256": "4710545f5d4b422fba7c6432b56de99e598b1ffa3a871061d1c5062b155f0186"
+      "sha256": "2db3d7414cccbbb7dfc7f75d553a2cd68c6edb7c03b6ad702b97acea4d5e373a"
     },
     {
       "file": "study-state.js",
@@ -172,11 +184,11 @@
     },
     {
       "file": "study.js",
-      "sha256": "d004a3da170bb0ce44ebb7be394f3e9b0bfde5808bf68dcd4968b1792e19ad68"
+      "sha256": "f8c379bd7c3f0094d07b8dfa2017c2eb54dcfd18e7d7dbe7d49412ada80b957b"
     },
     {
       "file": "style.css",
-      "sha256": "2976e6bc605d8a518c1f5985e153605148adfd31be3a24abd510b2e1894abd70"
+      "sha256": "34f6d12dc8e990aec657db8b7521ca8bcdb472ef35a3554721a2d95dcdec1a6a"
     },
     {
       "file": "vendor/KATEX-LICENSE",
@@ -1369,6 +1381,10 @@
     {
       "file": "visuals-intuition.js",
       "sha256": "709126aa9bf505f35e5c58dd07be5c8b884f2406a433ef44079e0e7d2a335293"
+    },
+    {
+      "file": "visuals-lln.js",
+      "sha256": "873f2d764c80d962dd06d99d3e6f01d7c3a204ff8f1e64a66e10275feb6c244c"
     },
     {
       "file": "visuals-pointwise.js",

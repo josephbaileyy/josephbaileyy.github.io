@@ -22,6 +22,14 @@ const searchNames=[
  ['1.3.67','Mean / variance / moments',['mean','variance','moment','moments']],
  ['1.4.3','Mutual independence of collections',['independent collections']],
  ['1.4.22','Kolmogorov’s extension theorem',['Kolmogorov extension','consistency theorem']],
+ ['2.1.3','L² weak law of large numbers',['L2 weak law']],
+ ['2.1.8','Coupon collector',['coupon collection']],
+ ['2.1.11','Weak law for triangular arrays',['triangular arrays','truncation weak law']],
+ ['2.1.14','Weak law of large numbers',['weak law','WLLN']],
+ ['2.1.15','St. Petersburg paradox',['Petersburg']],
+ ['2.2.9','Kochen–Stone lemma',['Kochen Stone']],
+ ['2.3.3','Strong law of large numbers',['SLLN','Etemadi strong law']],
+ ['2.3.6','Glivenko–Cantelli theorem',['Glivenko Cantelli','uniform empirical convergence']],
  ['1.4.28','Fubini’s theorem',['Fubini theorem','Fubini']]
 ].map(([entry,label,aliases])=>({entry,label,aliases}));
 const concepts=[...definitions,...searchNames];

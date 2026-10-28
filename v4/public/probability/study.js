@@ -16,7 +16,7 @@ export function initStudy({cards,sections,renderRich}){
   session=null;ended=false;revealed=false;
   body.innerHTML=`<p class="study-intro">Try recalling a definition before revealing it. Check the assumptions, then decide when to review it again.</p>
    <form class="study-setup"><label for="study-section">Section</label><select id="study-section"><option value="">All covered sections</option>
-   ${['1.1','1.2','1.3','1.4'].map((n,i)=>`<option value="${n}">${n} · ${['Probability spaces & measures','Random variables & laws','Integration & convergence','Independence & products'][i]}</option>`).join('')}
+   ${['1.1','1.2','1.3','1.4','2.1','2.2','2.3'].map((n,i)=>`<option value="${n}">${n} · ${['Probability spaces & measures','Random variables & laws','Integration & convergence','Independence & products','Weak laws','Event limits & Borel–Cantelli','Strong laws & random series'][i]}</option>`).join('')}
    <optgroup label="Specific subsection">${sections.filter(s=>cardsInSection(cards,s.n).length).map(s=>`<option value="${s.n}">${s.n} · ${esc(s.title)}</option>`).join('')}</optgroup></select>
    <div class="study-options"><div><label for="study-mode">Review</label><select id="study-mode"><option value="due">Due & new cards</option><option value="all">Practice all cards</option></select></div>
    <div><label for="study-size">Session size</label><select id="study-size"><option value="5">5 cards</option><option value="10">10 cards</option><option value="20">20 cards</option><option value="1000">All available cards</option></select></div></div>

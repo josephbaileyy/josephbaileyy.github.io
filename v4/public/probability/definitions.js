@@ -48,7 +48,15 @@ export const definitions = [
  ['1.4.19', 'Product measure', ['product measures','product measure']],
  ['1.4.24', 'Measurable isomorphism', ['Borel-isomorphism','Borel isomorphism']],
  ['1.4.34', 'Convolution', ['convolution']],
- ['1.4.45', 'Gamma density', ['gamma density','gamma densities']]
+ ['1.4.45', 'Gamma density', ['gamma density','gamma densities']],
+ ['2.1.1', 'Covariance / uncorrelated families', ['covariance','covariances','uncorrelated']],
+ ['2.2.1', 'Event limits', ['infinitely often','limsup of events','liminf of events']],
+ ['2.2.4', 'Borel–Cantelli I', ['Borel–Cantelli I','Borel-Cantelli I','first Borel-Cantelli lemma']],
+ ['2.2.7', 'Borel–Cantelli II', ['Borel–Cantelli II','Borel-Cantelli II','second Borel-Cantelli lemma']],
+ ['2.3.3', 'Strong law of large numbers', ['strong law of large numbers','strong law']],
+ ['2.3.5', 'Empirical distribution function', ['empirical distribution function','empirical CDF']],
+ ['2.3.16', 'Kolmogorov’s maximal inequality', ['Kolmogorov’s maximal inequality',"Kolmogorov's maximal inequality"]],
+ ['2.3.20', 'Kronecker’s lemma', ['Kronecker’s lemma',"Kronecker's lemma"]]
 ].map(([entry,label,aliases])=>({entry,label,aliases}));
 
 export function definitionMatcher(entry, entries) {

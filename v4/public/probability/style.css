@@ -257,3 +257,8 @@ body:not(.split-view) .fubini-proof-actions{top:68px}
 .pw-reason p{font-size:14px}.pw-print{display:none}
 @container(max-width:350px){.pointwise-lab .controls label{min-width:100%}.pw-masses{grid-template-columns:1fr;gap:8px}}
 @media print{.pointwise-lab>.controls,.pointwise-lab>.drawing,.pointwise-lab>.result{display:none!important}.pw-print{display:block}.pw-print section{break-inside:avoid;margin-bottom:16pt}}
+
+/* Chapter 2: labels/readouts remain ordinary text on narrow companion panes. */
+.lln-chart{margin:.5rem 0}.lln-chart svg{display:block;width:100%;height:auto;color:var(--ink,#293f35)}
+.lln-chart .small{line-height:1.5}.lln-membership{display:flex;flex-wrap:wrap;gap:.45rem}
+.lln-membership span{padding:.35rem .5rem;border:1px solid currentColor;border-radius:.3rem;font-size:.9rem}
