@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "546bbb6ceef2fcadc5558d922363bbc06214c474",
+  "sourceCommit": "0736d38b305b19000221467e34eb8afba7595ccf",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "64275de2e3f639e19eca6cb96b6c577dacd07bc47b0339d20e48c23351f9a52b"
+      "sha256": "2f7d47f95df66d9415b715cf992b1e4070c62f291c1b7d465939e36bbc0924a3"
     },
     {
       "file": "appearance.css",
@@ -100,7 +100,7 @@
     },
     {
       "file": "entry-search.js",
-      "sha256": "3ad54b96eabb76bca333e57fcdcefa364199303176f5354699a75158b8139066"
+      "sha256": "ceed52c15f85ddfdcc5b20535528380ba70e7093c4a14366c10ba8ebe9c51cc7"
     },
     {
       "file": "explanations.html",
@@ -124,7 +124,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "1fec619ff2d9a0a3c2c7e61eb81787ab184267543ebb6e599db000fc9fc905ad"
+      "sha256": "b251e68e096e5221fffaf747f4732ef3ea361b6bf05a2a99d4d78ef17a9e4b78"
     },
     {
       "file": "intuition-models.js",

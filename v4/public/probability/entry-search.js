@@ -1,4 +1,4 @@
-import {definitions} from './definitions.js?v=navigation2';
+import {definitions} from './definitions.js?v=chapter2';
 const normalize=s=>String(s).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/['’]s\b/g,'').replace(/[^\p{L}\p{N}.]+/gu,' ').trim();
 const plain=s=>String(s||'').replace(/<[^>]*>/g,' ').replace(/&(?:lt|gt|amp|quot|#39);/g,' ');
 // Search-only names supplement the reviewed link index without changing in-text links.

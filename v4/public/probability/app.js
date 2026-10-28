@@ -6,11 +6,11 @@ import {mountVisual as mountInequalities} from './visuals-inequalities.js?v=509c
 import {mountVisual as mountConvergence} from './visuals-convergence.js?v=navigation2';
 import {mountVisual as mountIntegrability} from './visuals-integrability.js?v=intuition1';
 import {initReader} from './reader.js?v=quiet1';
-import {linkDefinitions} from './definitions.js?v=machine1';
-import {createStudyCards} from './study-cards.js?v=study1';
-import {initStudy} from './study.js?v=study1';
-import {initEntrySearch} from './entry-search.js?v=concept-search1';
-import {entries,sections} from './content/book.js?v=main-guides1';
+import {linkDefinitions} from './definitions.js?v=chapter2';
+import {createStudyCards} from './study-cards.js?v=chapter2';
+import {initStudy} from './study.js?v=chapter2';
+import {initEntrySearch} from './entry-search.js?v=chapter2';
+import {entries,sections} from './content/book.js?v=chapter2';
 import {mountVisual as mountGenerated} from './visuals-generated.js';
 import {mountVisual as mountBorel} from './visuals-borel.js?v=borel1';
 import {mountVisual as mountMeasures} from './visuals-1-1-3.js';
