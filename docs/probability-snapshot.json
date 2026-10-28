@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "0736d38b305b19000221467e34eb8afba7595ccf",
+  "sourceCommit": "a29a795c47ee286d0e82d4ece442c4a88ea0960b",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "2f7d47f95df66d9415b715cf992b1e4070c62f291c1b7d465939e36bbc0924a3"
+      "sha256": "70203f23f6911360e46eeba19a2f4399d8d26aa4702236f4828f592aea2a22fc"
     },
     {
       "file": "appearance.css",
@@ -12,7 +12,7 @@
     },
     {
       "file": "appearance.js",
-      "sha256": "8adf82626a938d329c2daf30ea518c935b6daa7b68c789de9801fb9a6bd2c2f1"
+      "sha256": "b619a1392ac9b5a5085f795ca03a64b4d5d23c5f8f4cd10aec14571f3e25d227"
     },
     {
       "file": "content/book.js",
@@ -124,11 +124,75 @@
     },
     {
       "file": "index.html",
-      "sha256": "b251e68e096e5221fffaf747f4732ef3ea361b6bf05a2a99d4d78ef17a9e4b78"
+      "sha256": "87d841655a60d634cc3418aa3f7ffbe51a27ebd2a8afeed78f9f95b1ed4227f2"
     },
     {
       "file": "intuition-models.js",
       "sha256": "c7e206f7de78b16c1b5e44eb12c46959784ce5f5155ec51894a98e1312f7a926"
+    },
+    {
+      "file": "lecture-app.js",
+      "sha256": "6d3614a97fe6f4bb31d4c2a14891171a1f3da4414e94508fae6012fc185652d5"
+    },
+    {
+      "file": "lecture-diagrams.js",
+      "sha256": "6bee64502805c0a460e9c9d4b0fc1721f2561408c8237e1676dc08edac2e7965"
+    },
+    {
+      "file": "lecture-index.js",
+      "sha256": "2a3be85738375a1c0722fdbc86dc8ca692560f61438914234cdc64f181ef0db8"
+    },
+    {
+      "file": "lecture-model.js",
+      "sha256": "914675def5fce5264310b9606359e69562847144a453c353036e2cd1260e6014"
+    },
+    {
+      "file": "lectures/lecture-1.json",
+      "sha256": "3b7a3d3e155e87208a60ba432945579a0860ee2d0f071515b7cbc6528adcaac5"
+    },
+    {
+      "file": "lectures/lecture-2.json",
+      "sha256": "7224d09dac04f5c458154769fab3a588fa224d5149ce6fac36c843686b11238c"
+    },
+    {
+      "file": "lectures/lecture-3.json",
+      "sha256": "b5405bae9cf5d25b8d24a9de79f6b6196819d7b7d03ca86e7a36535dd11caaa9"
+    },
+    {
+      "file": "lectures/lecture-4.json",
+      "sha256": "28c2c25cc2617913031ac939ff994652380ef7bb99c9db4cd77b649192948cca"
+    },
+    {
+      "file": "lectures/lecture-5.json",
+      "sha256": "b13fb488c3439b965f2eaed8da1616142cb9d7f77e484d14b3792847dbcbd2df"
+    },
+    {
+      "file": "lectures/lecture-6.json",
+      "sha256": "d15d43e69b862de91b3f723d975bda5cbf3839b509b19aa68aee8d35af677af7"
+    },
+    {
+      "file": "lectures/lecture-7.json",
+      "sha256": "63b07ceb93e218a4b3b9dd86f26a36f2a61fc45086c3c6e49c94b51521ddffe3"
+    },
+    {
+      "file": "lectures/lecture-8.json",
+      "sha256": "527d334023df353f5aa33f7b058a82ec9f2f5a0d2ab1d89c16766ede446b2ca4"
+    },
+    {
+      "file": "lectures/lecture-notes.tex",
+      "sha256": "17f8834df2ba3dc8dafe5a54496464380f4f522b54b0a18d9328c475f2357c4f"
+    },
+    {
+      "file": "lectures/manifest.json",
+      "sha256": "733b69c0679203b8289e75167c7622a1c6f647c734b58bd910b7319f236678af"
+    },
+    {
+      "file": "lectures.css",
+      "sha256": "4466e46709f72ed9993ab23d7799f0ac1354906a8fecd1c74b5ca321b0dcc6b4"
+    },
+    {
+      "file": "lectures.html",
+      "sha256": "7056d4314b10266e7878c46bd05683794cbc921ee6d9284f483accf4c5937edf"
     },
     {
       "file": "math.js",
@@ -184,7 +248,7 @@
     },
     {
       "file": "study.js",
-      "sha256": "f8c379bd7c3f0094d07b8dfa2017c2eb54dcfd18e7d7dbe7d49412ada80b957b"
+      "sha256": "3b8d5f31dd422ea2832dc2c358ab4fe12c74e873138aafc89b22214e3a278dae"
     },
     {
       "file": "style.css",

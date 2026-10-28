@@ -1,0 +1,176 @@
+{
+  "number": 2,
+  "title": "Extension, uniqueness, and outer measures",
+  "ink": "blue",
+  "color": "#1b4f7a",
+  "pages": [
+    10,
+    18
+  ],
+  "sections": [
+    {
+      "id": "l2-s1",
+      "title": "Extension and sigma-finite uniqueness",
+      "pages": [
+        10,
+        10
+      ],
+      "paragraphs": [
+        "Let $\\mathcal A\\subseteq2^\\Omega$ be an algebra and let $\\mu_0:\\mathcal A\\to[0,\\infty]$ satisfy $\\mu_0(\\varnothing)=0$. Assume that for every pairwise disjoint sequence $A_i\\in\\mathcal A$ whose union belongs to $\\mathcal A$, $$\\mu_0\\!\\left(\\bigsqcup_{i=1}^{\\infty}A_i\\right)=\\sum_{i=1}^{\\infty}\\mu_0(A_i).$$ Then a measure $\\mu$ exists on $\\sigma(\\mathcal A)$ with $\\mu|_{\\mathcal A}=\\mu_0$. If $\\mu_0$ is $\\sigma$-finite, this extension is unique.",
+        "A measure is $\\sigma$-finite if there are measurable sets $A_i\\uparrow\\Omega$ with $\\mu(A_i)<\\infty$ for every $i$. Equivalently, $\\Omega$ has a countable cover by measurable sets of finite measure; taking finite unions makes the cover increasing.",
+        "The example in the notes is $d$-dimensional volume on $\\mathbb R^d$."
+      ],
+      "entry": "1.1.30",
+      "editorial": [
+        "For uniqueness of an extension, the finite-measure cover must be available in the original algebra: choose $A_i\\in\\mathcal A$ with $A_i\\uparrow\\Omega$ and $\\mu_0(A_i)<\\infty$. For volume, the bounded boxes $[-i,i]^d$ give the required cover."
+      ]
+    },
+    {
+      "id": "l2-s2",
+      "title": "Constructing uniform measure from interval length",
+      "pages": [
+        11,
+        12
+      ],
+      "paragraphs": [
+        "Apply the extension theorem to $\\Omega=(0,1]$ and the interval algebra $$\\mathcal A=\\left\\{\\bigsqcup_{k=1}^{n}(a_k,b_k]:0\\le a_1<b_1<\\cdots<a_n<b_n\\le1,\\ n<\\infty\\right\\},$$ including the empty union. Its generated $\\sigma$-algebra is $\\mathcal B_{(0,1]}$. Define $$\\mu_0\\!\\left(\\bigsqcup_{k=1}^{n}(a_k,b_k]\\right)=\\sum_{k=1}^{n}(b_k-a_k).$$ The empty-set requirement is immediate. The remaining requirement is countable additivity on $\\mathcal A$.",
+        "Write $J\\in\\mathcal A$ as $J=\\bigsqcup_{k=1}^{n}I_k$, with $I_k=(a_k,b_k]$. Suppose $J=\\bigsqcup_{i=1}^{\\infty}L_i$, where each $L_i$ is itself a finite disjoint union $\\bigsqcup_{\\ell=1}^{m_i}(c_\\ell^{(i)},d_\\ell^{(i)}]$. We want $$\\sum_k(b_k-a_k)=\\sum_i\\sum_{\\ell=1}^{m_i}(d_\\ell^{(i)}-c_\\ell^{(i)}).$$",
+        "The picture draws the components of $J$ along one line and the components of $L_1,L_2,\\ldots$ below it. After intersecting each component of each $L_i$ with the finitely many $I_k$, the verification reduces to a single interval $I=(a,b]$ partitioned into countably many half-open subintervals $(c_j,d_j]$.",
+        "The handwritten proof suggests reordering the subintervals from left to right and telescoping their lengths: $$b-a=\\sum_{j=1}^{\\infty}(d_j-c_j),$$ with consecutive endpoints matching. The example displayed at the margin is $J=(0,1]$ with endpoints of the form $1/i$."
+      ],
+      "entry": "1.1.31",
+      "editorial": [
+        "The last step is a proof gap: a general countable interval partition need not admit a left-to-right enumeration with consecutive matching endpoints. For example, the pieces $(1/(j+1),1/j]$ accumulate at zero and have no leftmost member. Their lengths do sum to one, but the proposed ordering is not a general justification.",
+        "A valid completion follows the source’s compactness argument. First check finite additivity by refining at all finitely many endpoints. For a disjoint union $J=\\bigsqcup_iL_i\\in\\mathcal A$, put $H_n=J\\setminus\\bigcup_{i\\le n}L_i$. Then $H_n\\downarrow\\varnothing$ and finite additivity gives $\\mu_0(J)=\\sum_{i\\le n}\\mu_0(L_i)+\\mu_0(H_n)$. It is enough to show $\\mu_0(H_n)\\to0$.",
+        "If $\\mu_0(H_n)\\ge2\\epsilon$ for every $n$, trim the left endpoints of the finitely many component intervals of each $H_\\ell$ to obtain $J_\\ell\\in\\mathcal A$ with compact closure $\\overline{J_\\ell}\\subseteq H_\\ell$ and $\\mu_0(H_\\ell\\setminus J_\\ell)\\le\\epsilon2^{-\\ell}$. Finite subadditivity then gives $\\mu_0(\\bigcap_{\\ell\\le n}J_\\ell)\\ge\\epsilon$. Thus the compact sets $\\bigcap_{\\ell\\le n}\\overline{J_\\ell}$ are nonempty and decreasing. Compactness gives a point in all $H_\\ell$, contradicting $H_n\\downarrow\\varnothing$. Therefore the length premeasure is countably additive and extends uniquely to uniform measure."
+      ],
+      "recall": {
+        "question": "Where is the gap in ordering a countable interval partition and telescoping lengths? What property repairs it?",
+        "answer": [
+          "Intervals may accumulate at an endpoint, so there need not be a first interval in a left-to-right enumeration. Use finite additivity plus continuity at the empty set instead. The shrinking residuals $H_n$ have lengths tending to zero by a compactness argument using trimmed component intervals."
+        ],
+        "checks": [
+          "Give an interval partition with no leftmost member.",
+          "Define the residual set after finitely many pieces.",
+          "Explain where compactness is used."
+        ]
+      }
+    },
+    {
+      "id": "l2-s3",
+      "title": "Pi-systems, lambda-systems, and examples",
+      "pages": [
+        13,
+        14
+      ],
+      "paragraphs": [
+        "For uniqueness, an algebra of test sets is more than is needed: a $\\pi$-system suffices. A collection $\\mathcal P\\subseteq2^\\Omega$ is a $\\pi$-system if $$A,B\\in\\mathcal P\\quad\\Longrightarrow\\quad A\\cap B\\in\\mathcal P.$$",
+        "A collection $\\mathcal L\\subseteq2^\\Omega$ is a $\\lambda$-system if $\\Omega\\in\\mathcal L$; if $A\\subseteq B$ with $A,B\\in\\mathcal L$, then $B\\setminus A\\in\\mathcal L$; and if $A_i\\in\\mathcal L$ with $A_i\\uparrow A$, then $A\\in\\mathcal L$.",
+        "Examples of $\\pi$-systems are the half-open intervals in $(0,1]$, together with $\\varnothing$, and the half-open rectangles $(a_1,b_1]\\times(a_2,b_2]$, together with $\\varnothing$. The rectangle example motivates checking two measures on $\\mathbb R^2$ by comparing their values on rectangles.",
+        "A $\\lambda$-system need not be a $\\pi$-system. On $\\mathbb R^2$, the notes give $$\\mathcal L=\\{A\\times\\mathbb R:A\\in\\mathcal B_{\\mathbb R}\\}\\ \\cup\\ \\{\\mathbb R\\times A:A\\in\\mathcal B_{\\mathbb R}\\}.$$ The crossing-strip picture shows why the intersection of a nontrivial vertical strip and a nontrivial horizontal strip is a rectangle that is not itself a full strip."
+      ],
+      "entry": "1.1.36",
+      "editorial": [
+        "The strip family is closed under the $\\lambda$-operations: complements preserve orientation; a nontrivial nested pair must have the same orientation; and a nontrivial increasing chain cannot change orientation except through $\\varnothing$ or $\\mathbb R^2$. It is not closed under intersections. Equality on rectangles determines finite measures of the same total mass, and also determines suitable $\\sigma$-finite measures after localization; unrestricted infinite measures need additional hypotheses."
+      ]
+    },
+    {
+      "id": "l2-s4",
+      "title": "A sigma-algebra is exactly pi plus lambda",
+      "pages": [
+        14,
+        14
+      ],
+      "paragraphs": [
+        "Proposition: a collection $\\mathcal F$ is a $\\sigma$-algebra if and only if it is both a $\\pi$-system and a $\\lambda$-system."
+      ],
+      "entry": "1.1.37",
+      "proof": [
+        "A $\\sigma$-algebra has both properties directly from its defining closure conditions.",
+        "Conversely, suppose $\\mathcal F$ is both. Since it is a $\\lambda$-system, $\\Omega\\in\\mathcal F$, $\\varnothing=\\Omega\\setminus\\Omega\\in\\mathcal F$, and $A^c=\\Omega\\setminus A\\in\\mathcal F$ for $A\\in\\mathcal F$. Its $\\pi$-property and complements give finite unions by $A\\cup B=(A^c\\cap B^c)^c$.",
+        "For arbitrary $B_i\\in\\mathcal F$, put $A_n=\\bigcup_{i=1}^{n}B_i$. Finite-union closure gives $A_n\\in\\mathcal F$, and $A_n\\uparrow\\bigcup_iB_i$. Increasing-limit closure gives the required countable union."
+      ]
+    },
+    {
+      "id": "l2-s5",
+      "title": "Dynkin’s theorem and uniqueness of measures",
+      "pages": [
+        15,
+        16
+      ],
+      "paragraphs": [
+        "Dynkin’s $\\pi$–$\\lambda$ theorem: if $\\mathcal P$ is a $\\pi$-system, $\\mathcal L$ is a $\\lambda$-system, and $\\mathcal P\\subseteq\\mathcal L$, then $$\\sigma(\\mathcal P)\\subseteq\\mathcal L.$$",
+        "Equivalently, if $\\lambda(\\mathcal P)$ denotes the smallest $\\lambda$-system containing $\\mathcal P$, then $\\lambda(\\mathcal P)=\\sigma(\\mathcal P)$. The theorem gives $\\sigma(\\mathcal P)\\subseteq\\lambda(\\mathcal P)$, and the reverse inclusion follows because $\\sigma(\\mathcal P)$ is itself a $\\lambda$-system containing $\\mathcal P$.",
+        "Uniqueness: let $\\mu_1,\\mu_2$ be measures on $\\sigma(\\mathcal P)$ that agree on a generating $\\pi$-system $\\mathcal P$, and suppose $$\\mu_1(\\Omega)=\\mu_2(\\Omega)<\\infty.$$ Then $\\mu_1=\\mu_2$ on $\\sigma(\\mathcal P)$."
+      ],
+      "entry": "1.1.39",
+      "proof": [
+        "Define the agreement class $$\\mathcal L=\\{A\\in\\sigma(\\mathcal P):\\mu_1(A)=\\mu_2(A)\\}.$$ It contains $\\mathcal P$, and the equal-total-mass hypothesis gives $\\Omega\\in\\mathcal L$.",
+        "If $A\\subseteq B$ with $A,B\\in\\mathcal L$, finiteness allows subtraction: $$\\mu_1(B\\setminus A)=\\mu_1(B)-\\mu_1(A)=\\mu_2(B)-\\mu_2(A)=\\mu_2(B\\setminus A).$$ Thus $B\\setminus A\\in\\mathcal L$.",
+        "If $A_n\\in\\mathcal L$ and $A_n\\uparrow A$, continuity from below gives $$\\mu_1(A)=\\lim_n\\mu_1(A_n)=\\lim_n\\mu_2(A_n)=\\mu_2(A).$$ Hence $\\mathcal L$ is a $\\lambda$-system. Dynkin’s theorem gives $\\sigma(\\mathcal P)\\subseteq\\mathcal L$, proving equality everywhere."
+      ],
+      "recall": {
+        "question": "For uniqueness of two measures, why is the agreement class usually treated as a lambda-system? Identify the use of finite mass.",
+        "answer": [
+          "Nested differences preserve agreement because $\\mu_j(B\\setminus A)=\\mu_j(B)-\\mu_j(A)$, which requires finite terms. Increasing limits preserve agreement by continuity from below. Equal finite total mass supplies membership of $\\Omega$. The agreement class need not have an immediate intersection-closure proof, so Dynkin’s theorem extends from the generating $\\pi$-system."
+        ],
+        "checks": [
+          "Use equal total mass to put the whole space in the class.",
+          "Locate the finite subtraction.",
+          "Check increasing limits separately."
+        ]
+      }
+    },
+    {
+      "id": "l2-s6",
+      "title": "Continuity from below and the finite-mass caveat above",
+      "pages": [
+        16,
+        16
+      ],
+      "paragraphs": [
+        "For every measure, $A_n\\uparrow A$ implies $\\mu(A_n)\\uparrow\\mu(A)$. The notes indicate the disjoint increments $$B_n=A_n\\setminus\\bigcup_{i=1}^{n-1}A_i$$ that prove this using countable additivity.",
+        "For decreasing sets, $A_n\\downarrow A$ implies $\\mu(A_n)\\downarrow\\mu(A)$ provided at least one $A_n$ has finite measure. Without this condition the assertion can fail. The recorded example is $A_n=[n,\\infty)\\downarrow\\varnothing$ for Lebesgue measure, while $\\mu(A_n)=\\infty$ for every $n$."
+      ],
+      "entry": "1.1.4",
+      "editorial": [
+        "The decreasing case follows by applying continuity from below to $A_N\\setminus A_n$ for a fixed $N$ with $\\mu(A_N)<\\infty$, and subtracting from $\\mu(A_N)$. The finite-mass assumption prevents the undefined expression $\\infty-\\infty$."
+      ]
+    },
+    {
+      "id": "l2-s7",
+      "title": "Outer measure and the extension proof plan",
+      "pages": [
+        16,
+        17
+      ],
+      "paragraphs": [
+        "An outer measure is a nonnegative set function $\\mu^*$ with $\\mu^*(\\varnothing)=0$, monotonicity $A\\subseteq B\\Rightarrow\\mu^*(A)\\le\\mu^*(B)$, and countable subadditivity $$\\mu^*\\!\\left(\\bigcup_{i=1}^{\\infty}A_i\\right)\\le\\sum_{i=1}^{\\infty}\\mu^*(A_i).$$ Additivity is not required, even for disjoint sets.",
+        "The existence proof for extension is organized in five steps: define an outer measure $\\mu^*$ on $2^\\Omega$; prove $\\mu^*|_{\\mathcal A}=\\mu_0$; form the class of sets that split every test set additively; prove this class is a $\\sigma$-algebra containing $\\mathcal A$; and prove that $\\mu^*$ restricted to that class is a measure.",
+        "The additive splitting condition is $$\\mu^*(F\\cap A)+\\mu^*(F\\cap A^c)=\\mu^*(F)\\qquad\\text{for every }F\\subseteq\\Omega.$$ Such a set $A$ is called $\\mu^*$-measurable. Restriction of the resulting measure to $\\sigma(\\mathcal A)$ gives the required extension."
+      ],
+      "entry": "1.1.42",
+      "editorial": [
+        "The initial outer-measure definition in the handwriting permits a specified measurable domain; the extension construction uses the full power set. In the handwritten proof plan, the displayed splitting class is restricted to $A\\in\\sigma(\\mathcal A)$. To obtain the full Carathéodory class, take all $A\\subseteq\\Omega$ satisfying the splitting condition; only afterward restrict to $\\sigma(\\mathcal A)$. This also explains the larger completed measure space in the next lecture."
+      ]
+    },
+    {
+      "id": "l2-s8",
+      "title": "Covering costs, subadditivity, and inner measure",
+      "pages": [
+        17,
+        18
+      ],
+      "paragraphs": [
+        "The first construction in the proof plan is $$\\mu^*(B)=\\inf\\left\\{\\sum_{i=1}^{\\infty}\\mu_0(A_i):A_i\\in\\mathcal A,\\ B\\subseteq\\bigcup_{i=1}^{\\infty}A_i\\right\\}.$$ The picture shows a set $B$ covered by several algebra sets; their total cost is compared with all other such covers.",
+        "The notes list the first checks: the empty set has zero cost, enlarging the target cannot decrease its infimal covering cost, and countable subadditivity must follow by combining covers. The margin compares an infimum of sums with a sum of infima.",
+        "For finite total mass, the lecture introduces inner measure by $$\\mu_*(A)=\\mu^*(\\Omega)-\\mu^*(A^c).$$ Its picture contrasts covering the target from outside with subtracting an outside cover of its complement. For a $\\mu^*$-measurable set $A$, the splitting identity applied to $\\Omega$ yields $\\mu_*(A)=\\mu^*(A)$."
+      ],
+      "entry": "1.1.40",
+      "editorial": [
+        "For countable subadditivity, the direction of the infimum inequality matters. If $\\sum_j\\mu^*(B_j)=\\infty$, there is nothing to prove. Otherwise, for $\\epsilon>0$, choose a cover of each $B_j$ costing at most $\\mu^*(B_j)+\\epsilon2^{-j}$. Their combined countable cover costs at most $\\sum_j\\mu^*(B_j)+\\epsilon$. Infimize, then let $\\epsilon\\downarrow0$. This supplies the step only indicated in the handwriting.",
+        "The displayed inner-measure subtraction requires $\\mu^*(\\Omega)<\\infty$. For an outer measure obtained from a finite premeasure, $\\mu^*(\\Omega)=\\mu_0(\\Omega)$, and subadditivity gives $\\mu_*(A)\\le\\mu^*(A)$. No subtraction of two infinite quantities is intended."
+      ]
+    }
+  ]
+}

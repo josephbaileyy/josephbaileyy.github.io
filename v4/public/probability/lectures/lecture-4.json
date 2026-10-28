@@ -1,0 +1,196 @@
+{
+  "number": 4,
+  "title": "Laws, distribution functions, and the Lebesgue integral",
+  "ink": "orange",
+  "color": "#a35c17",
+  "pages": [
+    28,
+    36
+  ],
+  "sections": [
+    {
+      "id": "l4-s1",
+      "title": "The law and distribution function of a random variable",
+      "pages": [
+        28,
+        28
+      ],
+      "paragraphs": [
+        "Let $(\\Omega,\\mathcal F,\\mathbb P)$ be a probability space and let $X:\\Omega\\to\\mathbb R$ be a random variable. Its law is the probability measure $\\mathbb P_X$ on $(\\mathbb R,\\mathcal B_{\\mathbb R})$ defined by $$\\mathbb P_X(A)=\\mathbb P(\\{\\omega:X(\\omega)\\in A\\})=\\mathbb P(X^{-1}(A)),\\qquad A\\in\\mathcal B_{\\mathbb R}.$$ Thus $\\mathbb P_X=\\mathbb P\\circ X^{-1}$, the pushforward of $\\mathbb P$ by $X$.",
+        "The distribution function, or cumulative distribution function, is $$F_X(t)=\\mathbb P_X(( -\\infty,t])=\\mathbb P(X\\le t),\\qquad t\\in\\mathbb R.$$"
+      ],
+      "entry": "1.2.34"
+    },
+    {
+      "id": "l4-s2",
+      "title": "Equality in law and equality almost surely",
+      "pages": [
+        28,
+        29
+      ],
+      "paragraphs": [
+        "Write $X\\overset{d}=Y$ when $\\mathbb P_X=\\mathbb P_Y$. Equivalently, $F_X=F_Y$: the sets $(-\\infty,t]$ form a generating $\\pi$-system, and probability measures agreeing on these sets agree on every Borel set.",
+        "Write $X\\overset{\\mathrm{a.s.}}=Y$ when $\\mathbb P(X=Y)=1$, equivalently $\\mathbb P((X-Y)^{-1}(\\{0\\}))=1$. Almost-sure equality implies equality in law."
+      ],
+      "entry": "1.2.35",
+      "proof": [
+        "For $A\\in\\mathcal B_{\\mathbb R}$, $$\\{X\\in A\\}\\mathbin{\\triangle}\\{Y\\in A\\}\\subseteq\\{X\\ne Y\\}.$$ If $X=Y$ almost surely, the symmetric difference is null and therefore $\\mathbb P_X(A)=\\mathbb P_Y(A)$.",
+        "The converse fails. On $(\\Omega,\\mathcal F,\\mathbb P)=((0,1],\\mathcal B_{(0,1]},\\text{uniform measure})$, take $X(\\omega)=\\omega$ and $Y(\\omega)=1-\\omega$. Both have the uniform law on $[0,1]$, but $X=Y$ only when $\\omega=1/2$, a null event."
+      ],
+      "recall": {
+        "question": "Why does $X=Y$ almost surely imply equality in law, and why does the converse fail?",
+        "answer": [
+          "The symmetric difference of the events $\\{X\\in A\\}$ and $\\{Y\\in A\\}$ lies in $\\{X\\ne Y\\}$ for every Borel $A$. For the converse, $X(\\omega)=\\omega$ and $Y(\\omega)=1-\\omega$ on the uniform interval have the same law but are unequal almost surely."
+        ],
+        "checks": [
+          "Use an arbitrary Borel set, not just a threshold.",
+          "Give two variables on the same probability space."
+        ]
+      }
+    },
+    {
+      "id": "l4-s3",
+      "title": "Characterizing distribution functions",
+      "pages": [
+        29,
+        29
+      ],
+      "paragraphs": [
+        "A function $F:\\mathbb R\\to[0,1]$ is a distribution function if and only if it is nondecreasing, $$\\lim_{t\\to-\\infty}F(t)=0,\\qquad \\lim_{t\\to\\infty}F(t)=1,$$ and right-continuous: $$\\lim_{s\\downarrow t}F(s)=F(t)\\quad\\text{for every }t\\in\\mathbb R.$$"
+      ],
+      "entry": "1.2.37",
+      "proof": [
+        "If $F=F_X$, monotonicity follows from inclusion of the events $\\{X\\le t\\}$. The endpoint limits follow from continuity of probability for increasing and decreasing events. In particular, if $t_n\\downarrow t$, then $\\{X\\le t_n\\}\\downarrow\\{X\\le t\\}$ and hence $F_X(t_n)\\downarrow F_X(t)$. The small graph in the notes records the included right endpoint of a jump."
+      ],
+      "editorial": [
+        "The handwritten page states the equivalence and sketches the right-continuity direction; it does not contain a converse construction. One converse is to put $U$ uniformly on $(0,1)$ and set $X(U)=\\inf\\{x:F(x)\\ge U\\}$. Then $\\{X\\le t\\}=\\{U\\le F(t)\\}$, so $F_X=F$. Using $(0,1)$ avoids an infinite value at the null endpoint $U=1$."
+      ]
+    },
+    {
+      "id": "l4-s4",
+      "title": "Almost-sure convergence",
+      "pages": [
+        30,
+        30
+      ],
+      "paragraphs": [
+        "A sequence $(X_n)_{n\\ge1}$ on $(\\Omega,\\mathcal F,\\mathbb P)$ converges almost surely to $X_\\infty$, written $X_n\\xrightarrow{\\mathrm{a.s.}}X_\\infty$, if $$\\mathbb P\\bigl(\\{\\limsup_n X_n=\\liminf_n X_n=X_\\infty\\}\\bigr)=1.$$ The limit assertion is a statement about the full path at almost every fixed outcome."
+      ],
+      "entry": "1.2.25",
+      "editorial": [
+        "For finite real-valued limits this is the usual pointwise convergence outside a null event. If infinite limits are allowed, the equality formulation still makes sense; do not use an undefined difference such as $\\infty-\\infty$."
+      ]
+    },
+    {
+      "id": "l4-s5",
+      "title": "Constructing the Lebesgue integral",
+      "pages": [
+        30,
+        31
+      ],
+      "paragraphs": [
+        "For a measure space $(\\Omega,\\mathcal F,\\mu)$ we write $$\\mu(f)=\\int_\\Omega f(\\omega)\\,\\mu(d\\omega).$$ Start with nonnegative simple functions $$\\mathrm{SF}_+=\\left\\{\\varphi=\\sum_{i=1}^{m}c_i\\mathbf1_{A_i}:c_i\\ge0,\\ A_i\\in\\mathcal F,\\ m<\\infty\\right\\},\\qquad \\mu_0(\\varphi)=\\sum_{i=1}^{m}c_i\\mu(A_i).$$",
+        "For a nonnegative measurable $f$, define $$\\mu(f)=\\sup\\{\\mu_0(\\varphi):\\varphi\\in\\mathrm{SF}_+,\\ \\varphi\\le f\\}.$$ For a signed measurable function, put $f_+=\\max(f,0)$ and $f_-=\\max(-f,0)$, and define $$\\mu(f)=\\mu(f_+)-\\mu(f_-)$$ whenever at least one of the two terms is finite. If both terms are finite, then $f$ is integrable, written $f\\in L^1(\\Omega,\\mathcal F,\\mu)$."
+      ],
+      "entry": "1.3.1",
+      "editorial": [
+        "The signed definition excludes $\\infty-\\infty$. Integrability is equivalent to $\\mu(|f|)<\\infty$. The notes use $\\mu(f)$ for an integral as well as $\\mu(A)$ for a measure; the argument determines which meaning applies. The course source also permits infinite heights in nonnegative simple functions with $0\\cdot\\infty=0$; bounded simple functions suffice for the supremum."
+      ]
+    },
+    {
+      "id": "l4-s6",
+      "title": "Why the simple-function integral is well-defined",
+      "pages": [
+        31,
+        32
+      ],
+      "paragraphs": [
+        "A simple function can have different representations. Suppose $$\\varphi=\\sum_{i=1}^{m}a_i\\mathbf1_{A_i}=\\sum_{j=1}^{n}b_j\\mathbf1_{B_j}.$$ We must show $$\\sum_i a_i\\mu(A_i)=\\sum_j b_j\\mu(B_j).$$"
+      ],
+      "entry": "1.3.3",
+      "proof": [
+        "Refine all of the sets simultaneously. For $S\\subseteq\\{1,\\ldots,m\\}$ and $T\\subseteq\\{1,\\ldots,n\\}$, let $$Q_{S,T}=\\left(\\bigcap_{i\\in S}A_i\\right)\\cap\\left(\\bigcap_{i\\notin S}A_i^c\\right)\\cap\\left(\\bigcap_{j\\in T}B_j\\right)\\cap\\left(\\bigcap_{j\\notin T}B_j^c\\right).$$ These are measurable, pairwise disjoint, and partition $\\Omega$; empty intersections mean $\\Omega$.",
+        "On a nonempty $Q_{S,T}$, both descriptions of $\\varphi$ are constant, so $$\\varphi|_{Q_{S,T}}=\\sum_{i\\in S}a_i=\\sum_{j\\in T}b_j.$$ Finite additivity gives $$\\sum_i a_i\\mu(A_i)=\\sum_{S,T}\\left(\\sum_{i\\in S}a_i\\right)\\mu(Q_{S,T})=\\sum_{S,T}\\left(\\sum_{j\\in T}b_j\\right)\\mu(Q_{S,T})=\\sum_j b_j\\mu(B_j).$$ The overlapping-set picture in the notes depicts these common atoms.",
+        "The same refinement proves invariance under changes on a null set: if $\\mu(\\varphi\\ne\\psi)=0$, then $\\mu_0(\\varphi)=\\mu_0(\\psi)$. Combining representations proves $$\\mu_0(a\\varphi+b\\psi)=a\\mu_0(\\varphi)+b\\mu_0(\\psi)\\quad(a,b\\ge0).$$ If $\\varphi\\le\\psi$, the nonnegative simple difference gives $\\mu_0(\\varphi)\\le\\mu_0(\\psi)$."
+      ],
+      "editorial": [
+        "For finite-valued simple functions the difference proof is immediate. If extended heights are allowed, use a common partition and compare its heights directly, avoiding $\\infty-\\infty$."
+      ],
+      "diagram": "common-refinement"
+    },
+    {
+      "id": "l4-s7",
+      "title": "Integral properties and expectation",
+      "pages": [
+        33,
+        33
+      ],
+      "paragraphs": [
+        "For nonnegative measurable functions, the integral is monotone: $f\\le g$ implies $\\mu(f)\\le\\mu(g)$. It is positively homogeneous: $\\mu(af)=a\\mu(f)$ for $a\\ge0$. It agrees with the simple integral: $\\mu(\\varphi)=\\mu_0(\\varphi)$ for $\\varphi\\in\\mathrm{SF}_+$.",
+        "If $f=g$ almost everywhere, then $\\mu(f)=\\mu(g)$ whenever the integrals are defined. For a simple $\\varphi$, monotonicity of $\\mu_0$ gives $\\mu_0(\\psi)\\le\\mu_0(\\varphi)$ for every simple $\\psi\\le\\varphi$, while taking $\\psi=\\varphi$ gives the reverse inequality in the supremum definition.",
+        "On a probability space, the expectation is simply the integral with respect to probability: $$\\mathbb E X=\\int_\\Omega X(\\omega)\\,\\mathbb P(d\\omega).$$"
+      ],
+      "entry": "1.3.9"
+    },
+    {
+      "id": "l4-s8",
+      "title": "Monotone convergence and the simple-function lower bound",
+      "pages": [
+        33,
+        35
+      ],
+      "paragraphs": [
+        "Monotone convergence: if $h_n$ are nonnegative measurable functions and $h_n\\uparrow h$ pointwise, then $$\\mu(h_n)\\uparrow\\mu(h).$$ The value $+\\infty$ is allowed."
+      ],
+      "entry": "1.3.4",
+      "proof": [
+        "Monotonicity already gives that $\\mu(h_n)$ is nondecreasing and at most $\\mu(h)$. It remains to prove the opposite bound for its limit. Fix a nonnegative simple function $\\varphi=\\sum_{i=1}^{m}c_i\\mathbf1_{A_i}\\le h$ with disjoint $A_i$, and fix $\\lambda\\in(0,1)$. The lecture sets $h_*(A_i)=\\inf_{\\omega\\in A_i}h(\\omega)$ and compares $c_i\\le h_*(A_i)$.",
+        "The lecture construction takes $$A_{i,n}=\\{\\omega\\in A_i:h_n(\\omega)\\ge\\lambda h_*(A_i)\\},\\qquad \\varphi_n=\\sum_i\\lambda h_*(A_i)\\mathbf1_{A_{i,n}}\\le h_n.$$ For positive finite $h_*(A_i)$, the strict slack $\\lambda<1$ and $h_n\\uparrow h$ imply $A_{i,n}\\uparrow A_i$. Thus $$\\lim_n\\mu(h_n)\\ge\\lim_n\\mu_0(\\varphi_n)=\\lambda\\sum_i h_*(A_i)\\mu(A_i)\\ge\\lambda\\mu_0(\\varphi).$$ The drawn step function sits below the limiting curve; each increasing set marks where the current $h_n$ has reached the lowered step.",
+        "Let $\\lambda\\uparrow1$ in this finite-infimum construction to obtain the lower bound $\\lim_n\\mu(h_n)\\ge\\mu_0(\\varphi)$ for simple functions whose relevant infimum heights are positive and finite. Together with the easy upper bound, this proves that case. The bounded-height construction below supplies the omitted cases and completes the full theorem."
+      ],
+      "editorial": [
+        "The handwritten construction does not spell out zero or infinite infimum cases. A uniform repair is to take bounded simple $\\varphi$ and instead set $A_{i,n}=\\{\\omega\\in A_i:h_n(\\omega)\\ge\\lambda c_i\\}$, omitting zero-height pieces. All thresholds are then finite, $A_{i,n}\\uparrow A_i$, and the same argument gives $\\lim_n\\mu(h_n)\\ge\\lambda\\mu_0(\\varphi)$, including infinite measures of pieces. This proves the full statement without dividing by an integral or using an infinite threshold."
+      ],
+      "recall": {
+        "question": "Reconstruct the proof of monotone convergence. Why is the factor $\\lambda<1$ useful?",
+        "answer": [
+          "For bounded simple $\\varphi=\\sum_i c_i\\mathbf1_{A_i}\\le h$ with disjoint positive-height pieces, set $A_{i,n}=\\{\\omega\\in A_i:h_n(\\omega)\\ge\\lambda c_i\\}$. Strict slack ensures these sets increase to $A_i$ even if $h_n$ approaches the step height only from below. Continuity from below gives $\\lim_n\\mu(h_n)\\ge\\lambda\\mu_0(\\varphi)$. Let $\\lambda\\uparrow1$ and take the supremum over $\\varphi$."
+        ],
+        "checks": [
+          "First establish the easy upper bound.",
+          "Use continuity from below on sets.",
+          "Keep nonnegativity and increasing convergence."
+        ]
+      }
+    },
+    {
+      "id": "l4-s9",
+      "title": "Additivity beyond simple functions",
+      "pages": [
+        36,
+        36
+      ],
+      "paragraphs": [
+        "For nonnegative measurable $f,g$, $$\\mu(f+g)=\\mu(f)+\\mu(g).$$"
+      ],
+      "entry": "1.3.5",
+      "proof": [
+        "The identity already holds for simple functions. Choose nonnegative simple approximations $f_n\\uparrow f$ and $g_n\\uparrow g$. Then $f_n+g_n\\uparrow f+g$, so monotone convergence on each of the three sequences gives $$\\mu(f+g)=\\lim_n\\mu_0(f_n+g_n)=\\lim_n\\bigl(\\mu_0(f_n)+\\mu_0(g_n)\\bigr)=\\mu(f)+\\mu(g).$$"
+      ],
+      "editorial": [
+        "This is the standard approximation pattern: prove a property for indicators/simple functions, then identify the theorem that carries it through a limit. For integrable signed functions, positive/negative decomposition extends linearity after all required finite quantities are checked."
+      ],
+      "recall": {
+        "question": "Why does simple-function linearity extend to nonnegative measurable functions?",
+        "answer": [
+          "Approximate both functions increasingly by nonnegative simple functions and apply monotone convergence to both approximants and their sums. The finite simple-function identity then passes to the limit."
+        ],
+        "checks": [
+          "Approximate both functions.",
+          "Their sums must increase to the desired sum.",
+          "Name monotone convergence at each passage to a limit."
+        ]
+      }
+    }
+  ]
+}

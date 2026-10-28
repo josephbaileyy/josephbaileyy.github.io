@@ -1,0 +1,82 @@
+[
+  {
+    "number": 1,
+    "title": "Measures, measurable sets, and the need for extension",
+    "ink": "green",
+    "color": "#386b32",
+    "pages": [
+      1,
+      9
+    ]
+  },
+  {
+    "number": 2,
+    "title": "Extension, uniqueness, and outer measures",
+    "ink": "blue",
+    "color": "#1b4f7a",
+    "pages": [
+      10,
+      18
+    ]
+  },
+  {
+    "number": 3,
+    "title": "Completion and measurable functions",
+    "ink": "brown",
+    "color": "#663b20",
+    "pages": [
+      19,
+      27
+    ]
+  },
+  {
+    "number": 4,
+    "title": "Laws, distribution functions, and the Lebesgue integral",
+    "ink": "orange",
+    "color": "#a35c17",
+    "pages": [
+      28,
+      36
+    ]
+  },
+  {
+    "number": 5,
+    "title": "Inequalities, Lp spaces, and modes of convergence",
+    "ink": "blue",
+    "color": "#18598b",
+    "pages": [
+      37,
+      45
+    ]
+  },
+  {
+    "number": 6,
+    "title": "Convergence theorems, uniform integrability, and densities",
+    "ink": "gray",
+    "color": "#686868",
+    "pages": [
+      46,
+      54
+    ]
+  },
+  {
+    "number": 7,
+    "title": "Laws, independence, and product measures",
+    "ink": "orange",
+    "color": "#a35c17",
+    "pages": [
+      55,
+      66
+    ]
+  },
+  {
+    "number": 8,
+    "title": "Tail events, Fubini, and convolution",
+    "ink": "dark green",
+    "color": "#15735b",
+    "pages": [
+      67,
+      76
+    ]
+  }
+]

@@ -1,0 +1,269 @@
+{
+  "number": 7,
+  "title": "Laws, independence, and product measures",
+  "ink": "orange",
+  "color": "#a35c17",
+  "pages": [
+    55,
+    66
+  ],
+  "sections": [
+    {
+      "id": "l7-s1",
+      "title": "Integrating with respect to a law",
+      "pages": [
+        55,
+        55
+      ],
+      "paragraphs": [
+        "For a measure $\\mu$ and an integrable function $g$, write $\\langle\\mu,g\\rangle=\\int g(\\omega)\\,\\mu(d\\omega)$. Let $f:(\\Omega,\\mathcal F)\\to(S,\\mathcal G)$ be measurable and let $f_*\\mu$ be its pushforward: $(f_*\\mu)(A)=\\mu(f^{-1}(A))$ for $A\\in\\mathcal G$.",
+        "Integrating after applying $f$ is the same as integrating with respect to the transported measure: $$\\int_\\Omega h(f(\\omega))\\,\\mu(d\\omega)=\\int_S h(s)\\,(f_*\\mu)(ds).$$ The identity holds for nonnegative measurable $h$, and for signed $h$ when at least one of the integrals of its positive and negative parts is finite.",
+        "The special case $f=X$ is the expectation formula $$\\mathbb E[h(X)]=\\int_{\\mathbb R}h(x)\\,P_X(dx).$$"
+      ],
+      "entry": "1.3.61",
+      "proof": [
+        "Take $h=\\mathbf{1}_A$, with $A\\in\\mathcal G$. Then $h\\circ f=\\mathbf{1}_{f^{-1}(A)}$, so $$\\int_\\Omega h\\circ f\\,d\\mu=\\mu(f^{-1}(A))=(f_*\\mu)(A)=\\int_S h\\,d(f_*\\mu).$$ The lecture invokes the standard machine to pass from this indicator identity to the stated formula."
+      ],
+      "editorial": [
+        "Expanding that instruction: linearity gives the identity for nonnegative simple functions. For general $h\\ge0$, choose simple $h_n\\uparrow h$; then $h_n\\circ f\\uparrow h\\circ f$, and monotone convergence on both spaces gives the result. For signed $h$, apply the nonnegative result to $h^+$ and $h^-$ and subtract only when the subtraction is defined."
+      ]
+    },
+    {
+      "id": "l7-s2",
+      "title": "Independence of events, classes, and random variables",
+      "pages": [
+        56,
+        56
+      ],
+      "paragraphs": [
+        "Work on one probability space $(\\Omega,\\mathcal F,\\mathbb P)$. Two collections $\\mathcal H,\\mathcal G\\subseteq\\mathcal F$, not necessarily sigma algebras, are independent if $$\\mathbb P(A\\cap B)=\\mathbb P(A)\\mathbb P(B)\\qquad(A\\in\\mathcal H,\\ B\\in\\mathcal G).$$ Two events $A,B$ are independent when the singleton collections $\\{A\\},\\{B\\}$ are independent.",
+        "Real random variables $X_1,X_2$ are independent if $$\\mathbb P(X_1\\in A,\\ X_2\\in B)=\\mathbb P(X_1\\in A)\\mathbb P(X_2\\in B)\\qquad(A,B\\in\\mathcal B_{\\mathbb R}).$$ Equivalently, $\\sigma(X_1)$ and $\\sigma(X_2)$ are independent."
+      ],
+      "entry": "1.4.1"
+    },
+    {
+      "id": "l7-s3",
+      "title": "Mutual independence tests every finite subfamily",
+      "pages": [
+        56,
+        57
+      ],
+      "paragraphs": [
+        "A family of collections $(\\mathcal G_\\alpha)_{\\alpha\\in\\Gamma}$ is mutually independent if, for every positive integer $m$, every choice of distinct indices $\\alpha_1,\\ldots,\\alpha_m$, and every $A_j\\in\\mathcal G_{\\alpha_j}$, $$\\mathbb P\\left(\\bigcap_{j=1}^m A_j\\right)=\\prod_{j=1}^m\\mathbb P(A_j).$$ A family of random variables is mutually independent if its generated sigma algebras are mutually independent.",
+        "Pairwise independence checks the case $m=2$. It does not in general imply mutual independence."
+      ],
+      "entry": "1.4.3",
+      "editorial": [
+        "The word distinct is essential. Repeating the same index would demand independence of a collection from itself, a much stronger condition. Even for a finite family, all subfamilies must be checked, not just the intersection involving every index."
+      ]
+    },
+    {
+      "id": "l7-s4",
+      "title": "Three fair bits with an exact constraint",
+      "pages": [
+        57,
+        57
+      ],
+      "paragraphs": [
+        "Let $\\Omega=\\{0,1\\}^3$ and put mass $1/4$ at each point satisfying $\\omega_1+\\omega_2+\\omega_3\\equiv0\\pmod 2$, with zero mass at all other points. Define $X_i(\\omega)=\\omega_i$. The support is $$\\{(0,0,0),(0,1,1),(1,0,1),(1,1,0)\\}.$$ Each $X_i$ is uniform on $\\{0,1\\}$.",
+        "Any two coordinates are independent: every specified pair of bit values occurs at exactly one support point and has probability $1/4$. The triple is not mutually independent, since its parity is fixed."
+      ],
+      "editorial": [
+        "For a direct failure of factorization, $\\mathbb P(X_1=X_2=X_3=0)=1/4$, whereas $\\prod_{i=1}^3\\mathbb P(X_i=0)=1/8$. The support list and these explicit calculations expand the example written on the board."
+      ],
+      "recall": {
+        "question": "Construct three pairwise independent fair bits that are not mutually independent. Which probability disproves mutual independence?",
+        "answer": [
+          "Use the uniform law on the four even-parity bit triples. Every pair takes its four values with probability $1/4$. But $\\mathbb P(X_1=X_2=X_3=0)=1/4\\ne1/8=\\prod_{i=1}^3\\mathbb P(X_i=0)$."
+        ],
+        "checks": [
+          "Give the sample space and probability masses.",
+          "Verify pairwise factorization.",
+          "Exhibit a triple intersection that fails factorization."
+        ]
+      }
+    },
+    {
+      "id": "l7-s5",
+      "title": "Extend independence from pi systems",
+      "pages": [
+        57,
+        58
+      ],
+      "paragraphs": [
+        "Theorem. If $\\mathcal P_1,\\ldots,\\mathcal P_n\\subseteq\\mathcal F$ are mutually independent pi systems, then $\\sigma(\\mathcal P_1),\\ldots,\\sigma(\\mathcal P_n)$ are mutually independent."
+      ],
+      "entry": "1.4.4",
+      "proof": [
+        "The lecture first treats two collections. Fix $H\\in\\mathcal P_1$ and define finite measures $$\\mu_1(A)=\\mathbb P(A\\cap H),\\qquad \\mu_2(A)=\\mathbb P(A)\\mathbb P(H).$$ They agree on $\\mathcal P_2$ by independence, and $\\mu_1(\\Omega)=\\mu_2(\\Omega)=\\mathbb P(H)$. Uniqueness of finite measures on a generating pi system implies that they agree on $\\sigma(\\mathcal P_2)$. Thus $\\mathbb P(A\\cap H)=\\mathbb P(A)\\mathbb P(H)$ for all $A\\in\\sigma(\\mathcal P_2)$ and $H\\in\\mathcal P_1$.",
+        "Now fix $A\\in\\sigma(\\mathcal P_2)$ and define $$\\nu_1(B)=\\mathbb P(A\\cap B),\\qquad \\nu_2(B)=\\mathbb P(A)\\mathbb P(B).$$ These finite measures agree on $\\mathcal P_1$ and on $\\Omega$, so they agree on $\\sigma(\\mathcal P_1)$. This proves independence of the two generated sigma algebras."
+      ],
+      "editorial": [
+        "For $n$ collections, the same argument extends one coordinate at a time. Hold fixed an intersection of events from distinct other collections, use it in place of $H$, and extend the remaining coordinate from its pi system to its sigma algebra. Repeat for all coordinates and for each finite subfamily. This supplies the iteration abbreviated after the two-collection proof."
+      ]
+    },
+    {
+      "id": "l7-s6",
+      "title": "Infinite families and independent groups",
+      "pages": [
+        58,
+        59
+      ],
+      "paragraphs": [
+        "Corollary. For any index set $\\Gamma$, if the pi systems $(\\mathcal P_\\alpha)_{\\alpha\\in\\Gamma}$ are mutually independent, then so are $(\\sigma(\\mathcal P_\\alpha))_{\\alpha\\in\\Gamma}$. This follows by applying the finite theorem to every finite subfamily.",
+        "Corollary. Suppose the pi systems $\\mathcal P_{\\alpha,\\beta}$, indexed by distinct pairs $(\\alpha,\\beta)$, form a mutually independent family. Group the collections by their first index and set $$\\mathcal G_\\alpha=\\sigma\\left(\\bigcup_\\beta\\mathcal P_{\\alpha,\\beta}\\right).$$ Then the sigma algebras $\\mathcal G_\\alpha$ are mutually independent.",
+        "The grouped ovals in the lecture diagram represent, for example, $\\sigma(\\mathcal P_{1,1},\\mathcal P_{1,2})$, $\\sigma(\\mathcal P_{2,1})$, and $\\sigma(\\mathcal P_{3,1},\\mathcal P_{3,2},\\mathcal P_{3,3})$. Information is combined within each oval; the different ovals remain independent."
+      ],
+      "entry": "1.4.6",
+      "editorial": [
+        "To justify grouping, form a pi system $\\mathcal A_\\alpha$ of all finite intersections of events chosen within the $\\alpha$ group. Events involving a repeated $\\beta$ can be merged because each $\\mathcal P_{\\alpha,\\beta}$ is a pi system. Intersections chosen from distinct groups involve disjoint collections of original indices, so their probabilities factor. The preceding corollary then gives independence of $\\sigma(\\mathcal A_\\alpha)=\\mathcal G_\\alpha$. This proof spells out the grouping corollary recorded without a proof on the page."
+      ]
+    },
+    {
+      "id": "l7-s7",
+      "title": "A threshold test for mutual independence",
+      "pages": [
+        59,
+        59
+      ],
+      "paragraphs": [
+        "Real random variables $X_1,\\ldots,X_n$ are mutually independent if and only if, for all real $t_1,\\ldots,t_n$, $$\\mathbb P(X_1\\le t_1,\\ldots,X_n\\le t_n)=\\prod_{i=1}^n\\mathbb P(X_i\\le t_i).$$"
+      ],
+      "entry": "1.4.12",
+      "proof": [
+        "For each $i$, take the pi system $$\\mathcal P_i=\\left\\{X_i^{-1}(({-\\infty},t]):t\\in\\mathbb R\\right\\}=\\left\\{\\{\\omega:X_i(\\omega)\\le t\\}:t\\in\\mathbb R\\right\\}.$$ It generates $\\sigma(X_i)$. Apply the theorem extending independence from pi systems to their generated sigma algebras. The forward implication is immediate from independence."
+      ],
+      "editorial": [
+        "To use the full-vector identity for a smaller subfamily, send the unused thresholds to $+\\infty$ and use continuity from below. This supplies all finite-subfamily factorizations required by the definition."
+      ],
+      "recall": {
+        "question": "Why does factorization of the joint CDF at every threshold imply mutual independence? Explain how smaller subfamilies enter the argument.",
+        "answer": [
+          "The events $\\{X_i\\le t\\}$ form generating pi systems for $\\sigma(X_i)$. Sending unused thresholds to infinity gives factorization for every subfamily of these pi systems. Extend from the pi systems to the sigma algebras one coordinate at a time."
+        ],
+        "checks": [
+          "Name the generating pi systems.",
+          "Recover subfamilies by continuity from below.",
+          "Invoke the independence extension theorem."
+        ]
+      }
+    },
+    {
+      "id": "l7-s8",
+      "title": "Product spaces and the product measure theorem",
+      "pages": [
+        60,
+        60
+      ],
+      "paragraphs": [
+        "The next goal is to construct independent random variables with prescribed laws. Start with measurable spaces $(\\Omega_1,\\mathcal F_1)$ and $(\\Omega_2,\\mathcal F_2)$ and their product $$\\Omega=\\Omega_1\\times\\Omega_2,\\qquad\\mathcal F=\\sigma\\{A_1\\times A_2:A_i\\in\\mathcal F_i\\}.$$ This product sigma algebra is also denoted $\\mathcal F_1\\otimes\\mathcal F_2$.",
+        "Proposition. If $\\nu_1,\\nu_2$ are sigma-finite measures on their respective spaces, then there is a unique sigma-finite measure $\\mu=\\nu_1\\otimes\\nu_2$ on $(\\Omega,\\mathcal F)$ such that $$\\mu(A_1\\times A_2)=\\nu_1(A_1)\\nu_2(A_2)\\qquad(A_i\\in\\mathcal F_i).$$ For nonnegative extended quantities use the convention $0\\cdot\\infty=0$."
+      ],
+      "entry": "1.4.19"
+    },
+    {
+      "id": "l7-s9",
+      "title": "The algebra of finite disjoint rectangle unions",
+      "pages": [
+        60,
+        61
+      ],
+      "paragraphs": [
+        "For the existence proof, let $\\mathcal Q$ consist of finite disjoint unions of measurable rectangles, and prescribe $$\\mu_0\\left(\\bigsqcup_{i=1}^m A_i\\times B_i\\right)=\\sum_{i=1}^m\\nu_1(A_i)\\nu_2(B_i).$$ We must show that $\\mathcal Q$ is an algebra and that this prescription is well defined and countably additive on $\\mathcal Q$."
+      ],
+      "entry": "1.4.19",
+      "proof": [
+        "The whole space is a rectangle, so $\\Omega\\in\\mathcal Q$. If $C=\\bigsqcup_i A_i\\times B_i$ and $D=\\bigsqcup_j U_j\\times V_j$, then $$C\\cap D=\\bigsqcup_{i,j}(A_i\\cap U_j)\\times(B_i\\cap V_j)\\in\\mathcal Q.$$ The intersection drawing marks each new cell where one rectangle from $C$ overlaps one rectangle from $D$.",
+        "The complement of a single rectangle is the disjoint union $$ (A\\times B)^c=(A^c\\times B)\\sqcup(A\\times B^c)\\sqcup(A^c\\times B^c).$$ The shaded complement drawing divides the exterior into these three pieces. For a finite union, take the intersection of the rectangle complements; closure under intersections then gives $C^c\\in\\mathcal Q$. Thus $\\mathcal Q$ is an algebra."
+      ],
+      "editorial": [
+        "The handwritten checklist calls $\\mathcal Q$ a sigma algebra once, but the construction uses an algebra, namely closure under finite unions and complements. Countable unions need not remain finite rectangle unions; $\\sigma(\\mathcal Q)=\\mathcal F$ is the sigma algebra reached by the extension theorem."
+      ]
+    },
+    {
+      "id": "l7-s10",
+      "title": "Countable additivity by taking slices twice",
+      "pages": [
+        61,
+        63
+      ],
+      "paragraphs": [
+        "The lecture compares a finite rectangle decomposition of a set with a countable disjoint rectangle decomposition of the same set. It is enough to understand one rectangle: suppose $$A\\times B=\\bigsqcup_{j=1}^{\\infty}C_j\\times D_j.$$ We want $\\nu_1(A)\\nu_2(B)=\\sum_j\\nu_1(C_j)\\nu_2(D_j)$. The sketch shows smaller disjoint rectangles filling the original rectangle."
+      ],
+      "entry": "1.4.19",
+      "proof": [
+        "For every $(x,y)\\in\\Omega_1\\times\\Omega_2$, disjointness gives $$\\mathbf{1}_A(x)\\mathbf{1}_B(y)=\\sum_{j=1}^{\\infty}\\mathbf{1}_{C_j}(x)\\mathbf{1}_{D_j}(y).$$ Fix $x$ and integrate over $y$ with respect to $\\nu_2$. The partial sums increase, so monotone convergence gives $$\\mathbf{1}_A(x)\\nu_2(B)=\\sum_{j=1}^{\\infty}\\mathbf{1}_{C_j}(x)\\nu_2(D_j).$$",
+        "Now integrate over $x$ with respect to $\\nu_1$. A second application of monotone convergence gives $$\\nu_1(A)\\nu_2(B)=\\sum_{j=1}^{\\infty}\\nu_1(C_j)\\nu_2(D_j).$$ No product-space integration theorem is being assumed: these are two successive one-space calculations.",
+        "For a finite disjoint union of rectangles, repeat the calculation with the finite sum of their indicators on the left. Equality of the resulting sums proves that the assigned value is independent of its rectangle representation and that it is countably additive whenever a disjoint countable union belongs to $\\mathcal Q$. Carathéodory extension gives the product measure."
+      ],
+      "editorial": [
+        "Sigma-finiteness completes the uniqueness argument: choose increasing finite-measure exhaustions $E_n\\uparrow\\Omega_1$ and $F_n\\uparrow\\Omega_2$. Their product rectangles cover $\\Omega$ and have finite prescribed mass. The premeasure is therefore sigma finite and its extension to $\\sigma(\\mathcal Q)$ is unique. The same rectangles show that the extended product measure is sigma finite."
+      ],
+      "diagram": "product-slices"
+    },
+    {
+      "id": "l7-s11",
+      "title": "Joint laws and independence as a product law",
+      "pages": [
+        63,
+        64
+      ],
+      "paragraphs": [
+        "For $X=(X_1,\\ldots,X_n)$, the joint law is its pushforward probability measure on $(\\mathbb R^n,\\mathcal B_{\\mathbb R^n})$: $$P_X(S)=\\mathbb P\\{\\omega:X(\\omega)\\in S\\}.$$ Proposition. The variables $X_1,\\ldots,X_n$ are mutually independent if and only if $$P_X=P_{X_1}\\otimes\\cdots\\otimes P_{X_n}.$$"
+      ],
+      "entry": "1.4.21",
+      "proof": [
+        "If the variables are mutually independent, then for each measurable rectangle $B=B_1\\times\\cdots\\times B_n$, $$P_X(B)=\\mathbb P(X_1\\in B_1,\\ldots,X_n\\in B_n)=\\prod_{i=1}^nP_{X_i}(B_i).$$ The joint law and product law are probability measures agreeing on the pi system of measurable rectangles, which generates $\\mathcal B_{\\mathbb R^n}$; hence the measures agree everywhere.",
+        "Conversely, a product joint law gives $$\\mathbb P(X_1\\le t_1,\\ldots,X_n\\le t_n)=P_X\\left(\\prod_{i=1}^n({-\\infty},t_i]\\right)=\\prod_{i=1}^n\\mathbb P(X_i\\le t_i).$$ The threshold criterion proves mutual independence."
+      ]
+    },
+    {
+      "id": "l7-s12",
+      "title": "Construct independent coordinates with prescribed laws",
+      "pages": [
+        65,
+        65
+      ],
+      "paragraphs": [
+        "Given probability measures $P_1,\\ldots,P_n$ on $(\\mathbb R,\\mathcal B_{\\mathbb R})$, choose $$\\Omega=\\mathbb R^n,\\qquad\\mathcal F=\\mathcal B_{\\mathbb R^n},\\qquad\\mathbb P=P_1\\otimes\\cdots\\otimes P_n,$$ and define $X_i(\\omega)=\\omega_i$. Then $P_{X_i}=P_i$ and the $X_i$ are mutually independent."
+      ],
+      "entry": "1.4.23",
+      "proof": [
+        "The joint vector $(X_1,\\ldots,X_n)$ is the identity map on $\\mathbb R^n$, so its law is $\\mathbb P$, the chosen product measure. Its coordinate marginal is $P_i$, since all other factors assign mass one to $\\mathbb R$. The product-law characterization then gives independence."
+      ],
+      "editorial": [
+        "Finite products of more than two measures are obtained by iterating the two-factor construction. The same construction works for general probability coordinate spaces; the following extension theorem is stated for real coordinates."
+      ]
+    },
+    {
+      "id": "l7-s13",
+      "title": "Kolmogorov extension and cylinder events",
+      "pages": [
+        65,
+        66
+      ],
+      "paragraphs": [
+        "Theorem (Kolmogorov extension). Let $\\mu_n$ be probability measures on $(\\mathbb R^n,\\mathcal B_{\\mathbb R^n})$ satisfying the consistency condition $$\\mu_n(A)=\\mu_{n+1}(A\\times\\mathbb R)\\qquad(A\\in\\mathcal B_{\\mathbb R^n},\\ n\\ge1).$$ There is a unique probability measure $\\mathbb P$ on $(\\mathbb R^{\\mathbb N},\\mathcal B_c)$ whose first $n$ coordinate law is $\\mu_n$ for every $n$.",
+        "Here $$\\mathbb R^{\\mathbb N}=\\{(\\omega_1,\\omega_2,\\ldots):\\omega_i\\in\\mathbb R\\},\\qquad\\mathcal B_c=\\sigma\\{C_{n,A}:n\\ge1,\\ A\\in\\mathcal B_{\\mathbb R^n}\\},$$ where $C_{n,A}=\\{\\omega:(\\omega_1,\\ldots,\\omega_n)\\in A\\}$. The required identity is $\\mathbb P(C_{n,A})=\\mu_n(A)$.",
+        "A cylinder inspects finitely many coordinates and leaves the remaining coordinates free. The lecture ends by writing a rectangular example $A=(a_1,b_1]\\times\\cdots\\times(a_n,b_n]$, so its cylinder imposes only $a_i<\\omega_i\\le b_i$ for $i\\le n$."
+      ],
+      "entry": "1.4.22",
+      "editorial": [
+        "The lecture states this theorem without a proof. Consistency means that forgetting the last coordinate recovers the preceding distribution; it makes different finite descriptions of the same cylinder agree. Uniqueness then follows from the generating pi system of cylinders. Existence requires more than this compatibility check; the theorem applies here because the coordinate space is the real Borel space.",
+        "Applying it to $\\mu_n=P_1\\otimes\\cdots\\otimes P_n$ constructs an infinite independent sequence with prescribed real laws. These measures are consistent because $P_{n+1}(\\mathbb R)=1$. This is the infinite version of the preceding finite-coordinate construction."
+      ],
+      "recall": {
+        "question": "State the consistency condition for real finite-dimensional laws and explain what a cylinder event records. How does this construct an infinite independent sequence?",
+        "answer": [
+          "Consistency is $\\mu_{n+1}(A\\times\\mathbb R)=\\mu_n(A)$. A cylinder $C_{n,A}$ records a condition on the first $n$ coordinates and leaves every later coordinate unrestricted. Kolmogorov extension gives a unique probability on the cylinder sigma algebra with these laws. Taking $\\mu_n=\\bigotimes_{i=1}^nP_i$ produces independent coordinates with laws $P_i$."
+        ],
+        "checks": [
+          "State consistency with the unrestricted last coordinate.",
+          "Specify the real sequence space and cylinder sigma algebra.",
+          "Use probability normalization to check consistency of products.",
+          "Distinguish the quoted existence theorem from its simpler uniqueness argument."
+        ]
+      }
+    }
+  ]
+}

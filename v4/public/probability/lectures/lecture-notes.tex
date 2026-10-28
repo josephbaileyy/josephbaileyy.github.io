@@ -1,0 +1,1527 @@
+\documentclass[11pt,letterpaper]{article}
+\usepackage[margin=0.78in,headheight=15pt]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern,amsmath,amssymb,mathtools,enumitem,booktabs,tabularx,xcolor,fancyhdr,microtype}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Probability: eight lectures},pdfauthor={Joseph Bailey, edited lecture notes}}
+\definecolor{lectureink}{HTML}{315E4E}
+\pagestyle{fancy}\fancyhf{}\lhead{\small MATH 230A / STAT 310A}\rhead{\small\nouppercase{\leftmark}}\cfoot{\small\thepage}
+\setlength{\parindent}{0pt}\setlength{\parskip}{6pt}
+\setlist{nosep,leftmargin=1.5em}
+\setlength{\emergencystretch}{3em}
+\allowdisplaybreaks[2]
+\newcommand{\lecturesection}[1]{\subsection{#1}}
+\begin{document}
+\begin{titlepage}
+\vspace*{0.5in}{\small MATH 230A / STAT 310A}\par\vspace{0.4in}
+{\Huge Probability}\par\vspace{0.12in}{\LARGE Eight lectures in class order}\par\vspace{0.3in}
+{\large Edited from the first 76 pages of handwritten board notes}\par\vspace{0.4in}
+This edition retains the lecture sequence, definitions, examples, and proof arguments. Notation and sentences are normalized. Added explanations, repaired hypotheses, and expanded arguments are labeled separately. Ambiguous handwriting is identified where it affects a statement.
+
+The ink colors identify eight successive sessions. Calendar dates are not inferred. References to handwritten pages let you return to the original notebook. Dembo numbers link to the existing probability companion and its explanations and visualizations.
+
+Recall questions follow each lecture; their answers appear together at the end so that you can try the arguments before checking them. This is an edited course resource, not a verbatim facsimile.
+\vfill
+\href{https://josephrbailey.com/probability/lectures.html}{josephrbailey.com/probability/lectures.html}\par
+Edition: October 28, 2026.
+\end{titlepage}
+\tableofcontents\newpage
+
+\clearpage
+\definecolor{lectureink}{HTML}{386b32}
+\section{Lecture 1: Measures, measurable sets, and the need for extension}
+\markboth{Lecture 1}{}
+{\small green ink; handwritten pp.\ 1--9.}
+
+\hypertarget{l1-s1}{}
+\lecturesection{Why volume cannot be assigned to every set}
+{\small\textcolor{lectureink}{Handwritten pp.\ 1--2}}
+
+We would like to assign a size to subsets of a space: $\mu:2^\Omega\to[0,\infty]$, with $A\mapsto\mu(A)$. For $\Omega=\mathbb R^3$, the motivating example is ordinary volume, $\mu(A)=\operatorname{Vol}(A)$. The notes warn that assigning the expected volume to every subset is impossible in interesting cases.
+
+Two sets $A,B\subseteq\mathbb R^3$ are equidecomposable if they have finite disjoint decompositions \[A=\bigsqcup_{i=1}^{n}A_i,\qquad B=\bigsqcup_{i=1}^{n}B_i,\] with each $A_i$ obtained from $B_i$ by a translation and a rotation.
+
+Banach--Tarski theorem, as recorded in the lecture: with $\operatorname{Ball}(r)=\{x\in\mathbb R^3:\lVert x\rVert\le r\}$, the balls $\operatorname{Ball}(1)$ and $\operatorname{Ball}(2)$ are equidecomposable.
+
+The lecture lists three responses: give up additivity; give up invariance under rotations and translations; or give up assigning volume to all subsets. The third choice leads to measure theory.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The conflict concerns a finitely additive size, invariant under rigid motions, that agrees with ordinary finite, positive ball volume. Equidecomposability would give the two balls equal size, although ordinary volume scales by $2^3=8$. The decomposition pieces need not be measurable for ordinary volume.
+\end{quote}
+
+\hypertarget{l1-s2}{}
+\lecturesection{Sigma-algebras and disjointization}
+{\small\textcolor{lectureink}{Handwritten pp.\ 2--3} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-1}{Dembo 1.1.1: explanation and visuals}}
+
+A collection $\mathcal F\subseteq2^\Omega$ is a $\sigma$-algebra if $\varnothing\in\mathcal F$, if $A\in\mathcal F$ implies $A^c\in\mathcal F$, and if \[A_i\in\mathcal F\ (i\in\mathbb N)\quad\Longrightarrow\quad\bigcup_{i=1}^{\infty}A_i\in\mathcal F.\] Complements are relative to $\Omega$. The symbol $\sigma$ emphasizes countable closure.
+
+It follows that $\Omega\in\mathcal F$ and that countable intersections belong to $\mathcal F$. The pair $(\Omega,\mathcal F)$ is a measurable space.
+
+Exercise in the notes: replace countable union closure by closure under intersections of two members and under countable unions of pairwise disjoint members. Together with the empty-set and complement conditions, these give the same definition.
+
+\paragraph{Lecture proof.}
+For arbitrary $A_n\in\mathcal F$, define \[B_n=A_n\setminus\bigcup_{i=1}^{n-1}A_i.\] Finite intersections and complements give finite unions and differences, so $B_n\in\mathcal F$. The $B_n$ are pairwise disjoint and $\bigcup_nB_n=\bigcup_nA_n$. Apply disjoint-union closure.
+
+Countable intersection closure follows from De Morgan's identity $\bigcap_iA_i=(\bigcup_iA_i^c)^c$.
+
+\hypertarget{l1-s3}{}
+\lecturesection{Measures and probability spaces}
+{\small\textcolor{lectureink}{Handwritten p.\ 3} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-2}{Dembo 1.1.2: explanation and visuals}}
+
+On a measurable space $(\Omega,\mathcal F)$, a measure is a function $\mu:\mathcal F\to[0,\infty]$ satisfying $\mu(\varnothing)=0$ and countable additivity: for pairwise disjoint $A_i\in\mathcal F$, \[\mu\!\left(\bigsqcup_{i=1}^{\infty}A_i\right)=\sum_{i=1}^{\infty}\mu(A_i).\] The triple $(\Omega,\mathcal F,\mu)$ is a measure space.
+
+If $\mu(\Omega)=1$, the measure is a probability measure, usually written $\mathbb P$, and $(\Omega,\mathcal F,\mathbb P)$ is a probability space.
+
+\hypertarget{l1-s4}{}
+\lecturesection{Examples and non-atomicity}
+{\small\textcolor{lectureink}{Handwritten p.\ 4} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-7}{Dembo 1.1.7: explanation and visuals}}
+
+A finite sample space need not use the whole power set. The notes use $\Omega=\{0,1,2,3\}$ and the partition into $\{0,1\}$ and $\{2,3\}$, giving \[\mathcal F=\{\varnothing,\{0,1\},\{2,3\},\Omega\}.\]
+
+On $(\mathbb R,2^{\mathbb R})$, fix $x\in\mathbb R$. The Dirac measure at $x$ is \[\delta_x(A)=\begin{cases}1,&x\in A,\\0,&x\notin A.\end{cases}\]
+
+For $\Omega=[0,1]$ with its whole power set, enumerate $[0,1]\cap\mathbb Q=\{q_1,q_2,\ldots\}$ without repetitions and put \[\mathbb P(A)=\sum_{i:q_i\in A}2^{-i}.\] This is a probability measure concentrated on a countable set.
+
+Another example on $(\mathbb R,2^{\mathbb R})$ is counting measure: $\mu(A)$ is the number of elements of $A$ when $A$ is finite and is $\infty$ when $A$ is infinite.
+
+A measure space is non-atomic if every $A\in\mathcal F$ with $\mu(A)>0$ contains a measurable $B\subseteq A$ with \[0<\mu(B)<\mu(A).\]
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+No masses are assigned in the finite-space example. The Dirac measure, rationally supported probability, and counting measure all have atoms. An uncountable underlying space alone does not imply non-atomicity.
+\end{quote}
+
+\hypertarget{l1-s5}{}
+\lecturesection{Generated sigma-algebras and Borel sets}
+{\small\textcolor{lectureink}{Handwritten p.\ 5} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-14}{Dembo 1.1.14: explanation and visuals}}
+
+For a collection $\{A_\alpha\}_{\alpha\in\Gamma}$ of subsets of $\Omega$, the generated $\sigma$-algebra is the smallest $\sigma$-algebra containing every $A_\alpha$. It is denoted $\sigma(\{A_\alpha\}_{\alpha\in\Gamma})$ and equals \[\bigcap\{\mathcal G:\mathcal G\text{ is a }\sigma\text{-algebra on }\Omega,\ A_\alpha\in\mathcal G\text{ for every }\alpha\}.\]
+
+This is well defined because the intersection of any collection of $\sigma$-algebras on the same space is a $\sigma$-algebra. The collection being intersected is nonempty since it contains $2^\Omega$.
+
+If $\Omega$ is a topological space, its Borel $\sigma$-algebra is \[\mathcal B_\Omega=\sigma(\{O\subseteq\Omega:O\text{ is open}\}).\] The topology supplies the open sets; arbitrary unions and finite intersections of open sets are open.
+
+\hypertarget{l1-s6}{}
+\lecturesection{Rational intervals generate the real Borel sets}
+{\small\textcolor{lectureink}{Handwritten p.\ 6} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-17}{Dembo 1.1.17: explanation and visuals}}
+
+Write $\mathcal B=\mathcal B_{\mathbb R}$. The lecture records $\mathcal B_{\mathbb R}\ne2^{\mathbb R}$. Define \[\mathcal B_{\mathbb R}^{\prime}=\sigma(\{(a,b):a<b,\ a,b\in\mathbb R\}),\qquad\mathcal B_{\mathbb R}^{\prime\prime}=\sigma(\{(a,b):a<b,\ a,b\in\mathbb Q\}).\] Exercise: both equal $\mathcal B_{\mathbb R}$.
+
+The immediate inclusions are $\mathcal B_{\mathbb R}^{\prime\prime}\subseteq\mathcal B_{\mathbb R}^{\prime}\subseteq\mathcal B_{\mathbb R}$. For the reverse inclusion, show that every open set belongs to $\mathcal B_{\mathbb R}^{\prime\prime}$.
+
+\paragraph{Lecture proof.}
+For open $A\subseteq\mathbb R$, \[A=\bigcup_{\substack{a,b\in\mathbb Q,\ a<b\\(a,b)\subseteq A}}(a,b).\] Each $x\in A$ has an open neighborhood in $A$, and rational endpoints can be chosen on either side of $x$ inside that neighborhood. Only countably many rational endpoint pairs occur, so the union belongs to $\mathcal B_{\mathbb R}^{\prime\prime}$.
+
+Minimality now gives $\mathcal B_{\mathbb R}\subseteq\mathcal B_{\mathbb R}^{\prime\prime}$, completing both equalities.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The existence of non-Borel subsets is asserted without proof in the handwriting; the generator proof does not establish that proper inclusion.
+\end{quote}
+
+\hypertarget{l1-s7}{}
+\lecturesection{Product measurable spaces and coordinate strips}
+{\small\textcolor{lectureink}{Handwritten p.\ 7} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-20}{Dembo 1.1.20: explanation and visuals}}
+
+For measurable spaces $(\Omega_i,\mathcal F_i)$, $i=1,\ldots,n$, the product space has underlying set $\Omega=\Omega_1\times\cdots\times\Omega_n$ and $\sigma$-algebra \[\mathcal F_1\otimes\cdots\otimes\mathcal F_n=\sigma(\{A_1\times\cdots\times A_n:A_i\in\mathcal F_i\}).\]
+
+The example takes two copies of $(\mathbb R,\mathcal B_{\mathbb R})$. Its drawing shows the rectangle $A_1\times A_2$ with horizontal projection $A_1$ and vertical projection $A_2$. The lecture records \[\mathcal B_{\mathbb R^2}=\mathcal B_{\mathbb R}\otimes\mathcal B_{\mathbb R}.\]
+
+Let $\mathcal T=\{\varnothing,\mathbb R\}$. In contrast, \[\widetilde{\mathcal F}=\sigma(\{A\times\mathbb R:A\in\mathcal B_{\mathbb R}\})=\mathcal B_{\mathbb R}\otimes\mathcal T.\] Its drawing shows a vertical strip: the first coordinate is restricted and the second is unrestricted.
+
+\begingroup
+\setlength{\unitlength}{1pt}
+\begin{center}
+\begin{picture}(400,180)
+
+\put(15,30){\line(1,0){165}}\put(30,15){\line(0,1){140}}
+\put(60,65){\framebox(70,60){$A_1\times A_2$}}
+\put(60,40){\makebox(70,14){$A_1$}}\put(0,87){\makebox(27,14){$A_2$}}
+\put(163,12){$x_1$}\put(14,155){$x_2$}
+\put(215,30){\line(1,0){170}}\put(230,15){\line(0,1){140}}
+\put(260,15){\line(0,1){140}}\put(330,15){\line(0,1){140}}
+\put(260,90){\makebox(70,14){$A_1\times\mathbb R$}}
+\put(260,40){\makebox(70,14){$A_1$}}\put(370,12){$x_1$}\put(214,155){$x_2$}
+\put(249,160){\makebox(95,12){\scriptsize unrestricted second coordinate}}
+
+\end{picture}
+\end{center}
+\endgroup\begin{center}\small Added schematic for interval examples in $\mathbb R^2$: the rectangle restricts both coordinates; the strip $A_1\times\mathbb R$ continues beyond the displayed window.\end{center}
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The strip $\sigma$-algebra consists exactly of $A\times\mathbb R$ for Borel $A$, including the empty set. It is strictly smaller than $\mathcal B_{\mathbb R^2}$: $\mathbb R\times(0,1)$ is Borel but is not such a strip. Product $\sigma$-algebras are generated by rectangles; they are not merely collections of rectangles.
+\end{quote}
+
+\hypertarget{l1-s8}{}
+\lecturesection{Uniform length and the interval algebra}
+{\small\textcolor{lectureink}{Handwritten p.\ 8} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-28}{Dembo 1.1.28: explanation and visuals}}
+
+We seek $\mu:\mathcal F\to[0,1]$ on $\Omega=(0,1]$, where $\mathcal F$ contains the intervals and \[\mu((a,b])=b-a\qquad(0\le a<b\le1).\] For $\mathcal F=\mathcal B_{(0,1]}$, does such a measure exist, and is it unique?
+
+An algebra $\mathcal A\subseteq2^\Omega$ contains $\Omega$ and is closed under complements and finite unions. The smallest algebra containing these half-open intervals consists of their finite disjoint unions: \[\mathcal A=\left\{\bigsqcup_{i=1}^n(a_i,b_i]:0\le a_1<b_1<a_2<\cdots<a_n<b_n\le1,\ n<\infty\right\}.\] Include the empty union.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The handwriting leaves the nonempty/whole-space condition implicit in its definition of an algebra; it is explicit here. Adjacent intervals may be merged to obtain strictly separated endpoints.
+\end{quote}
+
+\hypertarget{l1-s9}{}
+\lecturesection{Why an extension theorem is needed}
+{\small\textcolor{lectureink}{Handwritten p.\ 9} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-30}{Dembo 1.1.30: explanation and visuals}}
+
+The Borel $\sigma$-algebra contains singletons: for $x\in(0,1]$, \[\{x\}=\bigcap_{n=1}^{\infty}\bigl((x-1/n,x]\cap(0,1]\bigr).\] A nonempty singleton is not a finite union of nondegenerate half-open intervals, so it is not in the interval algebra.
+
+Carathéodory extension theorem, first version in the lecture: let $\mathcal A$ be an algebra and $\mu_0:\mathcal A\to[0,1]$ satisfy $\mu_0(\varnothing)=0$ and countable additivity whenever the disjoint union stays in $\mathcal A$: \[A_i\in\mathcal A,\quad\bigsqcup_{i=1}^{\infty}A_i\in\mathcal A\quad\Longrightarrow\quad\mu_0\!\left(\bigsqcup_{i=1}^{\infty}A_i\right)=\sum_{i=1}^{\infty}\mu_0(A_i).\] Then there is a unique measure $\mu$ on $\sigma(\mathcal A)$ restricting to $\mu_0$. The notes mark the finite-total-mass hypothesis $\mu_0(\Omega)<\infty$.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+These conditions define a premeasure on the algebra. The next lecture gives the general $[0,\infty]$-valued version and $\sigma$-finite uniqueness. In the $[0,1]$-valued version, total mass is already finite.
+\end{quote}
+
+\subsection*{Recall before looking back}
+\begin{enumerate}
+\item Reconstruct the disjointization argument that turns disjoint countable union closure into arbitrary countable union closure. \hyperlink{answer-l1-s2}{[Answer]}
+\item What must be checked about interval length before applying the extension theorem? Why is finite additivity insufficient? \hyperlink{answer-l1-s9}{[Answer]}
+\end{enumerate}
+
+\clearpage
+\definecolor{lectureink}{HTML}{1b4f7a}
+\section{Lecture 2: Extension, uniqueness, and outer measures}
+\markboth{Lecture 2}{}
+{\small blue ink; handwritten pp.\ 10--18.}
+
+\hypertarget{l2-s1}{}
+\lecturesection{Extension and sigma-finite uniqueness}
+{\small\textcolor{lectureink}{Handwritten p.\ 10} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-30}{Dembo 1.1.30: explanation and visuals}}
+
+Let $\mathcal A\subseteq2^\Omega$ be an algebra and let $\mu_0:\mathcal A\to[0,\infty]$ satisfy $\mu_0(\varnothing)=0$. Assume that for every pairwise disjoint sequence $A_i\in\mathcal A$ whose union belongs to $\mathcal A$, \[\mu_0\!\left(\bigsqcup_{i=1}^{\infty}A_i\right)=\sum_{i=1}^{\infty}\mu_0(A_i).\] Then a measure $\mu$ exists on $\sigma(\mathcal A)$ with $\mu|_{\mathcal A}=\mu_0$. If $\mu_0$ is $\sigma$-finite, this extension is unique.
+
+A measure is $\sigma$-finite if there are measurable sets $A_i\uparrow\Omega$ with $\mu(A_i)<\infty$ for every $i$. Equivalently, $\Omega$ has a countable cover by measurable sets of finite measure; taking finite unions makes the cover increasing.
+
+The example in the notes is $d$-dimensional volume on $\mathbb R^d$.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+For uniqueness of an extension, the finite-measure cover must be available in the original algebra: choose $A_i\in\mathcal A$ with $A_i\uparrow\Omega$ and $\mu_0(A_i)<\infty$. For volume, the bounded boxes $[-i,i]^d$ give the required cover.
+\end{quote}
+
+\hypertarget{l2-s2}{}
+\lecturesection{Constructing uniform measure from interval length}
+{\small\textcolor{lectureink}{Handwritten pp.\ 11--12} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-31}{Dembo 1.1.31: explanation and visuals}}
+
+Apply the extension theorem to $\Omega=(0,1]$ and the interval algebra \[\mathcal A=\left\{\bigsqcup_{k=1}^{n}(a_k,b_k]:0\le a_1<b_1<\cdots<a_n<b_n\le1,\ n<\infty\right\},\] including the empty union. Its generated $\sigma$-algebra is $\mathcal B_{(0,1]}$. Define \[\mu_0\!\left(\bigsqcup_{k=1}^{n}(a_k,b_k]\right)=\sum_{k=1}^{n}(b_k-a_k).\] The empty-set requirement is immediate. The remaining requirement is countable additivity on $\mathcal A$.
+
+Write $J\in\mathcal A$ as $J=\bigsqcup_{k=1}^{n}I_k$, with $I_k=(a_k,b_k]$. Suppose $J=\bigsqcup_{i=1}^{\infty}L_i$, where each $L_i$ is itself a finite disjoint union $\bigsqcup_{\ell=1}^{m_i}(c_\ell^{(i)},d_\ell^{(i)}]$. We want \[\sum_k(b_k-a_k)=\sum_i\sum_{\ell=1}^{m_i}(d_\ell^{(i)}-c_\ell^{(i)}).\]
+
+The picture draws the components of $J$ along one line and the components of $L_1,L_2,\ldots$ below it. After intersecting each component of each $L_i$ with the finitely many $I_k$, the verification reduces to a single interval $I=(a,b]$ partitioned into countably many half-open subintervals $(c_j,d_j]$.
+
+The handwritten proof suggests reordering the subintervals from left to right and telescoping their lengths: \[b-a=\sum_{j=1}^{\infty}(d_j-c_j),\] with consecutive endpoints matching. The example displayed at the margin is $J=(0,1]$ with endpoints of the form $1/i$.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The last step is a proof gap: a general countable interval partition need not admit a left-to-right enumeration with consecutive matching endpoints. For example, the pieces $(1/(j+1),1/j]$ accumulate at zero and have no leftmost member. Their lengths do sum to one, but the proposed ordering is not a general justification.
+
+A valid completion follows the source's compactness argument. First check finite additivity by refining at all finitely many endpoints. For a disjoint union $J=\bigsqcup_iL_i\in\mathcal A$, put $H_n=J\setminus\bigcup_{i\le n}L_i$. Then $H_n\downarrow\varnothing$ and finite additivity gives $\mu_0(J)=\sum_{i\le n}\mu_0(L_i)+\mu_0(H_n)$. It is enough to show $\mu_0(H_n)\to0$.
+
+If $\mu_0(H_n)\ge2\epsilon$ for every $n$, trim the left endpoints of the finitely many component intervals of each $H_\ell$ to obtain $J_\ell\in\mathcal A$ with compact closure $\overline{J_\ell}\subseteq H_\ell$ and $\mu_0(H_\ell\setminus J_\ell)\le\epsilon2^{-\ell}$. Finite subadditivity then gives $\mu_0(\bigcap_{\ell\le n}J_\ell)\ge\epsilon$. Thus the compact sets $\bigcap_{\ell\le n}\overline{J_\ell}$ are nonempty and decreasing. Compactness gives a point in all $H_\ell$, contradicting $H_n\downarrow\varnothing$. Therefore the length premeasure is countably additive and extends uniquely to uniform measure.
+\end{quote}
+
+\hypertarget{l2-s3}{}
+\lecturesection{Pi-systems, lambda-systems, and examples}
+{\small\textcolor{lectureink}{Handwritten pp.\ 13--14} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-36}{Dembo 1.1.36: explanation and visuals}}
+
+For uniqueness, an algebra of test sets is more than is needed: a $\pi$-system suffices. A collection $\mathcal P\subseteq2^\Omega$ is a $\pi$-system if \[A,B\in\mathcal P\quad\Longrightarrow\quad A\cap B\in\mathcal P.\]
+
+A collection $\mathcal L\subseteq2^\Omega$ is a $\lambda$-system if $\Omega\in\mathcal L$; if $A\subseteq B$ with $A,B\in\mathcal L$, then $B\setminus A\in\mathcal L$; and if $A_i\in\mathcal L$ with $A_i\uparrow A$, then $A\in\mathcal L$.
+
+Examples of $\pi$-systems are the half-open intervals in $(0,1]$, together with $\varnothing$, and the half-open rectangles $(a_1,b_1]\times(a_2,b_2]$, together with $\varnothing$. The rectangle example motivates checking two measures on $\mathbb R^2$ by comparing their values on rectangles.
+
+A $\lambda$-system need not be a $\pi$-system. On $\mathbb R^2$, the notes give \[\mathcal L=\{A\times\mathbb R:A\in\mathcal B_{\mathbb R}\}\ \cup\ \{\mathbb R\times A:A\in\mathcal B_{\mathbb R}\}.\] The crossing-strip picture shows why the intersection of a nontrivial vertical strip and a nontrivial horizontal strip is a rectangle that is not itself a full strip.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The strip family is closed under the $\lambda$-operations: complements preserve orientation; a nontrivial nested pair must have the same orientation; and a nontrivial increasing chain cannot change orientation except through $\varnothing$ or $\mathbb R^2$. It is not closed under intersections. Equality on rectangles determines finite measures of the same total mass, and also determines suitable $\sigma$-finite measures after localization; unrestricted infinite measures need additional hypotheses.
+\end{quote}
+
+\hypertarget{l2-s4}{}
+\lecturesection{A sigma-algebra is exactly pi plus lambda}
+{\small\textcolor{lectureink}{Handwritten p.\ 14} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-37}{Dembo 1.1.37: explanation and visuals}}
+
+Proposition: a collection $\mathcal F$ is a $\sigma$-algebra if and only if it is both a $\pi$-system and a $\lambda$-system.
+
+\paragraph{Lecture proof.}
+A $\sigma$-algebra has both properties directly from its defining closure conditions.
+
+Conversely, suppose $\mathcal F$ is both. Since it is a $\lambda$-system, $\Omega\in\mathcal F$, $\varnothing=\Omega\setminus\Omega\in\mathcal F$, and $A^c=\Omega\setminus A\in\mathcal F$ for $A\in\mathcal F$. Its $\pi$-property and complements give finite unions by $A\cup B=(A^c\cap B^c)^c$.
+
+For arbitrary $B_i\in\mathcal F$, put $A_n=\bigcup_{i=1}^{n}B_i$. Finite-union closure gives $A_n\in\mathcal F$, and $A_n\uparrow\bigcup_iB_i$. Increasing-limit closure gives the required countable union.
+
+\hypertarget{l2-s5}{}
+\lecturesection{Dynkin's theorem and uniqueness of measures}
+{\small\textcolor{lectureink}{Handwritten pp.\ 15--16} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-39}{Dembo 1.1.39: explanation and visuals}}
+
+Dynkin's $\pi$--$\lambda$ theorem: if $\mathcal P$ is a $\pi$-system, $\mathcal L$ is a $\lambda$-system, and $\mathcal P\subseteq\mathcal L$, then \[\sigma(\mathcal P)\subseteq\mathcal L.\]
+
+Equivalently, if $\lambda(\mathcal P)$ denotes the smallest $\lambda$-system containing $\mathcal P$, then $\lambda(\mathcal P)=\sigma(\mathcal P)$. The theorem gives $\sigma(\mathcal P)\subseteq\lambda(\mathcal P)$, and the reverse inclusion follows because $\sigma(\mathcal P)$ is itself a $\lambda$-system containing $\mathcal P$.
+
+Uniqueness: let $\mu_1,\mu_2$ be measures on $\sigma(\mathcal P)$ that agree on a generating $\pi$-system $\mathcal P$, and suppose \[\mu_1(\Omega)=\mu_2(\Omega)<\infty.\] Then $\mu_1=\mu_2$ on $\sigma(\mathcal P)$.
+
+\paragraph{Lecture proof.}
+Define the agreement class \[\mathcal L=\{A\in\sigma(\mathcal P):\mu_1(A)=\mu_2(A)\}.\] It contains $\mathcal P$, and the equal-total-mass hypothesis gives $\Omega\in\mathcal L$.
+
+If $A\subseteq B$ with $A,B\in\mathcal L$, finiteness allows subtraction: \[\mu_1(B\setminus A)=\mu_1(B)-\mu_1(A)=\mu_2(B)-\mu_2(A)=\mu_2(B\setminus A).\] Thus $B\setminus A\in\mathcal L$.
+
+If $A_n\in\mathcal L$ and $A_n\uparrow A$, continuity from below gives \[\mu_1(A)=\lim_n\mu_1(A_n)=\lim_n\mu_2(A_n)=\mu_2(A).\] Hence $\mathcal L$ is a $\lambda$-system. Dynkin's theorem gives $\sigma(\mathcal P)\subseteq\mathcal L$, proving equality everywhere.
+
+\hypertarget{l2-s6}{}
+\lecturesection{Continuity from below and the finite-mass caveat above}
+{\small\textcolor{lectureink}{Handwritten p.\ 16} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-4}{Dembo 1.1.4: explanation and visuals}}
+
+For every measure, $A_n\uparrow A$ implies $\mu(A_n)\uparrow\mu(A)$. The notes indicate the disjoint increments \[B_n=A_n\setminus\bigcup_{i=1}^{n-1}A_i\] that prove this using countable additivity.
+
+For decreasing sets, $A_n\downarrow A$ implies $\mu(A_n)\downarrow\mu(A)$ provided at least one $A_n$ has finite measure. Without this condition the assertion can fail. The recorded example is $A_n=[n,\infty)\downarrow\varnothing$ for Lebesgue measure, while $\mu(A_n)=\infty$ for every $n$.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The decreasing case follows by applying continuity from below to $A_N\setminus A_n$ for a fixed $N$ with $\mu(A_N)<\infty$, and subtracting from $\mu(A_N)$. The finite-mass assumption prevents the undefined expression $\infty-\infty$.
+\end{quote}
+
+\hypertarget{l2-s7}{}
+\lecturesection{Outer measure and the extension proof plan}
+{\small\textcolor{lectureink}{Handwritten pp.\ 16--17} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-42}{Dembo 1.1.42: explanation and visuals}}
+
+An outer measure is a nonnegative set function $\mu^*$ with $\mu^*(\varnothing)=0$, monotonicity $A\subseteq B\Rightarrow\mu^*(A)\le\mu^*(B)$, and countable subadditivity \[\mu^*\!\left(\bigcup_{i=1}^{\infty}A_i\right)\le\sum_{i=1}^{\infty}\mu^*(A_i).\] Additivity is not required, even for disjoint sets.
+
+The existence proof for extension is organized in five steps: define an outer measure $\mu^*$ on $2^\Omega$; prove $\mu^*|_{\mathcal A}=\mu_0$; form the class of sets that split every test set additively; prove this class is a $\sigma$-algebra containing $\mathcal A$; and prove that $\mu^*$ restricted to that class is a measure.
+
+The additive splitting condition is \[\mu^*(F\cap A)+\mu^*(F\cap A^c)=\mu^*(F)\qquad\text{for every }F\subseteq\Omega.\] Such a set $A$ is called $\mu^*$-measurable. Restriction of the resulting measure to $\sigma(\mathcal A)$ gives the required extension.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The initial outer-measure definition in the handwriting permits a specified measurable domain; the extension construction uses the full power set. In the handwritten proof plan, the displayed splitting class is restricted to $A\in\sigma(\mathcal A)$. To obtain the full Carathéodory class, take all $A\subseteq\Omega$ satisfying the splitting condition; only afterward restrict to $\sigma(\mathcal A)$. This also explains the larger completed measure space in the next lecture.
+\end{quote}
+
+\hypertarget{l2-s8}{}
+\lecturesection{Covering costs, subadditivity, and inner measure}
+{\small\textcolor{lectureink}{Handwritten pp.\ 17--18} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-40}{Dembo 1.1.40: explanation and visuals}}
+
+The first construction in the proof plan is \[\mu^*(B)=\inf\left\{\sum_{i=1}^{\infty}\mu_0(A_i):A_i\in\mathcal A,\ B\subseteq\bigcup_{i=1}^{\infty}A_i\right\}.\] The picture shows a set $B$ covered by several algebra sets; their total cost is compared with all other such covers.
+
+The notes list the first checks: the empty set has zero cost, enlarging the target cannot decrease its infimal covering cost, and countable subadditivity must follow by combining covers. The margin compares an infimum of sums with a sum of infima.
+
+For finite total mass, the lecture introduces inner measure by \[\mu_*(A)=\mu^*(\Omega)-\mu^*(A^c).\] Its picture contrasts covering the target from outside with subtracting an outside cover of its complement. For a $\mu^*$-measurable set $A$, the splitting identity applied to $\Omega$ yields $\mu_*(A)=\mu^*(A)$.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+For countable subadditivity, the direction of the infimum inequality matters. If $\sum_j\mu^*(B_j)=\infty$, there is nothing to prove. Otherwise, for $\epsilon>0$, choose a cover of each $B_j$ costing at most $\mu^*(B_j)+\epsilon2^{-j}$. Their combined countable cover costs at most $\sum_j\mu^*(B_j)+\epsilon$. Infimize, then let $\epsilon\downarrow0$. This supplies the step only indicated in the handwriting.
+
+The displayed inner-measure subtraction requires $\mu^*(\Omega)<\infty$. For an outer measure obtained from a finite premeasure, $\mu^*(\Omega)=\mu_0(\Omega)$, and subadditivity gives $\mu_*(A)\le\mu^*(A)$. No subtraction of two infinite quantities is intended.
+\end{quote}
+
+\subsection*{Recall before looking back}
+\begin{enumerate}
+\item Where is the gap in ordering a countable interval partition and telescoping lengths? What property repairs it? \hyperlink{answer-l2-s2}{[Answer]}
+\item For uniqueness of two measures, why is the agreement class usually treated as a lambda-system? Identify the use of finite mass. \hyperlink{answer-l2-s5}{[Answer]}
+\end{enumerate}
+
+\clearpage
+\definecolor{lectureink}{HTML}{663b20}
+\section{Lecture 3: Completion and measurable functions}
+\markboth{Lecture 3}{}
+{\small brown ink; handwritten pp.\ 19--27.}
+
+\hypertarget{l3-s1}{}
+\lecturesection{Complete measures and completion}
+{\small\textcolor{lectureink}{Handwritten p.\ 19} \quad \href{https://josephrbailey.com/probability/\#entry-1-1-35}{Dembo 1.1.35: explanation and visuals}}
+
+A measure space $(\Omega,\mathcal F,\mu)$ is complete if every subset $B$ of a measurable null set $A$ is measurable: \[B\subseteq A,\quad A\in\mathcal F,\quad\mu(A)=0\quad\Longrightarrow\quad B\in\mathcal F.\] Monotonicity then gives $\mu(B)=0$. The notes record that uniform measure on a unit interval with only its Borel $\sigma$-algebra is not complete.
+
+Given $(\Omega,\mathcal F,\mu)$, let \[\mathcal N=\{N\subseteq\Omega:N\subseteq A\text{ for some }A\in\mathcal F\text{ with }\mu(A)=0\}.\] Define \[\overline{\mathcal F}=\{A\mathbin{\triangle}N:A\in\mathcal F,\ N\in\mathcal N\},\qquad\overline\mu(A\mathbin{\triangle}N)=\mu(A).\] Then $(\Omega,\overline{\mathcal F},\overline\mu)$ is a complete measure space. The small diagram depicts changing a measurable set only inside a null set.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The handwritten unit-interval example uses the endpoint convention $[0,1)$; the incompleteness is the same on $(0,1]$ or $[0,1]$. A null Cantor set contains non-Borel subsets, which are absent from the Borel $\sigma$-algebra but enter its completion.
+
+The symmetric difference is $A\mathbin{\triangle}N=(A\setminus N)\cup(N\setminus A)$. The value of $\overline\mu$ is well defined: if two such representations agree, their measurable parts differ only within a measurable null set and therefore have the same measure. This symmetric-difference description is equivalent to adjoining arbitrary subsets of measurable null sets.
+\end{quote}
+
+\hypertarget{l3-s2}{}
+\lecturesection{Measurable maps and the generator test}
+{\small\textcolor{lectureink}{Handwritten pp.\ 20--21} \quad \href{https://josephrbailey.com/probability/\#entry-1-2-9}{Dembo 1.2.9: explanation and visuals}}
+
+Let $(\Omega,\mathcal F)$ and $(\Gamma,\mathcal G)$ be measurable spaces. A $(\Gamma,\mathcal G)$-valued random variable, or measurable map, is a function $X:\Omega\to\Gamma$ such that \[B\in\mathcal G\quad\Longrightarrow\quad X^{-1}(B)\in\mathcal F.\] A real random variable has target $(\mathbb R,\mathcal B_{\mathbb R})$; a random vector has target $(\mathbb R^n,\mathcal B_{\mathbb R^n})$.
+
+Generator test: if $\mathcal G=\sigma(\mathcal C)$ for a family $\mathcal C\subseteq2^\Gamma$, then $X$ is measurable if and only if $X^{-1}(B)\in\mathcal F$ for every $B\in\mathcal C$.
+
+\paragraph{Lecture proof.}
+Let \[\widehat{\mathcal G}=\{B\in\sigma(\mathcal C):X^{-1}(B)\in\mathcal F\}.\] It contains $\varnothing$, since $X^{-1}(\varnothing)=\varnothing$.
+
+If $B\in\widehat{\mathcal G}$, then \[X^{-1}(B^c)=\{\omega:X(\omega)\notin B\}=(X^{-1}(B))^c\in\mathcal F.\] Hence $B^c\in\widehat{\mathcal G}$. Complements on the two sides are relative to $\Gamma$ and $\Omega$, respectively.
+
+If $B_i\in\widehat{\mathcal G}$, then \[X^{-1}\!\left(\bigcup_{i=1}^{\infty}B_i\right)=\{\omega:X(\omega)\in\bigcup_iB_i\}=\bigcup_{i=1}^{\infty}X^{-1}(B_i)\in\mathcal F.\] Thus $\widehat{\mathcal G}$ is a $\sigma$-algebra. It contains $\mathcal C$ by assumption, so it contains $\sigma(\mathcal C)$ and proves the test.
+
+\hypertarget{l3-s3}{}
+\lecturesection{Information generated by an observation}
+{\small\textcolor{lectureink}{Handwritten pp.\ 21--22} \quad \href{https://josephrbailey.com/probability/\#entry-1-2-12}{Dembo 1.2.12: explanation and visuals}}
+
+For a real function $X:\Omega\to\mathbb R$, the $\sigma$-algebra $\sigma(X)$ is the smallest $\sigma$-algebra on $\Omega$ making $X$ measurable. It is the intersection of all such $\sigma$-algebras, equivalently \[\sigma(X)=\sigma(\{X^{-1}(B):B\in\mathcal B_{\mathbb R}\}).\] The same definition applies to a map into an arbitrary measurable target $(\Gamma,\mathcal G)$.
+
+For any family of functions $\{X_\alpha\}_{\alpha\in S}$ on the same underlying space, $\sigma(X_\alpha:\alpha\in S)$ is the smallest $\sigma$-algebra making each member measurable. It is obtained by intersecting all $\sigma$-algebras with that property.
+
+Example: let $\Omega=\mathbb R^2$ and $X(\omega_1,\omega_2)=\omega_1$. Then \[\sigma(X)=\{A\times\mathbb R:A\in\mathcal B_{\mathbb R}\}=\mathcal B_{\mathbb R}\otimes\mathcal F_0,\] where $\mathcal F_0=\{\varnothing,\mathbb R\}$ is the trivial $\sigma$-algebra. The observation resolves first-coordinate Borel events and leaves the second coordinate unrestricted.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The preimage family $\{X^{-1}(B):B\in\mathcal G\}$ is already a $\sigma$-algebra, so the outer $\sigma$ in the displayed formula can be omitted. In the product notation, $\otimes$ means the $\sigma$-algebra generated by rectangles.
+\end{quote}
+
+\hypertarget{l3-s4}{}
+\lecturesection{Indicators and simple functions}
+{\small\textcolor{lectureink}{Handwritten p.\ 23} \quad \href{https://josephrbailey.com/probability/\#entry-1-2-6}{Dembo 1.2.6: explanation and visuals}}
+
+For a measurable set $A$, its indicator is \[\mathbf1_A(\omega)=\begin{cases}1,&\omega\in A,\\0,&\omega\notin A.\end{cases}\] A simple function is a finite linear combination \[X=\sum_{k=1}^{m}a_k\mathbf1_{A_k},\qquad a_k\in\mathbb R,\quad A_k\in\mathcal F,\quad m\in\mathbb N.\] The notes denote their class by $\mathrm{SF}$.
+
+Approximation theorem: every real measurable function $X$ has a sequence of measurable simple functions $X_n$ with $X_n(\omega)\to X(\omega)$ for every $\omega$. If $X\ge0$, the approximants can be chosen nonnegative and increasing: $X_n\le X_{n+1}\le X$.
+
+\hypertarget{l3-s5}{}
+\lecturesection{Building the simple approximations}
+{\small\textcolor{lectureink}{Handwritten pp.\ 23--24} \quad \href{https://josephrbailey.com/probability/\#entry-1-2-6}{Dembo 1.2.6: explanation and visuals}}
+
+For $X\ge0$, choose a mesh $\epsilon_n>0$ and an integer cutoff $L_n$. Set \[A_{k,n}=\{\omega:k\epsilon_n\le X(\omega)<(k+1)\epsilon_n\},\quad 0\le k<L_n,\] and \[\widehat A_n=\{\omega:X(\omega)\ge L_n\epsilon_n\}.\] Define \[X_n=\sum_{k=0}^{L_n-1}k\epsilon_n\mathbf1_{A_{k,n}}+L_n\epsilon_n\mathbf1_{\widehat A_n}.\] The drawing partitions heights into horizontal bands and replaces each height by a lower grid value, with a top truncation level.
+
+All sets used are measurable inverse images. If $\epsilon_n\downarrow0$ and $L_n\epsilon_n\uparrow\infty$, then $X_n\le X$. For a fixed $\omega$, eventually $L_n\epsilon_n>X(\omega)$, so \[X_n(\omega)\le X(\omega)<X_n(\omega)+\epsilon_n.\] Therefore $|X(\omega)-X_n(\omega)|\to0$.
+
+The notes choose $\epsilon_n=2^{-n}$ and express the lower approximation as the largest available grid value below $X(\omega)$: \[X_n(\omega)=\sup\{k\epsilon_n:k\epsilon_n\le X(\omega),\ 0\le k\le L_n,\ k\in\mathbb N\cup\{0\}\}.\]
+
+For general real $X$, write $X=X_+-X_-$ with $X_+=\max(X,0)$ and $X_-=\max(-X,0)$. Approximate both nonnegative parts and set \[X_n=(X_+)_n-(X_-)_n.\] Both terms are simple and converge pointwise, so their difference is a simple approximation to $X$. The notes check measurability of the positive part through threshold inverse images: for $a>0$, $\{X_+\ge a\}=\{X\ge a\}$; for $a\le0$, the set is $\Omega$.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The conditions $\epsilon_n\downarrow0$ and $L_n\epsilon_n\uparrow\infty$ ensure convergence but do not alone ensure $X_n\uparrow X$: the grids must also be nested. A concrete monotone choice is $\epsilon_n=2^{-n}$, $L_n=n2^n$, so the cap is $n$. Each old grid value remains available in the next grid and the cap increases. This supplies the condition implicit in the handwritten monotonicity claim.
+
+The nonnegative approximants increase, while the signed approximants generally do not. Pointwise convergence is the conclusion for arbitrary signed $X$.
+\end{quote}
+
+\hypertarget{l3-s6}{}
+\lecturesection{The functional monotone class theorem}
+{\small\textcolor{lectureink}{Handwritten pp.\ 25--26} \quad \href{https://josephrbailey.com/probability/\#entry-1-2-7}{Dembo 1.2.7: explanation and visuals}}
+
+Let $\mathcal H$ be a collection of real-valued functions on $\Omega$ such that the constant function $1$ belongs to $\mathcal H$; $\mathcal H$ is a vector space over $\mathbb R$; and whenever $0\le h_n\in\mathcal H$ with $h_n\uparrow h$, for a real-valued $h$, the limit $h$ belongs to $\mathcal H$.
+
+If $\mathcal P$ is a $\pi$-system and $\mathbf1_A\in\mathcal H$ for every $A\in\mathcal P$, then $\mathcal H$ contains every real-valued $\sigma(\mathcal P)$-measurable function. The notes also indicate the bounded version: if increasing-limit closure is required only when $h$ is bounded, the conclusion is for all bounded measurable functions.
+
+\paragraph{Lecture proof.}
+Define \[\mathcal L=\{A\subseteq\Omega:\mathbf1_A\in\mathcal H\}.\] It contains $\mathcal P$ by hypothesis. Since $\mathbf1_\Omega=1\in\mathcal H$, it contains $\Omega$.
+
+If $A\subseteq B$ and $A,B\in\mathcal L$, then $\mathbf1_{B\setminus A}=\mathbf1_B-\mathbf1_A\in\mathcal H$ by the vector-space property. Hence $B\setminus A\in\mathcal L$.
+
+If $A_n\in\mathcal L$ and $A_n\uparrow A$, then $\mathbf1_{A_n}\uparrow\mathbf1_A$. Increasing-limit closure, even in the bounded version, gives $\mathbf1_A\in\mathcal H$. Thus $\mathcal L$ is a $\lambda$-system.
+
+Dynkin's theorem gives $\sigma(\mathcal P)\subseteq\mathcal L$. Hence all indicators of sets in $\sigma(\mathcal P)$ lie in $\mathcal H$, and the vector-space property gives all their finite linear combinations, the simple functions.
+
+Every nonnegative measurable function is an increasing limit of nonnegative simple functions, so belongs to $\mathcal H$ under the corresponding limit hypothesis. For a general real-valued function, take the difference of its positive and negative parts. For the bounded version, both parts and their approximants are bounded, so the same proof applies.
+
+\hypertarget{l3-s7}{}
+\lecturesection{Continuous maps, monotone maps, and composition}
+{\small\textcolor{lectureink}{Handwritten p.\ 26} \quad \href{https://josephrbailey.com/probability/\#entry-1-2-18}{Dembo 1.2.18: explanation and visuals}}
+
+If $\Omega$ is topological and $f:\Omega\to\mathbb R$ is continuous, then $f$ is Borel measurable: the inverse image of an open set is open, and open sets generate the Borel $\sigma$-algebra.
+
+A monotone function $f:\mathbb R\to\mathbb R$ is Borel measurable. The notes suggest checking inverse images of intervals $(-\infty,a]$.
+
+If $f:(\Omega,\mathcal F)\to(\Gamma,\mathcal G)$ and $g:(\Gamma,\mathcal G)\to(\Theta,\mathcal H)$ are measurable, then $g\circ f$ is measurable.
+
+Example: if $X_1,X_2$ are real random variables on the same measurable space, then $f(\omega)=(X_1(\omega),X_2(\omega))$ is a random vector into $(\mathbb R^2,\mathcal B_{\mathbb R^2})$. For any continuous $g:\mathbb R^2\to\mathbb R$, the function $g(X_1,X_2)=g\circ f$ is a real random variable.
+
+\paragraph{Lecture proof.}
+For $C\in\mathcal H$, \[ (g\circ f)^{-1}(C)=f^{-1}(g^{-1}(C)). \] Measurability of $g$ puts $g^{-1}(C)$ in $\mathcal G$, then measurability of $f$ puts its inverse image in $\mathcal F$.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+For a monotone real function, the inverse image of $(-\infty,a]$ is a ray, possibly open or closed at its finite endpoint, or is empty or all of $\mathbb R$. Each is Borel. For the vector example, inverse images of Borel rectangles are $X_1^{-1}(B_1)\cap X_2^{-1}(B_2)$, so the generator test proves vector measurability.
+\end{quote}
+
+\hypertarget{l3-s8}{}
+\lecturesection{Countable extrema and tail limits}
+{\small\textcolor{lectureink}{Handwritten p.\ 27} \quad \href{https://josephrbailey.com/probability/\#entry-1-2-22}{Dembo 1.2.22: explanation and visuals}}
+
+For a sequence of random variables $X_n$ on the same measurable space, the lecture states that \[\inf_nX_n,\qquad\sup_nX_n,\qquad\liminf_{n\to\infty}X_n,\qquad\limsup_{n\to\infty}X_n\] are measurable. The limit inferior is expressed using tail infima: \[Y_n=\inf_{m\ge n}X_m,\qquad\liminf_nX_n=\sup_nY_n.\]
+
+\paragraph{Lecture proof.}
+The handwritten argument starts by testing a threshold inverse image for $X=\inf_nX_n$ and rewriting it as a countable union of threshold events for the $X_n$. The valid strict-threshold identity is \[\{\inf_nX_n<b\}=\bigcup_{n=1}^{\infty}\{X_n<b\}\in\mathcal F.\] This proves measurability of the infimum using generators of the extended-real Borel $\sigma$-algebra.
+
+Negation gives $\sup_nX_n=-\inf_n(-X_n)$. Apply the infimum result to each tail to see that $Y_n=\inf_{m\ge n}X_m$ is measurable. Then $\sup_nY_n$ is measurable. Similarly, \[\limsup_nX_n=\inf_n\sup_{m\ge n}X_m\] is measurable.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The notes write a non-strict threshold identity $\{\inf_nX_n\le b\}=\bigcup_n\{X_n\le b\}$, which fails if the infimum is not attained. For example, $X_n=1/n$ and $b=0$ make the left side all of $\Omega$ and the right side empty. The proof above corrects the signs to strict inequalities.
+
+Even if every $X_n$ is finite, the displayed extrema and tail limits can be infinite. They are therefore extended-real-valued measurable functions in general; they are real random variables only when their values are finite. The additional supremum and tail-limit steps above expand the reduction indicated in the handwritten proof.
+\end{quote}
+
+\subsection*{Recall before looking back}
+\begin{enumerate}
+\item Why can measurability be checked only on generators of the target sigma-algebra? \hyperlink{answer-l3-s2}{[Answer]}
+\item In the functional monotone class theorem, how do you convert a class of functions into a class of sets, and then return to arbitrary measurable functions? \hyperlink{answer-l3-s6}{[Answer]}
+\item Prove that a countable infimum is measurable. Which threshold inequality avoids the unattained-infimum problem? \hyperlink{answer-l3-s8}{[Answer]}
+\end{enumerate}
+
+\clearpage
+\definecolor{lectureink}{HTML}{a35c17}
+\section{Lecture 4: Laws, distribution functions, and the Lebesgue integral}
+\markboth{Lecture 4}{}
+{\small orange ink; handwritten pp.\ 28--36.}
+
+\hypertarget{l4-s1}{}
+\lecturesection{The law and distribution function of a random variable}
+{\small\textcolor{lectureink}{Handwritten p.\ 28} \quad \href{https://josephrbailey.com/probability/\#entry-1-2-34}{Dembo 1.2.34: explanation and visuals}}
+
+Let $(\Omega,\mathcal F,\mathbb P)$ be a probability space and let $X:\Omega\to\mathbb R$ be a random variable. Its law is the probability measure $\mathbb P_X$ on $(\mathbb R,\mathcal B_{\mathbb R})$ defined by \[\mathbb P_X(A)=\mathbb P(\{\omega:X(\omega)\in A\})=\mathbb P(X^{-1}(A)),\qquad A\in\mathcal B_{\mathbb R}.\] Thus $\mathbb P_X=\mathbb P\circ X^{-1}$, the pushforward of $\mathbb P$ by $X$.
+
+The distribution function, or cumulative distribution function, is \[F_X(t)=\mathbb P_X(( -\infty,t])=\mathbb P(X\le t),\qquad t\in\mathbb R.\]
+
+\hypertarget{l4-s2}{}
+\lecturesection{Equality in law and equality almost surely}
+{\small\textcolor{lectureink}{Handwritten pp.\ 28--29} \quad \href{https://josephrbailey.com/probability/\#entry-1-2-35}{Dembo 1.2.35: explanation and visuals}}
+
+Write $X\overset{d}=Y$ when $\mathbb P_X=\mathbb P_Y$. Equivalently, $F_X=F_Y$: the sets $(-\infty,t]$ form a generating $\pi$-system, and probability measures agreeing on these sets agree on every Borel set.
+
+Write $X\overset{\mathrm{a.s.}}=Y$ when $\mathbb P(X=Y)=1$, equivalently $\mathbb P((X-Y)^{-1}(\{0\}))=1$. Almost-sure equality implies equality in law.
+
+\paragraph{Lecture proof.}
+For $A\in\mathcal B_{\mathbb R}$, \[\{X\in A\}\mathbin{\triangle}\{Y\in A\}\subseteq\{X\ne Y\}.\] If $X=Y$ almost surely, the symmetric difference is null and therefore $\mathbb P_X(A)=\mathbb P_Y(A)$.
+
+The converse fails. On $(\Omega,\mathcal F,\mathbb P)=((0,1],\mathcal B_{(0,1]},\text{uniform measure})$, take $X(\omega)=\omega$ and $Y(\omega)=1-\omega$. Both have the uniform law on $[0,1]$, but $X=Y$ only when $\omega=1/2$, a null event.
+
+\hypertarget{l4-s3}{}
+\lecturesection{Characterizing distribution functions}
+{\small\textcolor{lectureink}{Handwritten p.\ 29} \quad \href{https://josephrbailey.com/probability/\#entry-1-2-37}{Dembo 1.2.37: explanation and visuals}}
+
+A function $F:\mathbb R\to[0,1]$ is a distribution function if and only if it is nondecreasing, \[\lim_{t\to-\infty}F(t)=0,\qquad \lim_{t\to\infty}F(t)=1,\] and right-continuous: \[\lim_{s\downarrow t}F(s)=F(t)\quad\text{for every }t\in\mathbb R.\]
+
+\paragraph{Lecture proof.}
+If $F=F_X$, monotonicity follows from inclusion of the events $\{X\le t\}$. The endpoint limits follow from continuity of probability for increasing and decreasing events. In particular, if $t_n\downarrow t$, then $\{X\le t_n\}\downarrow\{X\le t\}$ and hence $F_X(t_n)\downarrow F_X(t)$. The small graph in the notes records the included right endpoint of a jump.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The handwritten page states the equivalence and sketches the right-continuity direction; it does not contain a converse construction. One converse is to put $U$ uniformly on $(0,1)$ and set $X(U)=\inf\{x:F(x)\ge U\}$. Then $\{X\le t\}=\{U\le F(t)\}$, so $F_X=F$. Using $(0,1)$ avoids an infinite value at the null endpoint $U=1$.
+\end{quote}
+
+\hypertarget{l4-s4}{}
+\lecturesection{Almost-sure convergence}
+{\small\textcolor{lectureink}{Handwritten p.\ 30} \quad \href{https://josephrbailey.com/probability/\#entry-1-2-25}{Dembo 1.2.25: explanation and visuals}}
+
+A sequence $(X_n)_{n\ge1}$ on $(\Omega,\mathcal F,\mathbb P)$ converges almost surely to $X_\infty$, written $X_n\xrightarrow{\mathrm{a.s.}}X_\infty$, if \[\mathbb P\bigl(\{\limsup_n X_n=\liminf_n X_n=X_\infty\}\bigr)=1.\] The limit assertion is a statement about the full path at almost every fixed outcome.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+For finite real-valued limits this is the usual pointwise convergence outside a null event. If infinite limits are allowed, the equality formulation still makes sense; do not use an undefined difference such as $\infty-\infty$.
+\end{quote}
+
+\hypertarget{l4-s5}{}
+\lecturesection{Constructing the Lebesgue integral}
+{\small\textcolor{lectureink}{Handwritten pp.\ 30--31} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-1}{Dembo 1.3.1: explanation and visuals}}
+
+For a measure space $(\Omega,\mathcal F,\mu)$ we write \[\mu(f)=\int_\Omega f(\omega)\,\mu(d\omega).\] Start with nonnegative simple functions \[\mathrm{SF}_+=\left\{\varphi=\sum_{i=1}^{m}c_i\mathbf1_{A_i}:c_i\ge0,\ A_i\in\mathcal F,\ m<\infty\right\},\qquad \mu_0(\varphi)=\sum_{i=1}^{m}c_i\mu(A_i).\]
+
+For a nonnegative measurable $f$, define \[\mu(f)=\sup\{\mu_0(\varphi):\varphi\in\mathrm{SF}_+,\ \varphi\le f\}.\] For a signed measurable function, put $f_+=\max(f,0)$ and $f_-=\max(-f,0)$, and define \[\mu(f)=\mu(f_+)-\mu(f_-)\] whenever at least one of the two terms is finite. If both terms are finite, then $f$ is integrable, written $f\in L^1(\Omega,\mathcal F,\mu)$.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The signed definition excludes $\infty-\infty$. Integrability is equivalent to $\mu(|f|)<\infty$. The notes use $\mu(f)$ for an integral as well as $\mu(A)$ for a measure; the argument determines which meaning applies. The course source also permits infinite heights in nonnegative simple functions with $0\cdot\infty=0$; bounded simple functions suffice for the supremum.
+\end{quote}
+
+\hypertarget{l4-s6}{}
+\lecturesection{Why the simple-function integral is well-defined}
+{\small\textcolor{lectureink}{Handwritten pp.\ 31--32} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-3}{Dembo 1.3.3: explanation and visuals}}
+
+A simple function can have different representations. Suppose \[\varphi=\sum_{i=1}^{m}a_i\mathbf1_{A_i}=\sum_{j=1}^{n}b_j\mathbf1_{B_j}.\] We must show \[\sum_i a_i\mu(A_i)=\sum_j b_j\mu(B_j).\]
+
+\paragraph{Lecture proof.}
+Refine all of the sets simultaneously. For $S\subseteq\{1,\ldots,m\}$ and $T\subseteq\{1,\ldots,n\}$, let \[Q_{S,T}=\left(\bigcap_{i\in S}A_i\right)\cap\left(\bigcap_{i\notin S}A_i^c\right)\cap\left(\bigcap_{j\in T}B_j\right)\cap\left(\bigcap_{j\notin T}B_j^c\right).\] These are measurable, pairwise disjoint, and partition $\Omega$; empty intersections mean $\Omega$.
+
+On a nonempty $Q_{S,T}$, both descriptions of $\varphi$ are constant, so \[\varphi|_{Q_{S,T}}=\sum_{i\in S}a_i=\sum_{j\in T}b_j.\] Finite additivity gives \[\sum_i a_i\mu(A_i)=\sum_{S,T}\left(\sum_{i\in S}a_i\right)\mu(Q_{S,T})=\sum_{S,T}\left(\sum_{j\in T}b_j\right)\mu(Q_{S,T})=\sum_j b_j\mu(B_j).\] The overlapping-set picture in the notes depicts these common atoms.
+
+The same refinement proves invariance under changes on a null set: if $\mu(\varphi\ne\psi)=0$, then $\mu_0(\varphi)=\mu_0(\psi)$. Combining representations proves \[\mu_0(a\varphi+b\psi)=a\mu_0(\varphi)+b\mu_0(\psi)\quad(a,b\ge0).\] If $\varphi\le\psi$, the nonnegative simple difference gives $\mu_0(\varphi)\le\mu_0(\psi)$.
+
+\begingroup
+\setlength{\unitlength}{1pt}
+\begin{center}
+\begin{picture}(400,172)
+
+\put(90,150){\makebox(120,14){in $A$}}\put(210,150){\makebox(120,14){outside $A$}}
+\put(3,109){\makebox(80,14){in $B$}}\put(3,49){\makebox(80,14){outside $B$}}
+\put(90,90){\framebox(120,60){$A\cap B$}}\put(210,90){\framebox(120,60){$B\setminus A$}}
+\put(90,30){\framebox(120,60){$A\setminus B$}}\put(210,30){\framebox(120,60){$(A\cup B)^c$}}
+
+\end{picture}
+\end{center}
+\endgroup\begin{center}\small Added schematic: the four disjoint membership cells partition the whole space. Refining both descriptions into these cells permits comparison of their weighted sums.\end{center}
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+For finite-valued simple functions the difference proof is immediate. If extended heights are allowed, use a common partition and compare its heights directly, avoiding $\infty-\infty$.
+\end{quote}
+
+\hypertarget{l4-s7}{}
+\lecturesection{Integral properties and expectation}
+{\small\textcolor{lectureink}{Handwritten p.\ 33} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-9}{Dembo 1.3.9: explanation and visuals}}
+
+For nonnegative measurable functions, the integral is monotone: $f\le g$ implies $\mu(f)\le\mu(g)$. It is positively homogeneous: $\mu(af)=a\mu(f)$ for $a\ge0$. It agrees with the simple integral: $\mu(\varphi)=\mu_0(\varphi)$ for $\varphi\in\mathrm{SF}_+$.
+
+If $f=g$ almost everywhere, then $\mu(f)=\mu(g)$ whenever the integrals are defined. For a simple $\varphi$, monotonicity of $\mu_0$ gives $\mu_0(\psi)\le\mu_0(\varphi)$ for every simple $\psi\le\varphi$, while taking $\psi=\varphi$ gives the reverse inequality in the supremum definition.
+
+On a probability space, the expectation is simply the integral with respect to probability: \[\mathbb E X=\int_\Omega X(\omega)\,\mathbb P(d\omega).\]
+
+\hypertarget{l4-s8}{}
+\lecturesection{Monotone convergence and the simple-function lower bound}
+{\small\textcolor{lectureink}{Handwritten pp.\ 33--35} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-4}{Dembo 1.3.4: explanation and visuals}}
+
+Monotone convergence: if $h_n$ are nonnegative measurable functions and $h_n\uparrow h$ pointwise, then \[\mu(h_n)\uparrow\mu(h).\] The value $+\infty$ is allowed.
+
+\paragraph{Lecture proof.}
+Monotonicity already gives that $\mu(h_n)$ is nondecreasing and at most $\mu(h)$. It remains to prove the opposite bound for its limit. Fix a nonnegative simple function $\varphi=\sum_{i=1}^{m}c_i\mathbf1_{A_i}\le h$ with disjoint $A_i$, and fix $\lambda\in(0,1)$. The lecture sets $h_*(A_i)=\inf_{\omega\in A_i}h(\omega)$ and compares $c_i\le h_*(A_i)$.
+
+The lecture construction takes \[A_{i,n}=\{\omega\in A_i:h_n(\omega)\ge\lambda h_*(A_i)\},\qquad \varphi_n=\sum_i\lambda h_*(A_i)\mathbf1_{A_{i,n}}\le h_n.\] For positive finite $h_*(A_i)$, the strict slack $\lambda<1$ and $h_n\uparrow h$ imply $A_{i,n}\uparrow A_i$. Thus \[\lim_n\mu(h_n)\ge\lim_n\mu_0(\varphi_n)=\lambda\sum_i h_*(A_i)\mu(A_i)\ge\lambda\mu_0(\varphi).\] The drawn step function sits below the limiting curve; each increasing set marks where the current $h_n$ has reached the lowered step.
+
+Let $\lambda\uparrow1$ in this finite-infimum construction to obtain the lower bound $\lim_n\mu(h_n)\ge\mu_0(\varphi)$ for simple functions whose relevant infimum heights are positive and finite. Together with the easy upper bound, this proves that case. The bounded-height construction below supplies the omitted cases and completes the full theorem.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The handwritten construction does not spell out zero or infinite infimum cases. A uniform repair is to take bounded simple $\varphi$ and instead set $A_{i,n}=\{\omega\in A_i:h_n(\omega)\ge\lambda c_i\}$, omitting zero-height pieces. All thresholds are then finite, $A_{i,n}\uparrow A_i$, and the same argument gives $\lim_n\mu(h_n)\ge\lambda\mu_0(\varphi)$, including infinite measures of pieces. This proves the full statement without dividing by an integral or using an infinite threshold.
+\end{quote}
+
+\hypertarget{l4-s9}{}
+\lecturesection{Additivity beyond simple functions}
+{\small\textcolor{lectureink}{Handwritten p.\ 36} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-5}{Dembo 1.3.5: explanation and visuals}}
+
+For nonnegative measurable $f,g$, \[\mu(f+g)=\mu(f)+\mu(g).\]
+
+\paragraph{Lecture proof.}
+The identity already holds for simple functions. Choose nonnegative simple approximations $f_n\uparrow f$ and $g_n\uparrow g$. Then $f_n+g_n\uparrow f+g$, so monotone convergence on each of the three sequences gives \[\mu(f+g)=\lim_n\mu_0(f_n+g_n)=\lim_n\bigl(\mu_0(f_n)+\mu_0(g_n)\bigr)=\mu(f)+\mu(g).\]
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+This is the standard approximation pattern: prove a property for indicators/simple functions, then identify the theorem that carries it through a limit. For integrable signed functions, positive/negative decomposition extends linearity after all required finite quantities are checked.
+\end{quote}
+
+\subsection*{Recall before looking back}
+\begin{enumerate}
+\item Why does $X=Y$ almost surely imply equality in law, and why does the converse fail? \hyperlink{answer-l4-s2}{[Answer]}
+\item Reconstruct the proof of monotone convergence. Why is the factor $\lambda<1$ useful? \hyperlink{answer-l4-s8}{[Answer]}
+\item Why does simple-function linearity extend to nonnegative measurable functions? \hyperlink{answer-l4-s9}{[Answer]}
+\end{enumerate}
+
+\clearpage
+\definecolor{lectureink}{HTML}{18598b}
+\section{Lecture 5: Inequalities, Lp spaces, and modes of convergence}
+\markboth{Lecture 5}{}
+{\small blue ink; handwritten pp.\ 37--45.}
+
+\hypertarget{l5-s1}{}
+\lecturesection{Markov inequality and a zero-integral consequence}
+{\small\textcolor{lectureink}{Handwritten p.\ 37} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-13}{Dembo 1.3.13: explanation and visuals}}
+
+The lecture begins with inequalities and convergence, recalling $\mathbb E X=\int_\Omega X(\omega)\,\mathbb P(d\omega)$. On any measure space, if $f\ge0$ is measurable, then for every $t>0$, \[t\,\mu(\{f\ge t\})\le\mu(f).\]
+
+\paragraph{Lecture proof.}
+Take the simple function $\varphi=t\mathbf1_{\{f\ge t\}}\le f$ and use monotonicity: \[t\,\mu(\{f\ge t\})=\mu_0(\varphi)\le\mu(f).\]
+
+Consequently, if $f\ge0$ and $\mu(f)=0$, then $f=0$ almost everywhere. Indeed, for $A_n=\{f\ge1/n\}$, Markov gives $\mu(A_n)\le n\mu(f)=0$. Since $A_n\uparrow A_\infty=\{f>0\}$, continuity from below yields $\mu(A_\infty)=0$.
+
+\hypertarget{l5-s2}{}
+\lecturesection{Transformed Markov bounds: Chebyshev and Chernoff}
+{\small\textcolor{lectureink}{Handwritten p.\ 38} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-14}{Dembo 1.3.14: explanation and visuals}}
+
+Let $X$ be a real-valued random variable and let $\psi:\mathbb R\to[0,\infty]$ be Borel measurable. For $A\in\mathcal B_{\mathbb R}$, define \[\psi_*(A)=\inf\{\psi(x):x\in A\}.\] Then \[\psi_*(A)\mathbb P(X\in A)\le\mathbb E\psi(X).\] Apply Markov to the measurable nonnegative function $\omega\mapsto\psi(X(\omega))$, or directly use $\psi_*(A)\mathbf1_{\{X\in A\}}\le\psi(X)$.
+
+Taking $\psi(x)=x_+$ gives, for $t>0$, \[\mathbb P(X\ge t)\le t^{-1}\mathbb E X_+.\] Taking $\psi(x)=|x-\mathbb E X|^2$ for $X\in L^2$ gives Chebyshev: \[\mathbb P(|X-\mathbb E X|\ge t)\le t^{-2}\operatorname{Var}(X),\qquad \operatorname{Var}(X)=\mathbb E[(X-\mathbb E X)^2].\]
+
+Taking $\psi(x)=e^{\lambda x}$ gives the Chernoff bound \[\mathbb P(X\ge t)\le e^{-\lambda t}\mathbb E e^{\lambda X},\qquad t\in\mathbb R,\ \lambda\ge0.\] The choice $\lambda=0$ gives the trivial bound $1$; positive $\lambda$ is useful when the exponential moment is finite.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The infimum convention is $\inf\varnothing=+\infty$; nonnegative integral products use $0\cdot\infty=0$. Divide by $\psi_*(A)$ only when it is finite and strictly positive. Chebyshev is a centered two-sided bound; the displayed Chernoff version is an upper-tail bound.
+\end{quote}
+
+\hypertarget{l5-s3}{}
+\lecturesection{Vector Jensen inequality and supporting hyperplanes}
+{\small\textcolor{lectureink}{Handwritten pp.\ 38--39} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-20}{Dembo 1.3.20: explanation and visuals}}
+
+Let $Q\subseteq\mathbb R^d$ be open and convex, let $g:Q\to\mathbb R$ be convex, and let $X:\Omega\to\mathbb R^d$ be an integrable random vector with $\mathbb P(X\in Q)=1$. If $g(X)$ is integrable, Jensen gives \[\mathbb E g(X)\ge g(\mathbb E X).\]
+
+\paragraph{Lecture proof.}
+First show $\mu=\mathbb E X\in Q$. If $\mu\notin Q$, separation provides a vector $v\in\mathbb R^d$ and $a\in\mathbb R$ with $\langle v,x\rangle>a$ for every $x\in Q$ and $\langle v,\mu\rangle\le a$. Since $X\in Q$ almost surely, \[\mathbb E\langle v,X\rangle>a,\] while linearity gives $\mathbb E\langle v,X\rangle=\langle v,\mu\rangle\le a$, a contradiction.
+
+Convexity on the open convex set supplies a supporting vector $u(x_0)$ at each $x_0\in Q$ such that \[g(x)\ge g(x_0)+\langle u(x_0),x-x_0\rangle\quad(x\in Q).\] Set $x_0=\mu$ and take expectations to get \[\mathbb E g(X)\ge g(\mu)+\langle u(\mu),\mathbb E X-\mu\rangle=g(\mu).\]
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The separation theorem and existence of a supporting hyperplane are the convex-analysis inputs used in this board proof. The strict expected inequality uses the fact that a strictly positive integrable random variable has strictly positive expectation.
+\end{quote}
+
+\hypertarget{l5-s4}{}
+\lecturesection{Moment quantities and nesting of the Lp spaces}
+{\small\textcolor{lectureink}{Handwritten pp.\ 39--40} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-16}{Dembo 1.3.16: explanation and visuals}}
+
+For $p>0$, write \[L^p(\Omega,\mathcal F,\mathbb P)=\{X:\mathbb E|X|^p<\infty\},\qquad \|X\|_p=(\mathbb E|X|^p)^{1/p}.\] On a probability space, for $0<p<q$, \[\|X\|_p\le\|X\|_q,\qquad L^q\subseteq L^p.\]
+
+\paragraph{Lecture proof.}
+The function $g(u)=u^{q/p}$ is convex on $[0,\infty)$. Jensen applied to $|X|^p$ gives \[\mathbb E|X|^q=\mathbb E[(|X|^p)^{q/p}]\ge(\mathbb E|X|^p)^{q/p}.\] Taking the $q$th root proves the comparison.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The bracketed inclusion on handwritten p40 is reversed: the displayed norm inequality implies $L^q\subseteq L^p$, as written here. For full generality, apply Jensen first to $\min(|X|,n)^p$, then use monotone convergence; this does not assume the lower moment is finite in advance. When $p<1$, $\|\cdot\|_p$ is a moment quantity or quasi-norm, not a norm. The total probability $1$ is needed for this comparison without a measure-mass factor.
+\end{quote}
+
+\hypertarget{l5-s5}{}
+\lecturesection{Hölder inequality, Young inequality, and equality}
+{\small\textcolor{lectureink}{Handwritten pp.\ 40--41} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-17}{Dembo 1.3.17: explanation and visuals}}
+
+If $p,q>1$ satisfy $1/p+1/q=1$, then for random variables on the same probability space, \[\mathbb E|XY|\le\|X\|_p\|Y\|_q.\] The case $p=q=2$ is Cauchy-Schwarz. No independence assumption is needed.
+
+\paragraph{Lecture proof.}
+First assume the norms are finite and nonzero, and divide $X,Y$ by their respective norms. It is enough to treat $\|X\|_p=\|Y\|_q=1$. For $x,y\ge0$, Young inequality is \[\frac{x^p}{p}+\frac{y^q}{q}\ge xy.\] For fixed $x$, minimize $h(y)=x^p/p+y^q/q-xy$. Its derivative is $h^{\prime}(y)=y^{q-1}-x$, so the minimum occurs at $y=x^{p-1}$, where $y^q=x^p$ and $h(y)=x^p(1/p+1/q-1)=0$. The small convex graph in the notes shows this minimum.
+
+Apply Young pointwise and take expectations: \[\mathbb E|XY|\le\mathbb E\left(\frac{|X|^p}{p}+\frac{|Y|^q}{q}\right)=\frac1p+\frac1q=1.\] Rescaling proves Hölder. If either norm is zero, the corresponding variable is zero almost surely. Cases with infinite positive norms make the bound immediate.
+
+With the unit-norm normalization, equality holds exactly when the nonnegative Young gap is zero almost surely. Equivalently, \[|X|=|Y|^{q-1}\quad\text{almost surely},\qquad |X|^p=|Y|^q\quad\text{almost surely}.\]
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+Without normalization, the equality condition for finite nonzero norms is $|X|^p/\|X\|_p^p=|Y|^q/\|Y\|_q^q$ almost surely. Absolute values are essential; Hölder bounds the absolute product. The scalar calculus proof and normalization are both part of the lecture.
+\end{quote}
+
+\hypertarget{l5-s6}{}
+\lecturesection{Essential supremum and Minkowski inequality}
+{\small\textcolor{lectureink}{Handwritten pp.\ 41--42} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-18}{Dembo 1.3.18: explanation and visuals}}
+
+The essential supremum norm is \[\|X\|_\infty=\inf\{t\ge0:\mathbb P(|X|>t)=0\}.\] It ignores changes on null events. Minkowski inequality states that for $1\le p<\infty$ and $X,Y\in L^p$, \[\|X+Y\|_p\le\|X\|_p+\|Y\|_p.\]
+
+\paragraph{Lecture proof.}
+Before dividing by a norm, establish finiteness. For $p\ge1$ and $a,b\ge0$, Jensen gives \[(a+b)^p\le2^{p-1}(a^p+b^p).\] Hence \[\|X+Y\|_p\le2^{1-1/p}(\|X\|_p^p+\|Y\|_p^p)^{1/p}\le2^{1-1/p}(\|X\|_p+\|Y\|_p)<\infty.\] This preliminary estimate has an extra factor; the next argument removes it.
+
+The case $p=1$ follows directly from $|X+Y|\le|X|+|Y|$. For $p>1$ take $q=p/(p-1)$, so $(p-1)q=p$. Hölder gives \[\mathbb E|X+Y|^p\le\mathbb E[(|X|+|Y|)|X+Y|^{p-1}]\le(\|X\|_p+\|Y\|_p)(\mathbb E|X+Y|^{(p-1)q})^{1/q}=(\|X\|_p+\|Y\|_p)\|X+Y\|_p^{p-1}.\] If the last norm is positive, divide by its $(p-1)$st power; if it is zero, the result is immediate.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+Correction to p41: the annotation ``works for any $p>0$'' cannot apply to the displayed Jensen estimate with factor $2^{1-1/p}$. For $0<p<1$, the valid estimate is $\mathbb E|X+Y|^p\le\mathbb E|X|^p+\mathbb E|Y|^p$. Equivalently, $\|X+Y\|_p\le2^{1/p-1}(\|X\|_p+\|Y\|_p)$. Ordinary Minkowski generally fails below $1$. For example, indicators of disjoint events of probability $1/2$ have sum norm $1$, while the sum of their $p$-quantities is $2^{1-1/p}<1$. The essential supremum separately obeys the triangle inequality by the pointwise bound outside a null set.
+\end{quote}
+
+\hypertarget{l5-s7}{}
+\lecturesection{From a seminorm on variables to a norm on equivalence classes}
+{\small\textcolor{lectureink}{Handwritten p.\ 42} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-2}{Dembo 1.3.2: explanation and visuals}}
+
+For $p\ge1$, the collection of variables with finite $p$th moment is a vector space: $X\in L^p$ implies $aX\in L^p$, and Minkowski gives $X+Y\in L^p$. The quantity $\|\cdot\|_p$ is homogeneous and satisfies the triangle inequality, but $\|X\|_p=0$ means only that $X=0$ almost surely.
+
+Thus it is a seminorm on literal measurable functions. Define \[X\sim Y\quad\Longleftrightarrow\quad\mathbb P(X\ne Y)=0.\] Passing to the quotient by this equivalence makes $L^p$ a normed vector space; two representatives differing only on a null event are the same element.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The lecture uses $L^p$ for the quotient after first discussing actual variables. The usual notation often suppresses that distinction. For $0<p<1$ the quotient is still useful, but the displayed moment quantity is not a norm.
+\end{quote}
+
+\hypertarget{l5-s8}{}
+\lecturesection{Three convergence modes and their first implications}
+{\small\textcolor{lectureink}{Handwritten p.\ 43} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-22}{Dembo 1.3.22: explanation and visuals}}
+
+For random variables $(X_n)_{n\ge1}$ and $X_\infty$ on one probability space, almost-sure convergence means \[\mathbb P(\{\omega:\lim_nX_n(\omega)\text{ exists and equals }X_\infty(\omega)\})=1.\] Convergence in probability, written $X_n\xrightarrow{\mathbb P}X_\infty$, means \[\mathbb P(|X_n-X_\infty|\ge\varepsilon)\longrightarrow0\quad\text{for every }\varepsilon>0.\] For $p>0$, convergence in $L^p$ means $X_n,X_\infty\in L^p$ and \[\mathbb E|X_n-X_\infty|^p\longrightarrow0.\]
+
+For finite real-valued limits, almost-sure convergence implies convergence in probability.
+
+\paragraph{Lecture proof.}
+For fixed $\varepsilon>0$, consider \[B_{n,\varepsilon}=\left\{\sup_{m\ge n}|X_m-X_\infty|\ge\varepsilon\right\}.\] These tail events decrease with $n$. On a path converging to $X_\infty$, the tail supremum eventually falls below $\varepsilon$, so $\mathbb P(\bigcap_n B_{n,\varepsilon})=0$. Continuity from above gives $\mathbb P(B_{n,\varepsilon})\to0$. Since $\{|X_n-X_\infty|\ge\varepsilon\}\subseteq B_{n,\varepsilon}$, convergence in probability follows.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+Using $>$ instead of $\ge$ in the definition of convergence in probability is equivalent: change the positive threshold slightly. For infinite limits use a metric on the extended real line rather than absolute subtraction.
+\end{quote}
+
+\hypertarget{l5-s9}{}
+\lecturesection{The sweeping-interval counterexample}
+{\small\textcolor{lectureink}{Handwritten pp.\ 43--44} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-25}{Dembo 1.3.25: explanation and visuals}}
+
+Convergence in probability need not imply almost-sure convergence. On $((0,1],\mathcal B_{(0,1]},\text{uniform measure})$, set \[X_{k,\ell}(\omega)=\mathbf1_{[\ell/k,(\ell+1)/k]}(\omega),\qquad k\ge1,\quad0\le\ell<k.\] Enumerate row by row: \[X_{1,0},\ X_{2,0},X_{2,1},\ X_{3,0},X_{3,1},X_{3,2},\ldots.\] The horizontal bar in the notes shows a cell of length $1/k$ moving across the full interval.
+
+Each row-$k$ variable has $\mathbb P(X_{k,\ell}\ne0)=1/k\to0$ as the enumeration proceeds. Thus the enumerated sequence converges to zero in probability. Yet every fixed $\omega\in(0,1]$ belongs to a cell in every row, so its path is $1$ infinitely often and does not tend to zero.
+
+\begingroup
+\setlength{\unitlength}{1pt}
+\begin{center}
+\begin{picture}(400,158)
+
+\put(10,137){\makebox(55,14){row $k$}}\put(310,137){\makebox(90,14){active length}}
+\put(23,110){$1$}\put(80,105){\framebox(210,24){active}}\put(340,110){$1$}
+\put(23,70){$2$}\put(80,65){\framebox(105,24){}}\put(185,65){\framebox(105,24){active}}\put(340,70){$1/2$}
+\put(23,30){$4$}\put(80,25){\framebox(52.5,24){}}\put(132.5,25){\framebox(52.5,24){}}
+\put(185,25){\framebox(52.5,24){active}}\put(237.5,25){\framebox(52.5,24){}}\put(340,30){$1/4$}
+\put(77,7){$0$}\put(287,7){$1$}
+
+\end{picture}
+\end{center}
+\endgroup\begin{center}\small Added schematic on uniform $(0,1]$: row $k$ partitions the space into $((j-1)/k,j/k]$. Each active interval has probability $1/k$; a complete row visits each outcome once.\end{center}
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+For all sufficiently large rows each fixed outcome is also outside some cells; hence each path has infinitely many zeros as well. In fact $\mathbb E|X_{k,\ell}|^p=1/k$ for every $p>0$, so this same example converges to zero in every finite $L^p$ while failing almost-sure convergence. The closed cell endpoints can overlap, but endpoints have zero uniform mass and do not change the probability calculation.
+\end{quote}
+
+\hypertarget{l5-s10}{}
+\lecturesection{Lp convergence, shrinking spikes, and continuous maps}
+{\small\textcolor{lectureink}{Handwritten pp.\ 44--45} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-29}{Dembo 1.3.29: explanation and visuals}}
+
+For every $p>0$, convergence in $L^p$ implies convergence in probability: \[\mathbb P(|X_n-X_\infty|\ge\varepsilon)\le\varepsilon^{-p}\mathbb E|X_n-X_\infty|^p\longrightarrow0.\] This is Markov applied to the powered error.
+
+The converse fails. On the uniform interval take \[X_n(\omega)=2^n\mathbf1_{(0,1/n]}(\omega),\qquad X_\infty=0.\] Then $\mathbb P(X_n\ne0)=1/n\to0$, and every fixed $\omega>0$ is eventually outside the shrinking interval, so convergence is also almost sure. Nevertheless, for every fixed $p>0$, \[\mathbb E|X_n-X_\infty|^p=\frac{2^{np}}{n}\longrightarrow\infty.\] Thus this one sequence fails convergence in every finite $L^p$, despite converging almost surely and in probability to zero.
+
+Almost-sure convergence and finite-$p$ convergence in $L^p$ have no implication in either direction in general: use the sweeping intervals for one direction and suitably growing shrinking spikes for the other. If $X_n\to0$ almost surely and $f$ is continuous at $0$, then $f(X_n)\to f(0)$ almost surely. Continuity alone does not produce convergence in $L^p$.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The handwritten spike has exponential height $2^n$ and support $(0,1/n]$. Both the height and the moment calculation are retained: for each $p>0$, exponential growth $2^{np}$ dominates the denominator $n$. Each individual term still has a finite $p$th moment.
+\end{quote}
+
+\subsection*{Recall before looking back}
+\begin{enumerate}
+\item How does a supporting hyperplane prove vector Jensen, and why must $\mathbb E X$ lie in the convex domain? \hyperlink{answer-l5-s3}{[Answer]}
+\item Where does Hölder enter the proof of Minkowski, and why is finiteness checked before division? \hyperlink{answer-l5-s6}{[Answer]}
+\item Give examples separating convergence almost surely, in probability, and in Lp. \hyperlink{answer-l5-s10}{[Answer]}
+\end{enumerate}
+
+\clearpage
+\definecolor{lectureink}{HTML}{686868}
+\section{Lecture 6: Convergence theorems, uniform integrability, and densities}
+\markboth{Lecture 6}{}
+{\small gray ink; handwritten pp.\ 46--54.}
+
+\hypertarget{l6-s1}{}
+\lecturesection{Shrinking supports with freely growing heights}
+{\small\textcolor{lectureink}{Handwritten p.\ 46} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-30}{Dembo 1.3.30: explanation and visuals}}
+
+Continue the shrinking-spike example on the uniform interval: \[X_n(\omega)=a_n\mathbf1_{(0,1/n]}(\omega),\qquad a_n\ge0.\] For every fixed $\omega>0$, $X_n(\omega)=0$ eventually, so $X_n\to X_\infty=0$ almost surely. Its mean is \[\mathbb E X_n=\frac{a_n}{n}.\] Choosing $a_n/n\to\infty$ makes the means diverge even though the variables converge almost surely to zero. In particular, there is no convergence in $L^1$.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+More generally, $\mathbb E|X_n|^p=a_n^p/n$. The support probability, the height, and their product play different roles: vanishing support can ensure probability convergence while tall values prevent moment convergence.
+\end{quote}
+
+\hypertarget{l6-s2}{}
+\lecturesection{Monotone convergence and Fatou lower envelopes}
+{\small\textcolor{lectureink}{Handwritten pp.\ 46--47} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-33}{Dembo 1.3.33: explanation and visuals}}
+
+Monotone convergence in probability notation: if $X_n\ge0$ and $X_n\uparrow X_\infty$ almost surely, then \[\mathbb E X_n\uparrow\mathbb E X_\infty.\] If $\mathbb E X_\infty<\infty$, then also $X_n\to X_\infty$ in $L^1$, since $\mathbb E|X_\infty-X_n|=\mathbb E X_\infty-\mathbb E X_n\to0$.
+
+Fatou lemma: if $X_n\ge Y$ almost surely for every $n$, with $\mathbb E|Y|<\infty$, then \[\liminf_n\mathbb E X_n\ge\mathbb E(\liminf_n X_n).\]
+
+\paragraph{Lecture proof.}
+Set \[Z_n=\inf_{m\ge n}X_m.\] These are measurable, $Z_n\uparrow\liminf_nX_n$, and $Z_n\ge Y$ outside one common null event. Apply monotone convergence to the nonnegative sequence $Z_n-Y$ to obtain \[\lim_n\mathbb E Z_n=\mathbb E(\liminf_nX_n).\]
+
+For every $m\ge n$, $X_m\ge Z_n$, hence $\mathbb E X_m\ge\mathbb E Z_n$. Take the infimum over $m\ge n$ and then let $n\to\infty$ to get \[\liminf_n\mathbb E X_n\ge\lim_n\mathbb E Z_n=\mathbb E(\liminf_nX_n).\] The lecture describes monotone convergence as Fatou for an increasing sequence.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+All almost-sure inequalities can be arranged on one event of probability one because the sequence is countable. An integrable lower bound makes the signed expectations well-defined and permits subtracting $\mathbb E Y$. Applying Fatou to $-X_n$ similarly gives a reverse limsup inequality when the sequence has an integrable upper bound.
+\end{quote}
+
+\hypertarget{l6-s3}{}
+\lecturesection{Dominated convergence, bounded convergence, and Scheffé}
+{\small\textcolor{lectureink}{Handwritten pp.\ 47--48} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-34}{Dembo 1.3.34: explanation and visuals}}
+
+Dominated convergence: suppose $X_n\to X_\infty$ almost surely and $|X_n|\le Y$ almost surely for all $n$, where $\mathbb E Y<\infty$. Then $X_\infty$ is integrable and \[\mathbb E|X_n-X_\infty|\longrightarrow0.\] In particular, $\mathbb E X_n\to\mathbb E X_\infty$.
+
+Bounded convergence is the special case $|X_n|\le C<\infty$ for one nonrandom constant $C$. Almost-sure convergence then implies convergence in $L^1$.
+
+Scheffé lemma: suppose $X_n,X_\infty\in L^1$ for every $n$, $X_n\to X_\infty$ almost surely, and \[\mathbb E|X_n|\longrightarrow\mathbb E|X_\infty|<\infty.\] Then $X_n\to X_\infty$ in $L^1$.
+
+\paragraph{Lecture proof.}
+For dominated convergence, take the limit in $|X_n|\le Y$ to get $|X_\infty|\le Y$, so $\mathbb E|X_\infty|\le\mathbb E Y<\infty$. The errors satisfy $|X_n-X_\infty|\le2Y$. Fatou applied to $2Y-|X_n-X_\infty|\ge0$ gives \[\limsup_n\mathbb E|X_n-X_\infty|\le\mathbb E(\limsup_n|X_n-X_\infty|)=0.\] Nonnegativity finishes the proof.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The handwritten pages state Scheffé without a proof. Retain integrability of every term and the finite limiting absolute moment; equality of signed means alone does not replace these conditions. Convergence of absolute integrals to a finite value guarantees integrability only eventually, so any earlier nonintegrable terms must be discarded before using the definition of an $L^1$-convergent sequence. The dominated-convergence proof uses the factor $2$ because both the approximant and its limit are bounded by $Y$. Bounded convergence here uses a probability space; on an infinite-measure space a constant roof need not be integrable.
+\end{quote}
+
+\hypertarget{l6-s4}{}
+\lecturesection{Uniform integrability, small events, and Vitali}
+{\small\textcolor{lectureink}{Handwritten pp.\ 48--49} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-49}{Dembo 1.3.49: explanation and visuals}}
+
+A family $\{X_\alpha:\alpha\in I\}$ is uniformly integrable if \[\lim_{M\to\infty}\sup_{\alpha\in I}\mathbb E\bigl[|X_\alpha|\mathbf1_{\{|X_\alpha|>M\}}\bigr]=0.\] Equivalently, for every $\varepsilon>0$ there is one finite $M$ such that the displayed tail expectation is less than $\varepsilon$ for every $\alpha$.
+
+Every uniformly integrable family satisfies the following small-event consequence: for every $\varepsilon>0$ there is $\delta>0$ such that for every $\alpha\in I$ and $A\in\mathcal F$ with $\mathbb P(A)<\delta$, \[\mathbb E[|X_\alpha|\mathbf1_A]<\varepsilon.\]
+
+Vitali convergence: \[\bigl(X_n\xrightarrow{\mathbb P}X_\infty\ \text{and }\{X_n\}\text{ uniformly integrable}\bigr)\quad\Longleftrightarrow\quad X_n\xrightarrow{L^1}X_\infty.\]
+
+An integrable common roof is sufficient for uniform integrability: if $|X_n|\le Y$ almost surely and $\mathbb E Y<\infty$, then \[\sup_n\mathbb E\bigl[|X_n|\mathbf1_{\{|X_n|>M\}}\bigr]\le\mathbb E[Y\mathbf1_{\{Y>M\}}]\longrightarrow0.\] The final limit follows from monotone convergence applied to $Y\mathbf1_{\{Y\le M\}}\uparrow Y$, or from dominated convergence.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The small-event line on p49 is shorthand and does not visibly carry all absolute-value bars or hypotheses. The uniform-integrability consequence requires the absolute integral as displayed. Indeed, split $\mathbb E[|X_\alpha|\mathbf1_A]\le M\mathbb P(A)+\mathbb E[|X_\alpha|\mathbf1_{\{|X_\alpha|>M\}}]$ and choose $M$, then $\delta$.
+
+For an equivalence on an arbitrary probability space, add uniform $L^1$ boundedness: a family is uniformly integrable if and only if $\sup_\alpha\mathbb E|X_\alpha|<\infty$ and the small-event condition holds. For the reverse direction, Markov makes $\mathbb P(|X_\alpha|>M)\le C/M$ uniformly small. The small-event condition alone is insufficient on a one-point probability space: constants $X_n=n$ satisfy it vacuously for $\delta<1$ but are not uniformly integrable.
+
+Vitali is stated on the handwritten page without its general proof. Under convergence in probability, it is also equivalent to integrability of every $X_n$ and $X_\infty$ together with $\mathbb E|X_n|\to\mathbb E|X_\infty|$. Uniform integrability also implies uniform $L^1$ boundedness by $\mathbb E|X_\alpha|\le M+\sup_\beta\mathbb E[|X_\beta|\mathbf1_{\{|X_\beta|>M\}}]$.
+\end{quote}
+
+\hypertarget{l6-s5}{}
+\lecturesection{A CDF determines a unique probability measure}
+{\small\textcolor{lectureink}{Handwritten p.\ 49} \quad \href{https://josephrbailey.com/probability/\#entry-1-2-45}{Dembo 1.2.45: explanation and visuals}}
+
+If $F:\mathbb R\to[0,1]$ is nondecreasing and right-continuous, with $F(-\infty)=0$ and $F(+\infty)=1$ in the limiting sense, then there is a unique probability measure $\nu$ on $(\mathbb R,\mathcal B_{\mathbb R})$ such that \[\nu(( -\infty,t])=F(t)\quad\text{for every }t\in\mathbb R.\]
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+This restates the earlier CDF theorem in measure language. Existence follows, for example, from the quantile construction; uniqueness follows from the generating half-line $\pi$-system. Neither direction is proved again on this page.
+\end{quote}
+
+\hypertarget{l6-s6}{}
+\lecturesection{A nonnegative function defines a weighted measure}
+{\small\textcolor{lectureink}{Handwritten pp.\ 50--51} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-56}{Dembo 1.3.56: explanation and visuals}}
+
+If $f:\mathbb R\to[0,\infty]$ is Borel measurable, it defines a measure $\nu=f\lambda$ on the real line by \[\nu(A)=\int_A f(x)\,dx.\] In particular, whenever $F(x)=\int_{-\infty}^{x}f(t)\,dt$ is finite, $\nu((a,b])=F(b)-F(a)=\int_{(a,b]}f(x)\,dx$.
+
+More generally, fix $(\Omega,\mathcal F,\mu)$ and a nonnegative measurable $f$. Define \[f_\mu=f\mu,\qquad f_\mu(A)=\mu(f\mathbf1_A),\quad A\in\mathcal F.\] Then $f_\mu$ is a measure. The lecture states the composition rule \[h(f\mu)=(hf)\mu\quad(f,h\ge0\text{ measurable}),\] and the integration identity \[h\in L^1(\Omega,\mathcal F,f\mu)\quad\Longleftrightarrow\quad fh\in L^1(\Omega,\mathcal F,\mu),\qquad \int h\,d(f\mu)=\int hf\,d\mu.\]
+
+\paragraph{Lecture proof.}
+Nonnegativity and $f_\mu(\varnothing)=0$ follow from the definition. If $A_k$ are disjoint measurable sets, monotone convergence gives \[f_\mu\left(\bigcup_{k=1}^{\infty}A_k\right)=\mu\left(\sum_{k=1}^{\infty}f\mathbf1_{A_k}\right)=\lim_n\mu\left(\sum_{k=1}^{n}f\mathbf1_{A_k}\right)=\lim_n\sum_{k=1}^{n}f_\mu(A_k)=\sum_{k=1}^{\infty}f_\mu(A_k).\] Thus $f_\mu$ is countably additive.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The lecture writes both $f_\mu$ and $f\mu$ for the same measure. For arbitrary nonnegative $f$, the measure is defined directly by integrating $f\mathbf1_A$; a finite CDF antiderivative is unnecessary. Products of nonnegative extended values use $0\cdot\infty=0$.
+\end{quote}
+
+\hypertarget{l6-s7}{}
+\lecturesection{The standard machine for composition and change of measure}
+{\small\textcolor{lectureink}{Handwritten pp.\ 51--52} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-56}{Dembo 1.3.56: explanation and visuals}}
+
+To prove $h(f\mu)=(hf)\mu$, fix $A\in\mathcal F$ and prove \[(f\mu)(h\mathbf1_A)=\mu(fh\mathbf1_A).\] The notes organize the proof as indicators, simple functions, increasing approximation, then the signed split.
+
+\paragraph{Lecture proof.}
+For $h=\mathbf1_B$, \[h(f\mu)(A)=(f\mu)(\mathbf1_B\mathbf1_A)=(f\mu)(A\cap B)=\mu(f\mathbf1_{A\cap B})=\mu(fh\mathbf1_A)=((hf)\mu)(A).\]
+
+For a nonnegative simple function $h=\sum_{i=1}^{m}c_i\mathbf1_{B_i}$, linearity and the indicator case give \[h(f\mu)(A)=\sum_i c_i(f\mu)(A\cap B_i)=\sum_i c_i\mu(f\mathbf1_{A\cap B_i})=\mu(fh\mathbf1_A).\]
+
+For general $h\ge0$, choose nonnegative simple $h_n\uparrow h$. Monotone convergence first under $f\mu$ and then under $\mu$ gives \[h(f\mu)(A)=\lim_n(f\mu)(h_n\mathbf1_A)=\lim_n\mu(fh_n\mathbf1_A)=\mu(fh\mathbf1_A)=((hf)\mu)(A).\] This proves equality of measures.
+
+Set $A=\Omega$ to deduce for $h\ge0$ that \[(f\mu)(h)=(f\mu)(h\mathbf1_\Omega)=h(f\mu)(\Omega)=((hf)\mu)(\Omega)=\mu(fh).\] For signed $h=h_+-h_-$, apply the nonnegative identity to each part. Applying it first to $|h|$ proves that $h$ is integrable for $f\mu$ exactly when $fh$ is integrable for $\mu$; then subtract the two finite signed parts.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The last integrability check must precede signed subtraction. The monotone-convergence step is used in both measure spaces, and relies on $f\ge0$ so $fh_n\mathbf1_A\uparrow fh\mathbf1_A$.
+\end{quote}
+
+\hypertarget{l6-s8}{}
+\lecturesection{Densities, absolute continuity, and Radon--Nikodym}
+{\small\textcolor{lectureink}{Handwritten p.\ 53}}
+
+If measures $\mu,\nu$ on $(\Omega,\mathcal F)$ satisfy $\mu=f\nu$ for a nonnegative measurable $f$, say that $\mu$ has density $f$ with respect to $\nu$. Then \[\nu(A)=0\quad\Longrightarrow\quad\mu(A)=0\qquad(A\in\mathcal F).\] This property is called absolute continuity and is written $\mu\ll\nu$.
+
+Radon--Nikodym theorem: if $\mu$ and $\nu$ are both $\sigma$-finite measures on $(\Omega,\mathcal F)$ and $\mu\ll\nu$, then there exists a nonnegative measurable $f$ such that \[\mu=f\nu.\] The density is denoted \[\frac{d\mu}{d\nu}=f.\]
+
+\paragraph{Lecture proof.}
+The implication from a density to absolute continuity is immediate: if $\nu(A)=0$, then $f\mathbf1_A=0$ $\nu$-almost everywhere, so \[\mu(A)=\int f\mathbf1_A\,d\nu=0.\]
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The notes state Radon--Nikodym but do not prove its converse/existence assertion. Both $\sigma$-finiteness hypotheses are visible and are retained. A finite-valued version of the density can be chosen, and it is unique up to $\nu$-almost-everywhere equality. This theorem is Dembo 4.1.5, not an entry currently present in the Chapters 1--2 companion; its early appearance is part of the lecture order.
+\end{quote}
+
+\hypertarget{l6-s9}{}
+\lecturesection{Density examples, a Dirac obstruction, and restriction}
+{\small\textcolor{lectureink}{Handwritten p.\ 54} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-57}{Dembo 1.3.57: explanation and visuals}}
+
+If $\nu=\lambda$ is Lebesgue measure on $\mathbb R$ and $\mu=f\lambda$ is a probability measure, then its distribution function is \[F_\mu(x)=\mu(( -\infty,x])=\int_{-\infty}^{x}f(t)\,dt.\] Thus an ordinary probability density is a Radon--Nikodym density with respect to Lebesgue measure.
+
+For a fixed $x\in\mathbb R$, the Dirac measure is \[\delta_x(A)=\begin{cases}1,&x\in A,\\0,&x\notin A.\end{cases}\] It is not absolutely continuous with respect to Lebesgue measure: choose $A=\{x\}$, for which $\lambda(A)=0$ but $\delta_x(A)=1$. Hence it has no Lebesgue density.
+
+For a measure space $(\Omega,\mathcal F,\mu)$ and $D\in\mathcal F$, the restricted measurable space and measure are \[(D,\mathcal F_D,\mu_D),\qquad \mathcal F_D=\{A\cap D:A\in\mathcal F\},\qquad \mu_D=\mu|_{\mathcal F_D}.\] The weighted measure $\mathbf1_D\mu$ on $\Omega$ agrees with $\mu_D$ on subsets of $D$. For nonnegative measurable $h$ on $\Omega$, \[\int_D h\,d\mu_D=\int_\Omega h\mathbf1_D\,d\mu.\]
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The diagram shows $D$ sitting inside $\Omega$. Restriction preserves the original mass $\mu(D)$; the lecture does not normalize it to a conditional probability. The notation $\mu_D=\mathbf1_D\mu$ is read with its domains understood: $\mu_D$ lives on $D$, while the weighted measure lives on $\Omega$. The same integration formula holds for a signed $h$ whenever $h\mathbf1_D$ is integrable.
+\end{quote}
+
+\subsection*{Recall before looking back}
+\begin{enumerate}
+\item How does the tail infimum turn Fatou into an application of monotone convergence? \hyperlink{answer-l6-s2}{[Answer]}
+\item What extra condition upgrades convergence in probability to convergence in L1? How does domination imply it? \hyperlink{answer-l6-s4}{[Answer]}
+\item Prove $\int h\,d(f\mu)=\int hf\,d\mu$ using the four stages of the standard machine. \hyperlink{answer-l6-s7}{[Answer]}
+\end{enumerate}
+
+\clearpage
+\definecolor{lectureink}{HTML}{a35c17}
+\section{Lecture 7: Laws, independence, and product measures}
+\markboth{Lecture 7}{}
+{\small orange ink; handwritten pp.\ 55--66.}
+
+\hypertarget{l7-s1}{}
+\lecturesection{Integrating with respect to a law}
+{\small\textcolor{lectureink}{Handwritten p.\ 55} \quad \href{https://josephrbailey.com/probability/\#entry-1-3-61}{Dembo 1.3.61: explanation and visuals}}
+
+For a measure $\mu$ and an integrable function $g$, write $\langle\mu,g\rangle=\int g(\omega)\,\mu(d\omega)$. Let $f:(\Omega,\mathcal F)\to(S,\mathcal G)$ be measurable and let $f_*\mu$ be its pushforward: $(f_*\mu)(A)=\mu(f^{-1}(A))$ for $A\in\mathcal G$.
+
+Integrating after applying $f$ is the same as integrating with respect to the transported measure: \[\int_\Omega h(f(\omega))\,\mu(d\omega)=\int_S h(s)\,(f_*\mu)(ds).\] The identity holds for nonnegative measurable $h$, and for signed $h$ when at least one of the integrals of its positive and negative parts is finite.
+
+The special case $f=X$ is the expectation formula \[\mathbb E[h(X)]=\int_{\mathbb R}h(x)\,P_X(dx).\]
+
+\paragraph{Lecture proof.}
+Take $h=\mathbf{1}_A$, with $A\in\mathcal G$. Then $h\circ f=\mathbf{1}_{f^{-1}(A)}$, so \[\int_\Omega h\circ f\,d\mu=\mu(f^{-1}(A))=(f_*\mu)(A)=\int_S h\,d(f_*\mu).\] The lecture invokes the standard machine to pass from this indicator identity to the stated formula.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+Expanding that instruction: linearity gives the identity for nonnegative simple functions. For general $h\ge0$, choose simple $h_n\uparrow h$; then $h_n\circ f\uparrow h\circ f$, and monotone convergence on both spaces gives the result. For signed $h$, apply the nonnegative result to $h^+$ and $h^-$ and subtract only when the subtraction is defined.
+\end{quote}
+
+\hypertarget{l7-s2}{}
+\lecturesection{Independence of events, classes, and random variables}
+{\small\textcolor{lectureink}{Handwritten p.\ 56} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-1}{Dembo 1.4.1: explanation and visuals}}
+
+Work on one probability space $(\Omega,\mathcal F,\mathbb P)$. Two collections $\mathcal H,\mathcal G\subseteq\mathcal F$, not necessarily sigma algebras, are independent if \[\mathbb P(A\cap B)=\mathbb P(A)\mathbb P(B)\qquad(A\in\mathcal H,\ B\in\mathcal G).\] Two events $A,B$ are independent when the singleton collections $\{A\},\{B\}$ are independent.
+
+Real random variables $X_1,X_2$ are independent if \[\mathbb P(X_1\in A,\ X_2\in B)=\mathbb P(X_1\in A)\mathbb P(X_2\in B)\qquad(A,B\in\mathcal B_{\mathbb R}).\] Equivalently, $\sigma(X_1)$ and $\sigma(X_2)$ are independent.
+
+\hypertarget{l7-s3}{}
+\lecturesection{Mutual independence tests every finite subfamily}
+{\small\textcolor{lectureink}{Handwritten pp.\ 56--57} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-3}{Dembo 1.4.3: explanation and visuals}}
+
+A family of collections $(\mathcal G_\alpha)_{\alpha\in\Gamma}$ is mutually independent if, for every positive integer $m$, every choice of distinct indices $\alpha_1,\ldots,\alpha_m$, and every $A_j\in\mathcal G_{\alpha_j}$, \[\mathbb P\left(\bigcap_{j=1}^m A_j\right)=\prod_{j=1}^m\mathbb P(A_j).\] A family of random variables is mutually independent if its generated sigma algebras are mutually independent.
+
+Pairwise independence checks the case $m=2$. It does not in general imply mutual independence.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The word distinct is essential. Repeating the same index would demand independence of a collection from itself, a much stronger condition. Even for a finite family, all subfamilies must be checked, not just the intersection involving every index.
+\end{quote}
+
+\hypertarget{l7-s4}{}
+\lecturesection{Three fair bits with an exact constraint}
+{\small\textcolor{lectureink}{Handwritten p.\ 57}}
+
+Let $\Omega=\{0,1\}^3$ and put mass $1/4$ at each point satisfying $\omega_1+\omega_2+\omega_3\equiv0\pmod 2$, with zero mass at all other points. Define $X_i(\omega)=\omega_i$. The support is \[\{(0,0,0),(0,1,1),(1,0,1),(1,1,0)\}.\] Each $X_i$ is uniform on $\{0,1\}$.
+
+Any two coordinates are independent: every specified pair of bit values occurs at exactly one support point and has probability $1/4$. The triple is not mutually independent, since its parity is fixed.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+For a direct failure of factorization, $\mathbb P(X_1=X_2=X_3=0)=1/4$, whereas $\prod_{i=1}^3\mathbb P(X_i=0)=1/8$. The support list and these explicit calculations expand the example written on the board.
+\end{quote}
+
+\hypertarget{l7-s5}{}
+\lecturesection{Extend independence from pi systems}
+{\small\textcolor{lectureink}{Handwritten pp.\ 57--58} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-4}{Dembo 1.4.4: explanation and visuals}}
+
+Theorem. If $\mathcal P_1,\ldots,\mathcal P_n\subseteq\mathcal F$ are mutually independent pi systems, then $\sigma(\mathcal P_1),\ldots,\sigma(\mathcal P_n)$ are mutually independent.
+
+\paragraph{Lecture proof.}
+The lecture first treats two collections. Fix $H\in\mathcal P_1$ and define finite measures \[\mu_1(A)=\mathbb P(A\cap H),\qquad \mu_2(A)=\mathbb P(A)\mathbb P(H).\] They agree on $\mathcal P_2$ by independence, and $\mu_1(\Omega)=\mu_2(\Omega)=\mathbb P(H)$. Uniqueness of finite measures on a generating pi system implies that they agree on $\sigma(\mathcal P_2)$. Thus $\mathbb P(A\cap H)=\mathbb P(A)\mathbb P(H)$ for all $A\in\sigma(\mathcal P_2)$ and $H\in\mathcal P_1$.
+
+Now fix $A\in\sigma(\mathcal P_2)$ and define \[\nu_1(B)=\mathbb P(A\cap B),\qquad \nu_2(B)=\mathbb P(A)\mathbb P(B).\] These finite measures agree on $\mathcal P_1$ and on $\Omega$, so they agree on $\sigma(\mathcal P_1)$. This proves independence of the two generated sigma algebras.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+For $n$ collections, the same argument extends one coordinate at a time. Hold fixed an intersection of events from distinct other collections, use it in place of $H$, and extend the remaining coordinate from its pi system to its sigma algebra. Repeat for all coordinates and for each finite subfamily. This supplies the iteration abbreviated after the two-collection proof.
+\end{quote}
+
+\hypertarget{l7-s6}{}
+\lecturesection{Infinite families and independent groups}
+{\small\textcolor{lectureink}{Handwritten pp.\ 58--59} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-6}{Dembo 1.4.6: explanation and visuals}}
+
+Corollary. For any index set $\Gamma$, if the pi systems $(\mathcal P_\alpha)_{\alpha\in\Gamma}$ are mutually independent, then so are $(\sigma(\mathcal P_\alpha))_{\alpha\in\Gamma}$. This follows by applying the finite theorem to every finite subfamily.
+
+Corollary. Suppose the pi systems $\mathcal P_{\alpha,\beta}$, indexed by distinct pairs $(\alpha,\beta)$, form a mutually independent family. Group the collections by their first index and set \[\mathcal G_\alpha=\sigma\left(\bigcup_\beta\mathcal P_{\alpha,\beta}\right).\] Then the sigma algebras $\mathcal G_\alpha$ are mutually independent.
+
+The grouped ovals in the lecture diagram represent, for example, $\sigma(\mathcal P_{1,1},\mathcal P_{1,2})$, $\sigma(\mathcal P_{2,1})$, and $\sigma(\mathcal P_{3,1},\mathcal P_{3,2},\mathcal P_{3,3})$. Information is combined within each oval; the different ovals remain independent.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+To justify grouping, form a pi system $\mathcal A_\alpha$ of all finite intersections of events chosen within the $\alpha$ group. Events involving a repeated $\beta$ can be merged because each $\mathcal P_{\alpha,\beta}$ is a pi system. Intersections chosen from distinct groups involve disjoint collections of original indices, so their probabilities factor. The preceding corollary then gives independence of $\sigma(\mathcal A_\alpha)=\mathcal G_\alpha$. This proof spells out the grouping corollary recorded without a proof on the page.
+\end{quote}
+
+\hypertarget{l7-s7}{}
+\lecturesection{A threshold test for mutual independence}
+{\small\textcolor{lectureink}{Handwritten p.\ 59} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-12}{Dembo 1.4.12: explanation and visuals}}
+
+Real random variables $X_1,\ldots,X_n$ are mutually independent if and only if, for all real $t_1,\ldots,t_n$, \[\mathbb P(X_1\le t_1,\ldots,X_n\le t_n)=\prod_{i=1}^n\mathbb P(X_i\le t_i).\]
+
+\paragraph{Lecture proof.}
+For each $i$, take the pi system \[\mathcal P_i=\left\{X_i^{-1}(({-\infty},t]):t\in\mathbb R\right\}=\left\{\{\omega:X_i(\omega)\le t\}:t\in\mathbb R\right\}.\] It generates $\sigma(X_i)$. Apply the theorem extending independence from pi systems to their generated sigma algebras. The forward implication is immediate from independence.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+To use the full-vector identity for a smaller subfamily, send the unused thresholds to $+\infty$ and use continuity from below. This supplies all finite-subfamily factorizations required by the definition.
+\end{quote}
+
+\hypertarget{l7-s8}{}
+\lecturesection{Product spaces and the product measure theorem}
+{\small\textcolor{lectureink}{Handwritten p.\ 60} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-19}{Dembo 1.4.19: explanation and visuals}}
+
+The next goal is to construct independent random variables with prescribed laws. Start with measurable spaces $(\Omega_1,\mathcal F_1)$ and $(\Omega_2,\mathcal F_2)$ and their product \[\Omega=\Omega_1\times\Omega_2,\qquad\mathcal F=\sigma\{A_1\times A_2:A_i\in\mathcal F_i\}.\] This product sigma algebra is also denoted $\mathcal F_1\otimes\mathcal F_2$.
+
+Proposition. If $\nu_1,\nu_2$ are sigma-finite measures on their respective spaces, then there is a unique sigma-finite measure $\mu=\nu_1\otimes\nu_2$ on $(\Omega,\mathcal F)$ such that \[\mu(A_1\times A_2)=\nu_1(A_1)\nu_2(A_2)\qquad(A_i\in\mathcal F_i).\] For nonnegative extended quantities use the convention $0\cdot\infty=0$.
+
+\hypertarget{l7-s9}{}
+\lecturesection{The algebra of finite disjoint rectangle unions}
+{\small\textcolor{lectureink}{Handwritten pp.\ 60--61} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-19}{Dembo 1.4.19: explanation and visuals}}
+
+For the existence proof, let $\mathcal Q$ consist of finite disjoint unions of measurable rectangles, and prescribe \[\mu_0\left(\bigsqcup_{i=1}^m A_i\times B_i\right)=\sum_{i=1}^m\nu_1(A_i)\nu_2(B_i).\] We must show that $\mathcal Q$ is an algebra and that this prescription is well defined and countably additive on $\mathcal Q$.
+
+\paragraph{Lecture proof.}
+The whole space is a rectangle, so $\Omega\in\mathcal Q$. If $C=\bigsqcup_i A_i\times B_i$ and $D=\bigsqcup_j U_j\times V_j$, then \[C\cap D=\bigsqcup_{i,j}(A_i\cap U_j)\times(B_i\cap V_j)\in\mathcal Q.\] The intersection drawing marks each new cell where one rectangle from $C$ overlaps one rectangle from $D$.
+
+The complement of a single rectangle is the disjoint union \[ (A\times B)^c=(A^c\times B)\sqcup(A\times B^c)\sqcup(A^c\times B^c).\] The shaded complement drawing divides the exterior into these three pieces. For a finite union, take the intersection of the rectangle complements; closure under intersections then gives $C^c\in\mathcal Q$. Thus $\mathcal Q$ is an algebra.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The handwritten checklist calls $\mathcal Q$ a sigma algebra once, but the construction uses an algebra, namely closure under finite unions and complements. Countable unions need not remain finite rectangle unions; $\sigma(\mathcal Q)=\mathcal F$ is the sigma algebra reached by the extension theorem.
+\end{quote}
+
+\hypertarget{l7-s10}{}
+\lecturesection{Countable additivity by taking slices twice}
+{\small\textcolor{lectureink}{Handwritten pp.\ 61--63} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-19}{Dembo 1.4.19: explanation and visuals}}
+
+The lecture compares a finite rectangle decomposition of a set with a countable disjoint rectangle decomposition of the same set. It is enough to understand one rectangle: suppose \[A\times B=\bigsqcup_{j=1}^{\infty}C_j\times D_j.\] We want $\nu_1(A)\nu_2(B)=\sum_j\nu_1(C_j)\nu_2(D_j)$. The sketch shows smaller disjoint rectangles filling the original rectangle.
+
+\paragraph{Lecture proof.}
+For every $(x,y)\in\Omega_1\times\Omega_2$, disjointness gives \[\mathbf{1}_A(x)\mathbf{1}_B(y)=\sum_{j=1}^{\infty}\mathbf{1}_{C_j}(x)\mathbf{1}_{D_j}(y).\] Fix $x$ and integrate over $y$ with respect to $\nu_2$. The partial sums increase, so monotone convergence gives \[\mathbf{1}_A(x)\nu_2(B)=\sum_{j=1}^{\infty}\mathbf{1}_{C_j}(x)\nu_2(D_j).\]
+
+Now integrate over $x$ with respect to $\nu_1$. A second application of monotone convergence gives \[\nu_1(A)\nu_2(B)=\sum_{j=1}^{\infty}\nu_1(C_j)\nu_2(D_j).\] No product-space integration theorem is being assumed: these are two successive one-space calculations.
+
+For a finite disjoint union of rectangles, repeat the calculation with the finite sum of their indicators on the left. Equality of the resulting sums proves that the assigned value is independent of its rectangle representation and that it is countably additive whenever a disjoint countable union belongs to $\mathcal Q$. Carathéodory extension gives the product measure.
+
+\begingroup
+\setlength{\unitlength}{1pt}
+\begin{center}
+\begin{picture}(400,175)
+
+\put(20,15){\line(1,0){230}}\put(30,5){\line(0,1){150}}\put(320,15){\line(0,1){140}}
+\put(45,118){\framebox(120,27){}}\put(47,125){\makebox(60,12){$C_1\times D_1$}}
+\put(85,75){\framebox(120,23){}}\put(138,81){\makebox(62,12){$C_2\times D_2$}}
+\put(60,35){\framebox(90,20){}}\put(61,39){\makebox(47,12){$C_3\times D_3$}}
+\put(115,15){\line(0,1){140}}\put(110,0){$x$}\put(16,156){$y$}
+\linethickness{2pt}
+\put(115,118){\line(0,1){27}}\put(115,75){\line(0,1){23}}\put(115,35){\line(0,1){20}}
+\put(320,118){\line(0,1){27}}\put(320,75){\line(0,1){23}}\put(320,35){\line(0,1){20}}
+\put(337,126){$D_1$}\put(337,81){$D_2$}\put(337,39){$D_3$}
+\put(55,159){\makebox(150,12){\small disjoint rectangles}}\put(273,159){\makebox(115,12){\small section at this $x$}}
+
+\end{picture}
+\end{center}
+\endgroup\begin{center}\small Added schematic for real-coordinate rectangles: at fixed $x$, the contributing $y$-intervals are disjoint and their lengths add.\end{center}
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+Sigma-finiteness completes the uniqueness argument: choose increasing finite-measure exhaustions $E_n\uparrow\Omega_1$ and $F_n\uparrow\Omega_2$. Their product rectangles cover $\Omega$ and have finite prescribed mass. The premeasure is therefore sigma finite and its extension to $\sigma(\mathcal Q)$ is unique. The same rectangles show that the extended product measure is sigma finite.
+\end{quote}
+
+\hypertarget{l7-s11}{}
+\lecturesection{Joint laws and independence as a product law}
+{\small\textcolor{lectureink}{Handwritten pp.\ 63--64} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-21}{Dembo 1.4.21: explanation and visuals}}
+
+For $X=(X_1,\ldots,X_n)$, the joint law is its pushforward probability measure on $(\mathbb R^n,\mathcal B_{\mathbb R^n})$: \[P_X(S)=\mathbb P\{\omega:X(\omega)\in S\}.\] Proposition. The variables $X_1,\ldots,X_n$ are mutually independent if and only if \[P_X=P_{X_1}\otimes\cdots\otimes P_{X_n}.\]
+
+\paragraph{Lecture proof.}
+If the variables are mutually independent, then for each measurable rectangle $B=B_1\times\cdots\times B_n$, \[P_X(B)=\mathbb P(X_1\in B_1,\ldots,X_n\in B_n)=\prod_{i=1}^nP_{X_i}(B_i).\] The joint law and product law are probability measures agreeing on the pi system of measurable rectangles, which generates $\mathcal B_{\mathbb R^n}$; hence the measures agree everywhere.
+
+Conversely, a product joint law gives \[\mathbb P(X_1\le t_1,\ldots,X_n\le t_n)=P_X\left(\prod_{i=1}^n({-\infty},t_i]\right)=\prod_{i=1}^n\mathbb P(X_i\le t_i).\] The threshold criterion proves mutual independence.
+
+\hypertarget{l7-s12}{}
+\lecturesection{Construct independent coordinates with prescribed laws}
+{\small\textcolor{lectureink}{Handwritten p.\ 65} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-23}{Dembo 1.4.23: explanation and visuals}}
+
+Given probability measures $P_1,\ldots,P_n$ on $(\mathbb R,\mathcal B_{\mathbb R})$, choose \[\Omega=\mathbb R^n,\qquad\mathcal F=\mathcal B_{\mathbb R^n},\qquad\mathbb P=P_1\otimes\cdots\otimes P_n,\] and define $X_i(\omega)=\omega_i$. Then $P_{X_i}=P_i$ and the $X_i$ are mutually independent.
+
+\paragraph{Lecture proof.}
+The joint vector $(X_1,\ldots,X_n)$ is the identity map on $\mathbb R^n$, so its law is $\mathbb P$, the chosen product measure. Its coordinate marginal is $P_i$, since all other factors assign mass one to $\mathbb R$. The product-law characterization then gives independence.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+Finite products of more than two measures are obtained by iterating the two-factor construction. The same construction works for general probability coordinate spaces; the following extension theorem is stated for real coordinates.
+\end{quote}
+
+\hypertarget{l7-s13}{}
+\lecturesection{Kolmogorov extension and cylinder events}
+{\small\textcolor{lectureink}{Handwritten pp.\ 65--66} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-22}{Dembo 1.4.22: explanation and visuals}}
+
+Theorem (Kolmogorov extension). Let $\mu_n$ be probability measures on $(\mathbb R^n,\mathcal B_{\mathbb R^n})$ satisfying the consistency condition \[\mu_n(A)=\mu_{n+1}(A\times\mathbb R)\qquad(A\in\mathcal B_{\mathbb R^n},\ n\ge1).\] There is a unique probability measure $\mathbb P$ on $(\mathbb R^{\mathbb N},\mathcal B_c)$ whose first $n$ coordinate law is $\mu_n$ for every $n$.
+
+Here \[\mathbb R^{\mathbb N}=\{(\omega_1,\omega_2,\ldots):\omega_i\in\mathbb R\},\qquad\mathcal B_c=\sigma\{C_{n,A}:n\ge1,\ A\in\mathcal B_{\mathbb R^n}\},\] where $C_{n,A}=\{\omega:(\omega_1,\ldots,\omega_n)\in A\}$. The required identity is $\mathbb P(C_{n,A})=\mu_n(A)$.
+
+A cylinder inspects finitely many coordinates and leaves the remaining coordinates free. The lecture ends by writing a rectangular example $A=(a_1,b_1]\times\cdots\times(a_n,b_n]$, so its cylinder imposes only $a_i<\omega_i\le b_i$ for $i\le n$.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The lecture states this theorem without a proof. Consistency means that forgetting the last coordinate recovers the preceding distribution; it makes different finite descriptions of the same cylinder agree. Uniqueness then follows from the generating pi system of cylinders. Existence requires more than this compatibility check; the theorem applies here because the coordinate space is the real Borel space.
+
+Applying it to $\mu_n=P_1\otimes\cdots\otimes P_n$ constructs an infinite independent sequence with prescribed real laws. These measures are consistent because $P_{n+1}(\mathbb R)=1$. This is the infinite version of the preceding finite-coordinate construction.
+\end{quote}
+
+\subsection*{Recall before looking back}
+\begin{enumerate}
+\item Construct three pairwise independent fair bits that are not mutually independent. Which probability disproves mutual independence? \hyperlink{answer-l7-s4}{[Answer]}
+\item Why does factorization of the joint CDF at every threshold imply mutual independence? Explain how smaller subfamilies enter the argument. \hyperlink{answer-l7-s7}{[Answer]}
+\item State the consistency condition for real finite-dimensional laws and explain what a cylinder event records. How does this construct an infinite independent sequence? \hyperlink{answer-l7-s13}{[Answer]}
+\end{enumerate}
+
+\clearpage
+\definecolor{lectureink}{HTML}{15735b}
+\section{Lecture 8: Tail events, Fubini, and convolution}
+\markboth{Lecture 8}{}
+{\small dark green ink; handwritten pp.\ 67--76.}
+
+\hypertarget{l8-s1}{}
+\lecturesection{Tail information and the zero-one law}
+{\small\textcolor{lectureink}{Handwritten p.\ 67} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-9}{Dembo 1.4.9: explanation and visuals}}
+
+For a sequence of real random variables $(X_n)_{n\ge1}$, define \[\mathcal T_n=\sigma(X_{n+1},X_{n+2},\ldots),\qquad\mathcal T=\bigcap_{n=1}^{\infty}\mathcal T_n.\] The tail sigma algebra contains the events that can be determined from every tail of the sequence.
+
+Theorem (Kolmogorov zero-one law). If the variables $X_n$ are mutually independent, then $\mathcal T$ is trivial: \[A\in\mathcal T\quad\Longrightarrow\quad\mathbb P(A)\in\{0,1\}.\]
+
+\hypertarget{l8-s2}{}
+\lecturesection{Examples unchanged by deleting a finite prefix}
+{\small\textcolor{lectureink}{Handwritten pp.\ 67--68} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-10}{Dembo 1.4.10: explanation and visuals}}
+
+The event \[A=\left\{\lim_{N\to\infty}\frac1N\sum_{i=1}^N X_i\text{ exists}\right\}\] is a tail event. For each fixed $n$, \[\frac1N\sum_{i=1}^N X_i-\frac1N\sum_{i=n+1}^N X_i=\frac1N\sum_{i=1}^n X_i\longrightarrow0.\] Thus the existence of the limit can be read from $X_{n+1},X_{n+2},\ldots$ alone, and $A\in\mathcal T_n$ for every $n$.
+
+The lecture also gives a threshold event of the form \[\left\{\limsup_{N\to\infty}\frac1N\sum_{i=1}^N X_i\le a\right\},\] for a fixed real threshold $a$. The same vanishing finite-prefix difference proves it is a tail event.
+
+Another example is a monkey typing a fixed word, such as Hamlet, infinitely many times. A change to finitely many letters changes only finitely many potential word occurrences; whether there are infinitely many occurrences is unchanged.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The handwritten glyph for the threshold in the second example is unclear; $a$ denotes a fixed threshold here. The tail-event assertion holds for every real $a$. For the first example, the assertion holds whether existence means a finite limit or an extended-real limit, provided that meaning is used consistently.
+
+The zero-one law gives a dichotomy, not a choice between zero and one. For independent letters, proving that a particular word appears infinitely often still requires an additional argument to select the probability.
+\end{quote}
+
+\hypertarget{l8-s3}{}
+\lecturesection{Why tail information is independent of itself}
+{\small\textcolor{lectureink}{Handwritten pp.\ 68--69} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-10}{Dembo 1.4.10: explanation and visuals}}
+
+Write $\mathcal G_n=\sigma(X_1,\ldots,X_n)$ and $\mathcal G_\infty=\sigma(X_1,X_2,\ldots)$. The proof first shows that each finite-prefix sigma algebra is independent of $\mathcal T$, and then extends this independence to $\mathcal G_\infty$.
+
+\paragraph{Lecture proof.}
+By mutual independence and the grouping result, $\mathcal G_n$ is independent of $\mathcal T_n$. Because $\mathcal T\subseteq\mathcal T_n$, it is also independent of $\mathcal T$. The grouping result combines the independent coordinate sigma algebras within a prefix or a tail, just as it combines the collections $\mathcal H_{\alpha,\beta}$ within each group $\mathcal G_\alpha$.
+
+The union $\mathcal P=\bigcup_{n\ge1}\mathcal G_n$ is a pi system: any two of its events belong to a common $\mathcal G_n$, which is closed under intersections. If $A\in\mathcal P$, choose $n_0$ with $A\in\mathcal G_{n_0}$. Then for every $B\in\mathcal T$, \[\mathbb P(A\cap B)=\mathbb P(A)\mathbb P(B).\] The pi-system extension theorem gives independence of $\sigma(\mathcal P)$ and $\mathcal T$.
+
+We have $\sigma(\mathcal P)=\mathcal G_\infty$. Indeed, every $X_n$ is $\sigma(\mathcal P)$-measurable, since it is $\mathcal G_n$-measurable. Conversely, every $\mathcal G_n$ lies in $\mathcal G_\infty$, so their generated sigma algebra does too.
+
+Finally, $\mathcal T\subseteq\mathcal G_\infty$. Independence of $\mathcal G_\infty$ and $\mathcal T$ therefore makes $\mathcal T$ independent of itself. For $A\in\mathcal T$, \[\mathbb P(A)=\mathbb P(A\cap A)=\mathbb P(A)^2,\] hence $\mathbb P(A)$ is zero or one.
+
+\hypertarget{l8-s4}{}
+\lecturesection{A general triviality lemma}
+{\small\textcolor{lectureink}{Handwritten p.\ 70} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-8}{Dembo 1.4.8: explanation and visuals}}
+
+Lemma. Suppose $(\mathcal G_n)_{n\ge1}$ are sigma algebras with $\mathcal G_n\subseteq\mathcal G_{n+1}$. If $\mathcal H$ is independent of every $\mathcal G_n$ and \[\mathcal H\subseteq\sigma\left(\bigcup_{n=1}^{\infty}\mathcal G_n\right),\] then $\mathcal H$ is trivial.
+
+\paragraph{Lecture proof.}
+The preceding proof gives the argument: $\bigcup_n\mathcal G_n$ is a pi system independent of $\mathcal H$, so the sigma algebra it generates is independent of $\mathcal H$. Since it contains $\mathcal H$, each $H\in\mathcal H$ is independent of itself. Therefore $\mathbb P(H)=\mathbb P(H)^2$ and $\mathbb P(H)\in\{0,1\}$.
+
+\hypertarget{l8-s5}{}
+\lecturesection{Fubini: an integral over a product space}
+{\small\textcolor{lectureink}{Handwritten p.\ 70} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-28}{Dembo 1.4.28: explanation and visuals}}
+
+Let $(\Omega,\mathcal F,\mu)$ be the product of the sigma-finite measure spaces $(\Omega_1,\mathcal F_1,\mu_1)$ and $(\Omega_2,\mathcal F_2,\mu_2)$. Suppose $h$ is measurable on $\mathcal F=\mathcal F_1\otimes\mathcal F_2$. The lecture assumes \[\int h^-\,d\mu<\infty\qquad\text{or}\qquad\int h^+\,d\mu<\infty.\] Then \[\int_{\Omega_1\times\Omega_2}h\,d\mu=\int_{\Omega_1}\left[\int_{\Omega_2}h(x,y)\,\mu_2(dy)\right]\mu_1(dx).\] Interchanging the two factor spaces gives the other integration order.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+For $h\ge0$, the integrals may be infinite and the inner integral is defined for every $x$. For signed $h$, the inner integral is defined almost everywhere under the displayed one-sided hypothesis; choose a measurable value, such as zero, on exceptional sections. The extended integral is then well defined. If $\int|h|\,d\mu<\infty$, the inner integral is finite almost everywhere and both iterated integrals are finite.
+
+Dembo states the usual nonnegative-or-absolutely-integrable version. The one-sided version written in the lecture follows by applying the nonnegative theorem to $h^+$ and $h^-$ and subtracting when at least one resulting total is finite. The proof on the handwritten pages starts with bounded $h$ and finite factor measures; the extension after that argument is written out below.
+\end{quote}
+
+\hypertarget{l8-s6}{}
+\lecturesection{Three goals for the bounded finite-measure proof}
+{\small\textcolor{lectureink}{Handwritten pp.\ 70--71} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-28}{Dembo 1.4.28: explanation and visuals}}
+
+First assume $h$ is bounded and both measures $\mu_1,\mu_2$ are finite. We must prove three assertions together: each section $y\mapsto h(x,y)$ is $\mathcal F_2$-measurable; the function \[f_h(x)=\int_{\Omega_2}h(x,y)\,\mu_2(dy)\] is $\mathcal F_1$-measurable; and \[\int h\,d\mu=\int f_h\,d\mu_1.\]
+
+Let $\mathcal H$ be the class of bounded $\mathcal F$-measurable $h$ satisfying these three assertions. To apply the functional monotone-class theorem, the lecture checks that constants belong to $\mathcal H$, that $\mathcal H$ is a vector space, that it is closed under bounded increasing limits of nonnegative functions, and that it contains indicators of a generating pi system.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The generating pi system is the family of measurable rectangles. In the finite-measure setting, every bounded section and every bounded $f_h$ is integrable; consequently the linearity calculations below never subtract two infinite quantities.
+\end{quote}
+
+\hypertarget{l8-s7}{}
+\lecturesection{Linearity preserves all three goals}
+{\small\textcolor{lectureink}{Handwritten p.\ 71} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-28}{Dembo 1.4.28: explanation and visuals}}
+
+Constant functions satisfy the three assertions, including $1\in\mathcal H$. Let $h_1,h_2\in\mathcal H$, $c_1,c_2\in\mathbb R$, and $h=c_1h_1+c_2h_2$.
+
+\paragraph{Lecture proof.}
+For fixed $x$, the section $h(x,\cdot)$ is a linear combination of measurable sections and is therefore measurable. Linearity of integration gives \[f_h(x)=c_1f_{h_1}(x)+c_2f_{h_2}(x),\] so $f_h$ is measurable.
+
+Using the identities for $h_1$ and $h_2$, \[\begin{aligned}\int f_h\,d\mu_1&=c_1\int f_{h_1}\,d\mu_1+c_2\int f_{h_2}\,d\mu_1\\&=c_1\int h_1\,d\mu+c_2\int h_2\,d\mu=\int h\,d\mu.\end{aligned}\] Thus $h\in\mathcal H$, and $\mathcal H$ is a vector space.
+
+\hypertarget{l8-s8}{}
+\lecturesection{Increasing limits preserve all three goals}
+{\small\textcolor{lectureink}{Handwritten p.\ 72} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-28}{Dembo 1.4.28: explanation and visuals}}
+
+Let $0\le h_n\in\mathcal H$ and $h_n\uparrow h$, where the limit $h$ is bounded. We check the same three assertions.
+
+\paragraph{Lecture proof.}
+For each fixed $x$, the sections $h_n(x,\cdot)$ increase to $h(x,\cdot)$. An increasing limit of measurable functions is measurable. Monotone convergence in $y$ gives \[f_{h_n}(x)=\int h_n(x,y)\,\mu_2(dy)\uparrow\int h(x,y)\,\mu_2(dy)=f_h(x).\] Hence $f_h$ is measurable as an increasing limit of measurable functions.
+
+Apply monotone convergence to the outer integral and then to the product-space integral: \[\int f_h\,d\mu_1=\lim_{n\to\infty}\int f_{h_n}\,d\mu_1=\lim_{n\to\infty}\int h_n\,d\mu=\int h\,d\mu.\] Therefore $h\in\mathcal H$.
+
+\hypertarget{l8-s9}{}
+\lecturesection{Rectangles complete the proof and permit extension}
+{\small\textcolor{lectureink}{Handwritten pp.\ 72--73} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-28}{Dembo 1.4.28: explanation and visuals}}
+
+It remains to put the indicators of a generating pi system into $\mathcal H$. Let $C=D_1\times D_2$, with $D_i\in\mathcal F_i$, and $h=\mathbf{1}_C$.
+
+\paragraph{Lecture proof.}
+For fixed $x$, \[h(x,y)=\mathbf{1}_{D_1}(x)\mathbf{1}_{D_2}(y)=\begin{cases}\mathbf{1}_{D_2}(y),&x\in D_1,\\0,&x\notin D_1.\end{cases}\] The section is measurable. Its integral is \[f_h(x)=\mathbf{1}_{D_1}(x)\mu_2(D_2),\] a measurable function of $x$. Finally, \[\int f_h\,d\mu_1=\mu_1(D_1)\mu_2(D_2)=\mu(C)=\int h\,d\mu.\] Thus $\mathbf{1}_C\in\mathcal H$.
+
+The functional monotone-class theorem now gives all bounded $\mathcal F$-measurable functions in $\mathcal H$. This finishes the bounded finite-measure argument developed on the handwritten pages.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+Extension to a nonnegative function with finite factor measures: apply the bounded result to $h\wedge n$ and use monotone convergence for the sections, the outer integral, and the product integral.
+
+Extension to sigma-finite factors: choose $E_n\uparrow\Omega_1$ and $F_n\uparrow\Omega_2$ with $\mu_1(E_n),\mu_2(F_n)<\infty$. For $h\ge0$, put $h_n=h\mathbf{1}_{E_n\times F_n}$. On $E_n\times F_n$, apply the result for the restricted finite measures; outside $E_n$, extend the section integral by zero. Then $h_n\uparrow h$ and $f_{h_n}\uparrow f_h$, so monotone convergence gives the full identity.
+
+Extension to an absolutely integrable signed function: apply the nonnegative theorem to $h^+$, $h^-$, and $|h|$. The set \[N=\left\{x:\int|h(x,y)|\,\mu_2(dy)=\infty\right\}\] is measurable and has $\mu_1$-measure zero. On its complement the inner signed integral is the difference of two finite integrals; set it to zero on $N$ to obtain a measurable representative. Subtract the two nonnegative identities.
+
+For the lecture's broader one-sided hypothesis, the same argument uses the exceptional set where the integrable part, $h^-$ or $h^+$, has an infinite section integral. That set is null. Off it the signed section integral is well defined, possibly infinite, and subtracting the two nonnegative identities is legitimate because one total is finite. These extension details supplement the handwritten bounded proof.
+\end{quote}
+
+\hypertarget{l8-s10}{}
+\lecturesection{Integrate independent inputs one at a time}
+{\small\textcolor{lectureink}{Handwritten p.\ 73} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-29}{Dembo 1.4.29: explanation and visuals}}
+
+Theorem. Let $X,Y$ be independent real random variables with laws $P_X,P_Y$, and let $h:\mathbb R^2\to\mathbb R$ be Borel. If $\mathbb E[h^-(X,Y)]<\infty$ or $\mathbb E[h^+(X,Y)]<\infty$, then \[\mathbb E[h(X,Y)]=\int_{\mathbb R}\left[\int_{\mathbb R}h(x,y)\,P_Y(dy)\right]P_X(dx).\] The other integration order is valid as well, with the preceding almost-everywhere interpretation for signed sections.
+
+Proposition. The variables $X,Y$ are independent if and only if \[\mathbb E[f(X)g(Y)]=\mathbb E[f(X)]\mathbb E[g(Y)]\] for every pair of bounded Borel functions $f,g$.
+
+\paragraph{Lecture proof.}
+The law-of-a-function formula and the product-law characterization of independence give \[\mathbb E[h(X,Y)]=\int_{\mathbb R^2}h\,dP_{(X,Y)}=\int_{\mathbb R^2}h\,d(P_X\otimes P_Y).\] Apply Fubini to obtain the iterated formula.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The product test is stated without a proof on the page. For independent variables, use $h(x,y)=f(x)g(y)$ in the formula and separate the integrals. Conversely, choose $f=\mathbf{1}_A$ and $g=\mathbf{1}_B$; the resulting identity is the defining factorization for all Borel $A,B$. The forward product identity also holds for nonnegative $f,g$, and for integrable $f(X),g(Y)$, since independence first gives $\mathbb E|f(X)g(Y)|=\mathbb E|f(X)|\mathbb E|g(Y)|<\infty$.
+\end{quote}
+
+\hypertarget{l8-s11}{}
+\lecturesection{Tail integrals from Fubini}
+{\small\textcolor{lectureink}{Handwritten p.\ 74} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-30}{Dembo 1.4.30: explanation and visuals}}
+
+Theorem (called integration by parts in the lecture). Let $\ell:\mathbb R\to[0,\infty]$ be Borel and define \[F(x)=\int_{-\infty}^{x}\ell(t)\,dt.\] For any real random variable $X$, \[\mathbb E[F(X)]=\int_{\mathbb R}\ell(t)\mathbb P(X\ge t)\,dt.\] All quantities are nonnegative, so infinity is allowed.
+
+In particular, for $X\ge0$, choose $\ell(t)=\mathbf{1}_{(0,\infty)}(t)$ to obtain \[\mathbb E[X]=\int_0^{\infty}\mathbb P(X\ge t)\,dt.\]
+
+\paragraph{Lecture proof.}
+On $\mathbb R\times\mathbb R$ put $G(x,t)=\ell(t)\mathbf{1}_{\{t\le x\}}$ and use the product measure $P_X\otimes\lambda$, where $\lambda$ is Lebesgue measure. The function $G$ is measurable and nonnegative. Integrating in $t$ first gives \[\int G\,d(P_X\otimes\lambda)=\int_{\mathbb R}\left[\int_{\mathbb R}\ell(t)\mathbf{1}_{\{t\le x\}}\,dt\right]P_X(dx)=\int F(x)\,P_X(dx)=\mathbb E[F(X)].\]
+
+Integrating in $x$ first instead gives \[\int G\,d(P_X\otimes\lambda)=\int_{\mathbb R}\left[\int_{\mathbb R}\ell(t)\mathbf{1}_{\{t\le x\}}\,P_X(dx)\right]dt=\int_{\mathbb R}\ell(t)\mathbb P(X\ge t)\,dt.\] Equating the two expressions proves the formula.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The integral is with respect to Lebesgue measure in $t$, so the same formula holds with $\mathbb P(X>t)$. For each fixed $x$, including or excluding the endpoint $t=x$ does not change the integral; nonnegative product integration then gives the same total. The symbol $F$ here denotes the accumulated function of $\ell$, not the CDF of $X$.
+\end{quote}
+
+\hypertarget{l8-s12}{}
+\lecturesection{Convolution as the law of a sum}
+{\small\textcolor{lectureink}{Handwritten pp.\ 75--76} \quad \href{https://josephrbailey.com/probability/\#entry-1-4-34}{Dembo 1.4.34: explanation and visuals}}
+
+For finite Borel measures $\mu_1,\mu_2$ on $\mathbb R$, define their convolution by \[ (\mu_1*\mu_2)(A)=\int_{\mathbb R}\mu_1(A-y)\,\mu_2(dy),\qquad A\in\mathcal B_{\mathbb R},\] where $A-y=\{x:x+y\in A\}$. If $s(x,y)=x+y$, this is the pushforward \[\mu_1*\mu_2=s_*(\mu_1\otimes\mu_2).\]
+
+Corollary. If $\mu_1$ has a nonnegative Borel density $f_1$ with respect to Lebesgue measure, then $\mu_1*\mu_2$ has density \[f(z)=\int_{\mathbb R}f_1(z-y)\,\mu_2(dy).\] In particular, if $\mu_2$ also has density $f_2$, then \[f(z)=\int_{\mathbb R}f_1(z-y)f_2(y)\,dy.\]
+
+\paragraph{Lecture proof.}
+The sum map $s$ is measurable. For every Borel $A$, nonnegative product integration gives \[s_*(\mu_1\otimes\mu_2)(A)=\int_{\mathbb R^2}\mathbf{1}_A(x+y)\,(\mu_1\otimes\mu_2)(d(x,y))=\int_{\mathbb R}\mu_1(A-y)\,\mu_2(dy).\] This proves both measurability of the integrand and that the formula defines a measure.
+
+The density argument on the page computes a half-line. For $t\in\mathbb R$, \[\begin{aligned}(\mu_1*\mu_2)(({-\infty},t])&=\int_{\mathbb R}\left[\int_{-\infty}^{t-y}f_1(x)\,dx\right]\mu_2(dy)\\&=\int_{\mathbb R}\left[\int_{-\infty}^{t}f_1(z-y)\,dz\right]\mu_2(dy).\end{aligned}\] The second line is the translation $z=x+y$.
+
+Since the integrand is nonnegative, Fubini gives \[ (\mu_1*\mu_2)(({-\infty},t])=\int_{-\infty}^{t}\left[\int_{\mathbb R}f_1(z-y)\,\mu_2(dy)\right]dz=\int_{-\infty}^{t}f(z)\,dz.\] Thus the convolution has the asserted density.
+
+\begin{quote}\small\textbf{Added explanation / correction.}
+
+The first line of the handwritten definition says measures without a finiteness qualification; the density corollary explicitly assumes finite measures. The edited statement keeps finite measures throughout this argument, so product integration and identification by half-lines apply without additional hypotheses. The kernel/pushforward formula also extends to sigma-finite Borel factors; its pushforward need not be sigma finite.
+
+The function $z\mapsto f(z)$ is measurable by nonnegative product integration, and $\int f(z)\,dz=\mu_1(\mathbb R)\mu_2(\mathbb R)<\infty$. Consequently $f$ is finite almost everywhere; on a null set it may be replaced by zero to obtain an everywhere finite representative. Agreement on half-lines determines the finite measure, completing the step from the displayed calculation to a density on all Borel sets.
+
+For independent $X,Y$, their joint law is $P_X\otimes P_Y$ and the sum is the composition with $s$, so $P_{X+Y}=P_X*P_Y$. This connects the convolution definition with the independent-variable discussion.
+\end{quote}
+
+\subsection*{Recall before looking back}
+\begin{enumerate}
+\item Reconstruct the zero-one proof. Why does independence from every finite prefix imply independence from the sigma algebra generated by the whole sequence? \hyperlink{answer-l8-s3}{[Answer]}
+\item What three facts must be proved in Fubini, and how does the proof pass from rectangles to an arbitrary nonnegative function on sigma-finite factors? \hyperlink{answer-l8-s9}{[Answer]}
+\item Why is the law of an independent sum a convolution? Derive its density when only the first summand has a density. \hyperlink{answer-l8-s12}{[Answer]}
+\end{enumerate}
+
+\clearpage\section{Recall answers and checks}\markboth{Recall answers}{}
+\subsection{Lecture 1}
+\hypertarget{answer-l1-s2}{}\paragraph{Sigma-algebras and disjointization.}
+Use complement and finite-intersection closure to form $B_n=A_n\setminus\bigcup_{i<n}A_i$. These sets are measurable, pairwise disjoint, and have the same union as the original sequence. Then use disjoint countable union closure.
+\begin{itemize}
+\item State the other closure assumptions.
+\item Define the first piece, with an empty previous union.
+\item Explain why the union is unchanged.
+\end{itemize}
+\hypertarget{answer-l1-s9}{}\paragraph{Why an extension theorem is needed.}
+The domain must be an algebra, the empty set must have mass zero, and countable additivity must hold for pairwise disjoint sequences whose union stays in the algebra. Finite additivity alone does not provide the required infinite-union limit. Finite total mass gives uniqueness here.
+\begin{itemize}
+\item Keep the union-in-the-algebra condition.
+\item Distinguish premeasure verification from applying the theorem.
+\item State the uniqueness hypothesis.
+\end{itemize}
+\subsection{Lecture 2}
+\hypertarget{answer-l2-s2}{}\paragraph{Constructing uniform measure from interval length.}
+Intervals may accumulate at an endpoint, so there need not be a first interval in a left-to-right enumeration. Use finite additivity plus continuity at the empty set instead. The shrinking residuals $H_n$ have lengths tending to zero by a compactness argument using trimmed component intervals.
+\begin{itemize}
+\item Give an interval partition with no leftmost member.
+\item Define the residual set after finitely many pieces.
+\item Explain where compactness is used.
+\end{itemize}
+\hypertarget{answer-l2-s5}{}\paragraph{Dynkin's theorem and uniqueness of measures.}
+Nested differences preserve agreement because $\mu_j(B\setminus A)=\mu_j(B)-\mu_j(A)$, which requires finite terms. Increasing limits preserve agreement by continuity from below. Equal finite total mass supplies membership of $\Omega$. The agreement class need not have an immediate intersection-closure proof, so Dynkin's theorem extends from the generating $\pi$-system.
+\begin{itemize}
+\item Use equal total mass to put the whole space in the class.
+\item Locate the finite subtraction.
+\item Check increasing limits separately.
+\end{itemize}
+\subsection{Lecture 3}
+\hypertarget{answer-l3-s2}{}\paragraph{Measurable maps and the generator test.}
+The collection of target sets with measurable inverse image is itself a $\sigma$-algebra: inverse images preserve the empty set, complements, and countable unions. If this collection contains the generators, it contains the generated $\sigma$-algebra.
+\begin{itemize}
+\item Build a class of target sets, not source sets.
+\item Write the inverse-image identities.
+\item Use minimality of the generated sigma-algebra.
+\end{itemize}
+\hypertarget{answer-l3-s6}{}\paragraph{The functional monotone class theorem.}
+Use $\mathcal L=\{A:\mathbf1_A\in\mathcal H\}$. The constant, vector-space, and monotone-limit assumptions make this a $\lambda$-system. Dynkin extends from $\mathcal P$ to $\sigma(\mathcal P)$. Linearity gives simple functions; increasing simple approximation gives nonnegative functions; subtraction gives signed functions.
+\begin{itemize}
+\item Name the lambda-system.
+\item Match each function-space assumption to a set operation.
+\item Distinguish bounded and unrestricted versions.
+\end{itemize}
+\hypertarget{answer-l3-s8}{}\paragraph{Countable extrema and tail limits.}
+For each real $b$, use $\{\inf_nX_n<b\}=\bigcup_n\{X_n<b\}$. Countable union closure gives measurability. Replacing both strict signs by non-strict signs is invalid, as the sequence $X_n=1/n$ at threshold zero demonstrates.
+\begin{itemize}
+\item Use a strict threshold.
+\item Explain the countable union.
+\item Allow extended-real values.
+\end{itemize}
+\subsection{Lecture 4}
+\hypertarget{answer-l4-s2}{}\paragraph{Equality in law and equality almost surely.}
+The symmetric difference of the events $\{X\in A\}$ and $\{Y\in A\}$ lies in $\{X\ne Y\}$ for every Borel $A$. For the converse, $X(\omega)=\omega$ and $Y(\omega)=1-\omega$ on the uniform interval have the same law but are unequal almost surely.
+\begin{itemize}
+\item Use an arbitrary Borel set, not just a threshold.
+\item Give two variables on the same probability space.
+\end{itemize}
+\hypertarget{answer-l4-s8}{}\paragraph{Monotone convergence and the simple-function lower bound.}
+For bounded simple $\varphi=\sum_i c_i\mathbf1_{A_i}\le h$ with disjoint positive-height pieces, set $A_{i,n}=\{\omega\in A_i:h_n(\omega)\ge\lambda c_i\}$. Strict slack ensures these sets increase to $A_i$ even if $h_n$ approaches the step height only from below. Continuity from below gives $\lim_n\mu(h_n)\ge\lambda\mu_0(\varphi)$. Let $\lambda\uparrow1$ and take the supremum over $\varphi$.
+\begin{itemize}
+\item First establish the easy upper bound.
+\item Use continuity from below on sets.
+\item Keep nonnegativity and increasing convergence.
+\end{itemize}
+\hypertarget{answer-l4-s9}{}\paragraph{Additivity beyond simple functions.}
+Approximate both functions increasingly by nonnegative simple functions and apply monotone convergence to both approximants and their sums. The finite simple-function identity then passes to the limit.
+\begin{itemize}
+\item Approximate both functions.
+\item Their sums must increase to the desired sum.
+\item Name monotone convergence at each passage to a limit.
+\end{itemize}
+\subsection{Lecture 5}
+\hypertarget{answer-l5-s3}{}\paragraph{Vector Jensen inequality and supporting hyperplanes.}
+If the mean were outside the open convex domain, a separating hyperplane would put every possible value of $X$ strictly on one side and its mean on the other, contradicting linearity of expectation. At the mean, a supporting affine function lies below $g$; its expected linear term vanishes.
+\begin{itemize}
+\item Keep the open convex domain and integrability hypotheses.
+\item Evaluate the supporting affine function at the mean.
+\item Explain which convex-analysis facts are being used.
+\end{itemize}
+\hypertarget{answer-l5-s6}{}\paragraph{Essential supremum and Minkowski inequality.}
+Write $|X+Y|^p\le(|X|+|Y|)|X+Y|^{p-1}$ and apply Hölder to each summand with conjugate exponent $q=p/(p-1)$. The identity $(p-1)q=p$ produces a common factor $\|X+Y\|_p^{p-1}$. A preliminary convexity estimate makes that factor finite; then handle the zero case or divide.
+\begin{itemize}
+\item Treat p=1 separately.
+\item Use conjugate exponents.
+\item Do not divide by zero or infinity.
+\item Do not extend Minkowski below p=1.
+\end{itemize}
+\hypertarget{answer-l5-s10}{}\paragraph{Lp convergence, shrinking spikes, and continuous maps.}
+The sweeping-cell sequence converges in probability and in every finite $L^p$, but not almost surely. The lecture spike $2^n\mathbf1_{(0,1/n]}$ on the uniform interval converges almost surely and in probability to zero, while its $p$th moment $2^{np}/n$ diverges for every $p>0$. Markov proves that $L^p$ convergence always implies convergence in probability.
+\begin{itemize}
+\item Specify the probability space.
+\item Compute the relevant probability and moment.
+\item Distinguish a statement about a fixed outcome from a fixed index.
+\end{itemize}
+\subsection{Lecture 6}
+\hypertarget{answer-l6-s2}{}\paragraph{Monotone convergence and Fatou lower envelopes.}
+Take $Z_n=\inf_{m\ge n}X_m$. Then $Z_n$ increases to the pointwise liminf. Subtract the common integrable lower bound $Y$ to apply monotone convergence. Since $Z_n\le X_m$ for every $m\ge n$, its expectation is bounded by the corresponding tail infimum of expectations.
+\begin{itemize}
+\item Use the whole tail, not a finite preview.
+\item Subtract an integrable lower bound.
+\item Take an infimum before the final limit.
+\end{itemize}
+\hypertarget{answer-l6-s4}{}\paragraph{Uniform integrability, small events, and Vitali.}
+Vitali requires uniform integrability: all members have small absolute tail expectations beyond one common large cutoff. If $|X_n|\le Y\in L^1$, each tail is bounded by $Y\mathbf1_{\{Y>M\}}$, whose expectation tends to zero. Uniform integrability controls expected mass, while an $L^1$ bound alone does not.
+\begin{itemize}
+\item The cutoff must be uniform over the family.
+\item Use absolute values.
+\item Convergence in probability is still required.
+\item Small-event control alone needs a separate uniform L1 bound for the converse.
+\end{itemize}
+\hypertarget{answer-l6-s7}{}\paragraph{The standard machine for composition and change of measure.}
+For an indicator, both sides are $\mu(f\mathbf1_B)$. Linearity extends the identity to nonnegative simple functions. Approximate an arbitrary nonnegative $h$ increasingly by simple functions and use monotone convergence under both measures. Apply the nonnegative identity to $|h|$ to verify integrability, then subtract the positive and negative identities for signed $h$.
+\begin{itemize}
+\item Identify both measures.
+\item Use monotone convergence on both sides.
+\item Check absolute integrability before subtracting.
+\end{itemize}
+\subsection{Lecture 7}
+\hypertarget{answer-l7-s4}{}\paragraph{Three fair bits with an exact constraint.}
+Use the uniform law on the four even-parity bit triples. Every pair takes its four values with probability $1/4$. But $\mathbb P(X_1=X_2=X_3=0)=1/4\ne1/8=\prod_{i=1}^3\mathbb P(X_i=0)$.
+\begin{itemize}
+\item Give the sample space and probability masses.
+\item Verify pairwise factorization.
+\item Exhibit a triple intersection that fails factorization.
+\end{itemize}
+\hypertarget{answer-l7-s7}{}\paragraph{A threshold test for mutual independence.}
+The events $\{X_i\le t\}$ form generating pi systems for $\sigma(X_i)$. Sending unused thresholds to infinity gives factorization for every subfamily of these pi systems. Extend from the pi systems to the sigma algebras one coordinate at a time.
+\begin{itemize}
+\item Name the generating pi systems.
+\item Recover subfamilies by continuity from below.
+\item Invoke the independence extension theorem.
+\end{itemize}
+\hypertarget{answer-l7-s13}{}\paragraph{Kolmogorov extension and cylinder events.}
+Consistency is $\mu_{n+1}(A\times\mathbb R)=\mu_n(A)$. A cylinder $C_{n,A}$ records a condition on the first $n$ coordinates and leaves every later coordinate unrestricted. Kolmogorov extension gives a unique probability on the cylinder sigma algebra with these laws. Taking $\mu_n=\bigotimes_{i=1}^nP_i$ produces independent coordinates with laws $P_i$.
+\begin{itemize}
+\item State consistency with the unrestricted last coordinate.
+\item Specify the real sequence space and cylinder sigma algebra.
+\item Use probability normalization to check consistency of products.
+\item Distinguish the quoted existence theorem from its simpler uniqueness argument.
+\end{itemize}
+\subsection{Lecture 8}
+\hypertarget{answer-l8-s3}{}\paragraph{Why tail information is independent of itself.}
+The increasing union $\mathcal P=\bigcup_n\sigma(X_1,\ldots,X_n)$ is a pi system. Every event in $\mathcal P$ belongs to a finite-prefix sigma algebra and is independent of every tail event. Extend independence to $\sigma(\mathcal P)=\sigma(X_1,X_2,\ldots)$. The tail sigma algebra is contained there, so it is independent of itself and $\mathbb P(A)=\mathbb P(A)^2$.
+\begin{itemize}
+\item Use mutual independence to separate a finite prefix from its tail.
+\item Show the increasing union is a pi system.
+\item Identify its generated sigma algebra.
+\item Finish with independence of an event from itself.
+\end{itemize}
+\hypertarget{answer-l8-s9}{}\paragraph{Rectangles complete the proof and permit extension.}
+Prove measurable sections, a measurable section integral $f_h$, and equality of the product integral with $\int f_h\,d\mu_1$. Rectangles satisfy all three by direct computation. Under finite measures, linearity and closure under bounded increasing limits allow the functional monotone-class theorem to reach bounded measurable functions. Truncate $h$ to reach nonnegative functions, restrict to increasing finite-measure rectangles to handle sigma-finite factors, and pass to the limit by monotone convergence.
+\begin{itemize}
+\item Keep all three measurability/integration goals together.
+\item Identify the functional monotone-class step.
+\item Use nonnegative truncations.
+\item Use finite-measure exhaustions for sigma-finiteness.
+\item For signed functions, mention integrability and exceptional sections.
+\end{itemize}
+\hypertarget{answer-l8-s12}{}\paragraph{Convolution as the law of a sum.}
+Independence gives $P_{(X,Y)}=P_X\otimes P_Y$. Push this law forward through $(x,y)\mapsto x+y$ to get $P_{X+Y}=P_X*P_Y$. If $P_X(dx)=f_X(x)\,dx$, then \[P(X+Y\le t)=\int_{\mathbb R}\int_{-\infty}^{t}f_X(z-y)\,dz\,P_Y(dy)=\int_{-\infty}^{t}\left[\int_{\mathbb R}f_X(z-y)\,P_Y(dy)\right]dz.\] The bracket is a density of the sum.
+\begin{itemize}
+\item Use independence to identify the joint law.
+\item Use the measurable addition map.
+\item Translate the inner variable.
+\item Justify changing order by nonnegativity.
+\item Recognize the bracket as a density.
+\end{itemize}
+
+\end{document}

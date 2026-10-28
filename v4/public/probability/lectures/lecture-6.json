@@ -1,0 +1,211 @@
+{
+  "number": 6,
+  "title": "Convergence theorems, uniform integrability, and densities",
+  "ink": "gray",
+  "color": "#686868",
+  "pages": [
+    46,
+    54
+  ],
+  "sections": [
+    {
+      "id": "l6-s1",
+      "title": "Shrinking supports with freely growing heights",
+      "pages": [
+        46,
+        46
+      ],
+      "paragraphs": [
+        "Continue the shrinking-spike example on the uniform interval: $$X_n(\\omega)=a_n\\mathbf1_{(0,1/n]}(\\omega),\\qquad a_n\\ge0.$$ For every fixed $\\omega>0$, $X_n(\\omega)=0$ eventually, so $X_n\\to X_\\infty=0$ almost surely. Its mean is $$\\mathbb E X_n=\\frac{a_n}{n}.$$ Choosing $a_n/n\\to\\infty$ makes the means diverge even though the variables converge almost surely to zero. In particular, there is no convergence in $L^1$."
+      ],
+      "entry": "1.3.30",
+      "editorial": [
+        "More generally, $\\mathbb E|X_n|^p=a_n^p/n$. The support probability, the height, and their product play different roles: vanishing support can ensure probability convergence while tall values prevent moment convergence."
+      ]
+    },
+    {
+      "id": "l6-s2",
+      "title": "Monotone convergence and Fatou lower envelopes",
+      "pages": [
+        46,
+        47
+      ],
+      "paragraphs": [
+        "Monotone convergence in probability notation: if $X_n\\ge0$ and $X_n\\uparrow X_\\infty$ almost surely, then $$\\mathbb E X_n\\uparrow\\mathbb E X_\\infty.$$ If $\\mathbb E X_\\infty<\\infty$, then also $X_n\\to X_\\infty$ in $L^1$, since $\\mathbb E|X_\\infty-X_n|=\\mathbb E X_\\infty-\\mathbb E X_n\\to0$.",
+        "Fatou lemma: if $X_n\\ge Y$ almost surely for every $n$, with $\\mathbb E|Y|<\\infty$, then $$\\liminf_n\\mathbb E X_n\\ge\\mathbb E(\\liminf_n X_n).$$"
+      ],
+      "entry": "1.3.33",
+      "proof": [
+        "Set $$Z_n=\\inf_{m\\ge n}X_m.$$ These are measurable, $Z_n\\uparrow\\liminf_nX_n$, and $Z_n\\ge Y$ outside one common null event. Apply monotone convergence to the nonnegative sequence $Z_n-Y$ to obtain $$\\lim_n\\mathbb E Z_n=\\mathbb E(\\liminf_nX_n).$$",
+        "For every $m\\ge n$, $X_m\\ge Z_n$, hence $\\mathbb E X_m\\ge\\mathbb E Z_n$. Take the infimum over $m\\ge n$ and then let $n\\to\\infty$ to get $$\\liminf_n\\mathbb E X_n\\ge\\lim_n\\mathbb E Z_n=\\mathbb E(\\liminf_nX_n).$$ The lecture describes monotone convergence as Fatou for an increasing sequence."
+      ],
+      "editorial": [
+        "All almost-sure inequalities can be arranged on one event of probability one because the sequence is countable. An integrable lower bound makes the signed expectations well-defined and permits subtracting $\\mathbb E Y$. Applying Fatou to $-X_n$ similarly gives a reverse limsup inequality when the sequence has an integrable upper bound."
+      ],
+      "recall": {
+        "question": "How does the tail infimum turn Fatou into an application of monotone convergence?",
+        "answer": [
+          "Take $Z_n=\\inf_{m\\ge n}X_m$. Then $Z_n$ increases to the pointwise liminf. Subtract the common integrable lower bound $Y$ to apply monotone convergence. Since $Z_n\\le X_m$ for every $m\\ge n$, its expectation is bounded by the corresponding tail infimum of expectations."
+        ],
+        "checks": [
+          "Use the whole tail, not a finite preview.",
+          "Subtract an integrable lower bound.",
+          "Take an infimum before the final limit."
+        ]
+      }
+    },
+    {
+      "id": "l6-s3",
+      "title": "Dominated convergence, bounded convergence, and Scheffé",
+      "pages": [
+        47,
+        48
+      ],
+      "paragraphs": [
+        "Dominated convergence: suppose $X_n\\to X_\\infty$ almost surely and $|X_n|\\le Y$ almost surely for all $n$, where $\\mathbb E Y<\\infty$. Then $X_\\infty$ is integrable and $$\\mathbb E|X_n-X_\\infty|\\longrightarrow0.$$ In particular, $\\mathbb E X_n\\to\\mathbb E X_\\infty$.",
+        "Bounded convergence is the special case $|X_n|\\le C<\\infty$ for one nonrandom constant $C$. Almost-sure convergence then implies convergence in $L^1$.",
+        "Scheffé lemma: suppose $X_n,X_\\infty\\in L^1$ for every $n$, $X_n\\to X_\\infty$ almost surely, and $$\\mathbb E|X_n|\\longrightarrow\\mathbb E|X_\\infty|<\\infty.$$ Then $X_n\\to X_\\infty$ in $L^1$."
+      ],
+      "entry": "1.3.34",
+      "proof": [
+        "For dominated convergence, take the limit in $|X_n|\\le Y$ to get $|X_\\infty|\\le Y$, so $\\mathbb E|X_\\infty|\\le\\mathbb E Y<\\infty$. The errors satisfy $|X_n-X_\\infty|\\le2Y$. Fatou applied to $2Y-|X_n-X_\\infty|\\ge0$ gives $$\\limsup_n\\mathbb E|X_n-X_\\infty|\\le\\mathbb E(\\limsup_n|X_n-X_\\infty|)=0.$$ Nonnegativity finishes the proof."
+      ],
+      "editorial": [
+        "The handwritten pages state Scheffé without a proof. Retain integrability of every term and the finite limiting absolute moment; equality of signed means alone does not replace these conditions. Convergence of absolute integrals to a finite value guarantees integrability only eventually, so any earlier nonintegrable terms must be discarded before using the definition of an $L^1$-convergent sequence. The dominated-convergence proof uses the factor $2$ because both the approximant and its limit are bounded by $Y$. Bounded convergence here uses a probability space; on an infinite-measure space a constant roof need not be integrable."
+      ]
+    },
+    {
+      "id": "l6-s4",
+      "title": "Uniform integrability, small events, and Vitali",
+      "pages": [
+        48,
+        49
+      ],
+      "paragraphs": [
+        "A family $\\{X_\\alpha:\\alpha\\in I\\}$ is uniformly integrable if $$\\lim_{M\\to\\infty}\\sup_{\\alpha\\in I}\\mathbb E\\bigl[|X_\\alpha|\\mathbf1_{\\{|X_\\alpha|>M\\}}\\bigr]=0.$$ Equivalently, for every $\\varepsilon>0$ there is one finite $M$ such that the displayed tail expectation is less than $\\varepsilon$ for every $\\alpha$.",
+        "Every uniformly integrable family satisfies the following small-event consequence: for every $\\varepsilon>0$ there is $\\delta>0$ such that for every $\\alpha\\in I$ and $A\\in\\mathcal F$ with $\\mathbb P(A)<\\delta$, $$\\mathbb E[|X_\\alpha|\\mathbf1_A]<\\varepsilon.$$",
+        "Vitali convergence: $$\\bigl(X_n\\xrightarrow{\\mathbb P}X_\\infty\\ \\text{and }\\{X_n\\}\\text{ uniformly integrable}\\bigr)\\quad\\Longleftrightarrow\\quad X_n\\xrightarrow{L^1}X_\\infty.$$",
+        "An integrable common roof is sufficient for uniform integrability: if $|X_n|\\le Y$ almost surely and $\\mathbb E Y<\\infty$, then $$\\sup_n\\mathbb E\\bigl[|X_n|\\mathbf1_{\\{|X_n|>M\\}}\\bigr]\\le\\mathbb E[Y\\mathbf1_{\\{Y>M\\}}]\\longrightarrow0.$$ The final limit follows from monotone convergence applied to $Y\\mathbf1_{\\{Y\\le M\\}}\\uparrow Y$, or from dominated convergence."
+      ],
+      "entry": "1.3.49",
+      "editorial": [
+        "The small-event line on p49 is shorthand and does not visibly carry all absolute-value bars or hypotheses. The uniform-integrability consequence requires the absolute integral as displayed. Indeed, split $\\mathbb E[|X_\\alpha|\\mathbf1_A]\\le M\\mathbb P(A)+\\mathbb E[|X_\\alpha|\\mathbf1_{\\{|X_\\alpha|>M\\}}]$ and choose $M$, then $\\delta$.",
+        "For an equivalence on an arbitrary probability space, add uniform $L^1$ boundedness: a family is uniformly integrable if and only if $\\sup_\\alpha\\mathbb E|X_\\alpha|<\\infty$ and the small-event condition holds. For the reverse direction, Markov makes $\\mathbb P(|X_\\alpha|>M)\\le C/M$ uniformly small. The small-event condition alone is insufficient on a one-point probability space: constants $X_n=n$ satisfy it vacuously for $\\delta<1$ but are not uniformly integrable.",
+        "Vitali is stated on the handwritten page without its general proof. Under convergence in probability, it is also equivalent to integrability of every $X_n$ and $X_\\infty$ together with $\\mathbb E|X_n|\\to\\mathbb E|X_\\infty|$. Uniform integrability also implies uniform $L^1$ boundedness by $\\mathbb E|X_\\alpha|\\le M+\\sup_\\beta\\mathbb E[|X_\\beta|\\mathbf1_{\\{|X_\\beta|>M\\}}]$."
+      ],
+      "recall": {
+        "question": "What extra condition upgrades convergence in probability to convergence in L1? How does domination imply it?",
+        "answer": [
+          "Vitali requires uniform integrability: all members have small absolute tail expectations beyond one common large cutoff. If $|X_n|\\le Y\\in L^1$, each tail is bounded by $Y\\mathbf1_{\\{Y>M\\}}$, whose expectation tends to zero. Uniform integrability controls expected mass, while an $L^1$ bound alone does not."
+        ],
+        "checks": [
+          "The cutoff must be uniform over the family.",
+          "Use absolute values.",
+          "Convergence in probability is still required.",
+          "Small-event control alone needs a separate uniform L1 bound for the converse."
+        ]
+      }
+    },
+    {
+      "id": "l6-s5",
+      "title": "A CDF determines a unique probability measure",
+      "pages": [
+        49,
+        49
+      ],
+      "paragraphs": [
+        "If $F:\\mathbb R\\to[0,1]$ is nondecreasing and right-continuous, with $F(-\\infty)=0$ and $F(+\\infty)=1$ in the limiting sense, then there is a unique probability measure $\\nu$ on $(\\mathbb R,\\mathcal B_{\\mathbb R})$ such that $$\\nu(( -\\infty,t])=F(t)\\quad\\text{for every }t\\in\\mathbb R.$$"
+      ],
+      "entry": "1.2.45",
+      "editorial": [
+        "This restates the earlier CDF theorem in measure language. Existence follows, for example, from the quantile construction; uniqueness follows from the generating half-line $\\pi$-system. Neither direction is proved again on this page."
+      ]
+    },
+    {
+      "id": "l6-s6",
+      "title": "A nonnegative function defines a weighted measure",
+      "pages": [
+        50,
+        51
+      ],
+      "paragraphs": [
+        "If $f:\\mathbb R\\to[0,\\infty]$ is Borel measurable, it defines a measure $\\nu=f\\lambda$ on the real line by $$\\nu(A)=\\int_A f(x)\\,dx.$$ In particular, whenever $F(x)=\\int_{-\\infty}^{x}f(t)\\,dt$ is finite, $\\nu((a,b])=F(b)-F(a)=\\int_{(a,b]}f(x)\\,dx$.",
+        "More generally, fix $(\\Omega,\\mathcal F,\\mu)$ and a nonnegative measurable $f$. Define $$f_\\mu=f\\mu,\\qquad f_\\mu(A)=\\mu(f\\mathbf1_A),\\quad A\\in\\mathcal F.$$ Then $f_\\mu$ is a measure. The lecture states the composition rule $$h(f\\mu)=(hf)\\mu\\quad(f,h\\ge0\\text{ measurable}),$$ and the integration identity $$h\\in L^1(\\Omega,\\mathcal F,f\\mu)\\quad\\Longleftrightarrow\\quad fh\\in L^1(\\Omega,\\mathcal F,\\mu),\\qquad \\int h\\,d(f\\mu)=\\int hf\\,d\\mu.$$"
+      ],
+      "entry": "1.3.56",
+      "proof": [
+        "Nonnegativity and $f_\\mu(\\varnothing)=0$ follow from the definition. If $A_k$ are disjoint measurable sets, monotone convergence gives $$f_\\mu\\left(\\bigcup_{k=1}^{\\infty}A_k\\right)=\\mu\\left(\\sum_{k=1}^{\\infty}f\\mathbf1_{A_k}\\right)=\\lim_n\\mu\\left(\\sum_{k=1}^{n}f\\mathbf1_{A_k}\\right)=\\lim_n\\sum_{k=1}^{n}f_\\mu(A_k)=\\sum_{k=1}^{\\infty}f_\\mu(A_k).$$ Thus $f_\\mu$ is countably additive."
+      ],
+      "editorial": [
+        "The lecture writes both $f_\\mu$ and $f\\mu$ for the same measure. For arbitrary nonnegative $f$, the measure is defined directly by integrating $f\\mathbf1_A$; a finite CDF antiderivative is unnecessary. Products of nonnegative extended values use $0\\cdot\\infty=0$."
+      ]
+    },
+    {
+      "id": "l6-s7",
+      "title": "The standard machine for composition and change of measure",
+      "pages": [
+        51,
+        52
+      ],
+      "paragraphs": [
+        "To prove $h(f\\mu)=(hf)\\mu$, fix $A\\in\\mathcal F$ and prove $$(f\\mu)(h\\mathbf1_A)=\\mu(fh\\mathbf1_A).$$ The notes organize the proof as indicators, simple functions, increasing approximation, then the signed split."
+      ],
+      "entry": "1.3.56",
+      "proof": [
+        "For $h=\\mathbf1_B$, $$h(f\\mu)(A)=(f\\mu)(\\mathbf1_B\\mathbf1_A)=(f\\mu)(A\\cap B)=\\mu(f\\mathbf1_{A\\cap B})=\\mu(fh\\mathbf1_A)=((hf)\\mu)(A).$$",
+        "For a nonnegative simple function $h=\\sum_{i=1}^{m}c_i\\mathbf1_{B_i}$, linearity and the indicator case give $$h(f\\mu)(A)=\\sum_i c_i(f\\mu)(A\\cap B_i)=\\sum_i c_i\\mu(f\\mathbf1_{A\\cap B_i})=\\mu(fh\\mathbf1_A).$$",
+        "For general $h\\ge0$, choose nonnegative simple $h_n\\uparrow h$. Monotone convergence first under $f\\mu$ and then under $\\mu$ gives $$h(f\\mu)(A)=\\lim_n(f\\mu)(h_n\\mathbf1_A)=\\lim_n\\mu(fh_n\\mathbf1_A)=\\mu(fh\\mathbf1_A)=((hf)\\mu)(A).$$ This proves equality of measures.",
+        "Set $A=\\Omega$ to deduce for $h\\ge0$ that $$(f\\mu)(h)=(f\\mu)(h\\mathbf1_\\Omega)=h(f\\mu)(\\Omega)=((hf)\\mu)(\\Omega)=\\mu(fh).$$ For signed $h=h_+-h_-$, apply the nonnegative identity to each part. Applying it first to $|h|$ proves that $h$ is integrable for $f\\mu$ exactly when $fh$ is integrable for $\\mu$; then subtract the two finite signed parts."
+      ],
+      "editorial": [
+        "The last integrability check must precede signed subtraction. The monotone-convergence step is used in both measure spaces, and relies on $f\\ge0$ so $fh_n\\mathbf1_A\\uparrow fh\\mathbf1_A$."
+      ],
+      "recall": {
+        "question": "Prove $\\int h\\,d(f\\mu)=\\int hf\\,d\\mu$ using the four stages of the standard machine.",
+        "answer": [
+          "For an indicator, both sides are $\\mu(f\\mathbf1_B)$. Linearity extends the identity to nonnegative simple functions. Approximate an arbitrary nonnegative $h$ increasingly by simple functions and use monotone convergence under both measures. Apply the nonnegative identity to $|h|$ to verify integrability, then subtract the positive and negative identities for signed $h$."
+        ],
+        "checks": [
+          "Identify both measures.",
+          "Use monotone convergence on both sides.",
+          "Check absolute integrability before subtracting."
+        ]
+      }
+    },
+    {
+      "id": "l6-s8",
+      "title": "Densities, absolute continuity, and Radon–Nikodym",
+      "pages": [
+        53,
+        53
+      ],
+      "paragraphs": [
+        "If measures $\\mu,\\nu$ on $(\\Omega,\\mathcal F)$ satisfy $\\mu=f\\nu$ for a nonnegative measurable $f$, say that $\\mu$ has density $f$ with respect to $\\nu$. Then $$\\nu(A)=0\\quad\\Longrightarrow\\quad\\mu(A)=0\\qquad(A\\in\\mathcal F).$$ This property is called absolute continuity and is written $\\mu\\ll\\nu$.",
+        "Radon–Nikodym theorem: if $\\mu$ and $\\nu$ are both $\\sigma$-finite measures on $(\\Omega,\\mathcal F)$ and $\\mu\\ll\\nu$, then there exists a nonnegative measurable $f$ such that $$\\mu=f\\nu.$$ The density is denoted $$\\frac{d\\mu}{d\\nu}=f.$$"
+      ],
+      "proof": [
+        "The implication from a density to absolute continuity is immediate: if $\\nu(A)=0$, then $f\\mathbf1_A=0$ $\\nu$-almost everywhere, so $$\\mu(A)=\\int f\\mathbf1_A\\,d\\nu=0.$$"
+      ],
+      "editorial": [
+        "The notes state Radon–Nikodym but do not prove its converse/existence assertion. Both $\\sigma$-finiteness hypotheses are visible and are retained. A finite-valued version of the density can be chosen, and it is unique up to $\\nu$-almost-everywhere equality. This theorem is Dembo 4.1.5, not an entry currently present in the Chapters 1–2 companion; its early appearance is part of the lecture order."
+      ]
+    },
+    {
+      "id": "l6-s9",
+      "title": "Density examples, a Dirac obstruction, and restriction",
+      "pages": [
+        54,
+        54
+      ],
+      "paragraphs": [
+        "If $\\nu=\\lambda$ is Lebesgue measure on $\\mathbb R$ and $\\mu=f\\lambda$ is a probability measure, then its distribution function is $$F_\\mu(x)=\\mu(( -\\infty,x])=\\int_{-\\infty}^{x}f(t)\\,dt.$$ Thus an ordinary probability density is a Radon–Nikodym density with respect to Lebesgue measure.",
+        "For a fixed $x\\in\\mathbb R$, the Dirac measure is $$\\delta_x(A)=\\begin{cases}1,&x\\in A,\\\\0,&x\\notin A.\\end{cases}$$ It is not absolutely continuous with respect to Lebesgue measure: choose $A=\\{x\\}$, for which $\\lambda(A)=0$ but $\\delta_x(A)=1$. Hence it has no Lebesgue density.",
+        "For a measure space $(\\Omega,\\mathcal F,\\mu)$ and $D\\in\\mathcal F$, the restricted measurable space and measure are $$(D,\\mathcal F_D,\\mu_D),\\qquad \\mathcal F_D=\\{A\\cap D:A\\in\\mathcal F\\},\\qquad \\mu_D=\\mu|_{\\mathcal F_D}.$$ The weighted measure $\\mathbf1_D\\mu$ on $\\Omega$ agrees with $\\mu_D$ on subsets of $D$. For nonnegative measurable $h$ on $\\Omega$, $$\\int_D h\\,d\\mu_D=\\int_\\Omega h\\mathbf1_D\\,d\\mu.$$"
+      ],
+      "entry": "1.3.57",
+      "editorial": [
+        "The diagram shows $D$ sitting inside $\\Omega$. Restriction preserves the original mass $\\mu(D)$; the lecture does not normalize it to a conditional probability. The notation $\\mu_D=\\mathbf1_D\\mu$ is read with its domains understood: $\\mu_D$ lives on $D$, while the weighted measure lives on $\\Omega$. The same integration formula holds for a signed $h$ whenever $h\\mathbf1_D$ is integrable."
+      ]
+    }
+  ]
+}

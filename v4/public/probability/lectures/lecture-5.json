@@ -1,0 +1,224 @@
+{
+  "number": 5,
+  "title": "Inequalities, Lp spaces, and modes of convergence",
+  "ink": "blue",
+  "color": "#18598b",
+  "pages": [
+    37,
+    45
+  ],
+  "sections": [
+    {
+      "id": "l5-s1",
+      "title": "Markov inequality and a zero-integral consequence",
+      "pages": [
+        37,
+        37
+      ],
+      "paragraphs": [
+        "The lecture begins with inequalities and convergence, recalling $\\mathbb E X=\\int_\\Omega X(\\omega)\\,\\mathbb P(d\\omega)$. On any measure space, if $f\\ge0$ is measurable, then for every $t>0$, $$t\\,\\mu(\\{f\\ge t\\})\\le\\mu(f).$$"
+      ],
+      "entry": "1.3.13",
+      "proof": [
+        "Take the simple function $\\varphi=t\\mathbf1_{\\{f\\ge t\\}}\\le f$ and use monotonicity: $$t\\,\\mu(\\{f\\ge t\\})=\\mu_0(\\varphi)\\le\\mu(f).$$",
+        "Consequently, if $f\\ge0$ and $\\mu(f)=0$, then $f=0$ almost everywhere. Indeed, for $A_n=\\{f\\ge1/n\\}$, Markov gives $\\mu(A_n)\\le n\\mu(f)=0$. Since $A_n\\uparrow A_\\infty=\\{f>0\\}$, continuity from below yields $\\mu(A_\\infty)=0$."
+      ]
+    },
+    {
+      "id": "l5-s2",
+      "title": "Transformed Markov bounds: Chebyshev and Chernoff",
+      "pages": [
+        38,
+        38
+      ],
+      "paragraphs": [
+        "Let $X$ be a real-valued random variable and let $\\psi:\\mathbb R\\to[0,\\infty]$ be Borel measurable. For $A\\in\\mathcal B_{\\mathbb R}$, define $$\\psi_*(A)=\\inf\\{\\psi(x):x\\in A\\}.$$ Then $$\\psi_*(A)\\mathbb P(X\\in A)\\le\\mathbb E\\psi(X).$$ Apply Markov to the measurable nonnegative function $\\omega\\mapsto\\psi(X(\\omega))$, or directly use $\\psi_*(A)\\mathbf1_{\\{X\\in A\\}}\\le\\psi(X)$.",
+        "Taking $\\psi(x)=x_+$ gives, for $t>0$, $$\\mathbb P(X\\ge t)\\le t^{-1}\\mathbb E X_+.$$ Taking $\\psi(x)=|x-\\mathbb E X|^2$ for $X\\in L^2$ gives Chebyshev: $$\\mathbb P(|X-\\mathbb E X|\\ge t)\\le t^{-2}\\operatorname{Var}(X),\\qquad \\operatorname{Var}(X)=\\mathbb E[(X-\\mathbb E X)^2].$$",
+        "Taking $\\psi(x)=e^{\\lambda x}$ gives the Chernoff bound $$\\mathbb P(X\\ge t)\\le e^{-\\lambda t}\\mathbb E e^{\\lambda X},\\qquad t\\in\\mathbb R,\\ \\lambda\\ge0.$$ The choice $\\lambda=0$ gives the trivial bound $1$; positive $\\lambda$ is useful when the exponential moment is finite."
+      ],
+      "entry": "1.3.14",
+      "editorial": [
+        "The infimum convention is $\\inf\\varnothing=+\\infty$; nonnegative integral products use $0\\cdot\\infty=0$. Divide by $\\psi_*(A)$ only when it is finite and strictly positive. Chebyshev is a centered two-sided bound; the displayed Chernoff version is an upper-tail bound."
+      ]
+    },
+    {
+      "id": "l5-s3",
+      "title": "Vector Jensen inequality and supporting hyperplanes",
+      "pages": [
+        38,
+        39
+      ],
+      "paragraphs": [
+        "Let $Q\\subseteq\\mathbb R^d$ be open and convex, let $g:Q\\to\\mathbb R$ be convex, and let $X:\\Omega\\to\\mathbb R^d$ be an integrable random vector with $\\mathbb P(X\\in Q)=1$. If $g(X)$ is integrable, Jensen gives $$\\mathbb E g(X)\\ge g(\\mathbb E X).$$"
+      ],
+      "entry": "1.3.20",
+      "proof": [
+        "First show $\\mu=\\mathbb E X\\in Q$. If $\\mu\\notin Q$, separation provides a vector $v\\in\\mathbb R^d$ and $a\\in\\mathbb R$ with $\\langle v,x\\rangle>a$ for every $x\\in Q$ and $\\langle v,\\mu\\rangle\\le a$. Since $X\\in Q$ almost surely, $$\\mathbb E\\langle v,X\\rangle>a,$$ while linearity gives $\\mathbb E\\langle v,X\\rangle=\\langle v,\\mu\\rangle\\le a$, a contradiction.",
+        "Convexity on the open convex set supplies a supporting vector $u(x_0)$ at each $x_0\\in Q$ such that $$g(x)\\ge g(x_0)+\\langle u(x_0),x-x_0\\rangle\\quad(x\\in Q).$$ Set $x_0=\\mu$ and take expectations to get $$\\mathbb E g(X)\\ge g(\\mu)+\\langle u(\\mu),\\mathbb E X-\\mu\\rangle=g(\\mu).$$"
+      ],
+      "editorial": [
+        "The separation theorem and existence of a supporting hyperplane are the convex-analysis inputs used in this board proof. The strict expected inequality uses the fact that a strictly positive integrable random variable has strictly positive expectation."
+      ],
+      "recall": {
+        "question": "How does a supporting hyperplane prove vector Jensen, and why must $\\mathbb E X$ lie in the convex domain?",
+        "answer": [
+          "If the mean were outside the open convex domain, a separating hyperplane would put every possible value of $X$ strictly on one side and its mean on the other, contradicting linearity of expectation. At the mean, a supporting affine function lies below $g$; its expected linear term vanishes."
+        ],
+        "checks": [
+          "Keep the open convex domain and integrability hypotheses.",
+          "Evaluate the supporting affine function at the mean.",
+          "Explain which convex-analysis facts are being used."
+        ]
+      }
+    },
+    {
+      "id": "l5-s4",
+      "title": "Moment quantities and nesting of the Lp spaces",
+      "pages": [
+        39,
+        40
+      ],
+      "paragraphs": [
+        "For $p>0$, write $$L^p(\\Omega,\\mathcal F,\\mathbb P)=\\{X:\\mathbb E|X|^p<\\infty\\},\\qquad \\|X\\|_p=(\\mathbb E|X|^p)^{1/p}.$$ On a probability space, for $0<p<q$, $$\\|X\\|_p\\le\\|X\\|_q,\\qquad L^q\\subseteq L^p.$$"
+      ],
+      "entry": "1.3.16",
+      "proof": [
+        "The function $g(u)=u^{q/p}$ is convex on $[0,\\infty)$. Jensen applied to $|X|^p$ gives $$\\mathbb E|X|^q=\\mathbb E[(|X|^p)^{q/p}]\\ge(\\mathbb E|X|^p)^{q/p}.$$ Taking the $q$th root proves the comparison."
+      ],
+      "editorial": [
+        "The bracketed inclusion on handwritten p40 is reversed: the displayed norm inequality implies $L^q\\subseteq L^p$, as written here. For full generality, apply Jensen first to $\\min(|X|,n)^p$, then use monotone convergence; this does not assume the lower moment is finite in advance. When $p<1$, $\\|\\cdot\\|_p$ is a moment quantity or quasi-norm, not a norm. The total probability $1$ is needed for this comparison without a measure-mass factor."
+      ]
+    },
+    {
+      "id": "l5-s5",
+      "title": "Hölder inequality, Young inequality, and equality",
+      "pages": [
+        40,
+        41
+      ],
+      "paragraphs": [
+        "If $p,q>1$ satisfy $1/p+1/q=1$, then for random variables on the same probability space, $$\\mathbb E|XY|\\le\\|X\\|_p\\|Y\\|_q.$$ The case $p=q=2$ is Cauchy-Schwarz. No independence assumption is needed."
+      ],
+      "entry": "1.3.17",
+      "proof": [
+        "First assume the norms are finite and nonzero, and divide $X,Y$ by their respective norms. It is enough to treat $\\|X\\|_p=\\|Y\\|_q=1$. For $x,y\\ge0$, Young inequality is $$\\frac{x^p}{p}+\\frac{y^q}{q}\\ge xy.$$ For fixed $x$, minimize $h(y)=x^p/p+y^q/q-xy$. Its derivative is $h^{\\prime}(y)=y^{q-1}-x$, so the minimum occurs at $y=x^{p-1}$, where $y^q=x^p$ and $h(y)=x^p(1/p+1/q-1)=0$. The small convex graph in the notes shows this minimum.",
+        "Apply Young pointwise and take expectations: $$\\mathbb E|XY|\\le\\mathbb E\\left(\\frac{|X|^p}{p}+\\frac{|Y|^q}{q}\\right)=\\frac1p+\\frac1q=1.$$ Rescaling proves Hölder. If either norm is zero, the corresponding variable is zero almost surely. Cases with infinite positive norms make the bound immediate.",
+        "With the unit-norm normalization, equality holds exactly when the nonnegative Young gap is zero almost surely. Equivalently, $$|X|=|Y|^{q-1}\\quad\\text{almost surely},\\qquad |X|^p=|Y|^q\\quad\\text{almost surely}.$$"
+      ],
+      "editorial": [
+        "Without normalization, the equality condition for finite nonzero norms is $|X|^p/\\|X\\|_p^p=|Y|^q/\\|Y\\|_q^q$ almost surely. Absolute values are essential; Hölder bounds the absolute product. The scalar calculus proof and normalization are both part of the lecture."
+      ]
+    },
+    {
+      "id": "l5-s6",
+      "title": "Essential supremum and Minkowski inequality",
+      "pages": [
+        41,
+        42
+      ],
+      "paragraphs": [
+        "The essential supremum norm is $$\\|X\\|_\\infty=\\inf\\{t\\ge0:\\mathbb P(|X|>t)=0\\}.$$ It ignores changes on null events. Minkowski inequality states that for $1\\le p<\\infty$ and $X,Y\\in L^p$, $$\\|X+Y\\|_p\\le\\|X\\|_p+\\|Y\\|_p.$$"
+      ],
+      "entry": "1.3.18",
+      "proof": [
+        "Before dividing by a norm, establish finiteness. For $p\\ge1$ and $a,b\\ge0$, Jensen gives $$(a+b)^p\\le2^{p-1}(a^p+b^p).$$ Hence $$\\|X+Y\\|_p\\le2^{1-1/p}(\\|X\\|_p^p+\\|Y\\|_p^p)^{1/p}\\le2^{1-1/p}(\\|X\\|_p+\\|Y\\|_p)<\\infty.$$ This preliminary estimate has an extra factor; the next argument removes it.",
+        "The case $p=1$ follows directly from $|X+Y|\\le|X|+|Y|$. For $p>1$ take $q=p/(p-1)$, so $(p-1)q=p$. Hölder gives $$\\mathbb E|X+Y|^p\\le\\mathbb E[(|X|+|Y|)|X+Y|^{p-1}]\\le(\\|X\\|_p+\\|Y\\|_p)(\\mathbb E|X+Y|^{(p-1)q})^{1/q}=(\\|X\\|_p+\\|Y\\|_p)\\|X+Y\\|_p^{p-1}.$$ If the last norm is positive, divide by its $(p-1)$st power; if it is zero, the result is immediate."
+      ],
+      "editorial": [
+        "Correction to p41: the annotation “works for any $p>0$” cannot apply to the displayed Jensen estimate with factor $2^{1-1/p}$. For $0<p<1$, the valid estimate is $\\mathbb E|X+Y|^p\\le\\mathbb E|X|^p+\\mathbb E|Y|^p$. Equivalently, $\\|X+Y\\|_p\\le2^{1/p-1}(\\|X\\|_p+\\|Y\\|_p)$. Ordinary Minkowski generally fails below $1$. For example, indicators of disjoint events of probability $1/2$ have sum norm $1$, while the sum of their $p$-quantities is $2^{1-1/p}<1$. The essential supremum separately obeys the triangle inequality by the pointwise bound outside a null set."
+      ],
+      "recall": {
+        "question": "Where does Hölder enter the proof of Minkowski, and why is finiteness checked before division?",
+        "answer": [
+          "Write $|X+Y|^p\\le(|X|+|Y|)|X+Y|^{p-1}$ and apply Hölder to each summand with conjugate exponent $q=p/(p-1)$. The identity $(p-1)q=p$ produces a common factor $\\|X+Y\\|_p^{p-1}$. A preliminary convexity estimate makes that factor finite; then handle the zero case or divide."
+        ],
+        "checks": [
+          "Treat p=1 separately.",
+          "Use conjugate exponents.",
+          "Do not divide by zero or infinity.",
+          "Do not extend Minkowski below p=1."
+        ]
+      }
+    },
+    {
+      "id": "l5-s7",
+      "title": "From a seminorm on variables to a norm on equivalence classes",
+      "pages": [
+        42,
+        42
+      ],
+      "paragraphs": [
+        "For $p\\ge1$, the collection of variables with finite $p$th moment is a vector space: $X\\in L^p$ implies $aX\\in L^p$, and Minkowski gives $X+Y\\in L^p$. The quantity $\\|\\cdot\\|_p$ is homogeneous and satisfies the triangle inequality, but $\\|X\\|_p=0$ means only that $X=0$ almost surely.",
+        "Thus it is a seminorm on literal measurable functions. Define $$X\\sim Y\\quad\\Longleftrightarrow\\quad\\mathbb P(X\\ne Y)=0.$$ Passing to the quotient by this equivalence makes $L^p$ a normed vector space; two representatives differing only on a null event are the same element."
+      ],
+      "entry": "1.3.2",
+      "editorial": [
+        "The lecture uses $L^p$ for the quotient after first discussing actual variables. The usual notation often suppresses that distinction. For $0<p<1$ the quotient is still useful, but the displayed moment quantity is not a norm."
+      ]
+    },
+    {
+      "id": "l5-s8",
+      "title": "Three convergence modes and their first implications",
+      "pages": [
+        43,
+        43
+      ],
+      "paragraphs": [
+        "For random variables $(X_n)_{n\\ge1}$ and $X_\\infty$ on one probability space, almost-sure convergence means $$\\mathbb P(\\{\\omega:\\lim_nX_n(\\omega)\\text{ exists and equals }X_\\infty(\\omega)\\})=1.$$ Convergence in probability, written $X_n\\xrightarrow{\\mathbb P}X_\\infty$, means $$\\mathbb P(|X_n-X_\\infty|\\ge\\varepsilon)\\longrightarrow0\\quad\\text{for every }\\varepsilon>0.$$ For $p>0$, convergence in $L^p$ means $X_n,X_\\infty\\in L^p$ and $$\\mathbb E|X_n-X_\\infty|^p\\longrightarrow0.$$",
+        "For finite real-valued limits, almost-sure convergence implies convergence in probability."
+      ],
+      "entry": "1.3.22",
+      "proof": [
+        "For fixed $\\varepsilon>0$, consider $$B_{n,\\varepsilon}=\\left\\{\\sup_{m\\ge n}|X_m-X_\\infty|\\ge\\varepsilon\\right\\}.$$ These tail events decrease with $n$. On a path converging to $X_\\infty$, the tail supremum eventually falls below $\\varepsilon$, so $\\mathbb P(\\bigcap_n B_{n,\\varepsilon})=0$. Continuity from above gives $\\mathbb P(B_{n,\\varepsilon})\\to0$. Since $\\{|X_n-X_\\infty|\\ge\\varepsilon\\}\\subseteq B_{n,\\varepsilon}$, convergence in probability follows."
+      ],
+      "editorial": [
+        "Using $>$ instead of $\\ge$ in the definition of convergence in probability is equivalent: change the positive threshold slightly. For infinite limits use a metric on the extended real line rather than absolute subtraction."
+      ]
+    },
+    {
+      "id": "l5-s9",
+      "title": "The sweeping-interval counterexample",
+      "pages": [
+        43,
+        44
+      ],
+      "paragraphs": [
+        "Convergence in probability need not imply almost-sure convergence. On $((0,1],\\mathcal B_{(0,1]},\\text{uniform measure})$, set $$X_{k,\\ell}(\\omega)=\\mathbf1_{[\\ell/k,(\\ell+1)/k]}(\\omega),\\qquad k\\ge1,\\quad0\\le\\ell<k.$$ Enumerate row by row: $$X_{1,0},\\ X_{2,0},X_{2,1},\\ X_{3,0},X_{3,1},X_{3,2},\\ldots.$$ The horizontal bar in the notes shows a cell of length $1/k$ moving across the full interval.",
+        "Each row-$k$ variable has $\\mathbb P(X_{k,\\ell}\\ne0)=1/k\\to0$ as the enumeration proceeds. Thus the enumerated sequence converges to zero in probability. Yet every fixed $\\omega\\in(0,1]$ belongs to a cell in every row, so its path is $1$ infinitely often and does not tend to zero."
+      ],
+      "entry": "1.3.25",
+      "editorial": [
+        "For all sufficiently large rows each fixed outcome is also outside some cells; hence each path has infinitely many zeros as well. In fact $\\mathbb E|X_{k,\\ell}|^p=1/k$ for every $p>0$, so this same example converges to zero in every finite $L^p$ while failing almost-sure convergence. The closed cell endpoints can overlap, but endpoints have zero uniform mass and do not change the probability calculation."
+      ],
+      "diagram": "typewriter"
+    },
+    {
+      "id": "l5-s10",
+      "title": "Lp convergence, shrinking spikes, and continuous maps",
+      "pages": [
+        44,
+        45
+      ],
+      "paragraphs": [
+        "For every $p>0$, convergence in $L^p$ implies convergence in probability: $$\\mathbb P(|X_n-X_\\infty|\\ge\\varepsilon)\\le\\varepsilon^{-p}\\mathbb E|X_n-X_\\infty|^p\\longrightarrow0.$$ This is Markov applied to the powered error.",
+        "The converse fails. On the uniform interval take $$X_n(\\omega)=2^n\\mathbf1_{(0,1/n]}(\\omega),\\qquad X_\\infty=0.$$ Then $\\mathbb P(X_n\\ne0)=1/n\\to0$, and every fixed $\\omega>0$ is eventually outside the shrinking interval, so convergence is also almost sure. Nevertheless, for every fixed $p>0$, $$\\mathbb E|X_n-X_\\infty|^p=\\frac{2^{np}}{n}\\longrightarrow\\infty.$$ Thus this one sequence fails convergence in every finite $L^p$, despite converging almost surely and in probability to zero.",
+        "Almost-sure convergence and finite-$p$ convergence in $L^p$ have no implication in either direction in general: use the sweeping intervals for one direction and suitably growing shrinking spikes for the other. If $X_n\\to0$ almost surely and $f$ is continuous at $0$, then $f(X_n)\\to f(0)$ almost surely. Continuity alone does not produce convergence in $L^p$."
+      ],
+      "entry": "1.3.29",
+      "editorial": [
+        "The handwritten spike has exponential height $2^n$ and support $(0,1/n]$. Both the height and the moment calculation are retained: for each $p>0$, exponential growth $2^{np}$ dominates the denominator $n$. Each individual term still has a finite $p$th moment."
+      ],
+      "recall": {
+        "question": "Give examples separating convergence almost surely, in probability, and in Lp.",
+        "answer": [
+          "The sweeping-cell sequence converges in probability and in every finite $L^p$, but not almost surely. The lecture spike $2^n\\mathbf1_{(0,1/n]}$ on the uniform interval converges almost surely and in probability to zero, while its $p$th moment $2^{np}/n$ diverges for every $p>0$. Markov proves that $L^p$ convergence always implies convergence in probability."
+        ],
+        "checks": [
+          "Specify the probability space.",
+          "Compute the relevant probability and moment.",
+          "Distinguish a statement about a fixed outcome from a fixed index."
+        ]
+      }
+    }
+  ]
+}

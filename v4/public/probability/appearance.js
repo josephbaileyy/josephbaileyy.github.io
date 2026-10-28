@@ -30,6 +30,7 @@
   apply();
   document.addEventListener('DOMContentLoaded', () => {
     const menu = document.getElementById('appearance-menu');
+    if (!menu) return; // Reading-only surfaces still inherit the saved appearance.
     const status = document.getElementById('appearance-status');
     function sync() {
       menu.querySelectorAll('[name="theme"]').forEach(input => input.checked = input.value === settings.theme);

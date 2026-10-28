@@ -1,0 +1,185 @@
+{
+  "number": 1,
+  "title": "Measures, measurable sets, and the need for extension",
+  "ink": "green",
+  "color": "#386b32",
+  "pages": [
+    1,
+    9
+  ],
+  "sections": [
+    {
+      "id": "l1-s1",
+      "title": "Why volume cannot be assigned to every set",
+      "pages": [
+        1,
+        2
+      ],
+      "paragraphs": [
+        "We would like to assign a size to subsets of a space: $\\mu:2^\\Omega\\to[0,\\infty]$, with $A\\mapsto\\mu(A)$. For $\\Omega=\\mathbb R^3$, the motivating example is ordinary volume, $\\mu(A)=\\operatorname{Vol}(A)$. The notes warn that assigning the expected volume to every subset is impossible in interesting cases.",
+        "Two sets $A,B\\subseteq\\mathbb R^3$ are equidecomposable if they have finite disjoint decompositions $$A=\\bigsqcup_{i=1}^{n}A_i,\\qquad B=\\bigsqcup_{i=1}^{n}B_i,$$ with each $A_i$ obtained from $B_i$ by a translation and a rotation.",
+        "Banach–Tarski theorem, as recorded in the lecture: with $\\operatorname{Ball}(r)=\\{x\\in\\mathbb R^3:\\lVert x\\rVert\\le r\\}$, the balls $\\operatorname{Ball}(1)$ and $\\operatorname{Ball}(2)$ are equidecomposable.",
+        "The lecture lists three responses: give up additivity; give up invariance under rotations and translations; or give up assigning volume to all subsets. The third choice leads to measure theory."
+      ],
+      "editorial": [
+        "The conflict concerns a finitely additive size, invariant under rigid motions, that agrees with ordinary finite, positive ball volume. Equidecomposability would give the two balls equal size, although ordinary volume scales by $2^3=8$. The decomposition pieces need not be measurable for ordinary volume."
+      ]
+    },
+    {
+      "id": "l1-s2",
+      "title": "Sigma-algebras and disjointization",
+      "pages": [
+        2,
+        3
+      ],
+      "paragraphs": [
+        "A collection $\\mathcal F\\subseteq2^\\Omega$ is a $\\sigma$-algebra if $\\varnothing\\in\\mathcal F$, if $A\\in\\mathcal F$ implies $A^c\\in\\mathcal F$, and if $$A_i\\in\\mathcal F\\ (i\\in\\mathbb N)\\quad\\Longrightarrow\\quad\\bigcup_{i=1}^{\\infty}A_i\\in\\mathcal F.$$ Complements are relative to $\\Omega$. The symbol $\\sigma$ emphasizes countable closure.",
+        "It follows that $\\Omega\\in\\mathcal F$ and that countable intersections belong to $\\mathcal F$. The pair $(\\Omega,\\mathcal F)$ is a measurable space.",
+        "Exercise in the notes: replace countable union closure by closure under intersections of two members and under countable unions of pairwise disjoint members. Together with the empty-set and complement conditions, these give the same definition."
+      ],
+      "entry": "1.1.1",
+      "proof": [
+        "For arbitrary $A_n\\in\\mathcal F$, define $$B_n=A_n\\setminus\\bigcup_{i=1}^{n-1}A_i.$$ Finite intersections and complements give finite unions and differences, so $B_n\\in\\mathcal F$. The $B_n$ are pairwise disjoint and $\\bigcup_nB_n=\\bigcup_nA_n$. Apply disjoint-union closure.",
+        "Countable intersection closure follows from De Morgan’s identity $\\bigcap_iA_i=(\\bigcup_iA_i^c)^c$."
+      ],
+      "recall": {
+        "question": "Reconstruct the disjointization argument that turns disjoint countable union closure into arbitrary countable union closure.",
+        "answer": [
+          "Use complement and finite-intersection closure to form $B_n=A_n\\setminus\\bigcup_{i<n}A_i$. These sets are measurable, pairwise disjoint, and have the same union as the original sequence. Then use disjoint countable union closure."
+        ],
+        "checks": [
+          "State the other closure assumptions.",
+          "Define the first piece, with an empty previous union.",
+          "Explain why the union is unchanged."
+        ]
+      }
+    },
+    {
+      "id": "l1-s3",
+      "title": "Measures and probability spaces",
+      "pages": [
+        3,
+        3
+      ],
+      "paragraphs": [
+        "On a measurable space $(\\Omega,\\mathcal F)$, a measure is a function $\\mu:\\mathcal F\\to[0,\\infty]$ satisfying $\\mu(\\varnothing)=0$ and countable additivity: for pairwise disjoint $A_i\\in\\mathcal F$, $$\\mu\\!\\left(\\bigsqcup_{i=1}^{\\infty}A_i\\right)=\\sum_{i=1}^{\\infty}\\mu(A_i).$$ The triple $(\\Omega,\\mathcal F,\\mu)$ is a measure space.",
+        "If $\\mu(\\Omega)=1$, the measure is a probability measure, usually written $\\mathbb P$, and $(\\Omega,\\mathcal F,\\mathbb P)$ is a probability space."
+      ],
+      "entry": "1.1.2"
+    },
+    {
+      "id": "l1-s4",
+      "title": "Examples and non-atomicity",
+      "pages": [
+        4,
+        4
+      ],
+      "paragraphs": [
+        "A finite sample space need not use the whole power set. The notes use $\\Omega=\\{0,1,2,3\\}$ and the partition into $\\{0,1\\}$ and $\\{2,3\\}$, giving $$\\mathcal F=\\{\\varnothing,\\{0,1\\},\\{2,3\\},\\Omega\\}.$$",
+        "On $(\\mathbb R,2^{\\mathbb R})$, fix $x\\in\\mathbb R$. The Dirac measure at $x$ is $$\\delta_x(A)=\\begin{cases}1,&x\\in A,\\\\0,&x\\notin A.\\end{cases}$$",
+        "For $\\Omega=[0,1]$ with its whole power set, enumerate $[0,1]\\cap\\mathbb Q=\\{q_1,q_2,\\ldots\\}$ without repetitions and put $$\\mathbb P(A)=\\sum_{i:q_i\\in A}2^{-i}.$$ This is a probability measure concentrated on a countable set.",
+        "Another example on $(\\mathbb R,2^{\\mathbb R})$ is counting measure: $\\mu(A)$ is the number of elements of $A$ when $A$ is finite and is $\\infty$ when $A$ is infinite.",
+        "A measure space is non-atomic if every $A\\in\\mathcal F$ with $\\mu(A)>0$ contains a measurable $B\\subseteq A$ with $$0<\\mu(B)<\\mu(A).$$"
+      ],
+      "entry": "1.1.7",
+      "editorial": [
+        "No masses are assigned in the finite-space example. The Dirac measure, rationally supported probability, and counting measure all have atoms. An uncountable underlying space alone does not imply non-atomicity."
+      ]
+    },
+    {
+      "id": "l1-s5",
+      "title": "Generated sigma-algebras and Borel sets",
+      "pages": [
+        5,
+        5
+      ],
+      "paragraphs": [
+        "For a collection $\\{A_\\alpha\\}_{\\alpha\\in\\Gamma}$ of subsets of $\\Omega$, the generated $\\sigma$-algebra is the smallest $\\sigma$-algebra containing every $A_\\alpha$. It is denoted $\\sigma(\\{A_\\alpha\\}_{\\alpha\\in\\Gamma})$ and equals $$\\bigcap\\{\\mathcal G:\\mathcal G\\text{ is a }\\sigma\\text{-algebra on }\\Omega,\\ A_\\alpha\\in\\mathcal G\\text{ for every }\\alpha\\}.$$",
+        "This is well defined because the intersection of any collection of $\\sigma$-algebras on the same space is a $\\sigma$-algebra. The collection being intersected is nonempty since it contains $2^\\Omega$.",
+        "If $\\Omega$ is a topological space, its Borel $\\sigma$-algebra is $$\\mathcal B_\\Omega=\\sigma(\\{O\\subseteq\\Omega:O\\text{ is open}\\}).$$ The topology supplies the open sets; arbitrary unions and finite intersections of open sets are open."
+      ],
+      "entry": "1.1.14"
+    },
+    {
+      "id": "l1-s6",
+      "title": "Rational intervals generate the real Borel sets",
+      "pages": [
+        6,
+        6
+      ],
+      "paragraphs": [
+        "Write $\\mathcal B=\\mathcal B_{\\mathbb R}$. The lecture records $\\mathcal B_{\\mathbb R}\\ne2^{\\mathbb R}$. Define $$\\mathcal B_{\\mathbb R}^{\\prime}=\\sigma(\\{(a,b):a<b,\\ a,b\\in\\mathbb R\\}),\\qquad\\mathcal B_{\\mathbb R}^{\\prime\\prime}=\\sigma(\\{(a,b):a<b,\\ a,b\\in\\mathbb Q\\}).$$ Exercise: both equal $\\mathcal B_{\\mathbb R}$.",
+        "The immediate inclusions are $\\mathcal B_{\\mathbb R}^{\\prime\\prime}\\subseteq\\mathcal B_{\\mathbb R}^{\\prime}\\subseteq\\mathcal B_{\\mathbb R}$. For the reverse inclusion, show that every open set belongs to $\\mathcal B_{\\mathbb R}^{\\prime\\prime}$."
+      ],
+      "entry": "1.1.17",
+      "proof": [
+        "For open $A\\subseteq\\mathbb R$, $$A=\\bigcup_{\\substack{a,b\\in\\mathbb Q,\\ a<b\\\\(a,b)\\subseteq A}}(a,b).$$ Each $x\\in A$ has an open neighborhood in $A$, and rational endpoints can be chosen on either side of $x$ inside that neighborhood. Only countably many rational endpoint pairs occur, so the union belongs to $\\mathcal B_{\\mathbb R}^{\\prime\\prime}$.",
+        "Minimality now gives $\\mathcal B_{\\mathbb R}\\subseteq\\mathcal B_{\\mathbb R}^{\\prime\\prime}$, completing both equalities."
+      ],
+      "editorial": [
+        "The existence of non-Borel subsets is asserted without proof in the handwriting; the generator proof does not establish that proper inclusion."
+      ]
+    },
+    {
+      "id": "l1-s7",
+      "title": "Product measurable spaces and coordinate strips",
+      "pages": [
+        7,
+        7
+      ],
+      "paragraphs": [
+        "For measurable spaces $(\\Omega_i,\\mathcal F_i)$, $i=1,\\ldots,n$, the product space has underlying set $\\Omega=\\Omega_1\\times\\cdots\\times\\Omega_n$ and $\\sigma$-algebra $$\\mathcal F_1\\otimes\\cdots\\otimes\\mathcal F_n=\\sigma(\\{A_1\\times\\cdots\\times A_n:A_i\\in\\mathcal F_i\\}).$$",
+        "The example takes two copies of $(\\mathbb R,\\mathcal B_{\\mathbb R})$. Its drawing shows the rectangle $A_1\\times A_2$ with horizontal projection $A_1$ and vertical projection $A_2$. The lecture records $$\\mathcal B_{\\mathbb R^2}=\\mathcal B_{\\mathbb R}\\otimes\\mathcal B_{\\mathbb R}.$$",
+        "Let $\\mathcal T=\\{\\varnothing,\\mathbb R\\}$. In contrast, $$\\widetilde{\\mathcal F}=\\sigma(\\{A\\times\\mathbb R:A\\in\\mathcal B_{\\mathbb R}\\})=\\mathcal B_{\\mathbb R}\\otimes\\mathcal T.$$ Its drawing shows a vertical strip: the first coordinate is restricted and the second is unrestricted."
+      ],
+      "entry": "1.1.20",
+      "editorial": [
+        "The strip $\\sigma$-algebra consists exactly of $A\\times\\mathbb R$ for Borel $A$, including the empty set. It is strictly smaller than $\\mathcal B_{\\mathbb R^2}$: $\\mathbb R\\times(0,1)$ is Borel but is not such a strip. Product $\\sigma$-algebras are generated by rectangles; they are not merely collections of rectangles."
+      ],
+      "diagram": "product-rectangle"
+    },
+    {
+      "id": "l1-s8",
+      "title": "Uniform length and the interval algebra",
+      "pages": [
+        8,
+        8
+      ],
+      "paragraphs": [
+        "We seek $\\mu:\\mathcal F\\to[0,1]$ on $\\Omega=(0,1]$, where $\\mathcal F$ contains the intervals and $$\\mu((a,b])=b-a\\qquad(0\\le a<b\\le1).$$ For $\\mathcal F=\\mathcal B_{(0,1]}$, does such a measure exist, and is it unique?",
+        "An algebra $\\mathcal A\\subseteq2^\\Omega$ contains $\\Omega$ and is closed under complements and finite unions. The smallest algebra containing these half-open intervals consists of their finite disjoint unions: $$\\mathcal A=\\left\\{\\bigsqcup_{i=1}^n(a_i,b_i]:0\\le a_1<b_1<a_2<\\cdots<a_n<b_n\\le1,\\ n<\\infty\\right\\}.$$ Include the empty union."
+      ],
+      "entry": "1.1.28",
+      "editorial": [
+        "The handwriting leaves the nonempty/whole-space condition implicit in its definition of an algebra; it is explicit here. Adjacent intervals may be merged to obtain strictly separated endpoints."
+      ]
+    },
+    {
+      "id": "l1-s9",
+      "title": "Why an extension theorem is needed",
+      "pages": [
+        9,
+        9
+      ],
+      "paragraphs": [
+        "The Borel $\\sigma$-algebra contains singletons: for $x\\in(0,1]$, $$\\{x\\}=\\bigcap_{n=1}^{\\infty}\\bigl((x-1/n,x]\\cap(0,1]\\bigr).$$ A nonempty singleton is not a finite union of nondegenerate half-open intervals, so it is not in the interval algebra.",
+        "Carathéodory extension theorem, first version in the lecture: let $\\mathcal A$ be an algebra and $\\mu_0:\\mathcal A\\to[0,1]$ satisfy $\\mu_0(\\varnothing)=0$ and countable additivity whenever the disjoint union stays in $\\mathcal A$: $$A_i\\in\\mathcal A,\\quad\\bigsqcup_{i=1}^{\\infty}A_i\\in\\mathcal A\\quad\\Longrightarrow\\quad\\mu_0\\!\\left(\\bigsqcup_{i=1}^{\\infty}A_i\\right)=\\sum_{i=1}^{\\infty}\\mu_0(A_i).$$ Then there is a unique measure $\\mu$ on $\\sigma(\\mathcal A)$ restricting to $\\mu_0$. The notes mark the finite-total-mass hypothesis $\\mu_0(\\Omega)<\\infty$."
+      ],
+      "entry": "1.1.30",
+      "editorial": [
+        "These conditions define a premeasure on the algebra. The next lecture gives the general $[0,\\infty]$-valued version and $\\sigma$-finite uniqueness. In the $[0,1]$-valued version, total mass is already finite."
+      ],
+      "recall": {
+        "question": "What must be checked about interval length before applying the extension theorem? Why is finite additivity insufficient?",
+        "answer": [
+          "The domain must be an algebra, the empty set must have mass zero, and countable additivity must hold for pairwise disjoint sequences whose union stays in the algebra. Finite additivity alone does not provide the required infinite-union limit. Finite total mass gives uniqueness here."
+        ],
+        "checks": [
+          "Keep the union-in-the-algebra condition.",
+          "Distinguish premeasure verification from applying the theorem.",
+          "State the uniqueness hypothesis."
+        ]
+      }
+    }
+  ]
+}
