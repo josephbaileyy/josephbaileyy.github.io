@@ -1,3 +1,8 @@
+import {entries as clt} from './section-3-1.js';
+import {entries as weak} from './section-3-2.js';
+import {entries as characteristic} from './section-3-3.js';
+import {entries as poissonProcess} from './section-3-4.js';
+import {entries as vectors} from './section-3-5.js';
 import {entries as weakLaws} from './section-2-1.js';
 import {entries as borelCantelli} from './section-2-2.js';
 import {entries as strongLaws} from './section-2-3.js';
@@ -37,6 +42,19 @@ export const sections=[
  {n:'2.2.1',anchor:'section-2-2-1',title:'Limit superior and the Borel–Cantelli lemmas',entries:borelCantelli.slice(0,9),sectionStart:'2.2 · The Borel–Cantelli lemmas',intro:'Translate infinitely many events into tail unions, then use summability or independence to decide whether errors keep returning.'},
  {n:'2.2.2',anchor:'section-2-2-2',title:'Applications of Borel–Cantelli',entries:borelCantelli.slice(9),intro:'Connect convergence modes, extract subsequences, and study runs, records, and maxima through their tail probabilities.'},
  {n:'2.3.1',anchor:'section-2-3-1',title:'The subsequence method',entries:strongLaws.slice(0,15),sectionStart:'2.3 · Strong law of large numbers',intro:'Truncation and monotone interpolation give the strong law under pairwise independence. Apply it to empirical distributions, renewals, sampling, and multiplicative growth.'},
- {n:'2.3.2',anchor:'section-2-3-2',title:'Convergence of random series',entries:strongLaws.slice(15),intro:'First-crossing events give a maximal inequality. Summable variances and Kronecker’s lemma turn random-series convergence into strong laws.'}
+ {n:'2.3.2',anchor:'section-2-3-2',title:'Convergence of random series',entries:strongLaws.slice(15),intro:'First-crossing events give a maximal inequality. Summable variances and Kronecker’s lemma turn random-series convergence into strong laws.'},
+ {n:'3.1.1',anchor:'section-3-1-1',title:'The Central Limit Theorem and Lindeberg’s arrays',entries:clt.slice(0,6),intro:'Replace independent summands by matching normals, then turn smooth test comparisons into CDF limits.',sectionStart:'3 · Weak convergence, CLT and Poisson approximation'},
+ {n:'3.1.2',anchor:'section-3-1-2',title:'Applications of the CLT',entries:clt.slice(6),intro:'Explore binomial and Poisson limits, records, heavy tails and the three series theorem.'},
+ {n:'3.2.1',anchor:'section-3-2-1',title:'Convergence in distribution',entries:weak.slice(0,16),intro:'Compare laws, couple quantiles, and study renewal fluctuations, extremes and random-walk occupation times.',sectionStart:'3.2 · Weak convergence'},
+ {n:'3.2.2',anchor:'section-3-2-2',title:'Weak convergence of probability measures',entries:weak.slice(16,30),intro:'Connect continuous tests, continuity sets, total variation and density convergence.'},
+ {n:'3.2.3',anchor:'section-3-2-3',title:'Uniform tightness and vague convergence',entries:weak.slice(30),intro:'Prevent mass from escaping and extract probability limits by diagonal selection.'},
+ {n:'3.3.1',anchor:'section-3-3-1',title:'Characteristic functions: examples, moments and derivatives',entries:characteristic.slice(0,12),intro:'Average complex rotations and turn independent sums into products.',sectionStart:'3.3 · Characteristic functions'},
+ {n:'3.3.2',anchor:'section-3-3-2',title:'Inversion, continuity and convergence',entries:characteristic.slice(12,29),intro:'Recover laws from frequencies and use transform limits to establish weak convergence.'},
+ {n:'3.3.3',anchor:'section-3-3-3',title:'Revisiting the CLT and stable limits',entries:characteristic.slice(29),intro:'Control complex remainders to derive Gaussian and stable sum limits.'},
+ {n:'3.4.1',anchor:'section-3-4-1',title:'Poisson approximation',entries:poissonProcess.slice(0,6),intro:'Count rare events and find Poisson limits for occupancy and coupon collection.',sectionStart:'3.4 · Poisson approximation and the Poisson process'},
+ {n:'3.4.2',anchor:'section-3-4-2',title:'Poisson process',entries:poissonProcess.slice(6),intro:'Connect exponential gaps, independent increments, uniform arrival locations and thinning.'},
+ {n:'3.5.1',anchor:'section-3-5-1',title:'Weak convergence revisited',entries:vectors.slice(0,3),intro:'Extend the metric-space tools before considering joint vector laws.',sectionStart:'3.5 · Random vectors and the multivariate CLT'},
+ {n:'3.5.2',anchor:'section-3-5-2',title:'Characteristic functions of vectors',entries:vectors.slice(3,11),intro:'Test every linear projection, preserving dependence information.'},
+ {n:'3.5.3',anchor:'section-3-5-3',title:'Gaussian vectors and the multivariate CLT',entries:vectors.slice(11),intro:'Construct covariance geometry and derive vector Gaussian limits, including singular laws.'}
 ];
 export const entries=sections.flatMap(s=>s.entries.map(e=>({...e,subsection:s.n})));

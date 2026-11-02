@@ -1,3 +1,4 @@
+import {mountVisual as mountWeak} from './visuals-weak.js';
 import {mountVisual as mountLLN} from './visuals-lln.js';
 import {mountVisual as mountProofs} from './visuals-proofs.js?v=curves2';
 import {mountVisual as mountIndependence} from './visuals-independence.js?v=curves2';
@@ -6,12 +7,12 @@ import {mountVisual as mountInequalities} from './visuals-inequalities.js?v=509c
 import {mountVisual as mountConvergence} from './visuals-convergence.js?v=navigation2';
 import {mountVisual as mountIntegrability} from './visuals-integrability.js?v=intuition1';
 import {initReader} from './reader.js?v=quiet1';
-import {linkDefinitions} from './definitions.js?v=chapter2';
-import {createStudyCards} from './study-cards.js?v=chapter2';
-import {initStudy} from './study.js?v=lectures1';
+import {linkDefinitions} from './definitions.js?v=chapter3';
+import {createStudyCards} from './study-cards.js?v=chapter3';
+import {initStudy} from './study.js?v=chapter3';
 import {lectureLinks} from './lecture-index.js';
-import {initEntrySearch} from './entry-search.js?v=chapter2';
-import {entries,sections} from './content/book.js?v=chapter2';
+import {initEntrySearch} from './entry-search.js?v=chapter3';
+import {entries,sections} from './content/book.js?v=chapter3';
 import {mountVisual as mountGenerated} from './visuals-generated.js';
 import {mountVisual as mountBorel} from './visuals-borel.js?v=borel1';
 import {mountVisual as mountMeasures} from './visuals-1-1-3.js';
@@ -50,7 +51,7 @@ function pills(root,labels,initial,callback){root.innerHTML=labels.map((l,i)=>`<
 const helpers={svg,setup,range,bar,esc,renderMath};
 for(const root of document.querySelectorAll('[data-visual]')){const name=root.dataset.visual;
 if(name==='proof-map'){const e=entries.find(e=>e.n===root.closest('.entry').dataset.entry);root.innerHTML='<div class="proof-flow">'+(e.map||[]).map((step,i)=>`<div class="proof-step"><span class="step-number">${i+1}</span><div><b>${safeMath(step.title)}</b><div>${safeMath(step.body)}</div></div></div>`).join('')+'</div>';continue;}
-if([mountLLN,mountReasoning,mountProofs,mountIndependence,mountIntegration,mountInequalities,mountConvergence,mountIntegrability,mountGenerated,mountBorel,mountMeasures,mountRV,mountLaws,mountEventualBound].some(mount=>mount(root,name,helpers)))continue;
+if([mountWeak,mountLLN,mountReasoning,mountProofs,mountIndependence,mountIntegration,mountInequalities,mountConvergence,mountIntegrability,mountGenerated,mountBorel,mountMeasures,mountRV,mountLaws,mountEventualBound].some(mount=>mount(root,name,helpers)))continue;
 switch(name){
 case 'algebra':{root.innerHTML='<div class="small">Ω = {a, b, c, d} · Select blocks to form A.</div><div class="choices"></div><div class="drawing"></div><div class="result" aria-live="polite"></div>';pills($('.choices',root),['{a, b}','{c, d}'],1,m=>{const sets=['∅','{a,b}','{c,d}','Ω'];$('.drawing',root).innerHTML=svg([0,1].map(i=>`<rect x="${40+i*280}" y="20" width="240" height="80" rx="38" fill="${m&(1<<i)?'#d8e8df':'#f0eee7'}" stroke="#b9c8b7"/><text x="${160+i*280}" y="67" text-anchor="middle">${i?'c　　　　 d':'a　　　　 b'}</text>`).join(''));$('.result',root).textContent=`A = ${sets[m]}　 ·　 Aᶜ = ${sets[3^m]}　 ·　 A ∪ Aᶜ = Ω. Available events: ∅, {a,b}, {c,d}, Ω.`});break}
 case 'measure':{setup(root,range('total','Total mass',0,3,1,.1)+'<label>Event<select data-control="event" aria-label="Event"><option value="3">{a,b}</option><option value="12">{c,d}</option><option value="15">Ω</option><option value="0">∅</option></select></label>',v=>{let w=[.1,.2,.3,.4].map(x=>x*v.total);return [bar(w,['a','b','c','d'],w.map((_,i)=>v.event&(1<<i)?'#47795f':'#dfddd3')),`μ(A) = ${fmt(mass(v.event,w))}; μ(Ω) = ${fmt(v.total)}. ${v.total===1?'This is a probability measure.':'This is a measure; its total mass is not 1.'}`]});break}
@@ -66,7 +67,7 @@ case 'almost':{setup(root,range('t','Mass of common point z',0,.6,0,.05),v=>{con
 }}
 function resize(t){t.style.height='auto';t.style.height=Math.max(90,t.scrollHeight+3)+'px'}
 for(const article of document.querySelectorAll('.entry')){const n=article.dataset.entry;article.querySelectorAll('textarea').forEach(t=>{t.addEventListener('input',()=>{notes[n]={...(notes[n]||{}),[t.dataset.field]:t.value,updatedAt:new Date().toISOString()};$('.save-state',article).textContent=save()?'Saved on this browser':'Not saved — export needed';resize(t)})});$('.notes',article).addEventListener('toggle',()=>article.querySelectorAll('textarea').forEach(resize))}
-$('#export').onclick=()=>{const blob=new Blob([JSON.stringify({format:'probability-notebook',version:1,exportedAt:new Date().toISOString(),source:'Dembo 2019, chapters 1–2',entries:notes},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='probability-notes-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Notes exported.')};
+$('#export').onclick=()=>{const blob=new Blob([JSON.stringify({format:'probability-notebook',version:1,exportedAt:new Date().toISOString(),source:'Dembo 2019, chapters 1–3',entries:notes},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='probability-notes-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Notes exported.')};
 $('#import-notes').onclick=()=>$('#import').click();
 $('#import').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{const d=JSON.parse(await file.text());if(d.format!=='probability-notebook'||d.version!==1||!d.entries||typeof d.entries!=='object')throw Error();const valid={};for(const entry of entries){const v=d.entries[entry.n];if(!v)continue;if(typeof v.restatement!=='string'&&typeof v.notes!=='string')throw Error();valid[entry.n]={restatement:v.restatement||'',notes:v.notes||'',updatedAt:new Date().toISOString()};}const conflicts=Object.keys(valid).filter(n=>notes[n]&&(notes[n].restatement||notes[n].notes)&&JSON.stringify([notes[n].restatement||'',notes[n].notes||''])!==JSON.stringify([valid[n].restatement,valid[n].notes]));if(conflicts.length&&!confirm(`Replace your existing notes in ${conflicts.length} entries with the imported text?`))return;notes={...notes,...valid};save();for(const n of Object.keys(valid)){const a=document.getElementById(id(n));a.querySelectorAll('textarea').forEach(t=>t.value=valid[n][t.dataset.field]);$('.save-state',a).textContent=storageOK?'Imported & saved':'Imported — export needed'}toast('Notes imported.')}catch{toast('This file is not a valid notebook export. Nothing was imported.')}finally{e.target.value=''}};
 function preparePrint(){document.querySelectorAll('.notes,.theorem-details').forEach(d=>{d.dataset.wasOpen=String(d.open);d.open=true;d.querySelectorAll('.print-note').forEach(p=>p.remove());d.querySelectorAll('textarea').forEach(t=>{const p=document.createElement('div');p.className='print-note';p.textContent=t.value||'________________________________________________';t.after(p)})})}function restorePrint(){document.querySelectorAll('.notes,.theorem-details').forEach(d=>d.open=d.dataset.wasOpen==='true')}window.addEventListener('beforeprint',preparePrint);window.addEventListener('afterprint',restorePrint);if(new URLSearchParams(location.search).has('print')){document.getElementById('print-style').media='all';preparePrint();}

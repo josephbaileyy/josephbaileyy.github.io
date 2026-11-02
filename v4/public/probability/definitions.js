@@ -56,7 +56,23 @@ export const definitions = [
  ['2.3.3', 'Strong law of large numbers', ['strong law of large numbers','strong law']],
  ['2.3.5', 'Empirical distribution function', ['empirical distribution function','empirical CDF']],
  ['2.3.16', 'Kolmogorov’s maximal inequality', ['Kolmogorov’s maximal inequality',"Kolmogorov's maximal inequality"]],
- ['2.3.20', 'Kronecker’s lemma', ['Kronecker’s lemma',"Kronecker's lemma"]]
+ ['2.3.20', 'Kronecker’s lemma', ['Kronecker’s lemma',"Kronecker's lemma"]],
+ ["3.1.2", "Central limit theorem", ["central limit theorem", "CLT"]],
+ ["3.2.1", "Convergence in distribution", ["convergence in distribution", "distributional convergence"]],
+ ["3.2.7", "Skorokhod representation", ["Skorokhod representation", "quantile coupling"]],
+ ["3.2.8", "Slutsky’s lemma", ["Slutsky’s lemma", "Slutsky's lemma", "Slutsky", "converging together"]],
+ ["3.2.17", "Weak convergence", ["weak convergence"]],
+ ["3.2.21", "Portmanteau theorem", ["portmanteau theorem", "Portmanteau"]],
+ ["3.2.22", "Total variation", ["total variation", "total-variation"]],
+ ["3.2.31", "Uniform tightness", ["uniform tightness", "uniformly tight", "tightness"]],
+ ["3.3.1", "Characteristic function", ["characteristic functions", "characteristic function"]],
+ ["3.3.18", "Lévy continuity theorem", ["Lévy’s continuity theorem", "Lévy continuity theorem", "Levy continuity theorem"]],
+ ["3.3.32", "Stable law", ["stable laws", "stable law", "domain of attraction"]],
+ ["3.4.7", "Counting process", ["counting process"]],
+ ["3.4.8", "Poisson process", ["Poisson process"]],
+ ["3.5.10", "Cramér–Wold device", ["Cramér–Wold", "Cramer-Wold"]],
+ ["3.5.12", "Positive semidefinite matrix", ["positive semidefinite", "nonnegative definite"]],
+ ["3.5.13", "Gaussian vector", ["Gaussian vector", "multivariate normal"]]
 ].map(([entry,label,aliases])=>({entry,label,aliases}));
 
 export function definitionMatcher(entry, entries) {

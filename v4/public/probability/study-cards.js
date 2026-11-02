@@ -64,7 +64,24 @@ const specs=[
  ['2.2.1','liminf-events','Limit inferior of events',['Some tail consists entirely of hits.','Union of tail intersections.'],r`$$\liminf_n A_n=\bigcup_{m\ge1}\bigcap_{n\ge m}A_n=\{A_n\text{ eventually}\}.$$`],
  ['2.3.5','empirical-cdf','Empirical distribution function',['Average of indicators with the threshold included.'],r`$$F_n(x)=\frac1n\sum_{i=1}^n\mathbf1_{\{X_i\le x\}}.$$`],
  ['2.3.7','renewal-count','Renewal counting process',['Positive waiting times; partial sums are arrival times.','Count arrivals at or before t, including equality.'],r`For $T_0=0$, $T_n=\sum_{i\le n}\tau_i$, $$N_t=\sup\{n\ge0:T_n\le t\}.$$`],
- ['1.4.45','gamma','Gamma density',['Positive shape and rate.','Include the normalization and positive support.']]
+ ['1.4.45','gamma','Gamma density',['Positive shape and rate.','Include the normalization and positive support.']],
+ ["3.2.1", "distribution-convergence", "Convergence in distribution", ["CDF convergence is required at continuity points of the limiting CDF.", "A common probability space is not required."]],
+ ["3.2.17", "weak-convergence", "Weak convergence of measures", ["Probability measures on a Borel space.", "Every fixed bounded continuous test has converging integrals."]],
+ ["3.2.20", "continuity-set", "Boundary and continuity set", ["Boundary is closure minus interior.", "The limiting measure assigns the boundary zero mass."]],
+ ["3.2.22", "total-variation", "Total variation norm", ["Supremum over all measurable tests bounded in absolute value by one.", "The course norm ranges up to two for differences of probabilities."]],
+ ["3.2.31", "tightness", "Tightness and uniform tightness", ["A compact set leaves less than any given positive error outside.", "Uniform tightness uses one compact set for the entire family."]],
+ ["3.2.32", "cdf-tightness", "Tightness of CDFs", ["A common finite interval controls both tails.", "Finitely many initial laws can be absorbed by enlarging the interval."]],
+ ["3.2.35", "vague-cdf", "Vague CDF convergence", ["The source convention requires a right-continuous nondecreasing limit.", "Endpoint limits need not be zero and one."]],
+ ["3.3.1", "characteristic-function", "Characteristic function", ["Expectation of exp(iθX), for every real θ.", "Always exists for real finite random variables."]],
+ ["3.3.32", "stable-law", "Stable law and domain of attraction", ["Stable laws are non-degenerate.", "Independent copies add to a positive scaling and translation of the same law.", "Attraction allows deterministic centering and positive scaling of i.i.d. sums."]],
+ ["3.4.7", "counting-process", "Counting process", ["Right-continuous nondecreasing unit-jump paths starting at zero.", "The source requires infinitely many arrivals with no finite accumulation."]],
+ ["3.4.8", "poisson-process", "Poisson process", ["Positive rate.", "Independent identically distributed exponential gaps."]],
+ ["3.5.1", "state-space-convergence", "Distributional convergence in a state space", ["Weak convergence of the image probability laws.", "Tests are bounded continuous functions on that state space."]],
+ ["3.5.4", "vector-transform", "Vector characteristic function", ["Vector frequency enters through the inner product.", "Expectation of exp(i〈θ,X〉)."]],
+ ["3.5.5", "joint-density", "Joint probability density", ["Nonnegative Borel function integrating to one against product Lebesgue measure.", "Integrating over lower rectangles gives the joint CDF."]],
+ ["3.5.12", "positive-semidefinite", "Positive semidefinite matrix", ["Real symmetric matrix.", "Every quadratic form θᵀAθ is nonnegative."]],
+ ["3.5.13", "gaussian-vector", "Gaussian random vector", ["Transform exp(iθᵀμ−θᵀVθ/2).", "V is symmetric positive semidefinite; singular covariance is allowed."]],
+ ["3.5.21", "nondegenerate-gaussian", "Non-degenerate Gaussian vector", ["Invertible covariance matrix.", "Equivalently every nonzero projection has positive variance."]]
 ];
 const comparisons=[
  {id:'compare-convergence',entry:'1.3.25',name:'Probability versus almost-sure convergence',prompt:'Which mode controls each fixed-time error probability? Which controls an entire path? Give an example separating them.',answer:r`Convergence in probability requires $\mathbf P(|X_n-X|>\epsilon)\to0$ for each fixed $\epsilon>0$. Almost-sure convergence requires convergence of the entire sequence outside one null event. The typewriter on uniform $(0,1]$ has intervals of length $1/k$ in row $k$, so $\mathbf P(|X_n|>\epsilon)\to0$ for $0<\epsilon<1$. Every outcome is visited in every row and missed in every row from $k\geq3$, so the path oscillates between 0 and 1.`,checks:['Bad-event probabilities may vanish while each path keeps failing at later times.','Almost-sure convergence to a finite limit implies probability convergence.'],related:['1.2.25','1.3.22']},

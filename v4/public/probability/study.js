@@ -2,7 +2,7 @@ import {STUDY_KEY,parseStudyState,scheduleReview,cardsInSection,reviewCounts,sel
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const anchor=n=>'#entry-'+n.replaceAll('.','-');
 const visible=element=>element&&element.getClientRects().length>0&&!element.closest('details:not([open])');
-const defaultGroups=['1.1','1.2','1.3','1.4','2.1','2.2','2.3'].map((n,i)=>({n,title:['Probability spaces & measures','Random variables & laws','Integration & convergence','Independence & products','Weak laws','Event limits & Borel–Cantelli','Strong laws & random series'][i]}));
+const defaultGroups=['1.1','1.2','1.3','1.4','2.1','2.2','2.3','3.1','3.2','3.3','3.4','3.5'].map((n,i)=>({n,title:['Probability spaces & measures','Random variables & laws','Integration & convergence','Independence & products','Weak laws','Event limits & Borel–Cantelli','Strong laws & random series','Central limit theorem','Weak convergence & tightness','Characteristic functions','Poisson limits & processes','Random vectors & Gaussian laws'][i]}));
 export function initStudy({cards,sections,renderRich,storageKey=STUDY_KEY,groups=defaultGroups,sectionGroupLabel='Specific subsection',sectionLabel='Section',sourceDisclosureLabel='Full course statement',allSectionsLabel='All covered sections',intro='Try recalling a definition before revealing it. Check the assumptions, then decide when to review it again.'}){
  const dialog=document.querySelector('#study-dialog'),body=dialog.querySelector('.study-body'),status=dialog.querySelector('[role=status]');
  const triggers=[...document.querySelectorAll('[data-open-study]')];let trigger=triggers[0],session=null,revealed=false,ended=false;

@@ -1,4 +1,4 @@
-import {definitions} from './definitions.js?v=chapter2';
+import {definitions} from './definitions.js?v=chapter3';
 const normalize=s=>String(s).normalize('NFD').replace(/\p{M}/gu,'').toLowerCase().replace(/['’]s\b/g,'').replace(/[^\p{L}\p{N}.]+/gu,' ').trim();
 const plain=s=>String(s||'').replace(/<[^>]*>/g,' ').replace(/&(?:lt|gt|amp|quot|#39);/g,' ');
 // Search-only names supplement the reviewed link index without changing in-text links.
@@ -30,6 +30,15 @@ const searchNames=[
  ['2.2.9','Kochen–Stone lemma',['Kochen Stone']],
  ['2.3.3','Strong law of large numbers',['SLLN','Etemadi strong law']],
  ['2.3.6','Glivenko–Cantelli theorem',['Glivenko Cantelli','uniform empirical convergence']],
+ ['3.1.3','Lindeberg central limit theorem',['Lindeberg','Lindeberg CLT']],
+ ['3.1.14','Kolmogorov three series theorem',['three series theorem','three-series']],
+ ['3.2.10','Delta method',['delta method']],
+ ['3.2.13','Extreme value laws',['Gumbel','Frechet','Weibull']],
+ ['3.2.34','Prohorov theorem',['Prokhorov','Prohorov']],
+ ['3.2.37','Helly selection theorem',['Helly','diagonal selection']],
+ ['3.3.13','Lévy inversion theorem',['Levy inversion theorem','Fourier inversion']],
+ ['3.4.1','Poisson approximation theorem',['Poisson approximation','law of small numbers']],
+ ['3.5.16','Multivariate central limit theorem',['multivariate CLT']],
  ['1.4.28','Fubini’s theorem',['Fubini theorem','Fubini']]
 ].map(([entry,label,aliases])=>({entry,label,aliases}));
 const concepts=[...definitions,...searchNames];
