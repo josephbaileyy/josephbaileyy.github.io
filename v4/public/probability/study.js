@@ -3,7 +3,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const anchor=n=>'#entry-'+n.replaceAll('.','-');
 const visible=element=>element&&element.getClientRects().length>0&&!element.closest('details:not([open])');
 const defaultGroups=['1.1','1.2','1.3','1.4','2.1','2.2','2.3','3.1','3.2','3.3','3.4','3.5'].map((n,i)=>({n,title:['Probability spaces & measures','Random variables & laws','Integration & convergence','Independence & products','Weak laws','Event limits & Borel–Cantelli','Strong laws & random series','Central limit theorem','Weak convergence & tightness','Characteristic functions','Poisson limits & processes','Random vectors & Gaussian laws'][i]}));
-export function initStudy({cards,sections,renderRich,storageKey=STUDY_KEY,groups=defaultGroups,sectionGroupLabel='Specific subsection',sectionLabel='Section',sourceDisclosureLabel='Full course statement',allSectionsLabel='All covered sections',intro='Try recalling a definition before revealing it. Check the assumptions, then decide when to review it again.'}){
+export function initStudy({cards,sections,renderRich,storageKey=STUDY_KEY,groups=defaultGroups,sectionGroupLabel='Specific subsection',sectionLabel='Section',sourceDisclosureLabel='Full course statement',allSectionsLabel='All covered sections',richChecks=false,intro='Try recalling a definition before revealing it. Check the assumptions, then decide when to review it again.'}){
  const dialog=document.querySelector('#study-dialog'),body=dialog.querySelector('.study-body'),status=dialog.querySelector('[role=status]');
  const triggers=[...document.querySelectorAll('[data-open-study]')];let trigger=triggers[0],session=null,revealed=false,ended=false;
  let state=parseStudyState(null,cards),storageOK=true;
@@ -18,7 +18,7 @@ export function initStudy({cards,sections,renderRich,storageKey=STUDY_KEY,groups
   body.innerHTML=`<p class="study-intro">${esc(intro)}</p>
    <form class="study-setup"><label for="study-section">${esc(sectionLabel)}</label><select id="study-section"><option value="">${esc(allSectionsLabel)}</option>
    ${groups.map(({n,title})=>`<option value="${esc(n)}">${esc(n)} · ${esc(title)}</option>`).join('')}
-   <optgroup label="${esc(sectionGroupLabel)}">${sections.filter(s=>cardsInSection(cards,s.n).length).map(s=>`<option value="${s.n}">${s.n.startsWith('lecture.')?'':s.n+' · '}${esc(s.title)}</option>`).join('')}</optgroup></select>
+   <optgroup label="${esc(sectionGroupLabel)}">${sections.filter(s=>cardsInSection(cards,s.n).length).map(s=>`<option value="${s.n}">${/^(lecture|practice)\./.test(s.n)?'':s.n+' · '}${esc(s.title)}</option>`).join('')}</optgroup></select>
    <div class="study-options"><div><label for="study-mode">Review</label><select id="study-mode"><option value="due">Due & new cards</option><option value="all">Practice all cards</option></select></div>
    <div><label for="study-size">Session size</label><select id="study-size"><option value="5">5 cards</option><option value="10">10 cards</option><option value="20">20 cards</option><option value="1000">All available cards</option></select></div></div>
    <p class="study-counts" aria-live="polite"></p><button class="study-primary" type="submit">Start studying</button></form>
@@ -38,7 +38,7 @@ export function initStudy({cards,sections,renderRich,storageKey=STUDY_KEY,groups
   if(!session.current){summary();return}
   revealed=false;const card=session.current;
   body.innerHTML=`<div class="study-progress"><span>${session.answered} answered · ${session.queue.length} left</span><button type="button" data-study-end>End session</button></div>
-   <div class="study-question" data-study-card="${esc(card.id)}"><p class="study-kind">${card.kind==='proof'?'Reconstruct the argument':card.kind==='comparison'?'Compare & apply':'Recall a definition'}</p><h3 tabindex="-1">${esc(card.name)}</h3><p class="study-prompt"></p></div>
+   <div class="study-question" data-study-card="${esc(card.id)}"><p class="study-kind">${card.kind==='repair'?'Find and repair the gap':card.kind==='proof'?'Reconstruct the argument':card.kind==='comparison'?'Compare & apply':'Recall a definition'}</p><h3 tabindex="-1">${esc(card.name)}</h3><p class="study-prompt"></p></div>
    <label for="study-attempt">Your attempt <span>(optional)</span></label><textarea id="study-attempt" placeholder="Recall it aloud or on paper, or write it here." rows="3"></textarea>
    <button type="button" class="study-primary" data-study-reveal aria-expanded="false" aria-controls="study-answer">Reveal answer</button>
    <section id="study-answer" hidden><h4 tabindex="-1">Compare with your answer</h4><div class="study-definition"></div><div class="study-check"><h4>Check these points</h4><ul></ul></div>
@@ -51,6 +51,7 @@ export function initStudy({cards,sections,renderRich,storageKey=STUDY_KEY,groups
    if(revealed)return;revealed=true;
    rich('.study-definition',card.answer);
    body.querySelector('.study-check ul').innerHTML=card.checks.map(check=>`<li>${esc(check)}</li>`).join('');
+   if(richChecks)body.querySelectorAll('.study-check li').forEach((li,i)=>renderRich(li,card.checks[i]));
    rich('.study-source-statement',card.sourceStatement);rich('.study-source-remark',card.sourceRemark);
    body.querySelector('.study-source').hidden=card.answer===card.sourceStatement&&!card.sourceRemark;
    body.querySelector('.study-related').innerHTML=card.related?.length?`<p>Related definitions: ${card.related.map(n=>`<a href="${anchor(n)}" data-study-explanation>${n}</a>`).join(' · ')}</p>`:'';

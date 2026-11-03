@@ -21,3 +21,6 @@
 .lecture-diagram{margin:24px 0;padding:18px;border:1px solid var(--line);border-radius:4px;background:var(--paper);break-inside:avoid}.lecture-diagram svg{max-height:280px}.lecture-diagram figcaption{font:13px/1.6 system-ui;color:var(--muted);margin-top:12px}.lecture-diagram svg text{font-family:system-ui,sans-serif}
 @media(max-width:650px){.lecture-diagram{padding:9px;margin:20px 0}.lecture-diagram figcaption{font-size:12px}}
 @media print{.lecture-diagram{padding:10px;max-width:450px;margin:16px auto}.lecture-diagram figcaption{font-size:9pt}}
+
+.lecture-topics{margin:18px 0 0;padding:0;border:0}.lecture-topics>summary{font:13px/1.5 system-ui;color:var(--muted)}.lecture-topics .lecture-section-list{margin-top:12px}
+@media print{.lecture-topics{display:none!important}}

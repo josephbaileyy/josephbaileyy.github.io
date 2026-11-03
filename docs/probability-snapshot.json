@@ -1,5 +1,5 @@
 {
-  "sourceCommit": "c144097072e832dd6673d6c2f3002a06ae85a5cd",
+  "sourceCommit": "0708d250184d146f195c0476c8f0a4a95bd8adbd",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
@@ -119,6 +119,14 @@
       "sha256": "6edbac526fe24306fe1f9a4fa5cdd2b774d77af7c2784995d56d6fa1b7fc5c02"
     },
     {
+      "file": "downloads/homework-1-4-compact.pdf",
+      "sha256": "1258869df878e7f68ec78ca3702c496381fa2888421b3155c5a026c7340caac7"
+    },
+    {
+      "file": "downloads/lecture-notes-compact.pdf",
+      "sha256": "77c04b9d77f7ac690ae074cfcbcb55738762aa9e945fa3b0792f230ae232270f"
+    },
+    {
       "file": "entry-search.js",
       "sha256": "2245112f2faaf060c462d2fd1c928189ca5e347ea40a61e4134a210d4a5e2e2b"
     },
@@ -144,7 +152,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "e8df03940bddfd8f0efc315772d2a4d44b4f4eac85e9539b5504121ef3c59daf"
+      "sha256": "fc6c6e4bf845920a8fcdb974a552f101f4641d7b9165edf6fd76717885ef39bf"
     },
     {
       "file": "intuition-models.js",
@@ -152,7 +160,7 @@
     },
     {
       "file": "lecture-app.js",
-      "sha256": "6d3614a97fe6f4bb31d4c2a14891171a1f3da4414e94508fae6012fc185652d5"
+      "sha256": "dbf3630364a3975c803baa9451ca1a8b48586c4c48264fe811cc1fdbaaec0a15"
     },
     {
       "file": "lecture-diagrams.js",
@@ -208,11 +216,11 @@
     },
     {
       "file": "lectures.css",
-      "sha256": "4466e46709f72ed9993ab23d7799f0ac1354906a8fecd1c74b5ca321b0dcc6b4"
+      "sha256": "bb31f4f3e1e014427ce313eebd5b4f579dd421c9ae5f86d47a391217dc90a577"
     },
     {
       "file": "lectures.html",
-      "sha256": "7056d4314b10266e7878c46bd05683794cbc921ee6d9284f483accf4c5937edf"
+      "sha256": "2656ca6d0334b22305f818e5d4a1b5baf8606bb8a543f98a035809799a09cc62"
     },
     {
       "file": "math.js",
@@ -221,6 +229,34 @@
     {
       "file": "pdf-text.js",
       "sha256": "597c997efaa42a96cebf7534a4481f661982ae100832ad740c926aa149eb1e3a"
+    },
+    {
+      "file": "practice-exams.js",
+      "sha256": "d7377b434081e50f58015384e51d93c6a43ed62ab7a16f14e665320bbdc3ce8b"
+    },
+    {
+      "file": "practice-model.js",
+      "sha256": "57b9686cbfed74dd761546f7c8efecf39966c0664044aab214f981951a75a36c"
+    },
+    {
+      "file": "practice-paths.js",
+      "sha256": "a0b4d4375531efa4dd70b8b9af8b866859ab38ce6af5b15cbf2742858d3cf1a0"
+    },
+    {
+      "file": "practice-problems.js",
+      "sha256": "45b17e1bc5f143290010102c7909ecc5dff6ccdc95184870a95829e92241af9b"
+    },
+    {
+      "file": "practice.css",
+      "sha256": "bb5b888904421ba0f3b2bb10517260a6ce1675b42786376159ed022be5d6a3db"
+    },
+    {
+      "file": "practice.html",
+      "sha256": "ed2c492ebf0e0313d39f547b538f26d3b30d4ea849a913b36da33f605353c620"
+    },
+    {
+      "file": "practice.js",
+      "sha256": "2b8ca464a71caee5098109072c0ab6f981bdc7b58349411d4cd278d2602abb1d"
     },
     {
       "file": "print.css",
@@ -268,7 +304,7 @@
     },
     {
       "file": "study.js",
-      "sha256": "9e117a73cea6aeb45aabb42ef7ebc8fd70b1c61bf4795b29b0da89b8cabd0961"
+      "sha256": "9c933cb407fa9c920da9ef27211cb03b19f4686f772d37017eff8683a5eff8c4"
     },
     {
       "file": "style.css",
