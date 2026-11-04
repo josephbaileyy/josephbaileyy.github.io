@@ -11,6 +11,14 @@ export function sourceHeading(text,preceding){
   ||null;
 }
 
+// Keep only complete entry numbers: never take 1.3.2 out of 1.3.20 or 1.3.2.1.
+export function sourceReferences(text,known){
+ if(/^\d+\.\d+\.\d+\.\s+\S/.test(text))return []; // Subsection title, not a numbered result.
+ return [...text.matchAll(/(?<![\d.])\d+\.\d+\.\d+(?!\d|\.\d)/g)]
+  .filter(m=>known.has(m[0])&&!/(?:Subsection|Section|§)\s*$/.test(text.slice(0,m.index)))
+  .map(m=>({number:m[0],start:m.index,end:m.index+m[0].length}));
+}
+
 // Weight font sizes by visible characters so page numbers, superscripts and
 // headings do not determine the reading size of the main paragraph text.
 export function bodyTextSize(items){

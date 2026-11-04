@@ -1,4 +1,4 @@
-import {sourcePage,coversPage,sourceHeading,bodyTextSize,matchedSplit} from './reader-state.js?v=curves2';
+import {sourcePage,coversPage,sourceHeading,sourceReferences,bodyTextSize,matchedSplit} from './reader-state.js?v=reader-fixes1';
 import {readPageText} from './pdf-text.js';
 // Reader state lives separately from the mathematical content and annotations.
 export function initReader({entries,sections,id,toast}){
@@ -86,15 +86,15 @@ export function initReader({entries,sections,id,toast}){
  }
  function highlightSource(scroll=false){
   document.querySelectorAll('.source-entry-link').forEach(span=>span.classList.toggle('selected',span.dataset.entry===active?.n));
-  if(scroll){const target=document.querySelector('.source-entry-link.selected');if(target)source.scrollTo({top:Math.max(0,target.getBoundingClientRect().top-source.getBoundingClientRect().top+source.scrollTop-80),behavior:'instant'})}
+  if(scroll){const target=document.querySelector('.source-entry-heading.selected');if(target)source.scrollTo({top:Math.max(0,target.getBoundingClientRect().top-source.getBoundingClientRect().top+source.scrollTop-80),behavior:'instant'})}
  }
- function select(e,{push=true,scrollSource=false}={}){
+ function select(e,{push=true,scrollSource=false,fromSource=false}={}){
   if(!e)return;
   if(push){const url=new URL(location);url.hash=id(e.n);url.searchParams.delete('page');pushURL(url)}
-  active=entries.find(item=>item.n===e.n)||e;const changed=pageNumber!==sourcePage(e);pageNumber=sourcePage(e);
+  active=entries.find(item=>item.n===e.n)||e;const nextPage=fromSource&&coversPage(e,pageNumber)?pageNumber:sourcePage(e);const changed=pageNumber!==nextPage;pageNumber=nextPage;
   if(push)setPane('companion');
   updateSelection({scrollSource:scrollSource&&!changed});companion.scrollTop=0;
-  if(split&&(changed||!pdf||matchText))drawPage({scrollSource});
+  if(split&&(changed||!pdf||(matchText&&!fromSource)))drawPage({scrollSource});
   if(!split)document.getElementById(id(e.n)).scrollIntoView({behavior:'instant'});
   if(push)rememberPosition();
  }
@@ -148,7 +148,26 @@ export function initReader({entries,sections,id,toast}){
    container.style.width=`${viewport.width}px`;container.style.height=`${viewport.height}px`;container.style.setProperty('--total-scale-factor',String(viewport.scale*page.userUnit));container.style.setProperty('--scale-round-x','1px');container.style.setProperty('--scale-round-y','1px');container.replaceChildren(canvas);
    const layer=document.createElement('div');layer.className='textLayer';container.append(layer);
    const lib=await pdfLibrary;textLayer=new lib.TextLayer({textContentSource:text,container:layer,viewport});await textLayer.render();if(current!==revision)return;
-   let preceding='';for(const span of textLayer.textDivs){const text=span.textContent.trim();const number=sourceHeading(text,preceding);if(text)preceding=text;const e=entries.find(e=>e.n===number);if(!e)continue;span.classList.add('source-entry-link');span.dataset.entry=e.n;span.title=`Open companion: ${e.type} ${e.n}`;span.setAttribute('role','link');span.tabIndex=0;span.setAttribute('aria-label',`Open companion for ${e.type} ${e.n}`);span.onclick=()=>select(e);span.onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();select(e)}}}
+   const known=new Map(entries.map(e=>[e.n,e]));
+   let preceding='';
+   for(const span of textLayer.textDivs){
+    const raw=span.textContent,text=raw.trim(),heading=sourceHeading(text,preceding);
+    if(text)preceding=text;
+    const refs=sourceReferences(raw,known);if(!refs.length)continue;
+    const fragment=document.createDocumentFragment();let offset=0;
+    for(const ref of refs){
+     fragment.append(document.createTextNode(raw.slice(offset,ref.start)));
+     const e=known.get(ref.number),link=document.createElement('a');
+     link.textContent=raw.slice(ref.start,ref.end);link.href='#'+id(e.n);link.dataset.entry=e.n;
+     const isHeading=heading===e.n;
+     link.className='source-entry-link '+(isHeading?'source-entry-heading':'source-entry-reference');
+     link.title=`Open companion: ${e.type} ${e.n}`;link.setAttribute('aria-label',link.title);
+     // Opening a heading already in view must leave the source at that position.
+     if(isHeading)link.addEventListener('click',event=>{if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;event.preventDefault();select(e,{fromSource:true})});
+     fragment.append(link);offset=ref.end;
+    }
+    fragment.append(document.createTextNode(raw.slice(offset)));span.replaceChildren(fragment);
+   }
    $('.pdf-loading').hidden=true;$('#zoom-value').textContent=`${Math.round(drawingZoom*100)}%`;
    renderedZoom=drawingZoom;
    if(anchor){

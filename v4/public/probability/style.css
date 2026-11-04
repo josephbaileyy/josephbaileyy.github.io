@@ -262,3 +262,15 @@ body:not(.split-view) .fubini-proof-actions{top:68px}
 .lln-chart{margin:.5rem 0}.lln-chart svg{display:block;width:100%;height:auto;color:var(--ink,#293f35)}
 .lln-chart .small{line-height:1.5}.lln-membership{display:flex;flex-wrap:wrap;gap:.45rem}
 .lln-membership span{padding:.35rem .5rem;border:1px solid currentColor;border-radius:.3rem;font-size:.9rem}
+
+/* Event sequences retain the same outcome while the tail or block changes. */
+.bc-event{display:grid;grid-template-columns:5.5em minmax(0,1fr) 3em;align-items:center;gap:8px;margin:5px 0;font-size:.85em}
+.bc-event svg{width:100%;height:28px}
+.bc-path{margin:12px 0;font-size:.85em}
+.bc-membership{display:flex;gap:3px;margin:5px 0}
+.bc-membership>span{flex:1;min-width:0;text-align:center;font-size:.82em}
+.bc-membership small{display:block;font-size:12px}
+.bc-membership b{display:block;background:var(--paper);border:1px solid var(--line);border-radius:3px}
+.bc-membership .bc-hit{background:#47795f;color:white}
+.lq-panels>div{margin-bottom:18px}
+.lq-panels p{margin:6px 0}
