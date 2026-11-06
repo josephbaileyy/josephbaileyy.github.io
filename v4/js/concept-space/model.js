@@ -4,7 +4,9 @@
 // run exactly the same code. Every function is deterministic.
 
 export const CHANNELS = ['semantic', 'math', 'source'];
-export const DEFAULT_WEIGHTS = Object.freeze({ semantic: 0.35, math: 0.45, source: 0.2 });
+// The map is shaped by mathematical structure alone by default. Language and
+// syllabus similarity stay available as exploratory channels.
+export const DEFAULT_WEIGHTS = Object.freeze({ semantic: 0, math: 1, source: 0 });
 export const MODES = ['pca', 'force', 'hybrid'];
 const DEPENDENCY_TYPES = new Set(['prerequisite', 'used_in_proof', 'application']);
 
@@ -270,6 +272,7 @@ export function forceLayout(
     repulsion = 0.0045,
     anchor = 0.9,
     k = 6,
+    initialStep = 0.08,
   } = {},
 ) {
   const { n } = model;
@@ -279,7 +282,7 @@ export function forceLayout(
   const target = levels.map((level) => radius * (0.2 + (0.8 * level) / maxLevel));
   const x = initial.map((p) => [...p]);
   const force = x.map(() => [0, 0, 0]);
-  let step = 0.08 * radius;
+  let step = initialStep * radius;
   for (let t = 0; t < iterations; t++) {
     for (const f of force) f.fill(0);
     for (let i = 0; i < n; i++) {
@@ -386,6 +389,7 @@ export function computeLayout(model, options = {}) {
     geometry = 'volume',
     shells = false,
     previous,
+    warm = false,
   } = options;
   if (!MODES.includes(mode)) throw new Error(`Unknown layout mode ${mode}`);
   const W = combine(model, weights);
@@ -393,6 +397,11 @@ export function computeLayout(model, options = {}) {
   let points;
   if (mode === 'pca') {
     points = fitToSphere(pca.points, { geometry });
+  } else if (warm && previous && previous.length === model.n) {
+    // Warm start: relax from the layout on screen, so a small change in weights is a small
+    // change in the picture. A fresh layout (no `previous`) is the canonical, reproducible one.
+    const start = geometry === 'surface' ? fitToSphere(previous, { geometry }) : previous;
+    points = forceLayout(model, W, start, { geometry, shells, iterations: 220, initialStep: 0.03 });
   } else {
     const start = mode === 'hybrid' ? fitToSphere(pca.points, { geometry }) : seededBall(model);
     points = forceLayout(model, W, start, { geometry, shells });

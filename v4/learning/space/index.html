@@ -118,18 +118,38 @@
           </section>
 
           <section>
-            <h2>Affinity weights</h2>
-            <p class="cs-formula">
-              W<sub>ij</sub> = α S<sup>sem</sup> + β S<sup>math</sup> + γ S<sup>src</sup>
+            <h2>Syllabus</h2>
+            <label class="cs-select" for="cs-week"
+              >Taught through <output id="cs-week-label"></output
+            ></label>
+            <input id="cs-week" type="range" min="1" max="9" step="1" value="9" class="cs-range" />
+            <p class="cs-note" id="cs-week-note"></p>
+          </section>
+
+          <section>
+            <h2>Shape of the map</h2>
+            <p class="cs-note" id="cs-shape-note">
+              Positions come from mathematical structure: typed relations, weighted by how well each
+              is sourced.
             </p>
-            <div id="cs-weights" class="cs-weights"></div>
-            <div class="cs-presets" role="group" aria-label="Weight presets" id="cs-presets">
-              <button type="button" data-preset="semantic">Language</button>
-              <button type="button" data-preset="math">Structure</button>
-              <button type="button" data-preset="source">Syllabus</button>
-              <button type="button" data-preset="default">Default</button>
-            </div>
             <div class="cs-diagnostic" id="cs-diagnostic" aria-live="polite"></div>
+            <details class="cs-explore" id="cs-explore">
+              <summary>Explore other affinities</summary>
+              <p class="cs-note">
+                Mix in shared language (from the lecture notes) or syllabus proximity to see how
+                each would reshape the map. Neither is a dependency.
+              </p>
+              <p class="cs-formula">
+                W<sub>ij</sub> = α S<sup>sem</sup> + β S<sup>math</sup> + γ S<sup>src</sup>
+              </p>
+              <div id="cs-weights" class="cs-weights"></div>
+              <div class="cs-presets" role="group" aria-label="Weight presets" id="cs-presets">
+                <button type="button" data-preset="semantic">Language</button>
+                <button type="button" data-preset="source">Syllabus</button>
+                <button type="button" data-preset="balanced">Mixed</button>
+                <button type="button" data-preset="default">Structure</button>
+              </div>
+            </details>
           </section>
 
           <section>
@@ -138,6 +158,8 @@
               >Colour by
               <select id="cs-color">
                 <option value="chapter">Chapter</option>
+                <option value="week">Week taught</option>
+                <option value="support">How each concept's links are sourced</option>
                 <option value="depth">Dependency depth</option>
                 <option value="evidence" disabled>Evidence (private overlay)</option>
               </select></label
@@ -149,6 +171,10 @@
             <fieldset class="cs-chips" id="cs-relations">
               <legend>Relations drawn</legend>
             </fieldset>
+            <label class="cs-check"
+              ><input type="checkbox" id="cs-unsourced" checked /> Show relations with no source yet
+              <small>(agent proposals, drawn fainter)</small></label
+            >
             <label class="cs-select"
               >Chapter
               <select id="cs-chapter">
@@ -186,13 +212,15 @@
             </p>
             <ul>
               <li>
-                <b>Language</b>: TF-IDF cosine over the concept's own name, aliases and short
-                summary. It measures shared vocabulary only.
+                <b>Structure</b> (the default map): cosine of relation profiles built from typed
+                links (prerequisite, used in proof, generalizes…). Each link is weighted by its
+                source: cited by number in Dembo, named in Dembo, mentioned in the lecture notes, or
+                an unsourced agent proposal (half weight).
               </li>
               <li>
-                <b>Structure</b>: cosine of relation profiles built from typed mathematical links
-                (prerequisite, used in proof, generalizes…). Close means directly linked or sharing
-                link partners.
+                <b>Language</b>: TF-IDF cosine over the sentences of the lecture notes that mention
+                each concept (the agent summary for concepts the notes do not cover yet). It
+                measures shared vocabulary only.
               </li>
               <li>
                 <b>Syllabus</b>: closeness in the Dembo reading order, the lecture-note order,
@@ -203,8 +231,8 @@
               Each channel is divided by its typical strongest-neighbour similarity, so equal
               weights give a concept's closest links equal pull in every channel. PCA is kernel PCA
               of the weighted kernel; Force is a seeded spring–repulsion layout constrained to the
-              sphere; Hybrid starts the force layout from PCA. All relations are agent-proposed and
-              unverified.
+              sphere; Hybrid starts the force layout from PCA. No relation is verified yet: each one
+              lists the source that supports it, or says that none was found.
             </p>
           </details>
         </aside>

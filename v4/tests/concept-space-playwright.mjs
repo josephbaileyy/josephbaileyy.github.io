@@ -55,6 +55,8 @@ try {
   assert.match(await detail.innerText(), /Dominated convergence theorem/);
   assert.match(await detail.innerText(), /Builds on[\s\S]*Fatou/i);
   assert.match(await detail.innerText(), /proposed/);
+  assert.match(await detail.innerText(), /Dembo (cites|names)/, 'relations show their source');
+  assert.match(await detail.innerText(), /Theorem 1\.3\.34/, 'Dembo anchor listed');
   assert.match(desktop.url(), /c=dominated_convergence_theorem/);
   await desktop.waitForTimeout(1200);
   await desktop.screenshot({ path: `${shotsDir}/desktop-focus.png` });
@@ -76,6 +78,9 @@ try {
   await desktop.waitForTimeout(1200);
   await desktop.screenshot({ path: `${shotsDir}/desktop-pca.png` });
 
+  // Default map is structure-only; the affinity mix lives in a disclosure.
+  assert.equal(await desktop.locator('#o-math').textContent(), '100%');
+  await desktop.locator('#cs-explore summary').click();
   await desktop.getByRole('button', { name: 'Syllabus', exact: true }).click();
   await desktop.waitForFunction(() => document.getElementById('o-source').textContent === '100%');
   await desktop.waitForTimeout(400);
@@ -95,6 +100,19 @@ try {
     'surface mode puts every concept on the sphere',
   );
   await desktop.getByRole('button', { name: 'Reset layout' }).click();
+  await desktop.waitForFunction(() => document.getElementById('o-math').textContent === '100%');
+
+  // Syllabus lens: fade concepts scheduled after week 3, colour by week, hide unsourced links.
+  await desktop.locator('#cs-week').fill('3');
+  assert.match(await desktop.locator('#cs-week-note').innerText(), /after week 3/);
+  await desktop.selectOption('#cs-color', 'week');
+  assert.match(await desktop.locator('#cs-legend').innerText(), /week 1/);
+  await desktop.locator('#cs-unsourced').uncheck();
+  await desktop.waitForTimeout(500);
+  await desktop.screenshot({ path: `${shotsDir}/desktop-syllabus-lens.png` });
+  await desktop.locator('#cs-week').fill('9');
+  await desktop.locator('#cs-unsourced').check();
+  await desktop.selectOption('#cs-color', 'chapter');
 
   // A synthetic overlay (never the real one) exercises the private layer locally.
   const graphId = await desktop.evaluate(() => 'concept-atlas:stats310a');

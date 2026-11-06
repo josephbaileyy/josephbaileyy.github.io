@@ -928,3 +928,54 @@ svg {
     scroll-behavior: auto !important;
   }
 }
+
+/* Syllabus lens, exploratory weights and relation sourcing */
+.cs-range {
+  width: 100%;
+  accent-color: var(--accent);
+  margin: 2px 0 6px;
+}
+.cs-select output {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text);
+}
+.cs-explore {
+  margin-top: 10px;
+  border: 1px solid #23272f;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
+.cs-explore summary {
+  cursor: pointer;
+  color: var(--text);
+}
+.cs-explore[open] summary {
+  margin-bottom: 8px;
+}
+.cs-badge {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 0 6px;
+  border-radius: 99px;
+  font-size: 0.68rem;
+  color: var(--c);
+  border: 1px solid var(--c);
+  white-space: nowrap;
+}
+.cs-relations .cs-support {
+  color: #8b92a3;
+  font-size: 0.76rem;
+}
+.cs-relations li.is-unsourced .cs-link {
+  color: var(--muted);
+}
+.cs-anchors li {
+  font-size: 0.84rem;
+}
+.cs-anchors em {
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--quiet);
+}

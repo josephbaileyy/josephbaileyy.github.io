@@ -21,10 +21,10 @@ const model = decode(data);
 const markdown = process.argv.includes('--markdown');
 
 const settings = [
-  ['default', DEFAULT_WEIGHTS],
-  ['semantic only', { semantic: 1, math: 0, source: 0 }],
-  ['math only', { semantic: 0, math: 1, source: 0 }],
-  ['source only', { semantic: 0, math: 0, source: 1 }],
+  ['structure (default)', DEFAULT_WEIGHTS],
+  ['language only', { semantic: 1, math: 0, source: 0 }],
+  ['syllabus only', { semantic: 0, math: 0, source: 1 }],
+  ['mixed 0.3/0.5/0.2', { semantic: 0.3, math: 0.5, source: 0.2 }],
   ['equal', { semantic: 1, math: 1, source: 1 }],
 ];
 const layouts = [
@@ -40,7 +40,7 @@ const rows = [];
 const reviewRows = new Map();
 for (const [label, weights] of settings) {
   for (const [mode, geometry, shells] of layouts) {
-    if (label !== 'default' && (geometry !== 'volume' || shells)) continue;
+    if (label !== 'structure (default)' && (geometry !== 'volume' || shells)) continue;
     const layout = computeLayout(model, { mode, weights, geometry, shells });
     const result = diagnose(model, layout, data.review_pairs);
     const name = `${mode}${geometry === 'surface' ? ' (surface)' : ''}${shells ? ' + shells' : ''}`;
@@ -55,7 +55,7 @@ for (const [label, weights] of settings) {
       `${passed}/${result.reviews.length}`,
       mode === 'pca' ? fmt(result.explained.reduce((a, b) => a + b, 0)) : '',
     ]);
-    if (label === 'default' || mode === 'hybrid') {
+    if (label === 'structure (default)' || mode === 'hybrid') {
       for (const review of result.reviews) {
         const key = `${review.a.slice(8)} ~ ${review.b.slice(8)}`;
         if (!reviewRows.has(key)) reviewRows.set(key, { review, cells: [] });

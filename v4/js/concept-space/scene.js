@@ -202,10 +202,18 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
     model.index.get(relation.source),
     model.index.get(relation.target),
   ]);
+  // One line set per relation type and per support (sourced vs agent-only), so
+  // unsourced proposals can be dimmed or hidden independently.
+  const sourced = (relation) => relation.support && relation.support !== 'agent_only';
   const relationLines = {};
-  for (const [type, style] of Object.entries(RELATION_STYLE)) {
+  for (const [key, type, style, isSourced] of Object.entries(RELATION_STYLE).flatMap(
+    ([type, style]) => [
+      [`${type}:s`, type, style, true],
+      [`${type}:u`, type, style, false],
+    ],
+  )) {
     const members = model.relations
-      .map((relation, k) => (relation.type === type ? k : -1))
+      .map((relation, k) => (relation.type === type && sourced(relation) === isSourced ? k : -1))
       .filter((k) => k >= 0);
     const geometry = new BufferGeometry();
     geometry.setAttribute('position', new BufferAttribute(new Float32Array(members.length * 6), 3));
@@ -224,7 +232,7 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
     });
     const lines = new LineSegments(geometry, material);
     relationGroup.add(lines);
-    relationLines[type] = { lines, members };
+    relationLines[key] = { lines, members, type, isSourced };
   }
   // Highlighted neighbourhood relations (brighter) and affinity links (dashed).
   const highlight = new LineSegments(
@@ -258,6 +266,7 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
   let colors = model.concepts.map(() => '#888');
   let visible = model.concepts.map(() => true);
   let relationVisible = Object.fromEntries(Object.keys(RELATION_STYLE).map((type) => [type, true]));
+  let showUnsourced = true;
   let selected = -1;
   let hovered = -1;
   let neighbourhood = { relations: [], affinity: [] };
@@ -306,8 +315,9 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
     dirty = true;
   }
 
-  function setRelationTypes(map) {
+  function setRelationTypes(map, unsourced = true) {
     relationVisible = { ...map };
+    showUnsourced = unsourced;
     dirty = true;
   }
 
@@ -441,7 +451,7 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
   resize();
 
   function updateLines() {
-    for (const [type, { lines, members }] of Object.entries(relationLines)) {
+    for (const { lines, members, type, isSourced } of Object.values(relationLines)) {
       const attribute = lines.geometry.getAttribute('position');
       members.forEach((k, m) => {
         const [i, j] = relationIndex[k];
@@ -452,9 +462,9 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
       });
       attribute.needsUpdate = true;
       lines.geometry.computeBoundingSphere();
-      lines.visible = relationVisible[type];
+      lines.visible = relationVisible[type] && (isSourced || showUnsourced);
       const focusMode = selected >= 0;
-      lines.material.opacity = focusMode ? 0.07 : 0.42;
+      lines.material.opacity = (focusMode ? 0.07 : 0.42) * (isSourced ? 1 : 0.45);
     }
     // Neighbourhood relations, brighter, with arrowheads at the target.
     const hl = [];
@@ -462,12 +472,13 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
     arrows.clear();
     for (const k of neighbourhood.relations) {
       const relation = model.relations[k];
-      if (!relationVisible[relation.type]) continue;
+      if (!relationVisible[relation.type] || (!showUnsourced && !sourced(relation))) continue;
       const [i, j] = relationIndex[k];
       if (!visible[i] || !visible[j]) continue;
       const a = positions[i];
       const b = positions[j];
       const color = new Color(RELATION_STYLE[relation.type].color);
+      if (!sourced(relation)) color.lerp(new Color(BACKGROUND), 0.4);
       const tail = color.clone().lerp(new Color(BACKGROUND), 0.45);
       hl.push(a.x, a.y, a.z, b.x, b.y, b.z);
       hc.push(tail.r, tail.g, tail.b, color.r, color.g, color.b);

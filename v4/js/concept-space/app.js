@@ -30,9 +30,30 @@ const CHANNEL_LABELS = { semantic: 'Language', math: 'Structure', source: 'Sylla
 const CHANNEL_GREEK = { semantic: 'α', math: 'β', source: 'γ' };
 const PRESETS = {
   semantic: { semantic: 1, math: 0, source: 0 },
-  math: { semantic: 0, math: 1, source: 0 },
   source: { semantic: 0, math: 0, source: 1 },
+  balanced: { semantic: 0.3, math: 0.5, source: 0.2 },
   default: DEFAULT_WEIGHTS,
+};
+const SUPPORT_BADGE = {
+  verified: { label: 'Verified', color: '#0ca30c' },
+  cited: { label: 'Dembo cites', color: '#7fa7ee' },
+  named: { label: 'Dembo names', color: '#a9b2c6' },
+  notes: { label: 'Lecture notes', color: '#6cc3a2' },
+  agent_only: { label: 'No source yet', color: '#8b92a3' },
+};
+const RESULT_KIND = {
+  theo: 'Theorem',
+  lemm: 'Lemma',
+  prop: 'Proposition',
+  coro: 'Corollary',
+  defi: 'Definition',
+  exer: 'Exercise',
+  exam: 'Example',
+  rema: 'Remark',
+};
+const resultLabel = (ref) => {
+  const [kind, number] = ref.split(':');
+  return `${RESULT_KIND[kind] ?? kind} ${number}`;
 };
 const MODE_NOTES = {
   pca: 'Kernel PCA of the weighted kernel: the three directions of largest variance. Axes mean something; most variance is discarded.',
@@ -100,6 +121,8 @@ async function main() {
     kinds: new Set(data.concept_kinds),
     relationTypes: Object.fromEntries(Object.keys(RELATION_STYLE).map((type) => [type, true])),
     chapter: 'all',
+    week: 9,
+    showUnsourced: true,
     selected: -1,
     layout: null,
     overlay: null,
@@ -110,9 +133,33 @@ async function main() {
     degree[model.index.get(relation.target)]++;
   }
   const maxDepth = Math.max(...model.concepts.map((c) => c.depth));
+  const weeks = data.weeks ?? [];
+  const weekIndex = new Map(weeks.map((w, i) => [w.id, i + 1]));
+  // A concept's week is the first syllabus week covering one of its subsections (null if unscheduled).
+  const conceptWeek = model.concepts.map((concept) => {
+    const ids = concept.sources.syllabus_weeks.map((id) => weekIndex.get(id)).filter(Boolean);
+    return ids.length ? Math.min(...ids) : null;
+  });
+  const reached = weeks.filter((w) => w.dates[0] <= data.as_of).length;
+  const supportCounts = {};
+  for (const relation of model.relations) {
+    supportCounts[relation.support] = (supportCounts[relation.support] ?? 0) + 1;
+  }
+  const sourcedShare = model.concepts.map((_, i) => {
+    let total = 0;
+    let good = 0;
+    for (const relation of model.relations) {
+      if (model.index.get(relation.source) !== i && model.index.get(relation.target) !== i)
+        continue;
+      total++;
+      if (relation.support !== 'agent_only') good++;
+    }
+    return total ? good / total : 0;
+  });
+  const sourcedRelations = model.relations.length - (supportCounts.agent_only ?? 0);
 
   $('cs-lede').textContent =
-    `Probability theory (STATS 310A / MATH 230A): ${model.n} concepts, ${model.relations.length} typed relations (all proposed, none yet verified), projected from a high-dimensional affinity space into a sphere.`;
+    `Probability theory (STATS 310A / MATH 230A): ${model.n} concepts and ${model.relations.length} typed relations, projected from a high-dimensional space into a sphere. ${sourcedRelations} relations are backed by the Dembo notes or the lecture notes; ${supportCounts.agent_only ?? 0} are unsourced proposals. None is verified yet.`;
 
   const hasWebGL = webglAvailable();
   const callbacks = {
@@ -189,10 +236,21 @@ async function main() {
     $('cs-mode-note').textContent = MODE_NOTES[state.mode];
     $('cs-color').value = state.colorBy;
     $('cs-chapter').value = state.chapter;
+    $('cs-week').value = String(state.week);
+    const week = weeks[state.week - 1];
+    $('cs-week-label').textContent = week ? `week ${state.week} (${week.dates[0].slice(5)})` : '';
+    $('cs-week-note').textContent =
+      state.week >= weeks.length
+        ? `Every concept shown. As of ${data.as_of} the syllabus has reached week ${reached}; drag left to fade later material.`
+        : `Concepts first scheduled after week ${state.week} are faded. As of ${data.as_of} the syllabus has reached week ${reached}.`;
+    const pure = state.weights.math > 0 && !state.weights.semantic && !state.weights.source;
+    $('cs-shape-note').textContent = pure
+      ? 'Positions come from mathematical structure alone: typed relations, each weighted by how well it is sourced.'
+      : 'Positions mix structure with the affinities chosen below. Language and syllabus proximity are not dependencies.';
   }
 
   let layoutTimer = 0;
-  function relayout({ animate = true, delay = 0 } = {}) {
+  function relayout({ animate = true, delay = 0, warm = false } = {}) {
     clearTimeout(layoutTimer);
     layoutTimer = setTimeout(() => {
       const layout = computeLayout(model, {
@@ -201,6 +259,7 @@ async function main() {
         geometry: state.geometry,
         shells: state.shells,
         previous: state.layout?.points,
+        warm,
       });
       state.layout = layout;
       view.setLayout(layout.points, { animate });
@@ -222,7 +281,12 @@ async function main() {
       state.mode === 'pca'
         ? `<p>These three axes keep <b>${Math.round(result.explained.reduce((a, b) => a + b, 0) * 100)}%</b> of the weighted kernel's variance (${result.explained.map((v) => `${Math.round(v * 100)}%`).join(' + ')}).</p>`
         : '';
+    const support = Object.entries(SUPPORT_BADGE)
+      .filter(([key]) => supportCounts[key])
+      .map(([key, badge]) => `${badge.label.toLowerCase()} ${supportCounts[key]}`)
+      .join(' · ');
     $('cs-diagnostic').innerHTML = `
+      <p>Relations: ${support}.</p>
       <p>Which channel the 3D neighbourhoods agree with (mean overlap of 8 nearest neighbours, 0–1):</p>
       ${bars}
       ${pca}
@@ -241,19 +305,50 @@ async function main() {
     );
   }
 
+  function fade(color) {
+    // Mix toward the stage background for concepts beyond the syllabus slider.
+    const probe = document.createElement('i');
+    probe.style.color = color;
+    document.body.append(probe);
+    const [r, g, b] = getComputedStyle(probe).color.match(/\d+/g).map(Number);
+    probe.remove();
+    const mix = (v, bg) => Math.round(bg + (v - bg) * 0.22);
+    return `rgb(${mix(r, 16)}, ${mix(g, 18)}, ${mix(b, 23)})`;
+  }
+
   function colours() {
-    return model.concepts.map((concept) => {
-      if (state.colorBy === 'depth') return depthColor(concept.depth, maxDepth);
-      if (state.colorBy === 'evidence' && state.overlay) {
-        return EVIDENCE_STATES[state.overlay.concepts[concept.id]?.state ?? 'no_evidence'].color;
-      }
-      return CHAPTER_COLORS[chapterOf(concept)];
+    return model.concepts.map((concept, i) => {
+      let color;
+      if (state.colorBy === 'depth') color = depthColor(concept.depth, maxDepth);
+      else if (state.colorBy === 'week')
+        color = conceptWeek[i] ? depthColor(conceptWeek[i] - 1, weeks.length - 1) : '#5b6170';
+      else if (state.colorBy === 'support') color = depthColor(sourcedShare[i], 1);
+      else if (state.colorBy === 'evidence' && state.overlay)
+        color = EVIDENCE_STATES[state.overlay.concepts[concept.id]?.state ?? 'no_evidence'].color;
+      else color = CHAPTER_COLORS[chapterOf(concept)];
+      return conceptWeek[i] && conceptWeek[i] > state.week ? fade(color) : color;
     });
   }
 
   function renderLegend() {
     let items;
-    if (state.colorBy === 'depth') {
+    if (state.colorBy === 'week') {
+      items = [1, 5, weeks.length].map(
+        (w) =>
+          `<span><i class="cs-swatch" style="background:${depthColor(w - 1, weeks.length - 1)}"></i>week ${w}${weeks[w - 1] ? ` · ${escapeHtml(weeks[w - 1].focus)}` : ''}</span>`,
+      );
+      items.push(
+        '<small>First syllabus week that covers one of the concept’s subsections.</small>',
+      );
+    } else if (state.colorBy === 'support') {
+      items = [0, 0.5, 1].map(
+        (v) =>
+          `<span><i class="cs-swatch" style="background:${depthColor(v, 1)}"></i>${Math.round(v * 100)}% of its relations sourced</span>`,
+      );
+      items.push(
+        '<small>Darker concepts rest mostly on unsourced agent proposals: check those first.</small>',
+      );
+    } else if (state.colorBy === 'depth') {
       items = [0, Math.round(maxDepth / 2), maxDepth].map(
         (level) =>
           `<span><i class="cs-swatch" style="background:${depthColor(level, maxDepth)}"></i>depth ${level}</span>`,
@@ -281,7 +376,7 @@ async function main() {
   function refreshAppearance() {
     view.setColors(colours());
     view.setVisibility(visibility());
-    view.setRelationTypes(state.relationTypes);
+    view.setRelationTypes(state.relationTypes, state.showUnsourced);
     view.setRings(
       state.colorBy === 'evidence' && state.overlay
         ? model.concepts.map((concept) =>
@@ -343,6 +438,20 @@ async function main() {
     return `<button type="button" class="cs-link" data-select="${i}">${shape(concept.kind, CHAPTER_COLORS[chapterOf(concept)])}${escapeHtml(concept.name)}</button>`;
   }
 
+  function evidenceText(relation) {
+    const items = relation.evidence ?? [];
+    if (!items.length) return '';
+    const parts = items.slice(0, 2).map((e) => {
+      if (e.source === 'dembo') {
+        const what = e.kind === 'cites' ? `cites ${resultLabel(e.cited)}` : 'names it';
+        return `${resultLabel(e.result)}, p. ${e.page} (${e.part}) ${what}`;
+      }
+      const lecture = /lecture(\d+):topic(\d+)/.exec(e.topic);
+      return `notes L${lecture?.[1]} · ${escapeHtml(data.lecture_topics[e.topic] ?? '')}`;
+    });
+    return ` ${parts.join('; ')}${items.length > 2 ? ` +${items.length - 2}` : ''}`;
+  }
+
   function renderDetail(index, neighbours) {
     const concept = model.concepts[index];
     const chapter = chapterOf(concept);
@@ -367,13 +476,25 @@ async function main() {
       const directed = data.relation_types[relation.type]?.directed;
       const outgoing = model.index.get(relation.source) === index;
       const other = model.index.get(outgoing ? relation.target : relation.source);
-      const row = `<li title="${escapeHtml(relation.rationale)}">
+      const badge = SUPPORT_BADGE[relation.support] ?? SUPPORT_BADGE.agent_only;
+      const row = `<li title="${escapeHtml(relation.rationale)}" class="${relation.support === 'agent_only' ? 'is-unsourced' : ''}">
           <span class="cs-rel" style="--c:${RELATION_STYLE[relation.type].color}">${RELATION_STYLE[relation.type].label}</span>
           ${conceptButton(other)}
-          <small>${escapeHtml(relation.rationale)} <em>${relation.status} · confidence ${relation.confidence.toFixed(2)}</em></small>
+          <small>${escapeHtml(relation.rationale)}</small>
+          <small class="cs-support"><span class="cs-badge" style="--c:${badge.color}">${badge.label}</span>${evidenceText(relation)} <em>${relation.status}</em></small>
         </li>`;
       (directed ? (outgoing ? groups.out : groups.in) : groups.both).push(row);
     }
+    const anchors = concept.sources.dembo_results
+      .map((ref) => {
+        const info = data.dembo_results[ref] ?? {};
+        return `<li>${resultLabel(ref)}${info.title ? ` · ${escapeHtml(info.title)}` : ''}${info.page ? ` <em>p. ${info.page}</em>` : ''}</li>`;
+      })
+      .join('');
+    const exercises = concept.sources.exercises.map((label) => {
+      const [hw, number] = label.split(':');
+      return `${hw.toUpperCase()} ${number}`;
+    });
     const W = state.layout.W;
     const near = neighbours.affinity
       .map((j) => {
@@ -415,7 +536,8 @@ async function main() {
       ${evidence}
       <div class="cs-columns">
         <section><h3>Sources</h3><ul class="cs-plain">${sections}${lectures}</ul>
-          <p class="cs-note">${concept.sources.syllabus_weeks.length ? `Syllabus ${concept.sources.syllabus_weeks.join(', ')}` : ''}${concept.sources.assignments.length ? ` · homework drawing on this chapter section: ${concept.sources.assignments.map((a) => a.toUpperCase()).join(', ')}` : ''}</p></section>
+          ${anchors ? `<ul class="cs-plain cs-anchors">${anchors}</ul>` : '<p class="cs-note">No numbered Dembo result is anchored to this concept.</p>'}
+          <p class="cs-note">${concept.sources.syllabus_weeks.length ? `Syllabus ${concept.sources.syllabus_weeks.join(', ')}` : 'Not on the syllabus schedule'}${exercises.length ? ` · homework exercises citing or naming it: ${exercises.join(', ')}` : ''}${concept.semantic_basis === 'agent_summary' ? ' · language channel uses the summary (not in the notes yet)' : ''}</p></section>
       </div>
       ${groups.in.length ? `<section><h3>Builds on</h3><ul class="cs-relations">${groups.in.join('')}</ul></section>` : ''}
       ${groups.out.length ? `<section><h3>Leads to</h3><ul class="cs-relations">${groups.out.join('')}</ul></section>` : ''}
@@ -553,7 +675,7 @@ async function main() {
     if (!name) return;
     state.weights[name] = Number(event.target.value) / 100;
     syncControls();
-    relayout({ delay: 140 });
+    relayout({ delay: 140, warm: true });
   });
   $('cs-presets').addEventListener('click', (event) => {
     const preset = event.target.closest('[data-preset]')?.dataset.preset;
@@ -596,6 +718,16 @@ async function main() {
     if (!kind) return;
     if (event.target.checked) state.kinds.add(kind);
     else state.kinds.delete(kind);
+    refreshAppearance();
+  });
+  $('cs-unsourced').addEventListener('change', (event) => {
+    state.showUnsourced = event.target.checked;
+    refreshAppearance();
+    if (state.selected >= 0) select(state.selected, { focus: false });
+  });
+  $('cs-week').addEventListener('input', (event) => {
+    state.week = Number(event.target.value);
+    syncControls();
     refreshAppearance();
   });
   relationsEl.addEventListener('change', (event) => {

@@ -162,8 +162,9 @@ describe('layouts', () => {
     const before = computeLayout(model, { mode: 'hybrid' });
     const after = computeLayout(model, {
       mode: 'hybrid',
-      weights: { ...DEFAULT_WEIGHTS, semantic: 0.4 },
+      weights: { ...DEFAULT_WEIGHTS, semantic: 0.05 },
       previous: before.points,
+      warm: true,
     });
     const rms = (a, b) =>
       Math.sqrt(
