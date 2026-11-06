@@ -266,3 +266,11 @@ The former histogram-ratio engine (`js/demos/omnifold-engine.js`) and July 16
 presentation adaptation (`js/demos/unfolding-iteration.js`) remain as reference
 implementations. The shared interactive experiment uses the neural classifier
 exports instead.
+
+## Learning Atlas preview
+
+`/learning/` is a standalone curriculum explorer built from reviewed, source-linked course headings and Dembo reading sections. The checked-in `public/learning/data/atlas.public.json` is a sanitized snapshot generated in the separate private academic ledger; it contains **no grades, confidence scores, problem attempts, personal study assessments, or private-session evidence**.
+
+The optional **Load private export** button reads a chosen JSON file into the current browser tab without uploading or saving it. It is not a sign-in system and does not synchronize private progress across devices. Public statistics distinguish scheduled readings from demonstrated mastery; the latter remains unknown until independently validated.
+
+For regeneration and source provenance, use `academic-learning-ledger/scripts/dashboard_export.py --public`. Never copy a private graph export into `public/` or another deployed asset directory.
