@@ -330,6 +330,7 @@ export function siteNavigation(active = 'home', prefix = './') {
   return `<nav class="site-nav" aria-label="Main navigation"><a class="site-name" href="${prefix}"${active === 'home' ? ' aria-current="page"' : ''}>Joseph Bailey<span class="name-dot" aria-hidden="true">·</span></a><div>${[
     ['home', 'Home', ''],
     ['probability', 'Probability', 'probability/'],
+    ['learning', 'Learning Atlas', 'learning/'],
   ]
     .map(
       ([id, label, href]) =>
