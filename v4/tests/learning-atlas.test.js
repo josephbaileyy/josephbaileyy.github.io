@@ -30,7 +30,7 @@ describe('public learning atlas privacy and integrity', () => {
     expect(atlas).not.toHaveProperty('diagnostic_queue');
     expect(atlas.nodes).toHaveLength(311);
     expect(atlas.edges).toHaveLength(551);
-    expect(atlas.nodes.every((node) => node.kind !== 'assessed_skill')).toBe(true);
+    expect(atlas.nodes.every((node) => ['lecture', 'note', 'dembo'].includes(node.kind))).toBe(true);
 
     const forbidden = /^(?:score|scores|observations|evidence_refs|next_probe|assessment_status|diagnostic_queue|assistant_dependency|confidence_rating)$/i;
     expect(keysIn(atlas).filter((key) => forbidden.test(key))).toEqual([]);
