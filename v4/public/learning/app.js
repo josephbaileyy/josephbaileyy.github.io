@@ -13,6 +13,10 @@ function setStatus(message,isError=false){$('asof').textContent=message;$('asof'
 function assertPayload(obj){
   if(!obj||obj.schema_version!==1||!Array.isArray(obj.nodes)||!Array.isArray(obj.edges)||!obj.course_summaries)throw Error('Not a Learning Atlas export');
   if(!['public_curriculum_only','private_learning_evidence'].includes(obj.visibility))throw Error('Unexpected export visibility');
+  const text=v=>typeof v==='string'&&v.length>0;
+  if(!obj.nodes.length)throw Error('Export contains no nodes');
+  if(obj.nodes.some(n=>!n||!text(n.id)||!text(n.kind)||!text(n.course)||typeof n.label!=='string'))throw Error('A node is missing its id, kind, course, or label');
+  if(obj.edges.some(e=>!e||!text(e.source)||!text(e.target)||!text(e.kind)))throw Error('An edge is missing its source, target, or kind');
   const ids=new Set(obj.nodes.map(x=>x.id));
   if(ids.size!==obj.nodes.length)throw Error('Duplicate node identifiers');
   if(obj.edges.some(e=>!ids.has(e.source)||!ids.has(e.target)))throw Error('An edge points to a missing node');
@@ -23,6 +27,9 @@ function setData(payload){
   const privateMode=payload.visibility==='private_learning_evidence';
   $('privacy-pill').textContent=privateMode?'Private data loaded locally':'Public curriculum';
   $('privacy-pill').classList.toggle('private',privateMode);
+  const assessedOption=$('assessed-option');
+  if(assessedOption)assessedOption.disabled=!payload.nodes.some(n=>n.kind==='assessed');
+  if(site.kind==='assessed'&&assessedOption?.disabled){site.kind='all';$('node-type').value='all'}
   $('footer-status').textContent=privateMode?'Private export stays in this browser tab; it is not uploaded or saved.':'Public mode contains no grades or assessment records.';
   setStatus('Source snapshot · '+payload.as_of+' · '+(privateMode?'private evidence mode':'public curriculum mode'));
   site.selected=payload.nodes.some(n=>n.id==='dembo:2.2.1')?'dembo:2.2.1':payload.nodes[0]?.id;
@@ -92,7 +99,8 @@ function relayout(){
 
 function fitView(){
   const pts=[...site.positions.values()];if(!pts.length)return;
-  const minX=Math.min(...pts.map(p=>p.x))-30,maxX=Math.max(...pts.map(p=>p.x))+30;
+  const padX=site.mode==='local'?95:30;// leave room for node labels drawn beside local-view nodes
+  const minX=Math.min(...pts.map(p=>p.x))-padX,maxX=Math.max(...pts.map(p=>p.x))+padX;
   const minY=Math.min(...pts.map(p=>p.y))-30,maxY=Math.max(...pts.map(p=>p.y))+30;
   const box=$('graph').getBoundingClientRect();
   site.scale=Math.min(2.0,Math.max(.18,Math.min((box.width-100)/(maxX-minX||1),(box.height-140)/(maxY-minY||1))));
@@ -100,7 +108,6 @@ function fitView(){
   draw();
 }
 function toScreen(pos){return{x:pos.x*site.scale+site.pan.x,y:pos.y*site.scale+site.pan.y}}
-function toGraph(x,y){return{x:(x-site.pan.x)/site.scale,y:(y-site.pan.y)/site.scale}}
 function radius(n){return n.id===site.selected?11:n.kind==='lecture'?7:n.kind==='dembo'?7.7:5.6}
 function draw(){
   const canvas=$('graph'),ctx=canvas.getContext('2d');if(!ctx)return;
@@ -196,13 +203,20 @@ function updateDetails(){
   if(node.schedule_status)html+=`<div class="detail-metric"><span>Scheduled status</span><strong>${esc(node.schedule_status.replaceAll('_',' '))}</strong></div>`;
   if(node.scheduled_introduction)html+=`<div class="detail-metric"><span>First scheduled</span><strong>${esc(node.scheduled_introduction)}</strong></div>`;
   if(node.kind==='assessed'){
-    const values=Object.entries(node.scores||{}).map(([k,v])=>`<div class="detail-metric"><span>${esc(k)}</span><strong>${v===null?'Untested':esc(v+'/4 (provisional)')}</strong></div>`).join('');
+    const values=Object.entries(node.scores||{}).map(([k,v])=>`<div class="detail-metric"><span>${esc(k)}</span><strong>${v===null||v===undefined?'Untested':esc(v+'/4'+(node.assessment_status==='independently_confirmed'?'':' (provisional)'))}</strong></div>`).join('');
     html+=`<div class="detail-metric"><span>Evidence status</span><strong>${esc(node.assessment_status?.replaceAll('_',' ')||'Unknown')}</strong></div>${values}`;
     if(node.next_probe)html+=`<div class="detail-note"><strong>Independent next probe</strong><p>${esc(node.next_probe)}</p></div><button class="action-button" id="copy-probe">Copy diagnostic prompt</button>`;
     if(node.evidence_refs?.length)html+=`<p class="fineprint">Evidence records: ${node.evidence_refs.length}. See the private repo for context.</p>`;
   }else html+='<div class="detail-note">Curriculum presence is not a mastery assessment. Use an unfamiliar independent problem to establish what you know.</div>';
   if(link)html+=`<div class="detail-sources"><span class="eyebrow">Read and explore</span><a href="${esc(link)}" target="_blank" rel="noopener noreferrer">Open probability companion ↗</a></div>`;
+  const nodes=nodeMap(),neighbours=[...(adjacency().get(node.id)||[])].map(id=>nodes.get(id)).filter(Boolean)
+    .sort((a,b)=>a.kind.localeCompare(b.kind)||titleOf(a).localeCompare(titleOf(b)));
+  if(neighbours.length){
+    const kindName={dembo:'Dembo',note:'Note',lecture:'Lecture',assessed:'Assessed skill'};
+    html+=`<div class="connected"><span class="eyebrow">Connected concepts (${neighbours.length})</span>`+neighbours.slice(0,14).map(n=>`<button type="button" class="connected-item" data-id="${esc(n.id)}"><span>${esc(titleOf(n))}</span><small>${esc(kindName[n.kind]||n.kind)}${n.course!==node.course?' · '+esc(shortCourse[n.course]||n.course):''}</small></button>`).join('')+(neighbours.length>14?`<p class="fineprint">${neighbours.length-14} more shown in the graph.</p>`:'')+'</div>';
+  }
   el.innerHTML=html;
+  el.querySelectorAll('.connected-item').forEach(b=>b.addEventListener('click',()=>select(b.dataset.id)));
   const copy=$('copy-probe');if(copy)copy.addEventListener('click',()=>copyPrompt(node));
 }
 async function copyPrompt(node){
@@ -219,14 +233,26 @@ function bind(){
   $('zoom-in').addEventListener('click',()=>{site.scale=Math.min(3.5,site.scale*1.22);draw()});
   $('zoom-out').addEventListener('click',()=>{site.scale=Math.max(.1,site.scale/1.22);draw()});
   $('reset-view').addEventListener('click',fitView);
-  const canvas=$('graph');
-  canvas.addEventListener('pointerdown',e=>{canvas.setPointerCapture(e.pointerId);site.dragging=false;site.down={x:e.offsetX,y:e.offsetY,panX:site.pan.x,panY:site.pan.y};});
+  const canvas=$('graph'),pointers=new Map();
+  let pinch=null;
+  const pinchState=()=>{const [a,b]=[...pointers.values()];return{d:Math.hypot(a.x-b.x,a.y-b.y)||1,x:(a.x+b.x)/2,y:(a.y+b.y)/2}};
+  canvas.addEventListener('pointerdown',e=>{
+    canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
+    if(pointers.size===2){pinch={...pinchState(),scale:site.scale,pan:{...site.pan}};site.down=null;site.dragging=true;return}
+    site.dragging=false;site.down={x:e.offsetX,y:e.offsetY,panX:site.pan.x,panY:site.pan.y};
+  });
+  const release=e=>{pointers.delete(e.pointerId);if(pointers.size<2)pinch=null;};
   canvas.addEventListener('pointermove',e=>{
+    if(pointers.has(e.pointerId))pointers.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
+    if(pinch&&pointers.size===2){
+      const now=pinchState(),scale=Math.max(.1,Math.min(3.5,pinch.scale*now.d/pinch.d));
+      site.pan={x:now.x-(pinch.x-pinch.pan.x)*scale/pinch.scale,y:now.y-(pinch.y-pinch.pan.y)*scale/pinch.scale};site.scale=scale;draw();return;
+    }
     if(site.down){const dx=e.offsetX-site.down.x,dy=e.offsetY-site.down.y;if(Math.hypot(dx,dy)>4)site.dragging=true;if(site.dragging){site.pan={x:site.down.panX+dx,y:site.down.panY+dy};canvas.classList.add('is-dragging');draw()}}
     else{const item=nearest(e.offsetX,e.offsetY);const next=item?.id||null;if(next!==site.hover){site.hover=next;canvas.style.cursor=next?'pointer':'grab';draw()}}
   });
-  canvas.addEventListener('pointerup',e=>{if(site.down&&!site.dragging){const item=nearest(e.offsetX,e.offsetY);if(item)select(item.id)}site.down=null;site.dragging=false;canvas.classList.remove('is-dragging')});
-  canvas.addEventListener('pointercancel',()=>{site.down=null;site.dragging=false});
+  canvas.addEventListener('pointerup',e=>{const wasPinch=pinch!==null||pointers.size>1;release(e);if(!wasPinch&&site.down&&!site.dragging){const item=nearest(e.offsetX,e.offsetY);if(item)select(item.id)}if(!pointers.size){site.down=null;site.dragging=false;canvas.classList.remove('is-dragging')}});
+  canvas.addEventListener('pointercancel',e=>{release(e);site.down=null;site.dragging=false;canvas.classList.remove('is-dragging')});
   canvas.addEventListener('wheel',e=>{e.preventDefault();const rect=canvas.getBoundingClientRect(),x=e.clientX-rect.left,y=e.clientY-rect.top;const old=site.scale,now=Math.max(.1,Math.min(3.5,old*(e.deltaY<0?1.09:.91)));site.pan.x=x-(x-site.pan.x)*now/old;site.pan.y=y-(y-site.pan.y)*now/old;site.scale=now;draw()},{passive:false});
   $('private-file').addEventListener('change',async e=>{
     const file=e.target.files?.[0];if(!file)return;

@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
@@ -30,10 +30,30 @@ describe('public learning atlas privacy and integrity', () => {
     expect(atlas).not.toHaveProperty('diagnostic_queue');
     expect(atlas.nodes).toHaveLength(311);
     expect(atlas.edges).toHaveLength(551);
-    expect(atlas.nodes.every((node) => ['lecture', 'note', 'dembo'].includes(node.kind))).toBe(true);
+    expect(atlas.nodes.every((node) => ['lecture', 'note', 'dembo'].includes(node.kind))).toBe(
+      true,
+    );
 
-    const forbidden = /^(?:score|scores|observations|evidence_refs|next_probe|assessment_status|diagnostic_queue|assistant_dependency|confidence_rating)$/i;
+    const forbidden =
+      /^(?:score|scores|observations|evidence_refs|next_probe|assessment_status|diagnostic_queue|assistant_dependency|confidence_rating)$/i;
     expect(keysIn(atlas).filter((key) => forbidden.test(key))).toEqual([]);
+  });
+
+  it('only ships the sanitized export and keeps the private loader local', () => {
+    const dataFiles = readdirSync(new URL('data/', directory));
+    expect(dataFiles).toEqual(['atlas.public.json']);
+    const app = readFileSync(new URL('app.js', directory), 'utf8');
+    // The only network request is the public snapshot; the private file never leaves the tab.
+    expect(app.match(/fetch\(/g)).toHaveLength(1);
+    expect(app).toContain("fetch('./data/atlas.public.json'");
+    expect(app).not.toMatch(
+      /localStorage|sessionStorage|indexedDB|XMLHttpRequest|sendBeacon|WebSocket/,
+    );
+    expect(app).not.toMatch(
+      /api\.github\.com|raw\.githubusercontent|Authorization|ghp_|github_pat_/,
+    );
+    const html = readFileSync(new URL('index.html', directory), 'utf8');
+    expect(html).toContain('href="../"');
   });
 
   it('keeps all public graph links internally resolvable', () => {
