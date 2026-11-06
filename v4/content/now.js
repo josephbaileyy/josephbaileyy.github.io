@@ -21,34 +21,37 @@ function validItems(items, status) {
   return items.filter(
     (item) =>
       item?.status === status &&
-      [item.title, item.course, item.due_display].every(
-        (value) => typeof value === 'string' && value.trim(),
-      ) &&
+      [item.title, item.due_display].every((value) => typeof value === 'string' && value.trim()) &&
       Number.isFinite(parseDate(item.due)),
   );
 }
 
-function renderList(items, title, empty, escape) {
-  const completed = items[0]?.status === 'completed';
-  return `<div class="now-group">
-    <h3>${title}</h3>
-    ${
-      items.length
-        ? `<ul role="list" class="now-list${completed ? ' now-list-done' : ''}">${items
-            .map((item) => {
-              const expected =
-                item.source === 'predicted' && !/\(expected\)/i.test(item.due_display);
-              return `<li>
+function courseLabel(item) {
+  if (typeof item.course !== 'string') return '';
+  const normalize = (value) =>
+    value
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, ' ')
+      .replace(/(\p{L}) +(?=\p{N})/gu, '$1')
+      .trim();
+  const course = normalize(item.course);
+  return course && !` ${normalize(item.title)} `.includes(` ${course} `) ? item.course.trim() : '';
+}
+
+function renderList(items, escape) {
+  if (!items.length) return '<p class="now-empty">Nothing on the list right now.</p>';
+  return `<ul role="list" class="now-list">${items
+    .map((item) => {
+      const completed = item.status === 'completed';
+      const course = courseLabel(item);
+      const expected = item.source === 'predicted' && !/\(expected\)/i.test(item.due_display);
+      return `<li${completed ? ' class="now-done"' : ''}>
         <span class="now-box" aria-hidden="true">${completed ? '✓' : ''}</span>
-        <div class="now-item"><span class="now-item-title">${escape(item.title)}</span>
-          <div class="now-item-meta"><span class="now-course">${escape(item.course)}</span><time datetime="${escape(item.due)}">${escape(item.due_display)}${expected ? ' (expected)' : ''}</time></div>
-        </div>
+        <span class="now-item"><span class="now-item-title">${escape(item.title)}</span>${completed ? '<span class="visually-hidden"> (completed)</span>' : ''}${course ? ` <span class="now-course">${escape(course)}</span>` : ''}</span>
+        <time datetime="${escape(item.due)}">${escape(item.due_display)}${expected ? ' (expected)' : ''}</time>
       </li>`;
-            })
-            .join('')}</ul>`
-        : `<p class="now-empty">${empty}</p>`
-    }
-  </div>`;
+    })
+    .join('')}</ul>`;
 }
 
 export function renderNow(escape) {
@@ -71,23 +74,22 @@ export function renderNow(escape) {
   return `<section class="now-section" id="now" aria-labelledby="now-heading">
     <div class="now-paper">
       <header class="now-header">
-        <div><p class="now-label">The coursework list</p><h2 id="now-heading">What I'm Currently Doing</h2></div>
-        <svg class="now-cart" viewBox="0 0 96 76" width="96" height="76" fill="none" aria-hidden="true">
-          <path d="M10 24h11l12 30 39-3 10-22-56 4m9 21-5 8 43-3M40 33l8 19m7-20 5 19m10-20 1 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="39" cy="67" r="3" fill="currentColor"/><circle cx="68" cy="65" r="3" fill="currentColor"/>
-          <path d="M62 6v16m-8-8h16m13 2v9m-4.5-4.5h9M35 14l3 7m-6-2 8-3" stroke="#a63e67" stroke-width="2" stroke-linecap="round"/>
+        <h2 id="now-heading">What I'm Currently Doing</h2>
+        <svg class="now-icon" viewBox="0 0 56 52" width="56" height="52" fill="none" aria-hidden="true">
+          <g transform="rotate(8 28 26)" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="11" y="9" width="31" height="37" rx="4" fill="#fae5b8"/>
+            <path d="M16 9v5m7-5v5m7-5v5m7-5v5M17 24l2 2 4-5m4 4h9m-19 8 2 2 4-5m4 4h9"/>
+          </g>
+          <path d="M48 8v8m-4-4h8M5 30v6m-3-3h6" stroke="#a63e67" stroke-width="1.6" stroke-linecap="round"/>
         </svg>
       </header>
       ${
         fresh
-          ? `<div class="now-groups" data-now-items data-expires="${expires}">
-        ${renderList(doing, 'On the list', 'No upcoming coursework on the list.', escape)}
-        ${renderList(done, 'Recently checked off', 'No recent submissions on the list.', escape)}
-      </div>`
+          ? `<div data-now-items data-expires="${expires}">${renderList([...done, ...doing], escape)}</div>`
           : ''
       }
-      <p class="now-fallback" data-now-fallback${fresh ? ' hidden' : ''}>${updatedDate ? `Currently doing list last updated ${updatedDate}.` : 'The coursework list is waiting for its first update.'}</p>
-      <p class="now-credit"><span aria-hidden="true">✦</span> powered by Muse</p>
+      <p class="now-fallback" data-now-fallback${fresh ? ' hidden' : ''}>${updatedDate ? `Currently doing list last updated ${updatedDate}.` : 'The list is waiting for its first update.'}</p>
+      <p class="now-credit"><img src="./img/home/muse-jolly.jpg" alt="" width="32" height="32" loading="lazy"> powered by Muse</p>
     </div>
   </section>`;
 }
