@@ -2,8 +2,9 @@ import { readFileSync, existsSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
-const directory = new URL('../', import.meta.url);
-const atlas = JSON.parse(readFileSync(new URL('../data/atlas.public.json', import.meta.url), 'utf8'));
+// This test is installed at v4/tests/ and the atlas ships in v4/public/learning/.
+const directory = new URL('../public/learning/', import.meta.url);
+const atlas = JSON.parse(readFileSync(new URL('data/atlas.public.json', directory), 'utf8'));
 
 function keysIn(value) {
   if (Array.isArray(value)) return value.flatMap(keysIn);
