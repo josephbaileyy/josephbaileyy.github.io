@@ -2,6 +2,10 @@ import { readFileSync, readdirSync, existsSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
+import { organizeCourse } from '../public/learning/curriculum.js';
+import { formatLabel } from '../public/learning/labels.js';
+import { constrainToSphere, projectCurriculum } from '../public/learning/projection.js';
+
 // This test is installed at v4/tests/ and the atlas ships in v4/public/learning/.
 const directory = new URL('../public/learning/', import.meta.url);
 const atlas = JSON.parse(readFileSync(new URL('data/atlas.public.json', directory), 'utf8'));
@@ -63,5 +67,80 @@ describe('public learning atlas privacy and integrity', () => {
       expect(ids.has(edge.source)).toBe(true);
       expect(ids.has(edge.target)).toBe(true);
     }
+  });
+});
+
+describe('course map annotations', () => {
+  it('assigns every public topic to one source-based course theme', () => {
+    for (const course of Object.keys(atlas.course_summaries)) {
+      const points = atlas.nodes.filter((node) => node.course === course).map((node) => ({ node }));
+      const map = organizeCourse(course, points, new Map());
+      expect(map.ungrouped.points).toEqual([]);
+      const assigned = map.sections.flatMap(({ points }) => points);
+      expect(assigned).toHaveLength(points.length);
+      expect(new Set(assigned)).toEqual(new Set(points));
+      if (course === 'math120') {
+        expect(map.sections.map(({ label }) => label)).toEqual(['Ring theory', 'Group theory']);
+      }
+    }
+  });
+
+  it('renders exported math and escapes markup in an imported label', () => {
+    const ideal = atlas.nodes.find((node) => node.label.startsWith('Ideal arithmetic in'));
+    expect(formatLabel(ideal.label)).toContain('class="katex"');
+    expect(formatLabel(ideal.label)).toContain('<msqrt>');
+    expect(formatLabel('<img src=x>')).toBe('&lt;img src=x&gt;');
+    expect(formatLabel(String.raw`M\"obius`)).toBe('Möbius');
+  });
+});
+
+describe('curriculum projection', () => {
+  const topics = [
+    ['a', 'Finite measures', 1],
+    ['b', 'Signed measure', 3],
+    ['c', 'Kernels', 5],
+    ['d', 'Normal subgroups', 7],
+    ['e', 'Cosets', 9],
+    ['f', 'Ideals', 9],
+  ].map(([id, label, lecture]) => ({ id, label, lecture, course: 'test', kind: 'note' }));
+  const edges = [{ source: 'c', target: 'd', kind: 'prerequisite' }];
+  const zero = { meaning: 0, math: 0, source: 0 };
+  const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z);
+
+  it.each([
+    ['meaning', 'a', 'b', 'e'],
+    ['math', 'c', 'd', 'a'],
+    ['source', 'e', 'f', 'c'],
+  ])('can isolate the %s signal', (signal, from, near, far) => {
+    const points = projectCurriculum(topics, edges, { ...zero, [signal]: 100 });
+    expect(distance(points.get(from), points.get(near))).toBeLessThan(
+      distance(points.get(from), points.get(far)),
+    );
+  });
+
+  it('produces deterministic, centered principal components ordered by variance', () => {
+    const projection = projectCurriculum(atlas.nodes, atlas.edges);
+    expect(projectCurriculum(atlas.nodes, atlas.edges)).toEqual(projection);
+    const points = [...projection.values()];
+    const axes = ['x', 'y', 'z'];
+    const dot = (a, b) => points.reduce((sum, point) => sum + point[a] * point[b], 0);
+    for (const [index, axis] of axes.entries()) {
+      expect(Math.abs(points.reduce((sum, point) => sum + point[axis], 0))).toBeLessThan(1e-8);
+      for (const later of axes.slice(index + 1)) {
+        expect(Math.abs(dot(axis, later))).toBeLessThan(1e-8);
+        expect(dot(axis, axis)).toBeGreaterThan(dot(later, later));
+      }
+    }
+  });
+
+  it('softly compresses the outer points while preserving directions and radial order', () => {
+    const [near, far] = constrainToSphere([
+      { x: 1, y: 1, z: 0 },
+      { x: 8, y: 8, z: 0 },
+    ]);
+    expect(far.x).toBeGreaterThan(near.x);
+    expect(far.x / 8).toBeLessThan(near.x);
+    expect(far.x).toEqual(far.y);
+    expect(far.z).toBe(0);
   });
 });

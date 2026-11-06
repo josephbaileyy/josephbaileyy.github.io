@@ -1,270 +1,540 @@
-const $ = id => document.getElementById(id);
-const color = {dembo:'#55cab9',note:'#81bcef',lecture:'#8c9fb3',assessed:'#edb76d'};
-const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const shortCourse = {stats310a:'STATS 310A / MATH 230A',math116:'MATH 116',math120:'MATH 120',physics330:'PHYSICS 330'};
-const titleOf = n => n.label || n.id;
-const site = {
-  data:null, course:'stats310a', kind:'all', mode:'local', selected:null,
-  visible:[],visibleEdges:[],positions:new Map(),screen:{width:0,height:0,dpr:1},
-  pan:{x:0,y:0},scale:1,dragging:false,down:null,hover:null
-};
+import { createGraph, makeLayout } from './graph.js';
+import { escapeHtml, formatLabel, plainLabel } from './labels.js';
+import { defaultWeights } from './projection.js';
 
-function setStatus(message,isError=false){$('asof').textContent=message;$('asof').classList.toggle('error',isError)}
-function assertPayload(obj){
-  if(!obj||obj.schema_version!==1||!Array.isArray(obj.nodes)||!Array.isArray(obj.edges)||!obj.course_summaries)throw Error('Not a Learning Atlas export');
-  if(!['public_curriculum_only','private_learning_evidence'].includes(obj.visibility))throw Error('Unexpected export visibility');
-  const text=v=>typeof v==='string'&&v.length>0;
-  if(!obj.nodes.length)throw Error('Export contains no nodes');
-  if(obj.nodes.some(n=>!n||!text(n.id)||!text(n.kind)||!text(n.course)||typeof n.label!=='string'))throw Error('A node is missing its id, kind, course, or label');
-  if(obj.edges.some(e=>!e||!text(e.source)||!text(e.target)||!text(e.kind)))throw Error('An edge is missing its source, target, or kind');
-  const ids=new Set(obj.nodes.map(x=>x.id));
-  if(ids.size!==obj.nodes.length)throw Error('Duplicate node identifiers');
-  if(obj.edges.some(e=>!ids.has(e.source)||!ids.has(e.target)))throw Error('An edge points to a missing node');
-  return obj;
+const $ = (id) => document.getElementById(id);
+
+const courses = {
+  stats310a: {
+    name: 'Probability',
+    short: 'Probability',
+    code: 'STATS 310A / MATH 230A',
+    color: '#96aaff',
+  },
+  math116: {
+    name: 'Complex analysis',
+    short: 'Complex analysis',
+    code: 'MATH 116',
+    color: '#78d5ba',
+  },
+  math120: { name: 'Algebra', short: 'Algebra', code: 'MATH 120', color: '#f5bb87' },
+  physics330: { name: 'Quantum field theory', short: 'QFT', code: 'PHYSICS 330', color: '#c9a7ed' },
+};
+const kinds = { lecture: 'Lecture', note: 'Note', dembo: 'Reading', assessed: 'Assessed skill' };
+const relationNames = {
+  contains: ['Contains', 'Part of'],
+  next_in_notes: ['Next in notes', 'Previous in notes'],
+  proposed_supports: ['May help with', 'Suggested prerequisite'],
+  mapped_to_dembo_proposed: ['Suggested reading', 'Suggested related note'],
+};
+const courseInfo = (id) =>
+  Object.hasOwn(courses, id) ? courses[id] : { name: id, short: id, code: id, color: '#b5bdce' };
+const kindName = (kind) => (Object.hasOwn(kinds, kind) ? kinds[kind] : kind);
+const humanize = (value) => String(value).replaceAll('_', ' ');
+const state = {
+  course: 'all',
+  kind: 'all',
+  selected: null,
+  focused: false,
+  weights: defaultWeights,
+  sharedProjection: false,
+};
+const search = $('search');
+const searchResults = $('search-results');
+const details = $('node-details');
+const canvas = $('graph');
+const narrowScreen = matchMedia('(max-width: 690px)');
+const touchScreen = matchMedia('(pointer: coarse)');
+const graph = createGraph(canvas, courseInfo, (id) => select(id, narrowScreen.matches), setCourse);
+let publicData;
+$('graph-status').textContent = 'Loading curriculum…';
+
+function assertPayload(data) {
+  if (
+    data?.schema_version !== 1 ||
+    !['public_curriculum_only', 'private_learning_evidence'].includes(data.visibility) ||
+    !Array.isArray(data.nodes) ||
+    !data.nodes.length ||
+    !Array.isArray(data.edges) ||
+    !data.course_summaries
+  )
+    throw Error('Choose a valid Learning Atlas export.');
+  const text = (value) => typeof value === 'string' && value.length > 0;
+  if (
+    data.nodes.some(
+      (node) =>
+        !node ||
+        !text(node.id) ||
+        !text(node.kind) ||
+        !text(node.course) ||
+        typeof node.label !== 'string',
+    )
+  ) {
+    throw Error('A topic is missing its identifier, course, type, or label.');
+  }
+  const ids = new Set(data.nodes.map((node) => node.id));
+  if (ids.size !== data.nodes.length) throw Error('The export contains duplicate topic IDs.');
+  if (
+    data.edges.some(
+      (edge) => !edge || !text(edge.kind) || !ids.has(edge.source) || !ids.has(edge.target),
+    )
+  ) {
+    throw Error('A link is missing its type or points to a missing topic.');
+  }
+  return data;
 }
-function setData(payload){
-  site.data=assertPayload(payload);
-  const privateMode=payload.visibility==='private_learning_evidence';
-  $('privacy-pill').textContent=privateMode?'Private data loaded locally':'Public curriculum';
-  $('privacy-pill').classList.toggle('private',privateMode);
-  const assessedOption=$('assessed-option');
-  if(assessedOption)assessedOption.disabled=!payload.nodes.some(n=>n.kind==='assessed');
-  if(site.kind==='assessed'&&assessedOption?.disabled){site.kind='all';$('node-type').value='all'}
-  $('footer-status').textContent=privateMode?'Private export stays in this browser tab; it is not uploaded or saved.':'Public mode contains no grades or assessment records.';
-  setStatus('Source snapshot · '+payload.as_of+' · '+(privateMode?'private evidence mode':'public curriculum mode'));
-  site.selected=payload.nodes.some(n=>n.id==='dembo:2.2.1')?'dembo:2.2.1':payload.nodes[0]?.id;
+
+function setData(data) {
+  assertPayload(data);
+  const byId = new Map(data.nodes.map((node) => [node.id, node]));
+  const neighbors = new Map(data.nodes.map((node) => [node.id, new Map()]));
+  for (const edge of data.edges) {
+    neighbors.get(edge.source).set(edge.target, { kind: edge.kind, direction: 0 });
+    neighbors.get(edge.target).set(edge.source, { kind: edge.kind, direction: 1 });
+  }
+  const layout = makeLayout(data.nodes, data.edges);
+  Object.assign(state, {
+    data,
+    byId,
+    neighbors,
+    layout,
+    course: 'all',
+    kind: 'all',
+    selected: null,
+    focused: false,
+  });
+
+  const isPrivate = data.visibility === 'private_learning_evidence';
+  const source = $('source-tag');
+  source.toggleAttribute('data-private', isPrivate);
+  source.lastChild.textContent = isPrivate ? ' Local private export' : ' Public curriculum';
+  $('restore-public').hidden = !publicData || data === publicData;
+  $('node-type').replaceChildren(
+    new Option('All topics', 'all'),
+    ...[...new Set(data.nodes.map((node) => node.kind))].map(
+      (kind) => new Option(kindName(kind), kind),
+    ),
+  );
+
+  const ids = [...new Set(data.nodes.map((node) => node.course))];
+  $('courses').innerHTML = [
+    '<button type="button" data-course="all">All courses</button>',
+    ...ids.map((id) => {
+      const course = courseInfo(id);
+      return `<button type="button" data-course="${escapeHtml(id)}" title="${escapeHtml(course.code)}">${dot(course.color)}${escapeHtml(course.name)}</button>`;
+    }),
+  ].join('');
+  $('snapshot').textContent = data.as_of ? `Source snapshot · ${data.as_of}` : '';
+  search.value = '';
+  closeSearch();
   refresh(true);
 }
 
-function nodeMap(){return new Map(site.data?.nodes.map(n=>[n.id,n])||[])}
-function adjacency(){
-  const a=new Map();
-  for(const edge of site.data.edges){
-    if(!a.has(edge.source))a.set(edge.source,new Set());
-    if(!a.has(edge.target))a.set(edge.target,new Set());
-    a.get(edge.source).add(edge.target);a.get(edge.target).add(edge.source);
-  }
-  return a;
-}
-function availableNodes(){
-  if(!site.data)return [];
-  const nodes=site.data.nodes.filter(n=>(site.course==='all'||n.course===site.course)&&(site.kind==='all'||n.kind===site.kind));
-  if(site.mode==='global')return nodes;
-  const byId=new Map(nodes.map(n=>[n.id,n]));
-  if(!byId.has(site.selected))return nodes.slice(0,Math.min(nodes.length,25));
-  const adj=adjacency();
-  const ids=new Set([site.selected]);
-  for(const item of adj.get(site.selected)||[])if(byId.has(item))ids.add(item);
-  return [...ids].map(id=>byId.get(id)).filter(Boolean);
+function dot(color) {
+  return `<i class="course-dot" style="--course-color:${color}" aria-hidden="true"></i>`;
 }
 
-function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
-function relayout(){
-  const nodes=availableNodes(),byId=new Set(nodes.map(n=>n.id));
-  site.visible=nodes;
-  site.visibleEdges=site.data.edges.filter(e=>byId.has(e.source)&&byId.has(e.target));
-  site.positions=new Map();
-  if(site.mode==='local'&&nodes.some(n=>n.id===site.selected)){
-    site.positions.set(site.selected,{x:0,y:0});
-    const around=nodes.filter(n=>n.id!==site.selected);
-    around.sort((a,b)=>a.kind.localeCompare(b.kind)||a.id.localeCompare(b.id));
-    const count=around.length;
-    around.forEach((n,i)=>{
-      const angle=(i/count)*Math.PI*2-Math.PI/2;
-      const ring=count>20?(i%3):0;
-      const radius=145+ring*70;
-      site.positions.set(n.id,{x:Math.cos(angle)*radius,y:Math.sin(angle)*radius});
-    });
-  }else{
-    const courses=site.course==='all'?Object.keys(shortCourse):[site.course];
-    const centerOf=(course)=>{
-      if(courses.length===1)return {x:0,y:0};
-      const index=courses.indexOf(course);return {x:(index%2===0?-1:1)*380,y:(index<2?-1:1)*300};
-    };
-    const kinds=['lecture','note','dembo','assessed'];
-    const groups=new Map();
-    for(const n of nodes){const k=n.course+':'+n.kind;if(!groups.has(k))groups.set(k,[]);groups.get(k).push(n)}
-    for(const [key,items] of groups){
-      const [course,kind]=key.split(':'),center=centerOf(course),idx=kinds.indexOf(kind);
-      const cx=center.x+[-200,-75,95,220][idx];
-      const ys=items.sort((a,b)=>(a.lecture||0)-(b.lecture||0)||a.id.localeCompare(b.id));
-      ys.forEach((node,i)=>{
-        const j=(hash(node.id)%1000)/1000-.5;
-        site.positions.set(node.id,{x:cx+j*65,y:center.y+(i-(ys.length-1)/2)*Math.max(10,Math.min(39,690/Math.max(ys.length,1)))+j*20});
-      });
+function filteredNodes() {
+  return state.data.nodes.filter(
+    (node) =>
+      (state.course === 'all' || node.course === state.course) &&
+      (state.kind === 'all' || node.kind === state.kind),
+  );
+}
+
+function refresh(resetCamera = false) {
+  if (!state.data) return;
+  const selected = state.byId.get(state.selected);
+  const related = state.neighbors.get(state.selected);
+  const nodes = state.focused
+    ? state.data.nodes.filter((node) => node === selected || related.has(node.id))
+    : filteredNodes();
+  const visible = new Set(nodes.map((node) => node.id));
+  const edges = state.data.edges.filter(
+    (edge) => visible.has(edge.source) && visible.has(edge.target),
+  );
+  graph.update({ ...state, nodes, edges }, resetCamera);
+  for (const button of $('courses').querySelectorAll('button')) {
+    button.setAttribute('aria-pressed', String(button.dataset.course === state.course));
+  }
+  $('graph-count').textContent =
+    `${nodes.length} ${nodes.length === 1 ? 'topic' : 'topics'} · ${edges.length} ${edges.length === 1 ? 'link' : 'links'}`;
+  $('lecture-key').hidden = !nodes.some((node) => node.kind === 'lecture');
+  $('note-key').hidden = !nodes.some((node) => node.kind === 'note');
+  $('reading-key').hidden = !nodes.some((node) => node.kind === 'dembo');
+  $('evidence-key').hidden = !nodes.some((node) => node.kind === 'assessed');
+  $('suggested-key').hidden = !edges.some((edge) => edge.kind.includes('proposed'));
+  $('graph-status').hidden = Boolean(nodes.length);
+  $('graph-status').textContent = 'No topics match this filter.';
+  renderDetails(selected);
+  renderSummary();
+  renderQueue();
+  if (!searchResults.hidden) renderSearch();
+}
+
+function setCourse(id) {
+  if (id === state.course && !state.focused) return;
+  Object.assign(state, { course: id, selected: null, focused: false });
+  search.value = '';
+  closeSearch();
+  refresh(true);
+}
+
+function select(id, focusDetails = false) {
+  const node = state.byId?.get(id);
+  if (!node) return;
+  const changeCourse = state.course !== 'all' && node.course !== state.course;
+  if (changeCourse) state.course = node.course;
+  if (state.kind !== 'all' && node.kind !== state.kind) {
+    state.kind = 'all';
+    $('node-type').value = 'all';
+  }
+  state.selected = id;
+  refresh(changeCourse || state.focused);
+  if (focusDetails) $('selected-title').focus();
+}
+
+function topicButton(node, meta) {
+  return `<button class="topic-button" type="button" data-topic="${escapeHtml(node.id)}">
+    ${dot(node.kind === 'assessed' ? '#ffd388' : courseInfo(node.course).color)}
+    <span>${formatLabel(node.label || node.id)}<small>${escapeHtml(meta)}</small></span></button>`;
+}
+
+const searchable = (value) =>
+  plainLabel(value).normalize('NFKD').replace(/\p{M}/gu, '').replace(/[–—−]/g, '-').toLowerCase();
+
+function renderSearch() {
+  if (!state.data) return;
+  const term = searchable(search.value.trim());
+  const scope = filteredNodes();
+  const matches = term
+    ? scope.filter((node) => searchable(node.label || node.id).includes(term))
+    : scope;
+  searchResults.innerHTML = matches.length
+    ? matches
+        .map((node) =>
+          topicButton(node, `${courseInfo(node.course).name} · ${kindName(node.kind)}`),
+        )
+        .join('')
+    : '<p>No matching topics in this view.</p>';
+  searchResults.hidden = false;
+  searchResults.scrollTop = 0;
+}
+
+function closeSearch() {
+  searchResults.hidden = true;
+}
+
+function chooseSearch(id) {
+  closeSearch();
+  search.value = '';
+  select(id, true);
+}
+
+function safeReaderUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.origin === 'https://josephrbailey.com' && url.pathname.startsWith('/probability/')
+      ? url.href
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function renderDetails(node) {
+  $('inspector').hidden = !node;
+  if (!node) {
+    details.innerHTML = '';
+    return;
+  }
+  const course = courseInfo(node.course);
+  const connected = [...state.neighbors.get(node.id)].map(([id, kind]) => [
+    state.byId.get(id),
+    kind,
+  ]);
+  const reader = safeReaderUrl(node.reader_url);
+  const meta = [
+    ['Section', node.section],
+    ['Lecture', node.lecture],
+    ['First scheduled', node.scheduled_introduction],
+    ['Schedule', node.schedule_status && humanize(node.schedule_status)],
+  ];
+  let probe = '';
+  if (node.kind === 'assessed' && state.data.visibility === 'private_learning_evidence') {
+    meta.push([
+      'Evidence status',
+      node.assessment_status ? humanize(node.assessment_status) : 'Unknown',
+    ]);
+    const qualifier = node.assessment_status === 'independently_confirmed' ? '' : ' (provisional)';
+    for (const [key, value] of Object.entries(node.scores ?? {})) {
+      meta.push([humanize(key), value == null ? 'Untested' : `${value}/4${qualifier}`]);
+    }
+    if (Array.isArray(node.evidence_refs))
+      meta.push(['Evidence records', node.evidence_refs.length]);
+    if (node.next_probe) {
+      probe = `<section class="detail-section"><h3>Independent next probe</h3><p>${formatLabel(node.next_probe)}</p>
+        <button class="probe-button" id="copy-probe" type="button">Copy diagnostic prompt</button></section>`;
     }
   }
-  fitView();
+
+  const rows = meta
+    .filter(([, value]) => value != null && value !== false && value !== '')
+    .map(
+      ([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`,
+    )
+    .join('');
+  const links = connected
+    .map(([other, { kind, direction }]) => {
+      const label = Object.hasOwn(relationNames, kind)
+        ? relationNames[kind][direction]
+        : humanize(kind);
+      return topicButton(other, `${kindName(other.kind)} · ${label}`);
+    })
+    .join('');
+  details.innerHTML = `<div class="detail-type">${dot(course.color)}${escapeHtml(course.name)} · ${escapeHtml(kindName(node.kind))}</div>
+    <h2 tabindex="-1" id="selected-title">${formatLabel(node.label || node.id)}</h2>
+    <div class="detail-actions">
+      ${reader ? `<a href="${escapeHtml(reader)}" target="_blank" rel="noopener noreferrer">Open probability companion ↗</a>` : ''}
+      ${connected.length ? `<button id="focus-topic" type="button">${state.focused ? 'Show full map' : 'Focus connections'}</button>` : ''}
+    </div>
+    ${rows ? `<dl class="detail-meta">${rows}</dl>` : ''}
+    ${probe}
+    ${links ? `<section class="detail-section"><h3>Connections (${connected.length})</h3>${links}</section>` : ''}`;
+  $('inspector').scrollTop = 0;
+  $('focus-topic')?.addEventListener('click', () => {
+    state.focused = !state.focused;
+    refresh(true);
+    $('focus-topic')?.focus({ preventScroll: true });
+    if (narrowScreen.matches) $('stage').scrollIntoView({ block: 'nearest' });
+  });
+  $('copy-probe')?.addEventListener('click', (event) => copyPrompt(node, event.currentTarget));
 }
 
-function fitView(){
-  const pts=[...site.positions.values()];if(!pts.length)return;
-  const padX=site.mode==='local'?95:30;// leave room for node labels drawn beside local-view nodes
-  const minX=Math.min(...pts.map(p=>p.x))-padX,maxX=Math.max(...pts.map(p=>p.x))+padX;
-  const minY=Math.min(...pts.map(p=>p.y))-30,maxY=Math.max(...pts.map(p=>p.y))+30;
-  const box=$('graph').getBoundingClientRect();
-  site.scale=Math.min(2.0,Math.max(.18,Math.min((box.width-100)/(maxX-minX||1),(box.height-140)/(maxY-minY||1))));
-  site.pan={x:box.width/2-(minX+maxX)/2*site.scale,y:box.height/2-(minY+maxY)/2*site.scale};
-  draw();
+function renderSummary() {
+  const summary = $('course-summary');
+  const entries = Object.entries(state.data.course_summaries).filter(
+    ([id, item]) => item && (state.course === 'all' || state.course === id),
+  );
+  summary.hidden = !entries.length;
+  $('course-stats').innerHTML = entries
+    .map(([id, item]) => {
+      const rows = [
+        ['Lecture blocks', item.lecture_blocks],
+        ['Note headings', item.lecture_headings],
+        [
+          'Syllabus blocks past scheduled date',
+          item.syllabus_blocks
+            ? `${item.scheduled_past_blocks ?? '—'}/${item.syllabus_blocks}`
+            : null,
+        ],
+        ['Assessed skills', item.assessed_topic_records],
+        ['Independently confirmed', item.independently_confirmed_topic_records],
+      ];
+      return `<section class="course-stat"><h3>${escapeHtml(courseInfo(id).name)}</h3>
+      <dl class="detail-meta">${rows
+        .filter(([, value]) => value != null)
+        .map(
+          ([label, value]) =>
+            `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd></div>`,
+        )
+        .join('')}</dl></section>`;
+    })
+    .join('');
 }
-function toScreen(pos){return{x:pos.x*site.scale+site.pan.x,y:pos.y*site.scale+site.pan.y}}
-function radius(n){return n.id===site.selected?11:n.kind==='lecture'?7:n.kind==='dembo'?7.7:5.6}
-function draw(){
-  const canvas=$('graph'),ctx=canvas.getContext('2d');if(!ctx)return;
-  const {width,height,dpr}=site.screen;
-  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);
-  if(!site.visible.length){ctx.fillStyle='#9ab5c8';ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillText('No matching concepts in this view',width/2,height/2);return}
-  const positions=site.positions;
-  for(const edge of site.visibleEdges){
-    const a=positions.get(edge.source),b=positions.get(edge.target);if(!a||!b)continue;
-    const x=toScreen(a),y=toScreen(b);
-    ctx.beginPath();ctx.moveTo(x.x,x.y);ctx.lineTo(y.x,y.y);
-    ctx.strokeStyle=edge.kind==='proposed_supports'?'#70bfbf90':'#6f89a452';
-    ctx.lineWidth=edge.kind==='proposed_supports'?1.3:.8;ctx.stroke();
+
+function renderQueue() {
+  const queue = $('study-queue');
+  const items =
+    state.data.visibility === 'private_learning_evidence' &&
+    Array.isArray(state.data.diagnostic_queue)
+      ? state.data.diagnostic_queue
+          .filter(
+            (item) =>
+              item &&
+              (state.course === 'all' || item.course === state.course) &&
+              state.byId.has(item.node_id),
+          )
+          .slice(0, 5)
+      : [];
+  queue.hidden = !items.length;
+  queue.innerHTML = items.length
+    ? '<h3>Practice queue</h3>' +
+      items
+        .map((item) =>
+          topicButton(
+            state.byId.get(item.node_id),
+            item.retention_untested ? 'Retention untested' : 'Check retention',
+          ),
+        )
+        .join('')
+    : '';
+}
+
+async function copyPrompt(node, button) {
+  const prompt = `I am studying ${courseInfo(node.course).code}. Use the private ledger at https://github.com/josephbaileyy/academic-learning-ledger, AGENTS.md, protocols/tutoring.md, and the relevant evidence. Test me independently on ${node.label}. Proposed diagnostic: ${node.next_probe}. Give no hints until I attempt it. Track independent reasoning separately from your hints and record whether the solution was assisted.`;
+  try {
+    await navigator.clipboard.writeText(prompt);
+    button.textContent = 'Copied prompt ✓';
+  } catch {
+    window.prompt('Copy this diagnostic prompt', prompt);
   }
-  for(const node of site.visible){
-    const p=toScreen(positions.get(node.id)),active=node.id===site.selected,hover=node.id===site.hover;
-    const r=radius(node)*(active?1.4:1);
-    if(active||hover){ctx.beginPath();ctx.arc(p.x,p.y,r+6,0,Math.PI*2);ctx.fillStyle=active?'#ffffff1c':'#ffffff12';ctx.fill()}
-    ctx.beginPath();ctx.arc(p.x,p.y,r,0,Math.PI*2);ctx.fillStyle=color[node.kind]||'#8c9fb3';ctx.fill();
-    ctx.strokeStyle=active?'#ecfcff':'#101b2b';ctx.lineWidth=active?2.7:1.4;ctx.stroke();
-    if(active||hover||site.mode==='local'&&site.visible.length<=17||node.kind==='lecture'&&site.mode==='global'&&site.scale>.75){
-      const label=titleOf(node).replace(/^Lecture \d+: /,'');
-      const short=label.length>35?label.slice(0,32)+'…':label;
-      ctx.font=(active?'600 ':'')+'11px ui-sans-serif,system-ui,sans-serif';ctx.textAlign='center';ctx.fillStyle=active?'#f6fdff':'#c1d5e2';
-      ctx.fillText(short,p.x,p.y+r+16,230);
+}
+
+function clearSelection() {
+  const wasFocused = state.focused;
+  Object.assign(state, { selected: null, focused: false });
+  refresh(wasFocused);
+  canvas.focus({ preventScroll: !narrowScreen.matches });
+}
+
+$('courses').addEventListener('click', (event) => {
+  const button = event.target.closest('[data-course]');
+  if (button) setCourse(button.dataset.course);
+});
+$('node-type').addEventListener('change', (event) => {
+  state.kind = event.target.value;
+  if (!filteredNodes().some((node) => node.id === state.selected)) state.selected = null;
+  state.focused = false;
+  refresh(true);
+});
+$('close-detail').addEventListener('click', clearSelection);
+for (const element of [details, $('study-queue')]) {
+  element.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-topic]');
+    if (button) select(button.dataset.topic, true);
+  });
+}
+
+search.addEventListener('focus', renderSearch);
+search.addEventListener('click', () => {
+  if (searchResults.hidden) renderSearch();
+});
+search.addEventListener('input', renderSearch);
+$('search-wrap').addEventListener('focusout', (event) => {
+  if (!$('search-wrap').contains(event.relatedTarget)) closeSearch();
+});
+$('search-wrap').addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') {
+    search.focus();
+    closeSearch();
+    event.preventDefault();
+    return;
+  }
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    if (searchResults.hidden) renderSearch();
+    const buttons = [...searchResults.querySelectorAll('button')];
+    const index = buttons.indexOf(document.activeElement);
+    const next = event.key === 'ArrowDown' ? index + 1 : index < 0 ? buttons.length - 1 : index - 1;
+    (index === 0 && next < 0 ? search : buttons[(next + buttons.length) % buttons.length])?.focus();
+    event.preventDefault();
+  } else if (event.key === 'Enter' && event.target === search && !searchResults.hidden) {
+    const first = searchResults.querySelector('[data-topic]');
+    if (first) chooseSearch(first.dataset.topic);
+  }
+});
+searchResults.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-topic]');
+  if (button) chooseSearch(button.dataset.topic);
+});
+document.addEventListener('keydown', (event) => {
+  if (
+    event.key === '/' &&
+    !event.ctrlKey &&
+    !event.metaKey &&
+    !event.altKey &&
+    !event.target.closest('input, select, textarea, [contenteditable]')
+  ) {
+    event.preventDefault();
+    search.focus();
+    renderSearch();
+  } else if (event.key === 'Escape' && !event.defaultPrevented && state.selected) {
+    clearSelection();
+  }
+});
+
+function updateGestureHint() {
+  const space = $('view-space').getAttribute('aria-pressed') === 'true';
+  const drag = space ? 'Drag to orbit' : 'Drag to pan';
+  const touch = touchScreen.matches || (narrowScreen.matches && navigator.maxTouchPoints > 0);
+  const zoom = touch ? 'Pinch to zoom' : 'Scroll to zoom';
+  $('gesture-hint').textContent = `${drag} · ${zoom}`;
+}
+touchScreen.addEventListener('change', updateGestureHint);
+narrowScreen.addEventListener('change', updateGestureHint);
+updateGestureHint();
+
+const views = [
+  ['view-map', 'map'],
+  ['view-space', 'space'],
+  ['view-outline', 'outline'],
+];
+for (const [id, projection] of views) {
+  $(id).addEventListener('click', () => {
+    if ($(id).getAttribute('aria-pressed') === 'true') return;
+    for (const [other] of views) $(other).setAttribute('aria-pressed', String(id === other));
+    $('stage').dataset.projection = projection;
+    updateGestureHint();
+    graph.setProjection(projection);
+  });
+}
+for (const input of $('layout-weights').querySelectorAll('input')) {
+  const key = input.dataset.weight;
+  const output = input.parentElement.querySelector('output');
+  input.value = output.value = state.weights[key];
+  input.addEventListener('input', () => {
+    output.value = input.value;
+  });
+  input.addEventListener('change', () => {
+    const weights = { ...state.weights, [key]: Number(input.value) };
+    if (!Object.values(weights).some(Boolean)) {
+      weights[key] = 1;
+      input.value = output.value = '1';
     }
-  }
+    state.weights = weights;
+    refresh(true);
+  });
 }
-function resize(){
-  const canvas=$('graph'),rect=canvas.getBoundingClientRect();
-  const dpr=Math.min(2,window.devicePixelRatio||1);
-  canvas.width=Math.max(1,Math.round(rect.width*dpr));canvas.height=Math.max(1,Math.round(rect.height*dpr));
-  site.screen={width:rect.width,height:rect.height,dpr};fitView();
-}
-function nearest(x,y){
-  let found=null,distance=Infinity;
-  for(const node of site.visible){const pos=site.positions.get(node.id),p=toScreen(pos);const d=Math.hypot(p.x-x,p.y-y);if(d<Math.max(13,radius(node)*site.scale+7)&&d<distance){found=node;distance=d}}
-  return found;
-}
+$('shared-projection').addEventListener('change', (event) => {
+  state.sharedProjection = event.target.checked;
+  refresh(true);
+});
+$('zoom-in').addEventListener('click', () => graph.zoom(1.25));
+$('zoom-out').addEventListener('click', () => graph.zoom(0.8));
+$('reset-view').addEventListener('click', graph.fit);
 
-function refresh(resetLayout=false){
-  updateSummary();updateQueue();updateSearch();updateDetails();
-  if(resetLayout)relayout();else draw();
-}
-function select(id){
-  if(!site.data.nodes.some(n=>n.id===id))return;
-  const n=site.data.nodes.find(n=>n.id===id);
-  if(site.course!=='all'&&n.course!==site.course){site.course=n.course;$('course').value=n.course}
-  if(site.kind!=='all'&&n.kind!==site.kind){site.kind='all';$('node-type').value='all'}
-  site.selected=id;refresh(true);
-}
-function updateSearch(){
-  const term=$('search').value.trim().toLocaleLowerCase();
-  if(!term||!site.data){$('search-results').innerHTML='';return}
-  const found=site.data.nodes.filter(n=>(site.course==='all'||n.course===site.course)&&titleOf(n).toLocaleLowerCase().includes(term)).slice(0,7);
-  $('search-results').innerHTML=found.length?found.map(n=>`<button class="search-hit" role="option" data-id="${esc(n.id)}">${esc(titleOf(n))}</button>`).join(''):'<div class="fineprint">No matching concepts</div>';
-  $('search-results').querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{select(b.dataset.id);$('search').value='';updateSearch()}));
-}
-function updateSummary(){
-  const root=$('summary');if(!site.data)return;
-  const summaries=site.data.course_summaries;
-  const courses=site.course==='all'?Object.keys(shortCourse):[site.course];
-  const h=courses.map(course=>{
-    const item=summaries[course];if(!item)return'';
-    const scheduled=item.syllabus_blocks;
-    return `<div><div class="panel-title">${esc(shortCourse[course])}</div>`+
-      `<div class="metric"><span>Lecture blocks indexed</span><strong>${item.lecture_blocks}</strong></div>`+
-      `<div class="metric"><span>Note headings</span><strong>${item.lecture_headings}</strong></div>`+
-      (scheduled?`<div class="metric"><span>Syllabus blocks scheduled past</span><strong>${item.scheduled_past_blocks}/${scheduled}</strong></div><div class="bar"><span style="width:${Math.round(100*item.scheduled_past_blocks/scheduled)}%"></span></div><p class="fineprint">Scheduled dates only; teaching may differ from the published syllabus.</p>`:'<p class="fineprint">Verified course dates not yet indexed.</p>')+
-      (item.assessed_topic_records!==undefined?`<div class="metric"><span>Assessed-skill records</span><strong>${item.assessed_topic_records}</strong></div><div class="metric"><span>Independently confirmed skill records</span><strong>${item.independently_confirmed_topic_records}</strong></div>`:'')+
-      `<p class="fineprint">Independent mastery of the whole curriculum: unknown.</p></div>`;
-  }).join('<div class="summary-break"></div>');
-  root.innerHTML=h;
-}
-function updateQueue(){
-  const panel=$('study-queue');if(!site.data)return;
-  const q=site.data.diagnostic_queue;
-  if(!q){panel.innerHTML='<h3 class="panel-title">Learning diagnostics</h3><p class="fineprint">Private assessments are deliberately absent. Export your private data from the ledger, then load that JSON in this tab to see evidence-based probes.</p>';return}
-  const chosen=q.filter(n=>site.course==='all'||n.course===site.course).slice(0,5);
-  panel.innerHTML='<h3 class="panel-title">Candidate diagnostics</h3><p class="fineprint">A practice queue, not a grade prediction. These tests can reveal knowledge boundaries.</p>'+chosen.map(item=>`<button class="queue-item" data-id="${esc(item.node_id)}">${esc(item.label)}<small>${item.retention_untested?'Retention untested':'Check retention'} · ${esc(shortCourse[item.course])}</small></button>`).join('');
-  panel.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>select(b.dataset.id)));
-}
-function safeReaderUrl(url){try{const u=new URL(url);return u.protocol==='https:'&&u.hostname==='josephrbailey.com'&&u.pathname.startsWith('/probability/')?u.href:null}catch{return null}}
-function updateDetails(){
-  const el=$('node-details');if(!site.data)return;
-  const node=nodeMap().get(site.selected);
-  if(!node){el.innerHTML='<p class="muted">Choose a concept to inspect it.</p>';return}
-  const displayKind={dembo:'Dembo subsection',note:'Lecture note',lecture:'Lecture block',assessed:'Assessed skill'}[node.kind]||node.kind;
-  const link=safeReaderUrl(node.reader_url);
-  let html=`<div class="node-kind">${esc(displayKind)} · ${esc(shortCourse[node.course])}</div><h2>${esc(titleOf(node))}</h2><p class="detail-id">${esc(node.id)}</p>`;
-  if(node.section)html+=`<div class="detail-metric"><span>Dembo section</span><strong>${esc(node.section)}</strong></div>`;
-  if(node.lecture)html+=`<div class="detail-metric"><span>Lecture block</span><strong>${esc(node.lecture)}</strong></div>`;
-  if(node.schedule_status)html+=`<div class="detail-metric"><span>Scheduled status</span><strong>${esc(node.schedule_status.replaceAll('_',' '))}</strong></div>`;
-  if(node.scheduled_introduction)html+=`<div class="detail-metric"><span>First scheduled</span><strong>${esc(node.scheduled_introduction)}</strong></div>`;
-  if(node.kind==='assessed'){
-    const values=Object.entries(node.scores||{}).map(([k,v])=>`<div class="detail-metric"><span>${esc(k)}</span><strong>${v===null||v===undefined?'Untested':esc(v+'/4'+(node.assessment_status==='independently_confirmed'?'':' (provisional)'))}</strong></div>`).join('');
-    html+=`<div class="detail-metric"><span>Evidence status</span><strong>${esc(node.assessment_status?.replaceAll('_',' ')||'Unknown')}</strong></div>${values}`;
-    if(node.next_probe)html+=`<div class="detail-note"><strong>Independent next probe</strong><p>${esc(node.next_probe)}</p></div><button class="action-button" id="copy-probe">Copy diagnostic prompt</button>`;
-    if(node.evidence_refs?.length)html+=`<p class="fineprint">Evidence records: ${node.evidence_refs.length}. See the private repo for context.</p>`;
-  }else html+='<div class="detail-note">Curriculum presence is not a mastery assessment. Use an unfamiliar independent problem to establish what you know.</div>';
-  if(link)html+=`<div class="detail-sources"><span class="eyebrow">Read and explore</span><a href="${esc(link)}" target="_blank" rel="noopener noreferrer">Open probability companion ↗</a></div>`;
-  const nodes=nodeMap(),neighbours=[...(adjacency().get(node.id)||[])].map(id=>nodes.get(id)).filter(Boolean)
-    .sort((a,b)=>a.kind.localeCompare(b.kind)||titleOf(a).localeCompare(titleOf(b)));
-  if(neighbours.length){
-    const kindName={dembo:'Dembo',note:'Note',lecture:'Lecture',assessed:'Assessed skill'};
-    html+=`<div class="connected"><span class="eyebrow">Connected concepts (${neighbours.length})</span>`+neighbours.slice(0,14).map(n=>`<button type="button" class="connected-item" data-id="${esc(n.id)}"><span>${esc(titleOf(n))}</span><small>${esc(kindName[n.kind]||n.kind)}${n.course!==node.course?' · '+esc(shortCourse[n.course]||n.course):''}</small></button>`).join('')+(neighbours.length>14?`<p class="fineprint">${neighbours.length-14} more shown in the graph.</p>`:'')+'</div>';
+let importId = 0;
+$('private-file').addEventListener('change', async (event) => {
+  const input = event.target;
+  const file = input.files?.[0];
+  if (!file) return;
+  const request = ++importId;
+  input.value = '';
+  try {
+    const data = JSON.parse(await file.text());
+    if (request !== importId) return;
+    setData(data);
+    $('data-status').textContent = '';
+  } catch (error) {
+    if (request === importId)
+      $('data-status').textContent = `Could not load export. ${error.message}`;
   }
-  el.innerHTML=html;
-  el.querySelectorAll('.connected-item').forEach(b=>b.addEventListener('click',()=>select(b.dataset.id)));
-  const copy=$('copy-probe');if(copy)copy.addEventListener('click',()=>copyPrompt(node));
-}
-async function copyPrompt(node){
-  const prompt=`I am studying ${shortCourse[node.course]}. Use the private ledger at https://github.com/josephbaileyy/academic-learning-ledger, AGENTS.md, protocols/tutoring.md, and the relevant evidence. Test me independently on: ${node.label}. Proposed diagnostic: ${node.next_probe}. Give no hints until I attempt it. Track independent reasoning separately from your hints; never infer mastery from an assisted solution.`;
-  try{await navigator.clipboard.writeText(prompt);const b=$('copy-probe');if(b)b.textContent='Copied prompt ✓';}catch{window.prompt('Copy this diagnostic prompt:',prompt)}
-}
+});
+$('restore-public').addEventListener('click', () => {
+  importId++;
+  setData(publicData);
+  $('data-status').textContent = '';
+  $('private-file').focus();
+});
 
-function bind(){
-  $('course').addEventListener('change',e=>{site.course=e.target.value;site.selected=site.data?.nodes.find(n=>n.course===site.course)?.id||site.data?.nodes[0]?.id;refresh(true)});
-  $('node-type').addEventListener('change',e=>{site.kind=e.target.value;refresh(true)});
-  $('search').addEventListener('input',updateSearch);
-  $('view-local').addEventListener('click',()=>viewMode('local'));
-  $('view-global').addEventListener('click',()=>viewMode('global'));
-  $('zoom-in').addEventListener('click',()=>{site.scale=Math.min(3.5,site.scale*1.22);draw()});
-  $('zoom-out').addEventListener('click',()=>{site.scale=Math.max(.1,site.scale/1.22);draw()});
-  $('reset-view').addEventListener('click',fitView);
-  const canvas=$('graph'),pointers=new Map();
-  let pinch=null;
-  const pinchState=()=>{const [a,b]=[...pointers.values()];return{d:Math.hypot(a.x-b.x,a.y-b.y)||1,x:(a.x+b.x)/2,y:(a.y+b.y)/2}};
-  canvas.addEventListener('pointerdown',e=>{
-    canvas.setPointerCapture(e.pointerId);pointers.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
-    if(pointers.size===2){pinch={...pinchState(),scale:site.scale,pan:{...site.pan}};site.down=null;site.dragging=true;return}
-    site.dragging=false;site.down={x:e.offsetX,y:e.offsetY,panX:site.pan.x,panY:site.pan.y};
-  });
-  const release=e=>{pointers.delete(e.pointerId);if(pointers.size<2)pinch=null;};
-  canvas.addEventListener('pointermove',e=>{
-    if(pointers.has(e.pointerId))pointers.set(e.pointerId,{x:e.offsetX,y:e.offsetY});
-    if(pinch&&pointers.size===2){
-      const now=pinchState(),scale=Math.max(.1,Math.min(3.5,pinch.scale*now.d/pinch.d));
-      site.pan={x:now.x-(pinch.x-pinch.pan.x)*scale/pinch.scale,y:now.y-(pinch.y-pinch.pan.y)*scale/pinch.scale};site.scale=scale;draw();return;
-    }
-    if(site.down){const dx=e.offsetX-site.down.x,dy=e.offsetY-site.down.y;if(Math.hypot(dx,dy)>4)site.dragging=true;if(site.dragging){site.pan={x:site.down.panX+dx,y:site.down.panY+dy};canvas.classList.add('is-dragging');draw()}}
-    else{const item=nearest(e.offsetX,e.offsetY);const next=item?.id||null;if(next!==site.hover){site.hover=next;canvas.style.cursor=next?'pointer':'grab';draw()}}
-  });
-  canvas.addEventListener('pointerup',e=>{const wasPinch=pinch!==null||pointers.size>1;release(e);if(!wasPinch&&site.down&&!site.dragging){const item=nearest(e.offsetX,e.offsetY);if(item)select(item.id)}if(!pointers.size){site.down=null;site.dragging=false;canvas.classList.remove('is-dragging')}});
-  canvas.addEventListener('pointercancel',e=>{release(e);site.down=null;site.dragging=false;canvas.classList.remove('is-dragging')});
-  canvas.addEventListener('wheel',e=>{e.preventDefault();const rect=canvas.getBoundingClientRect(),x=e.clientX-rect.left,y=e.clientY-rect.top;const old=site.scale,now=Math.max(.1,Math.min(3.5,old*(e.deltaY<0?1.09:.91)));site.pan.x=x-(x-site.pan.x)*now/old;site.pan.y=y-(y-site.pan.y)*now/old;site.scale=now;draw()},{passive:false});
-  $('private-file').addEventListener('change',async e=>{
-    const file=e.target.files?.[0];if(!file)return;
-    try{const payload=JSON.parse(await file.text());setData(payload)}catch(error){setStatus('Could not load private file: '+error.message,true)}
-    e.target.value='';
-  });
-  new ResizeObserver(resize).observe(canvas);
+try {
+  const response = await fetch('./data/atlas.public.json');
+  if (!response.ok) throw Error('Curriculum unavailable.');
+  publicData = assertPayload(await response.json());
+  if (!state.data) setData(publicData);
+  else $('restore-public').hidden = false;
+} catch {
+  if (!state.data)
+    $('graph-status').textContent =
+      'Curriculum unavailable. Try reloading or load an export below.';
 }
-function viewMode(mode){site.mode=mode;for(const option of ['local','global']){const b=$('view-'+option);b.classList.toggle('is-active',option===mode);b.setAttribute('aria-pressed',String(option===mode))}refresh(true)}
-bind();
-try{
-  const response=await fetch('./data/atlas.public.json',{cache:'no-store'});
-  if(!response.ok)throw Error('Public curriculum snapshot unavailable');
-  setData(await response.json());
-}catch(error){setStatus(error.message+' · Load an exported JSON to begin',true)}

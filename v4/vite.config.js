@@ -222,6 +222,22 @@ const contentMarkers = [
   ['<!-- FOOTER_CONTENT -->', renderFooter],
 ];
 
+function serveLearningAtlas(server) {
+  server.middlewares.use((request, response, next) => {
+    const route = request.url?.match(/^\/learning(\/?)(\?.*)?$/);
+    if (!route) return next();
+    const [, slash, query = ''] = route;
+    if (!slash) {
+      response.writeHead(301, { Location: `/learning/${query}` });
+      response.end();
+      return;
+    }
+    // Serve the standalone public HTML before Vite's homepage fallback.
+    request.url = `/learning/index.html${query}`;
+    next();
+  });
+}
+
 export default defineConfig({
   root,
   base: './',
@@ -258,6 +274,11 @@ export default defineConfig({
     strictPort: true,
   },
   plugins: [
+    {
+      name: 'learning-atlas-route',
+      configureServer: serveLearningAtlas,
+      configurePreviewServer: serveLearningAtlas,
+    },
     {
       name: 'static-portfolio-content',
       transformIndexHtml(html, context) {

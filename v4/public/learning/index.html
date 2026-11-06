@@ -1,69 +1,199 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#111a2a">
-  <meta name="description" content="Explore course concepts, their connections, and evidence-aware study progress.">
-  <title>Learning Atlas · Joseph Bailey</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23182a3f'/%3E%3Ctext x='16' y='23' font-size='20' text-anchor='middle' fill='%23a8dbec'%3E%E2%88%B4%3C/text%3E%3C/svg%3E">
-  <link rel="stylesheet" href="./styles.css">
-</head>
-<body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="brand"><div class="brand-mark">∴</div><div><span class="eyebrow">Academic learning ledger</span><h1>Learning Atlas</h1></div></div>
-      <div class="top-actions">
-        <a class="portfolio-link" href="../">← Portfolio</a>
-        <span id="privacy-pill" class="privacy-pill">Public curriculum</span>
-        <label class="upload-button" for="private-file">Load private export <span aria-hidden="true">↗</span></label>
-        <input id="private-file" type="file" accept="application/json,.json" aria-label="Load your private learning graph JSON">
-      </div>
-    </header>
-    <div class="app-layout">
-      <aside class="sidebar left-panel">
-        <section class="intro-section">
-          <p class="eyebrow">Map of understanding</p>
-          <h2>Find the next <br><em>useful connection.</em></h2>
-          <p class="muted">Courses, lecture notes, and prerequisite paths in one place. Evidence is separate from curriculum.</p>
-          <div class="asof" id="asof">Loading curriculum…</div>
-        </section>
-        <section class="control-section">
-          <label class="field-label" for="course">Course</label>
-          <select id="course"><option value="stats310a">STATS 310A / MATH 230A</option><option value="math116">MATH 116 · Complex analysis</option><option value="math120">MATH 120 · Groups and rings</option><option value="physics330">PHYSICS 330 · QFT</option><option value="all">All courses</option></select>
-          <label class="field-label" for="search">Find a concept</label>
-          <input id="search" type="search" placeholder="e.g. Borel–Cantelli" autocomplete="off">
-          <div id="search-results" class="search-results" role="listbox" aria-label="Matching concepts"></div>
-          <label class="field-label" for="node-type">Show nodes</label>
-          <select id="node-type"><option value="all">All concept types</option><option value="dembo">Dembo subsections</option><option value="note">Note headings</option><option value="lecture">Lecture blocks</option><option value="assessed" id="assessed-option">Assessment evidence (private export)</option></select>
-        </section>
-        <section class="summary-section" id="summary" aria-live="polite"></section>
-        <section class="queue-section" id="study-queue"></section>
-      </aside>
-      <main class="canvas-area" aria-label="Interactive knowledge graph">
-        <div class="graph-toolbar">
-          <div class="segmented" role="group" aria-label="Graph view">
-            <button id="view-local" type="button" class="is-active" aria-pressed="true">Local graph</button>
-            <button id="view-global" type="button" aria-pressed="false">Global graph</button>
-          </div>
-          <div class="graph-tools">
-            <button id="zoom-out" type="button" title="Zoom out" aria-label="Zoom out">−</button>
-            <button id="zoom-in" type="button" title="Zoom in" aria-label="Zoom in">+</button>
-            <button id="reset-view" type="button" title="Center graph" aria-label="Center graph">◎</button>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#131518" />
+    <meta
+      name="description"
+      content="Explore the connections between courses, lectures, and concepts."
+    />
+    <title>Learning Atlas · Joseph Bailey</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131518'/%3E%3Ctext x='16' y='23' font-size='22' text-anchor='middle' fill='%23c3b7fb'%3E%E2%88%B4%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="../probability/vendor/katex.min.css" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="atlas-shell">
+      <header class="atlas-header">
+        <a class="portfolio-link" href="../"><span aria-hidden="true">←</span> Portfolio</a>
+        <span class="source-tag" id="source-tag"><i></i> Public curriculum</span>
+        <h1>Learning atlas<span>.</span></h1>
+        <p>A map of lectures, notes, and readings.</p>
+      </header>
+
+      <section class="atlas" aria-label="Curriculum explorer">
+        <div class="atlas-toolbar">
+          <nav id="courses" class="courses" aria-label="Filter by course"></nav>
+          <div class="search-wrap" id="search-wrap">
+            <svg aria-hidden="true" viewBox="0 0 24 24">
+              <circle cx="10.8" cy="10.8" r="5.8" />
+              <path d="m15 15 4 4" />
+            </svg>
+            <input
+              id="search"
+              type="search"
+              aria-label="Find a topic"
+              aria-controls="search-results"
+              placeholder="Find a topic…"
+              autocomplete="off"
+            />
+            <kbd class="shortcut" aria-hidden="true">/</kbd>
+            <div
+              id="search-results"
+              class="search-results"
+              role="region"
+              aria-label="Topics"
+              hidden
+            ></div>
           </div>
         </div>
-        <canvas id="graph" role="img" aria-label="Interactive graph: click a node to inspect and focus its relationships"></canvas>
-        <div class="canvas-note" id="canvas-note">Drag to pan · Scroll or pinch to zoom · Select a node to explore neighbors</div>
-        <div class="graph-legend"><span><i class="key dembo"></i>Dembo</span><span><i class="key note"></i>Notes</span><span><i class="key assessed"></i>Evidence</span><span><i class="key lecture"></i>Lecture</span></div>
-      </main>
-      <aside class="sidebar right-panel">
-        <div class="detail-heading"><span class="eyebrow">Selected concept</span><span class="detail-icon">↗</span></div>
-        <div id="node-details" aria-live="polite"><p class="muted">Choose a node to see its sources, linked concepts, and study evidence.</p></div>
-        <section class="reading-guide"><span class="eyebrow">How to read this map</span><p><strong>Blue/teal</strong> nodes represent curricular material. <strong>Gold</strong> nodes represent assessed skills in the private ledger—not necessarily mastery.</p><p>Missing evidence means <em>untested</em>, never automatically “failed.”</p></section>
-      </aside>
-    </div>
-    <footer class="site-footer"><span>Built from source-linked lecture and syllabus records.</span><span id="footer-status">No student record is published by this page.</span></footer>
-  </div>
-  <script type="module" src="./app.js"></script>
-</body>
+
+        <div class="workspace">
+          <div class="stage" id="stage">
+            <canvas
+              id="graph"
+              tabindex="0"
+              aria-label="Course graph"
+              aria-describedby="graph-help"
+            ></canvas>
+            <div class="stage-controls">
+              <div class="control-group" role="group" aria-label="Graph layout">
+                <button id="view-map" type="button" aria-pressed="true">Map</button>
+                <button id="view-space" type="button" aria-pressed="false">3D</button>
+                <button id="view-outline" type="button" aria-pressed="false">Outline</button>
+              </div>
+              <div class="control-group camera-controls" role="group" aria-label="Camera">
+                <button id="zoom-out" type="button" title="Zoom out" aria-label="Zoom out">
+                  −
+                </button>
+                <button id="zoom-in" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+                <button id="reset-view" type="button" title="Fit graph" aria-label="Fit graph">
+                  <svg aria-hidden="true" viewBox="0 0 24 24">
+                    <path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4" />
+                    <circle cx="12" cy="12" r="2.5" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div class="node-tooltip" id="node-tooltip" aria-hidden="true" hidden></div>
+            <p id="graph-status" class="graph-status" role="status"></p>
+            <noscript
+              ><p class="graph-status">
+                The map needs JavaScript.
+                <a href="../probability/">Browse the probability notes →</a>
+              </p></noscript
+            >
+            <span id="graph-help" class="sr-only"
+              >Use Find a topic to browse all nodes by keyboard. Use the arrow keys to move the
+              graph and plus or minus to zoom.</span
+            >
+          </div>
+          <aside class="inspector" id="inspector" aria-label="Topic details" hidden>
+            <div class="inspector-bar">
+              <span>Topic details</span>
+              <button
+                type="button"
+                class="icon-button"
+                id="close-detail"
+                aria-label="Close topic details"
+                title="Close topic details"
+              >
+                ×
+              </button>
+            </div>
+            <div id="node-details"></div>
+          </aside>
+        </div>
+        <footer class="atlas-caption">
+          <span id="graph-count" role="status"></span>
+          <div class="legend" aria-label="Graph legend">
+            <span id="lecture-key" hidden><i class="symbol lecture"></i> Lecture</span>
+            <span id="note-key" hidden><i class="symbol note"></i> Note</span>
+            <span id="reading-key" hidden><i class="symbol reading"></i> Reading</span>
+            <span id="evidence-key" hidden><i class="symbol evidence"></i> Evidence</span>
+            <span id="suggested-key" hidden><i class="symbol suggested"></i> Suggested link</span>
+          </div>
+          <span id="gesture-hint">Drag to pan · Scroll to zoom</span>
+        </footer>
+      </section>
+
+      <details class="data-panel" id="data-panel">
+        <summary>Data &amp; options</summary>
+        <div class="data-options">
+          <label for="node-type"
+            >Show
+            <select id="node-type">
+              <option value="all">All topics</option>
+            </select></label
+          >
+          <label class="file-button"
+            >Load private export<input
+              id="private-file"
+              type="file"
+              accept="application/json,.json"
+          /></label>
+          <button type="button" id="restore-public" hidden>Return to public curriculum</button>
+        </div>
+        <details class="layout-options">
+          <summary>Projection settings</summary>
+          <p>
+            Map shows the first two principal components. 3D adds the third and softly rounds the
+            cloud around its orbit center.
+          </p>
+          <div class="layout-weights" id="layout-weights">
+            <label
+              >Meaning <output for="weight-meaning"></output
+              ><input
+                type="range"
+                id="weight-meaning"
+                data-weight="meaning"
+                min="0"
+                max="100"
+              /><small>Shared terms in titles and linked note context</small></label
+            >
+            <label
+              >Math links <output for="weight-math"></output
+              ><input type="range" id="weight-math" data-weight="math" min="0" max="100" /><small
+                >Recorded mathematical relationships</small
+              ></label
+            >
+            <label
+              >Source proximity <output for="weight-source"></output
+              ><input
+                type="range"
+                id="weight-source"
+                data-weight="source"
+                min="0"
+                max="100"
+              /><small>Nearby readings, lectures, and note headings</small></label
+            >
+          </div>
+          <label class="shared-projection"
+            ><input type="checkbox" id="shared-projection" /> Use one shared projection in All
+            courses</label
+          >
+          <p>
+            The overview fits each course separately by default. A shared projection lets you
+            compare distances across courses. Outline follows the course structure.
+          </p>
+        </details>
+        <p id="data-status" class="data-status" role="status"></p>
+        <p id="snapshot"></p>
+        <p>
+          Private files stay in this tab. Curriculum and assessment records do not measure overall
+          mastery.
+        </p>
+        <details class="course-summary" id="course-summary" hidden>
+          <summary>Course summaries</summary>
+          <div id="course-stats"></div>
+        </details>
+        <div id="study-queue" hidden></div>
+      </details>
+    </main>
+    <script type="module" src="./app.js"></script>
+  </body>
 </html>
