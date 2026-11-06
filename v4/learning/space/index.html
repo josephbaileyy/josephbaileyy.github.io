@@ -129,8 +129,8 @@
           <section>
             <h2>Shape of the map</h2>
             <p class="cs-note" id="cs-shape-note">
-              Positions come from mathematical structure: typed relations, weighted by how well each
-              is sourced.
+              Positions come from mathematical structure: typed relations, at full weight once
+              reviewed.
             </p>
             <div class="cs-diagnostic" id="cs-diagnostic" aria-live="polite"></div>
             <details class="cs-explore" id="cs-explore">
@@ -172,8 +172,8 @@
               <legend>Relations drawn</legend>
             </fieldset>
             <label class="cs-check"
-              ><input type="checkbox" id="cs-unsourced" checked /> Show relations with no source yet
-              <small>(agent proposals, drawn fainter)</small></label
+              ><input type="checkbox" id="cs-unsourced" checked /> Show unchecked relations
+              <small>(no source found and not reviewed; drawn fainter)</small></label
             >
             <label class="cs-select"
               >Chapter
@@ -213,9 +213,9 @@
             <ul>
               <li>
                 <b>Structure</b> (the default map): cosine of relation profiles built from typed
-                links (prerequisite, used in proof, generalizes…). Each link is weighted by its
-                source: cited by number in Dembo, named in Dembo, mentioned in the lecture notes, or
-                an unsourced agent proposal (half weight).
+                links (prerequisite, used in proof, generalizes, implies…). Every link was checked
+                against the Dembo statements and proofs by an independent reviewer agent; an
+                unchecked link would count at half weight.
               </li>
               <li>
                 <b>Language</b>: TF-IDF cosine over the sentences of the lecture notes that mention
@@ -231,8 +231,9 @@
               Each channel is divided by its typical strongest-neighbour similarity, so equal
               weights give a concept's closest links equal pull in every channel. PCA is kernel PCA
               of the weighted kernel; Force is a seeded spring–repulsion layout constrained to the
-              sphere; Hybrid starts the force layout from PCA. No relation is verified yet: each one
-              lists the source that supports it, or says that none was found.
+              sphere; Hybrid starts the force layout from PCA. Each relation lists the source that
+              supports it and whether an independent reviewer agent, which read the Dembo statements
+              and proofs, confirmed it.
             </p>
           </details>
         </aside>

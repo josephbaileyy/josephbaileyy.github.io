@@ -979,3 +979,8 @@ svg {
   font-size: 0.72rem;
   color: var(--quiet);
 }
+.cs-relations .cs-review {
+  grid-column: 1 / -1;
+  color: #b4acd9;
+  font-size: 0.76rem;
+}

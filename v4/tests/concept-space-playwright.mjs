@@ -54,7 +54,7 @@ try {
   await detail.waitFor();
   assert.match(await detail.innerText(), /Dominated convergence theorem/);
   assert.match(await detail.innerText(), /Builds on[\s\S]*Fatou/i);
-  assert.match(await detail.innerText(), /proposed/);
+  assert.match(await detail.innerText(), /Agent-reviewed|Unreviewed/);
   assert.match(await detail.innerText(), /Dembo (cites|names)/, 'relations show their source');
   assert.match(await detail.innerText(), /Theorem 1\.3\.34/, 'Dembo anchor listed');
   assert.match(desktop.url(), /c=dominated_convergence_theorem/);

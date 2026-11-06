@@ -39,8 +39,14 @@ const SUPPORT_BADGE = {
   cited: { label: 'Dembo cites', color: '#7fa7ee' },
   named: { label: 'Dembo names', color: '#a9b2c6' },
   notes: { label: 'Lecture notes', color: '#6cc3a2' },
-  agent_only: { label: 'No source yet', color: '#8b92a3' },
+  agent_only: { label: 'No citation found', color: '#8b92a3' },
 };
+const STATUS_BADGE = {
+  verified: { label: 'Verified', color: '#0ca30c' },
+  agent_reviewed: { label: 'Agent-reviewed', color: '#c3b7fb' },
+  proposed: { label: 'Unreviewed', color: '#8b92a3' },
+};
+const isReviewed = (relation) => ['agent_reviewed', 'verified'].includes(relation.status);
 const RESULT_KIND = {
   theo: 'Theorem',
   lemm: 'Lemma',
@@ -152,14 +158,18 @@ async function main() {
       if (model.index.get(relation.source) !== i && model.index.get(relation.target) !== i)
         continue;
       total++;
-      if (relation.support !== 'agent_only') good++;
+      if (relation.support !== 'agent_only' || isReviewed(relation)) good++;
     }
     return total ? good / total : 0;
   });
   const sourcedRelations = model.relations.length - (supportCounts.agent_only ?? 0);
+  const reviewedRelations = model.relations.filter(isReviewed).length;
+  const unbacked = model.relations.filter(
+    (r) => r.support === 'agent_only' && !isReviewed(r),
+  ).length;
 
   $('cs-lede').textContent =
-    `Probability theory (STATS 310A / MATH 230A): ${model.n} concepts and ${model.relations.length} typed relations, projected from a high-dimensional space into a sphere. ${sourcedRelations} relations are backed by the Dembo notes or the lecture notes; ${supportCounts.agent_only ?? 0} are unsourced proposals. None is verified yet.`;
+    `Probability theory (STATS 310A / MATH 230A): ${model.n} concepts and ${model.relations.length} typed relations, projected from a high-dimensional space into a sphere. ${reviewedRelations} relations have been checked against the Dembo notes by an independent reviewer agent; ${sourcedRelations} also carry an automatic citation or mention${unbacked ? `; ${unbacked} are still unchecked` : ''}. None is verified by a person yet.`;
 
   const hasWebGL = webglAvailable();
   const callbacks = {
@@ -245,7 +255,7 @@ async function main() {
         : `Concepts first scheduled after week ${state.week} are faded. As of ${data.as_of} the syllabus has reached week ${reached}.`;
     const pure = state.weights.math > 0 && !state.weights.semantic && !state.weights.source;
     $('cs-shape-note').textContent = pure
-      ? 'Positions come from mathematical structure alone: typed relations, each weighted by how well it is sourced.'
+      ? 'Positions come from mathematical structure alone: typed relations, at full weight once reviewed.'
       : 'Positions mix structure with the affinities chosen below. Language and syllabus proximity are not dependencies.';
   }
 
@@ -286,7 +296,7 @@ async function main() {
       .map(([key, badge]) => `${badge.label.toLowerCase()} ${supportCounts[key]}`)
       .join(' · ');
     $('cs-diagnostic').innerHTML = `
-      <p>Relations: ${support}.</p>
+      <p>Relations: ${support}. Reviewed by an independent agent: ${reviewedRelations}.</p>
       <p>Which channel the 3D neighbourhoods agree with (mean overlap of 8 nearest neighbours, 0–1):</p>
       ${bars}
       ${pca}
@@ -346,7 +356,7 @@ async function main() {
           `<span><i class="cs-swatch" style="background:${depthColor(v, 1)}"></i>${Math.round(v * 100)}% of its relations sourced</span>`,
       );
       items.push(
-        '<small>Darker concepts rest mostly on unsourced agent proposals: check those first.</small>',
+        '<small>Share of each concept’s relations that are sourced or agent-reviewed. Darker concepts rest on unchecked proposals.</small>',
       );
     } else if (state.colorBy === 'depth') {
       items = [0, Math.round(maxDepth / 2), maxDepth].map(
@@ -477,11 +487,16 @@ async function main() {
       const outgoing = model.index.get(relation.source) === index;
       const other = model.index.get(outgoing ? relation.target : relation.source);
       const badge = SUPPORT_BADGE[relation.support] ?? SUPPORT_BADGE.agent_only;
-      const row = `<li title="${escapeHtml(relation.rationale)}" class="${relation.support === 'agent_only' ? 'is-unsourced' : ''}">
+      const status = STATUS_BADGE[relation.status] ?? STATUS_BADGE.proposed;
+      const review = relation.review
+        ? `<small class="cs-review">Reviewer: ${escapeHtml(relation.review.reason)}${relation.review.correction ? ` (corrected; ${escapeHtml(relation.review.correction)})` : ''}</small>`
+        : '';
+      const row = `<li title="${escapeHtml(relation.rationale)}" class="${relation.support === 'agent_only' && !isReviewed(relation) ? 'is-unsourced' : ''}">
           <span class="cs-rel" style="--c:${RELATION_STYLE[relation.type].color}">${RELATION_STYLE[relation.type].label}</span>
           ${conceptButton(other)}
           <small>${escapeHtml(relation.rationale)}</small>
-          <small class="cs-support"><span class="cs-badge" style="--c:${badge.color}">${badge.label}</span>${evidenceText(relation)} <em>${relation.status}</em></small>
+          <small class="cs-support"><span class="cs-badge" style="--c:${status.color}">${status.label}</span><span class="cs-badge" style="--c:${badge.color}">${badge.label}</span>${evidenceText(relation)}</small>
+          ${review}
         </li>`;
       (directed ? (outgoing ? groups.out : groups.in) : groups.both).push(row);
     }

@@ -58,6 +58,7 @@ export const RELATION_STYLE = {
   equivalent_formulation: { color: '#e9e3c4', label: 'Equivalent' },
   shares_structure: { color: '#7d8494', label: 'Shared structure' },
   counterexample: { color: '#ec835a', label: 'Counterexample' },
+  implies: { color: '#d7a6e6', label: 'Implies' },
 };
 
 const BACKGROUND = '#101217';
@@ -204,7 +205,9 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
   ]);
   // One line set per relation type and per support (sourced vs agent-only), so
   // unsourced proposals can be dimmed or hidden independently.
-  const sourced = (relation) => relation.support && relation.support !== 'agent_only';
+  const sourced = (relation) =>
+    ['agent_reviewed', 'verified'].includes(relation.status) ||
+    (relation.support && relation.support !== 'agent_only');
   const relationLines = {};
   for (const [key, type, style, isSourced] of Object.entries(RELATION_STYLE).flatMap(
     ([type, style]) => [

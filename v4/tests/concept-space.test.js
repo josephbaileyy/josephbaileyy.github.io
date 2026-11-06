@@ -62,12 +62,18 @@ describe('concept graph data integrity', () => {
     }
   });
 
-  it('marks every agent-generated relation as proposed with provenance and confidence', () => {
+  it('keeps provenance and separates agent review from human verification', () => {
     for (const r of data.relations) {
       expect(r.rationale.length).toBeGreaterThan(5);
       expect(r.confidence).toBeGreaterThan(0);
       expect(r.confidence).toBeLessThanOrEqual(1);
-      if (r.provenance.startsWith('agent:')) expect(r.status).toBe('proposed');
+      expect(['proposed', 'agent_reviewed', 'verified']).toContain(r.status);
+      if (r.status === 'agent_reviewed') {
+        expect(r.review.reviewer).toMatch(/^agent:/);
+        expect(r.review.reviewer).not.toBe(r.provenance);
+        expect(r.review.reason.length).toBeLessThanOrEqual(300);
+      }
+      if (r.status === 'verified') expect(r.verified_by).not.toMatch(/^agent:/);
     }
   });
 
