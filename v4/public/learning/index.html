@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111a2a">
+  <meta name="description" content="Explore course concepts, their connections, and evidence-aware study progress.">
+  <title>Learning Atlas · Joseph Bailey</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand"><div class="brand-mark">∴</div><div><span class="eyebrow">Academic learning ledger</span><h1>Learning Atlas</h1></div></div>
+      <div class="top-actions">
+        <span id="privacy-pill" class="privacy-pill">Public curriculum</span>
+        <label class="upload-button" for="private-file">Load private export <span aria-hidden="true">↗</span></label>
+        <input id="private-file" type="file" accept="application/json,.json" aria-label="Load your private learning graph JSON">
+      </div>
+    </header>
+    <div class="app-layout">
+      <aside class="sidebar left-panel">
+        <section class="intro-section">
+          <p class="eyebrow">Map of understanding</p>
+          <h2>Find the next<br><em>useful connection.</em></h2>
+          <p class="muted">Courses, lecture notes, and prerequisite paths in one place. Evidence is separate from curriculum.</p>
+          <div class="asof" id="asof">Loading curriculum…</div>
+        </section>
+        <section class="control-section">
+          <label class="field-label" for="course">Course</label>
+          <select id="course"><option value="stats310a">STATS 310A / MATH 230A</option><option value="math116">MATH 116 · Complex analysis</option><option value="math120">MATH 120 · Groups and rings</option><option value="physics330">PHYSICS 330 · QFT</option><option value="all">All courses</option></select>
+          <label class="field-label" for="search">Find a concept</label>
+          <input id="search" type="search" placeholder="e.g. Borel–Cantelli" autocomplete="off">
+          <div id="search-results" class="search-results" role="listbox" aria-label="Matching concepts"></div>
+          <label class="field-label" for="node-type">Show nodes</label>
+          <select id="node-type"><option value="all">All concept types</option><option value="dembo">Dembo subsections</option><option value="note">Note headings</option><option value="lecture">Lecture blocks</option><option value="assessed">Assessment evidence</option></select>
+        </section>
+        <section class="summary-section" id="summary" aria-live="polite"></section>
+        <section class="queue-section" id="study-queue"></section>
+      </aside>
+      <main class="canvas-area" aria-label="Interactive knowledge graph">
+        <div class="graph-toolbar">
+          <div class="segmented" role="group" aria-label="Graph view">
+            <button id="view-local" type="button" class="is-active" aria-pressed="true">Local graph</button>
+            <button id="view-global" type="button" aria-pressed="false">Global graph</button>
+          </div>
+          <div class="graph-tools">
+            <button id="zoom-out" type="button" title="Zoom out" aria-label="Zoom out">−</button>
+            <button id="zoom-in" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+            <button id="reset-view" type="button" title="Center graph" aria-label="Center graph">◎</button>
+          </div>
+        </div>
+        <canvas id="graph" role="img" aria-label="Interactive graph: click a node to inspect and focus its relationships"></canvas>
+        <div class="canvas-note" id="canvas-note">Drag to pan · Scroll to zoom · Select a node to explore neighbors</div>
+        <div class="graph-legend"><span><i class="key dembo"></i>Dembo</span><span><i class="key note"></i>Notes</span><span><i class="key assessed"></i>Evidence</span><span><i class="key lecture"></i>Lecture</span></div>
+      </main>
+      <aside class="sidebar right-panel">
+        <div class="detail-heading"><span class="eyebrow">Selected concept</span><span class="detail-icon">↗</span></div>
+        <div id="node-details" aria-live="polite"><p class="muted">Choose a node to see its sources, linked concepts, and study evidence.</p></div>
+        <section class="reading-guide"><span class="eyebrow">How to read this map</span><p><strong>Blue/teal</strong> nodes represent curricular material. <strong>Gold</strong> nodes represent assessed skills in the private ledger—not necessarily mastery.</p><p>Missing evidence means <em>untested</em>, never automatically “failed.”</p></section>
+      </aside>
+    </div>
+    <footer class="site-footer"><span>Built from source-linked lecture and syllabus records.</span><span id="footer-status">No student record is published by this page.</span></footer>
+  </div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
