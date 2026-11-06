@@ -61,6 +61,8 @@ describe('v4 production output', () => {
       'learning/projection.js',
       'learning/styles.css',
       'learning/data/atlas.public.json',
+      'learning/data/concepts.stats310a.public.json',
+      'learning/space/index.html',
       'about.html',
       'notes/index.html',
       'notes/how-this-site-works.html',

@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#131518" />
+    <meta
+      name="description"
+      content="A 3D map of probability-theory concepts: semantic, mathematical and source relationships projected into a sphere."
+    />
+    <title>Concept space · Learning Atlas · Joseph Bailey</title>
+    <link rel="canonical" href="https://josephrbailey.com/learning/space/" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23131518'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%233987e5' stroke-width='2'/%3E%3Ccircle cx='13' cy='13' r='2.4' fill='%23f0f0f3'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <main class="cs-shell">
+      <header class="cs-header">
+        <nav class="cs-crumbs" aria-label="Breadcrumb">
+          <a href="../../">Portfolio</a><span aria-hidden="true">/</span
+          ><a href="../">Learning atlas</a><span aria-hidden="true">/</span
+          ><span aria-current="page">Concept space</span>
+        </nav>
+        <span class="cs-source" id="cs-source"><i></i> Public curriculum</span>
+        <h1>Concept space<span>.</span></h1>
+        <p class="cs-lede" id="cs-lede">
+          Probability theory (STATS 310A / MATH 230A) as a high-dimensional network of concepts,
+          projected into a sphere.
+        </p>
+      </header>
+
+      <section class="cs-app" aria-label="Concept space explorer">
+        <div class="cs-stage" id="cs-stage">
+          <canvas id="cs-canvas" aria-label="3D concept graph" aria-describedby="cs-help"></canvas>
+          <div class="cs-labels" id="cs-labels" aria-hidden="true"></div>
+          <svg class="cs-gizmo" id="cs-gizmo" viewBox="-30 -30 60 60" aria-hidden="true"></svg>
+          <p class="cs-axes" id="cs-axes" aria-hidden="true"></p>
+
+          <div class="cs-topbar">
+            <div class="cs-search" id="cs-search-wrap">
+              <svg aria-hidden="true" viewBox="0 0 24 24">
+                <circle cx="10.8" cy="10.8" r="5.8" />
+                <path d="m15 15 4 4" />
+              </svg>
+              <input
+                id="cs-search"
+                type="search"
+                placeholder="Find a concept…"
+                autocomplete="off"
+                aria-label="Find a concept"
+                aria-controls="cs-results"
+                aria-expanded="false"
+              />
+              <kbd aria-hidden="true">/</kbd>
+              <ul id="cs-results" class="cs-results" role="listbox" hidden></ul>
+            </div>
+            <div class="cs-buttons" role="group" aria-label="View">
+              <button type="button" id="cs-global" title="Global course view">Global</button>
+              <button type="button" id="cs-list-toggle" aria-pressed="false" title="Text list">
+                List
+              </button>
+              <button
+                type="button"
+                id="cs-reset-camera"
+                title="Reset camera"
+                aria-label="Reset camera"
+              >
+                <svg aria-hidden="true" viewBox="0 0 24 24">
+                  <path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4" />
+                  <circle cx="12" cy="12" r="2.5" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <article class="cs-detail" id="cs-detail" aria-live="polite" hidden></article>
+          <div class="cs-list" id="cs-list" hidden></div>
+          <p class="cs-status" id="cs-status" role="status"></p>
+          <noscript><p class="cs-status">The concept space needs JavaScript.</p></noscript>
+          <span id="cs-help" class="sr-only"
+            >Drag to orbit, scroll or pinch to zoom, right-drag or two fingers to pan. Use Find a
+            concept or the List view to browse every concept by keyboard.</span
+          >
+        </div>
+
+        <aside class="cs-panel" id="cs-panel" aria-label="Layout controls">
+          <section>
+            <h2>Projection</h2>
+            <div class="cs-segment" role="radiogroup" aria-label="Projection mode" id="cs-mode">
+              <button type="button" role="radio" data-mode="pca" aria-checked="false">PCA</button>
+              <button type="button" role="radio" data-mode="force" aria-checked="false">
+                Force
+              </button>
+              <button type="button" role="radio" data-mode="hybrid" aria-checked="true">
+                Hybrid
+              </button>
+            </div>
+            <p class="cs-note" id="cs-mode-note"></p>
+            <div
+              class="cs-segment"
+              role="radiogroup"
+              aria-label="Sphere constraint"
+              id="cs-geometry"
+            >
+              <button type="button" role="radio" data-geometry="volume" aria-checked="true">
+                Ball ‖x‖ ≤ R
+              </button>
+              <button type="button" role="radio" data-geometry="surface" aria-checked="false">
+                Surface ‖x‖ = R <small>exp.</small>
+              </button>
+            </div>
+            <label class="cs-check"
+              ><input type="checkbox" id="cs-shells" /> Foundations toward the centre
+              <small>(a display choice, not a theorem)</small></label
+            >
+          </section>
+
+          <section>
+            <h2>Affinity weights</h2>
+            <p class="cs-formula">
+              W<sub>ij</sub> = α S<sup>sem</sup> + β S<sup>math</sup> + γ S<sup>src</sup>
+            </p>
+            <div id="cs-weights" class="cs-weights"></div>
+            <div class="cs-presets" role="group" aria-label="Weight presets" id="cs-presets">
+              <button type="button" data-preset="semantic">Language</button>
+              <button type="button" data-preset="math">Structure</button>
+              <button type="button" data-preset="source">Syllabus</button>
+              <button type="button" data-preset="default">Default</button>
+            </div>
+            <div class="cs-diagnostic" id="cs-diagnostic" aria-live="polite"></div>
+          </section>
+
+          <section>
+            <h2>Display</h2>
+            <label class="cs-select"
+              >Colour by
+              <select id="cs-color">
+                <option value="chapter">Chapter</option>
+                <option value="depth">Dependency depth</option>
+                <option value="evidence" disabled>Evidence (private overlay)</option>
+              </select></label
+            >
+            <div class="cs-legend" id="cs-legend"></div>
+            <fieldset class="cs-chips" id="cs-kinds">
+              <legend>Concept kinds</legend>
+            </fieldset>
+            <fieldset class="cs-chips" id="cs-relations">
+              <legend>Relations drawn</legend>
+            </fieldset>
+            <label class="cs-select"
+              >Chapter
+              <select id="cs-chapter">
+                <option value="all">All chapters</option>
+                <option value="1">1 · Measure, integration, independence</option>
+                <option value="2">2 · Laws of large numbers</option>
+                <option value="3">3 · Weak convergence and the CLT</option>
+              </select></label
+            >
+            <button type="button" class="cs-wide" id="cs-reset-layout">Reset layout</button>
+          </section>
+
+          <section class="cs-private">
+            <h2>Private evidence overlay</h2>
+            <p class="cs-note">
+              Loads a locally generated overlay from the private ledger into this tab only. Nothing
+              is uploaded or stored, and the public page never contains it.
+            </p>
+            <label class="cs-file"
+              >Load local overlay…<input
+                id="cs-overlay"
+                type="file"
+                accept=".json,application/json"
+            /></label>
+            <button type="button" class="cs-wide" id="cs-clear-overlay" hidden>
+              Remove overlay
+            </button>
+          </section>
+
+          <details class="cs-method">
+            <summary>How this is built</summary>
+            <p>
+              Each concept has three separate similarity scores to every other concept, each in [0,
+              1] with self-similarity 1:
+            </p>
+            <ul>
+              <li>
+                <b>Language</b>: TF-IDF cosine over the concept's own name, aliases and short
+                summary. It measures shared vocabulary only.
+              </li>
+              <li>
+                <b>Structure</b>: cosine of relation profiles built from typed mathematical links
+                (prerequisite, used in proof, generalizes…). Close means directly linked or sharing
+                link partners.
+              </li>
+              <li>
+                <b>Syllabus</b>: closeness in the Dembo reading order, the lecture-note order,
+                syllabus weeks and homework chapters. It is not a prerequisite.
+              </li>
+            </ul>
+            <p>
+              Each channel is divided by its typical strongest-neighbour similarity, so equal
+              weights give a concept's closest links equal pull in every channel. PCA is kernel PCA
+              of the weighted kernel; Force is a seeded spring–repulsion layout constrained to the
+              sphere; Hybrid starts the force layout from PCA. All relations are agent-proposed and
+              unverified.
+            </p>
+          </details>
+        </aside>
+      </section>
+    </main>
+    <script type="module" src="../../js/concept-space/app.js"></script>
+  </body>
+</html>

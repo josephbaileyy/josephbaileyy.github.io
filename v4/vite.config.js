@@ -254,6 +254,7 @@ export default defineConfig({
         notes: fileURLToPath(new URL('./notes/index.html', import.meta.url)),
         ...noteEntries,
         lab: fileURLToPath(new URL('./lab/index.html', import.meta.url)),
+        conceptSpace: fileURLToPath(new URL('./learning/space/index.html', import.meta.url)),
       },
       output: {
         manualChunks(id) {
