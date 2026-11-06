@@ -287,7 +287,7 @@ export default defineConfig({
         if (/<!-- NOTE_CONTENT:([\w-]+) -->/.test(html))
           return html.replace(/<!-- NOTE_CONTENT:([\w-]+) -->/, (_, slug) => renderNotes(slug));
         if (html.includes('<!-- HOME_CONTENT -->')) {
-          return html.replace('<!-- HOME_CONTENT -->', renderHome());
+          return html.replace('<!-- HOME_CONTENT -->', () => renderHome());
         }
         const rendered = contentMarkers.reduce(
           (output, [marker, render]) => output.replace(marker, render()),

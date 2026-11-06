@@ -2,6 +2,7 @@ import { education } from './education.js';
 import { renderCourseAtlas } from './course-atlas.js';
 import { experience } from './experience.js';
 import { instagram } from './instagram.js';
+import { renderNow } from './now.js';
 import { profile } from './profile.js';
 import { notes } from './notes.js';
 import { personal } from './personal.js';
@@ -374,12 +375,13 @@ export function renderHome() {
     </div>
     ${instagramCarousel()}
   </header>
-  <nav class="page-index" aria-label="On this page"><a href="#research">Research</a><a href="#projects">Projects</a><a href="#experience">Experience</a><a href="#education">Education</a><a href="#instruments">Hobbies</a></nav>
+  <nav class="page-index" aria-label="On this page"><a href="#research">Research</a><a href="#projects">Projects</a><a href="#now">Now</a><a href="#experience">Experience</a><a href="#education">Education</a><a href="#instruments">Hobbies</a></nav>
   <section id="research" aria-labelledby="research-heading"><div class="section-heading"><div><h2 id="research-heading">Research</h2></div></div>${researchList()}</section>
   <section id="projects" aria-labelledby="projects-heading"><div class="section-heading"><div><h2 id="projects-heading">Selected projects</h2></div><span class="section-aside">Code, experiments &amp; what I learned</span></div>${projectList(
     featured.map((id) => projects.find((item) => item.id === id)),
     true,
   )}<details class="explanation more-projects" id="more-projects"><summary>More projects</summary><div class="explanation-body">${projectList(projects.filter((item) => !featured.includes(item.id)))}</div></details></section>
+  ${renderNow(escape)}
   <section id="experience" aria-labelledby="experience-heading"><div class="section-heading"><div><h2 id="experience-heading">Experience</h2></div></div>${experienceList()}</section>
   <section id="education" aria-labelledby="education-heading"><div class="section-heading"><div><h2 id="education-heading">Education</h2></div></div><p>${escape(education.degree)}, ${escape(education.school)}. Expected June 2027.</p>${renderCourseAtlas()}<div class="about-honors"><h3>Honors</h3><ul>${education.honors.map((item) => `<li>${escape(item)}</li>`).join('')}</ul></div></section>
   <section id="instruments" aria-labelledby="instruments-heading"><div class="section-heading"><div><h2 id="instruments-heading">Hobbies</h2></div></div>${personalList()}</section>

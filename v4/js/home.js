@@ -5,6 +5,17 @@ import { mountCourseAtlas } from './components/course-atlas.js';
 mountInstagramCarousel(document.querySelector('[data-instagram]'));
 mountPianoRoll(document.querySelector('#music'));
 
+const nowItems = document.querySelector('[data-now-items]');
+if (nowItems) {
+  const showStaleNotice = () => {
+    nowItems.hidden = true;
+    document.querySelector('[data-now-fallback]').hidden = false;
+  };
+  const remaining = Number(nowItems.dataset.expires) - Date.now();
+  if (remaining <= 0) showStaleNotice();
+  else setTimeout(showStaleNotice, remaining);
+}
+
 // The recording stays unloaded with the page. Once the music card is close to
 // the viewport, fetch only its metadata so the player shows the real duration
 // instead of 0:00.

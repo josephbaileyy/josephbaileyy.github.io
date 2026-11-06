@@ -1,0 +1,72 @@
+{
+  "updated_at": "2026-11-06T12:58:00-08:00",
+  "updated_by": "Muse",
+  "doing": [
+    {
+      "title": "CS 238 Project 2",
+      "course": "CS 238",
+      "due": "2026-11-06T17:00:00-08:00",
+      "due_display": "Fri Nov 6, 5:00 PM",
+      "status": "upcoming",
+      "source": "gradescope"
+    },
+    {
+      "title": "Physics 330 Problem Set 5",
+      "course": "Physics 330",
+      "due": "2026-11-06T21:00:00-08:00",
+      "due_display": "Fri Nov 6, 9:00 PM",
+      "status": "upcoming",
+      "source": "gradescope"
+    },
+    {
+      "title": "CS 329Z Midway Report",
+      "course": "CS 329Z",
+      "due": "2026-11-06T23:59:00-08:00",
+      "due_display": "Fri Nov 6, 11:59 PM",
+      "status": "upcoming",
+      "source": "gradescope"
+    },
+    {
+      "title": "CS 329Z Midway Demo Video",
+      "course": "CS 329Z",
+      "due": "2026-11-06T23:59:00-08:00",
+      "due_display": "Fri Nov 6, 11:59 PM",
+      "status": "upcoming",
+      "source": "gradescope"
+    },
+    {
+      "title": "Math 116 Homework 6",
+      "course": "Math 116",
+      "due": "2026-11-07T23:59:00-08:00",
+      "due_display": "Sat Nov 7, 11:59 PM",
+      "status": "upcoming",
+      "source": "gradescope"
+    }
+  ],
+  "recently_completed": [
+    {
+      "title": "Math 230A Homework 5",
+      "course": "Math 230A",
+      "due": "2026-11-04T23:59:00-08:00",
+      "due_display": "Wed Nov 4",
+      "completed_at": "2026-11-04",
+      "status": "completed"
+    },
+    {
+      "title": "Math 120 Homework 6",
+      "course": "Math 120",
+      "due": "2026-11-03T00:01:00-08:00",
+      "due_display": "Tue Nov 3",
+      "completed_at": "2026-11-03",
+      "status": "completed"
+    },
+    {
+      "title": "Physics 330 Problem Set 4",
+      "course": "Physics 330",
+      "due": "2026-10-30T21:00:00-08:00",
+      "due_display": "Fri Oct 30",
+      "completed_at": "2026-10-30",
+      "status": "completed"
+    }
+  ]
+}
