@@ -7,6 +7,7 @@ const pacificDate = new Intl.DateTimeFormat('en-US', {
   dateStyle: 'medium',
 });
 const parseDate = (value) => (typeof value === 'string' ? Date.parse(value) : NaN);
+const byDue = (a, b) => Date.parse(a.due) - Date.parse(b.due);
 
 function readFeed() {
   try {
@@ -61,12 +62,13 @@ export function renderNow(escape) {
   const fresh = Date.now() < expires;
   const doing = validItems(feed?.doing, 'upcoming')
     .filter(({ due }) => Date.parse(due) >= updated && Date.parse(due) <= updated + 10 * dayMs)
-    .sort((a, b) => Date.parse(a.due) - Date.parse(b.due))
+    .sort(byDue)
     .slice(0, 5);
   const done = validItems(feed?.recently_completed, 'completed')
     .filter(({ completed_at }) => Number.isFinite(parseDate(completed_at)))
     .sort((a, b) => Date.parse(b.completed_at) - Date.parse(a.completed_at))
     .slice(0, 3);
+  const items = [...done, ...doing].sort(byDue);
   const updatedDate = Number.isFinite(updated)
     ? `<time datetime="${escape(feed.updated_at)}">${pacificDate.format(updated)}</time>`
     : '';
@@ -85,7 +87,7 @@ export function renderNow(escape) {
       </header>
       ${
         fresh
-          ? `<div data-now-items data-expires="${expires}">${renderList([...done, ...doing], escape)}</div>`
+          ? `<div data-now-items data-expires="${expires}">${renderList(items, escape)}</div>`
           : ''
       }
       <p class="now-fallback" data-now-fallback${fresh ? ' hidden' : ''}>${updatedDate ? `Currently doing list last updated ${updatedDate}.` : 'The list is waiting for its first update.'}</p>
