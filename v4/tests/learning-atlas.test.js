@@ -45,7 +45,9 @@ describe('public learning atlas privacy and integrity', () => {
 
   it('only ships the sanitized export and keeps the private loader local', () => {
     const dataFiles = readdirSync(new URL('data/', directory));
-    expect(dataFiles).toEqual(['atlas.public.json']);
+    // Both shipped exports are public curriculum structure; the concept graph is
+    // checked separately in concept-space.test.js.
+    expect(dataFiles.sort()).toEqual(['atlas.public.json', 'concepts.stats310a.public.json']);
     const app = readFileSync(new URL('app.js', directory), 'utf8');
     // The only network request is the public snapshot; the private file never leaves the tab.
     expect(app.match(/fetch\(/g)).toHaveLength(1);

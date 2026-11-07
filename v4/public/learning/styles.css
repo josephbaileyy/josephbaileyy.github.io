@@ -124,6 +124,14 @@ svg {
 .atlas-header h1 span {
   color: var(--accent);
 }
+.space-link {
+  margin-left: 10px;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.space-link:hover {
+  text-decoration: underline;
+}
 .atlas-header p {
   grid-column: 1 / -1;
   margin: 5px 0 0;

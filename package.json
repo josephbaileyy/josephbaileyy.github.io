@@ -14,7 +14,9 @@
     "test:coverage": "vitest run --exclude 'tests/e2e/**' --coverage",
     "test:e2e": "node v4/tests/home-playwright.mjs",
     "test:e2e:coursework": "node v4/tests/course-atlas-playwright.mjs",
-    "test:e2e:lab": "node v4/tests/shell-playwright.mjs"
+    "test:e2e:lab": "node v4/tests/shell-playwright.mjs",
+    "test:e2e:concepts": "node v4/tests/concept-space-playwright.mjs",
+    "evaluate:concepts": "node scripts/evaluate-concept-space.mjs --markdown"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
