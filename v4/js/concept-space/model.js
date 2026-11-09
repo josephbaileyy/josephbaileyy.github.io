@@ -7,6 +7,7 @@ export const CHANNELS = ['semantic', 'math', 'source'];
 // The map is shaped by mathematical structure alone by default. Language and
 // syllabus similarity stay available as exploratory channels.
 export const DEFAULT_WEIGHTS = Object.freeze({ semantic: 0, math: 1, source: 0 });
+export const DEFAULT_PHYSICS = Object.freeze({ k: 9, repulsion: 0.0012 });
 export const MODES = ['pca', 'force', 'hybrid'];
 const DEPENDENCY_TYPES = new Set(['prerequisite', 'used_in_proof', 'application']);
 
@@ -36,7 +37,15 @@ export function decode(data) {
   const relations = data.relations.filter(
     (relation) => index.has(relation.source) && index.has(relation.target),
   );
-  return { n, concepts, index, relations, S, scale, types: data.relation_types };
+  return {
+    n,
+    concepts,
+    index,
+    relations,
+    S,
+    scale,
+    types: data.vocabulary?.relation_types ?? data.relation_types,
+  };
 }
 
 /** Weights are clamped to [0, 1] and renormalized; all-zero falls back to equal weights. */
@@ -85,23 +94,23 @@ export function symmetricEigen(input, n, { sweeps = 60, tolerance = 1e-12 } = {}
         const t = Math.sign(theta || 1) / (Math.abs(theta) + Math.sqrt(theta * theta + 1));
         const c = 1 / Math.sqrt(t * t + 1);
         const s = t * c;
+        const pp = p * n + p;
+        const qq = q * n + q;
+        a[pp] -= t * apq;
+        a[qq] += t * apq;
+        a[p * n + q] = a[q * n + p] = 0;
         for (let k = 0; k < n; k++) {
+          if (k === p || k === q) continue;
           const akp = a[k * n + p];
           const akq = a[k * n + q];
-          a[k * n + p] = c * akp - s * akq;
-          a[k * n + q] = s * akp + c * akq;
+          a[k * n + p] = a[p * n + k] = c * akp - s * akq;
+          a[k * n + q] = a[q * n + k] = s * akp + c * akq;
         }
         for (let k = 0; k < n; k++) {
-          const apk = a[p * n + k];
-          const aqk = a[q * n + k];
-          a[p * n + k] = c * apk - s * aqk;
-          a[q * n + k] = s * apk + c * aqk;
-        }
-        for (let k = 0; k < n; k++) {
-          const vkp = v[k * n + p];
-          const vkq = v[k * n + q];
-          v[k * n + p] = c * vkp - s * vkq;
-          v[k * n + q] = s * vkp + c * vkq;
+          const vkp = v[p * n + k];
+          const vkq = v[q * n + k];
+          v[p * n + k] = c * vkp - s * vkq;
+          v[q * n + k] = s * vkp + c * vkq;
         }
       }
     }
@@ -109,7 +118,7 @@ export function symmetricEigen(input, n, { sweeps = 60, tolerance = 1e-12 } = {}
   const order = [...Array(n).keys()].sort((x, y) => a[y * n + y] - a[x * n + x]);
   return {
     values: order.map((i) => a[i * n + i]),
-    vectors: order.map((i) => Float64Array.from({ length: n }, (_, k) => v[k * n + i])),
+    vectors: order.map((i) => v.slice(i * n, (i + 1) * n)),
   };
 }
 
@@ -243,6 +252,7 @@ export function attractionEdges(model, W, k = 6) {
     for (const [j, weight] of row.slice(0, k)) add(i, j, weight);
   }
   for (const relation of model.relations) {
+    if (relation.in_structure_channel === false) continue;
     const i = model.index.get(relation.source);
     const j = model.index.get(relation.target);
     add(i, j, W[i * n + j]);
@@ -282,6 +292,8 @@ export function forceLayout(
   const target = levels.map((level) => radius * (0.2 + (0.8 * level) / maxLevel));
   const x = initial.map((p) => [...p]);
   const force = x.map(() => [0, 0, 0]);
+  const softening = 1e-4 * radius * radius;
+  const charge = repulsion * radius ** 3;
   let step = initialStep * radius;
   for (let t = 0; t < iterations; t++) {
     for (const f of force) f.fill(0);
@@ -290,8 +302,8 @@ export function forceLayout(
         const dx = x[i][0] - x[j][0];
         const dy = x[i][1] - x[j][1];
         const dz = x[i][2] - x[j][2];
-        const d2 = dx * dx + dy * dy + dz * dz + 1e-4 * radius * radius;
-        const scale = (repulsion * radius * radius * radius) / (d2 * Math.sqrt(d2));
+        const d2 = dx * dx + dy * dy + dz * dz + softening;
+        const scale = charge / (d2 * Math.sqrt(d2));
         force[i][0] += dx * scale;
         force[i][1] += dy * scale;
         force[i][2] += dz * scale;
@@ -390,10 +402,12 @@ export function computeLayout(model, options = {}) {
     shells = false,
     previous,
     warm = false,
+    physics = DEFAULT_PHYSICS,
   } = options;
   if (!MODES.includes(mode)) throw new Error(`Unknown layout mode ${mode}`);
   const W = combine(model, weights);
-  const pca = kernelPCA(W, model.n);
+  const pca =
+    mode === 'force' || (mode !== 'pca' && warm && previous) ? null : kernelPCA(W, model.n);
   let points;
   if (mode === 'pca') {
     points = fitToSphere(pca.points, { geometry });
@@ -401,12 +415,23 @@ export function computeLayout(model, options = {}) {
     // Warm start: relax from the layout on screen, so a small change in weights is a small
     // change in the picture. A fresh layout (no `previous`) is the canonical, reproducible one.
     const start = geometry === 'surface' ? fitToSphere(previous, { geometry }) : previous;
-    points = forceLayout(model, W, start, { geometry, shells, iterations: 220, initialStep: 0.03 });
+    points = forceLayout(model, W, start, {
+      geometry,
+      shells,
+      iterations: 220,
+      initialStep: 0.03,
+      ...physics,
+    });
   } else {
     const start = mode === 'hybrid' ? fitToSphere(pca.points, { geometry }) : seededBall(model);
-    points = forceLayout(model, W, start, { geometry, shells });
+    points = forceLayout(model, W, start, { geometry, shells, ...physics });
   }
-  return { points: alignTo(points, previous), W, explained: pca.explained, spectrum: pca.spectrum };
+  return {
+    points: alignTo(points, previous),
+    W,
+    explained: pca?.explained ?? [],
+    spectrum: pca?.spectrum ?? [],
+  };
 }
 
 // --------------------------------------------------------------------------
