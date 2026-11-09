@@ -6,9 +6,9 @@
     <meta name="theme-color" content="#131518" />
     <meta
       name="description"
-      content="A 3D map of probability-theory concepts: semantic, mathematical and source relationships projected into a sphere."
+      content="Explore four courses through a shared map of mathematical relationships, syllabus timelines and practice priorities."
     />
-    <title>Concept space · Learning Atlas · Joseph Bailey</title>
+    <title>Concept Space · Joseph Bailey</title>
     <link rel="canonical" href="https://josephrbailey.com/learning/space/" />
     <link
       rel="icon"
@@ -20,16 +20,26 @@
       <header class="cs-header">
         <nav class="cs-crumbs" aria-label="Breadcrumb">
           <a href="../../">Portfolio</a><span aria-hidden="true">/</span
-          ><a href="../">Learning atlas</a><span aria-hidden="true">/</span
           ><span aria-current="page">Concept space</span>
         </nav>
         <span class="cs-source" id="cs-source"><i></i> Public curriculum</span>
-        <h1>Concept space<span>.</span></h1>
+        <h1>Concept Space<span>.</span></h1>
         <p class="cs-lede" id="cs-lede">
-          Probability theory (STATS 310A / MATH 230A) as a high-dimensional network of concepts,
-          projected into a sphere.
+          Explore probability, complex analysis, algebra and quantum field theory in one
+          mathematical map.
         </p>
       </header>
+
+      <div class="cs-mapbar">
+        <fieldset id="cs-courses" class="cs-courses">
+          <legend>Filter by course</legend>
+        </fieldset>
+        <nav aria-label="Jump to study tools" class="cs-jumps">
+          <a href="#cs-overview">Timeline</a>
+          <a href="#cs-practice">Practice</a>
+          <a href="#cs-evidence">Evidence</a>
+        </nav>
+      </div>
 
       <section class="cs-app" aria-label="Concept space explorer">
         <div class="cs-stage" id="cs-stage">
@@ -50,6 +60,8 @@
                 placeholder="Find a concept…"
                 autocomplete="off"
                 aria-label="Find a concept"
+                role="combobox"
+                aria-autocomplete="list"
                 aria-controls="cs-results"
                 aria-expanded="false"
               />
@@ -75,8 +87,9 @@
             </div>
           </div>
 
-          <article class="cs-detail" id="cs-detail" aria-live="polite" hidden></article>
+          <article class="cs-detail" id="cs-detail" aria-label="Concept inspector" hidden></article>
           <div class="cs-list" id="cs-list" hidden></div>
+          <p class="cs-map-note" id="cs-map-note" aria-live="polite"></p>
           <p class="cs-status" id="cs-status" role="status"></p>
           <noscript><p class="cs-status">The concept space needs JavaScript.</p></noscript>
           <span id="cs-help" class="sr-only"
@@ -85,9 +98,79 @@
           >
         </div>
 
-        <aside class="cs-panel" id="cs-panel" aria-label="Layout controls">
+        <aside class="cs-panel" id="cs-panel" aria-label="Study and display controls">
+          <section id="cs-overview" aria-labelledby="cs-overview-title">
+            <div class="cs-panel-heading">
+              <h2 id="cs-overview-title">Course scope &amp; timeline</h2>
+              <a class="cs-return" href="#cs-stage">Map ↑</a>
+            </div>
+            <label class="cs-cutoff" for="cs-cutoff"
+              >Schedule through
+              <input type="date" id="cs-cutoff" />
+            </label>
+            <label class="cs-check"
+              ><input type="checkbox" id="cs-scheduled" /> Show only material scheduled by this
+              date</label
+            >
+            <p class="cs-note" id="cs-schedule-note">Dates describe the published schedule.</p>
+            <div id="cs-timeline" class="cs-timeline"></div>
+          </section>
+
+          <section id="cs-practice" aria-labelledby="cs-practice-title">
+            <div class="cs-panel-heading">
+              <h2 id="cs-practice-title">Practice next</h2>
+              <a class="cs-return" href="#cs-stage">Map ↑</a>
+            </div>
+            <div id="cs-queue"></div>
+          </section>
+
+          <section class="cs-private" id="cs-evidence">
+            <h2>Private evidence</h2>
+            <p class="cs-note">
+              Load a concept overlay from the private ledger to see your progress and tailor the
+              practice queue. The file stays in this tab.
+            </p>
+            <label class="cs-file"
+              >Load local overlay…<input
+                id="cs-overlay"
+                type="file"
+                accept=".json,application/json"
+            /></label>
+            <button type="button" class="cs-wide" id="cs-clear-overlay" hidden>
+              Remove overlay
+            </button>
+          </section>
+
           <section>
-            <h2>Projection</h2>
+            <h2>Map display</h2>
+            <label class="cs-select"
+              >Colour by
+              <select id="cs-color">
+                <option value="course">Course</option>
+                <option value="schedule">First scheduled date</option>
+                <option value="depth">Dependency depth</option>
+                <option value="evidence" disabled>Evidence (local overlay)</option>
+              </select>
+            </label>
+            <div class="cs-legend" id="cs-legend"></div>
+            <label class="cs-check"
+              ><input type="checkbox" id="cs-bridges" checked /> Show cross-course links</label
+            >
+            <details class="cs-explore">
+              <summary>Filter concepts and connections</summary>
+              <fieldset class="cs-chips" id="cs-kinds"><legend>Concept kinds</legend></fieldset>
+              <fieldset class="cs-chips" id="cs-relations">
+                <legend>Relations drawn</legend>
+              </fieldset>
+              <label class="cs-check"
+                ><input type="checkbox" id="cs-unsourced" checked /> Show unchecked relations</label
+              >
+            </details>
+          </section>
+
+          <details class="cs-method" id="cs-advanced">
+            <summary>Advanced layout &amp; evaluation</summary>
+            <p class="cs-note" id="cs-shape-note"></p>
             <div class="cs-segment" role="radiogroup" aria-label="Projection mode" id="cs-mode">
               <button type="button" role="radio" data-mode="pca" aria-checked="false">PCA</button>
               <button type="button" role="radio" data-mode="force" aria-checked="false">
@@ -113,25 +196,8 @@
             </div>
             <label class="cs-check"
               ><input type="checkbox" id="cs-shells" /> Foundations toward the centre
-              <small>(a display choice, not a theorem)</small></label
+              <small>(experimental radial weighting)</small></label
             >
-          </section>
-
-          <section>
-            <h2>Syllabus</h2>
-            <label class="cs-select" for="cs-week"
-              >Taught through <output id="cs-week-label"></output
-            ></label>
-            <input id="cs-week" type="range" min="1" max="9" step="1" value="9" class="cs-range" />
-            <p class="cs-note" id="cs-week-note"></p>
-          </section>
-
-          <section>
-            <h2>Shape of the map</h2>
-            <p class="cs-note" id="cs-shape-note">
-              Positions come from mathematical structure: typed relations, at full weight once
-              reviewed.
-            </p>
             <div class="cs-diagnostic" id="cs-diagnostic" aria-live="polite"></div>
             <details class="cs-explore" id="cs-explore">
               <summary>Explore other affinities</summary>
@@ -150,91 +216,7 @@
                 <button type="button" data-preset="default">Structure</button>
               </div>
             </details>
-          </section>
-
-          <section>
-            <h2>Display</h2>
-            <label class="cs-select"
-              >Colour by
-              <select id="cs-color">
-                <option value="chapter">Chapter</option>
-                <option value="week">Week taught</option>
-                <option value="support">How each concept's links are sourced</option>
-                <option value="depth">Dependency depth</option>
-                <option value="evidence" disabled>Evidence (private overlay)</option>
-              </select></label
-            >
-            <div class="cs-legend" id="cs-legend"></div>
-            <fieldset class="cs-chips" id="cs-kinds">
-              <legend>Concept kinds</legend>
-            </fieldset>
-            <fieldset class="cs-chips" id="cs-relations">
-              <legend>Relations drawn</legend>
-            </fieldset>
-            <label class="cs-check"
-              ><input type="checkbox" id="cs-unsourced" checked /> Show unchecked relations
-              <small>(no source found and not reviewed; drawn fainter)</small></label
-            >
-            <label class="cs-select"
-              >Chapter
-              <select id="cs-chapter">
-                <option value="all">All chapters</option>
-                <option value="1">1 · Measure, integration, independence</option>
-                <option value="2">2 · Laws of large numbers</option>
-                <option value="3">3 · Weak convergence and the CLT</option>
-              </select></label
-            >
             <button type="button" class="cs-wide" id="cs-reset-layout">Reset layout</button>
-          </section>
-
-          <section class="cs-private">
-            <h2>Private evidence overlay</h2>
-            <p class="cs-note">
-              Loads a locally generated overlay from the private ledger into this tab only. Nothing
-              is uploaded or stored, and the public page never contains it.
-            </p>
-            <label class="cs-file"
-              >Load local overlay…<input
-                id="cs-overlay"
-                type="file"
-                accept=".json,application/json"
-            /></label>
-            <button type="button" class="cs-wide" id="cs-clear-overlay" hidden>
-              Remove overlay
-            </button>
-          </section>
-
-          <details class="cs-method">
-            <summary>How this is built</summary>
-            <p>
-              Each concept has three separate similarity scores to every other concept, each in [0,
-              1] with self-similarity 1:
-            </p>
-            <ul>
-              <li>
-                <b>Structure</b> (the default map): cosine of relation profiles built from typed
-                links (prerequisite, used in proof, generalizes, implies…). Every link was checked
-                against the Dembo statements and proofs by an independent reviewer agent; an
-                unchecked link would count at half weight.
-              </li>
-              <li>
-                <b>Language</b>: TF-IDF cosine over the sentences of the lecture notes that mention
-                each concept (the agent summary for concepts the notes do not cover yet). It
-                measures shared vocabulary only.
-              </li>
-              <li>
-                <b>Syllabus</b>: closeness in the Dembo reading order, the lecture-note order,
-                syllabus weeks and homework chapters. It is not a prerequisite.
-              </li>
-            </ul>
-            <p>
-              Each channel is divided by its typical strongest-neighbour similarity, so equal
-              weights give a concept's closest links equal pull in every channel. PCA is kernel PCA
-              of the weighted kernel; Force is a seeded spring–repulsion layout constrained to the
-              sphere; Hybrid starts the force layout from PCA. Each relation lists the source that
-              supports it and whether an independent reviewer agent, which read the Dembo statements
-              and proofs, confirmed it.
-            </p>
           </details>
         </aside>
       </section>

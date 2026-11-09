@@ -12,7 +12,6 @@ import {
   Group,
   IcosahedronGeometry,
   LineBasicMaterial,
-  LineDashedMaterial,
   LineSegments,
   Mesh,
   MeshBasicMaterial,
@@ -39,10 +38,13 @@ export const KIND_SHAPES = {
   inequality: 'tetrahedron',
   technique: 'ring',
   example: 'cone',
+  equation: 'octahedron',
+  principle: 'tetrahedron',
+  model: 'cube',
 };
 
 const geometries = {
-  sphere: new IcosahedronGeometry(1, 2),
+  sphere: new IcosahedronGeometry(1, 1),
   cube: new BoxGeometry(1.45, 1.45, 1.45),
   octahedron: new OctahedronGeometry(1.25),
   tetrahedron: new TetrahedronGeometry(1.4),
@@ -73,7 +75,16 @@ export function webglAvailable() {
   }
 }
 
-export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, reducedMotion }) {
+export function createScene({
+  canvas,
+  labels,
+  gizmo,
+  model,
+  bridges,
+  onSelect,
+  onHover,
+  reducedMotion,
+}) {
   const renderer = new WebGLRenderer({
     canvas,
     antialias: true,
@@ -93,7 +104,7 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
   controls.rotateSpeed = 0.7;
   controls.minDistance = 0.35;
   controls.maxDistance = 7;
-  controls.autoRotate = !reducedMotion;
+  controls.autoRotate = false;
   controls.autoRotateSpeed = 0.45;
   controls.addEventListener('start', () => {
     controls.autoRotate = false;
@@ -203,57 +214,37 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
     model.index.get(relation.source),
     model.index.get(relation.target),
   ]);
-  // One line set per relation type and per support (sourced vs agent-only), so
-  // unsourced proposals can be dimmed or hidden independently.
-  const sourced = (relation) =>
-    ['agent_reviewed', 'verified'].includes(relation.status) ||
-    (relation.support && relation.support !== 'agent_only');
-  const relationLines = {};
-  for (const [key, type, style, isSourced] of Object.entries(RELATION_STYLE).flatMap(
-    ([type, style]) => [
-      [`${type}:s`, type, style, true],
-      [`${type}:u`, type, style, false],
-    ],
-  )) {
-    const members = model.relations
-      .map((relation, k) => (relation.type === type && sourced(relation) === isSourced ? k : -1))
-      .filter((k) => k >= 0);
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new BufferAttribute(new Float32Array(members.length * 6), 3));
-    const colors = new Float32Array(members.length * 6);
-    const tip = new Color(style.color);
-    const tail = new Color(style.color).lerp(new Color(BACKGROUND), 0.72);
-    members.forEach((_, m) => {
-      colors.set([tail.r, tail.g, tail.b, tip.r, tip.g, tip.b], m * 6);
-    });
-    geometry.setAttribute('color', new BufferAttribute(colors, 3));
-    const material = new LineBasicMaterial({
-      vertexColors: true,
-      transparent: true,
-      opacity: 0.5,
-      depthWrite: false,
-    });
-    const lines = new LineSegments(geometry, material);
-    relationGroup.add(lines);
-    relationLines[key] = { lines, members, type, isSourced };
+  // Each relation batch shares one material. Bridges get their own brighter
+  // batches so they remain distinct in the global and course views.
+  const relationLines = [];
+  for (const [type, style] of Object.entries(RELATION_STYLE)) {
+    for (const bridge of [false, true]) {
+      const members = model.relations.flatMap((r, k) =>
+        r.type === type && bridges.has(k) === bridge ? [k] : [],
+      );
+      if (!members.length) continue;
+      const geometry = new BufferGeometry();
+      geometry.setAttribute(
+        'position',
+        new BufferAttribute(new Float32Array(members.length * 6), 3),
+      );
+      const material = new LineBasicMaterial({
+        color: bridge ? '#f1d58e' : style.color,
+        transparent: true,
+        opacity: bridge ? 0.74 : 0.22,
+        depthWrite: false,
+      });
+      const lines = new LineSegments(geometry, material);
+      if (bridge) lines.renderOrder = 1;
+      relationGroup.add(lines);
+      relationLines.push({ lines, members });
+    }
   }
-  // Highlighted neighbourhood relations (brighter) and affinity links (dashed).
+  // Local relations retain their types and get arrowheads at directed targets.
   const highlight = new LineSegments(
     new BufferGeometry(),
     new LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 1, depthWrite: false }),
   );
-  const affinity = new LineSegments(
-    new BufferGeometry(),
-    new LineDashedMaterial({
-      color: '#f0f0f3',
-      dashSize: 0.018,
-      gapSize: 0.014,
-      transparent: true,
-      opacity: 0.55,
-      depthWrite: false,
-    }),
-  );
-  scene.add(highlight, affinity);
   const arrowGeometry = new ConeGeometry(0.011, 0.034, 8);
   arrowGeometry.translate(0, -0.017, 0);
   const arrows = new Group();
@@ -268,11 +259,10 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
   const transitionTime = reducedMotion ? 1 : 900;
   let colors = model.concepts.map(() => '#888');
   let visible = model.concepts.map(() => true);
-  let relationVisible = Object.fromEntries(Object.keys(RELATION_STYLE).map((type) => [type, true]));
-  let showUnsourced = true;
+  let relationMask = model.relations.map(() => true);
   let selected = -1;
   let hovered = -1;
-  let neighbourhood = { relations: [], affinity: [] };
+  let neighbourhood = { relations: [] };
   let landmarks = [];
   let focus = null;
   let dirty = true;
@@ -304,6 +294,7 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
     // list[i] = null or { color, dashed }
     rings.forEach((ring, i) => {
       const style = list?.[i];
+      ring.userData.active = Boolean(style);
       ring.visible = Boolean(style);
       if (style) {
         ring.material.color.set(style.color);
@@ -318,9 +309,8 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
     dirty = true;
   }
 
-  function setRelationTypes(map, unsourced = true) {
-    relationVisible = { ...map };
-    showUnsourced = unsourced;
+  function setRelationMask(mask) {
+    relationMask = mask;
     dirty = true;
   }
 
@@ -331,7 +321,7 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
 
   function setSelection(index, neighbours) {
     selected = index;
-    neighbourhood = neighbours ?? { relations: [], affinity: [] };
+    neighbourhood = neighbours ?? { relations: [] };
     dirty = true;
   }
 
@@ -393,8 +383,11 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
     return best;
   }
   let down = null;
+  canvas.addEventListener('pointercancel', () => {
+    down = null;
+  });
   canvas.addEventListener('pointerdown', (event) => {
-    down = { x: event.clientX, y: event.clientY, t: performance.now() };
+    down = { x: event.clientX, y: event.clientY };
   });
   canvas.addEventListener('pointerup', (event) => {
     if (!down) return;
@@ -426,14 +419,23 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
   });
 
   // Shift the projection centre so a node in focus is not hidden behind the detail card.
-  let inset = 0;
+  let inset;
   function applyInset() {
-    if (inset) camera.setViewOffset(width, height, -inset / 2, 0, width, height);
+    const stacked = matchMedia('(max-width: 960px)').matches;
+    if (inset)
+      camera.setViewOffset(
+        width,
+        height,
+        stacked ? 0 : -inset.width / 2,
+        stacked ? inset.height / 2 : 0,
+        width,
+        height,
+      );
     else camera.clearViewOffset();
     camera.updateProjectionMatrix();
   }
-  function setInset(px) {
-    inset = width > 960 ? px : 0;
+  function setInset(rect) {
+    inset = rect;
     applyInset();
     dirty = true;
   }
@@ -454,34 +456,37 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
   resize();
 
   function updateLines() {
-    for (const { lines, members, type, isSourced } of Object.values(relationLines)) {
+    for (const { lines, members } of relationLines) {
+      lines.visible = selected < 0;
+      if (!lines.visible) continue;
       const attribute = lines.geometry.getAttribute('position');
-      members.forEach((k, m) => {
+      let count = 0;
+      for (const k of members) {
+        if (!relationMask[k]) continue;
         const [i, j] = relationIndex[k];
         const a = positions[i];
         const b = positions[j];
-        attribute.setXYZ(m * 2, a.x, a.y, a.z);
-        attribute.setXYZ(m * 2 + 1, b.x, b.y, b.z);
-      });
+        attribute.setXYZ(count++, a.x, a.y, a.z);
+        attribute.setXYZ(count++, b.x, b.y, b.z);
+      }
+      lines.geometry.setDrawRange(0, count);
       attribute.needsUpdate = true;
-      lines.geometry.computeBoundingSphere();
-      lines.visible = relationVisible[type] && (isSourced || showUnsourced);
-      const focusMode = selected >= 0;
-      lines.material.opacity = (focusMode ? 0.07 : 0.42) * (isSourced ? 1 : 0.45);
+      lines.frustumCulled = false;
     }
     // Neighbourhood relations, brighter, with arrowheads at the target.
     const hl = [];
     const hc = [];
+    for (const arrow of arrows.children) arrow.material.dispose();
     arrows.clear();
     for (const k of neighbourhood.relations) {
       const relation = model.relations[k];
-      if (!relationVisible[relation.type] || (!showUnsourced && !sourced(relation))) continue;
+      if (!relationMask[k]) continue;
       const [i, j] = relationIndex[k];
       if (!visible[i] || !visible[j]) continue;
       const a = positions[i];
       const b = positions[j];
       const color = new Color(RELATION_STYLE[relation.type].color);
-      if (!sourced(relation)) color.lerp(new Color(BACKGROUND), 0.4);
+      if (bridges.has(k)) color.lerp(new Color('#f1d58e'), 0.55);
       const tail = color.clone().lerp(new Color(BACKGROUND), 0.45);
       hl.push(a.x, a.y, a.z, b.x, b.y, b.z);
       hc.push(tail.r, tail.g, tail.b, color.r, color.g, color.b);
@@ -504,17 +509,6 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
     highlight.geometry = new BufferGeometry();
     highlight.geometry.setAttribute('position', new BufferAttribute(new Float32Array(hl), 3));
     highlight.geometry.setAttribute('color', new BufferAttribute(new Float32Array(hc), 3));
-    const al = [];
-    for (const j of neighbourhood.affinity) {
-      if (selected < 0 || !visible[j]) continue;
-      const a = positions[selected];
-      const b = positions[j];
-      al.push(a.x, a.y, a.z, b.x, b.y, b.z);
-    }
-    affinity.geometry.dispose();
-    affinity.geometry = new BufferGeometry();
-    affinity.geometry.setAttribute('position', new BufferAttribute(new Float32Array(al), 3));
-    affinity.computeLineDistances();
   }
 
   // Labels: priority-ordered, greedy collision avoidance in screen space.
@@ -535,7 +529,6 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
     if (selected >= 0) {
       const ids = new Set();
       for (const k of neighbourhood.relations) relationIndex[k].forEach((i) => ids.add(i));
-      neighbourhood.affinity.forEach((i) => ids.add(i));
       for (const i of ids) add(i, 'neighbour');
     } else {
       landmarks.forEach((i) => add(i, 'landmark'));
@@ -550,7 +543,9 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
       const y = ((1 - v.y) / 2) * height;
       const node = labelNodes[i];
       const w = Math.min(220, node.textContent.length * 6.6 + 12);
-      const box = [x + 9, y - 9, x + 9 + w, y + 9];
+      if (level !== 'selected' && level !== 'hovered' && (y < 70 || y > height - 32)) continue;
+      const left = x + 9 + w <= width ? x + 9 : Math.max(4, x - w - 9);
+      const box = [left, y - 9, left + w, y + 9];
       const blocked = placed.some(
         (b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1],
       );
@@ -559,12 +554,7 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
       shown.add(i);
       node.hidden = false;
       node.dataset.level = level;
-      const depthFade = Math.max(
-        0.35,
-        Math.min(1, 1.6 - camera.position.distanceTo(positions[i]) / 3.2),
-      );
-      node.style.opacity = String(level === 'landmark' ? depthFade * 0.85 : 1);
-      node.style.transform = `translate(${Math.round(x + 9)}px, ${Math.round(y - 9)}px)`;
+      node.style.transform = `translate(${Math.round(left)}px, ${Math.round(y - 9)}px)`;
     }
     labelNodes.forEach((node, i) => {
       if (!shown.has(i)) node.hidden = true;
@@ -620,17 +610,16 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
       const emphasis = i === selected ? 1.6 : i === hovered ? 1.35 : 1;
       mesh.scale.setScalar(baseSize[i] * emphasis);
       mesh.visible = visible[i];
-      const faded = selected >= 0 && i !== selected && !neighbourIds().has(i);
       // Nodes passing close to the camera would fill the view; fade them out.
       const near = Math.min(
         1,
         Math.max(0, (camera.position.distanceTo(positions[i]) - 0.15) / 0.55),
       );
-      mesh.material.opacity = (faded ? 0.28 : 1) * near;
+      mesh.material.opacity = near;
       rings[i].position.copy(positions[i]);
       rings[i].quaternion.copy(camera.quaternion);
       rings[i].scale.setScalar(baseSize[i] * emphasis);
-      if (rings[i].visible) rings[i].material.opacity = faded ? 0.25 : 0.95;
+      rings[i].visible = Boolean(rings[i].userData.active) && visible[i];
     });
     if (selected >= 0 && visible[selected]) {
       focusRing.visible = true;
@@ -643,17 +632,6 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
     updateLabels();
     updateGizmo();
   }
-  let neighbourCache = null;
-  let neighbourKey = null;
-  function neighbourIds() {
-    if (neighbourKey !== neighbourhood) {
-      neighbourKey = neighbourhood;
-      neighbourCache = new Set(neighbourhood.affinity);
-      for (const k of neighbourhood.relations)
-        relationIndex[k].forEach((i) => neighbourCache.add(i));
-    }
-    return neighbourCache;
-  }
   requestAnimationFrame(frame);
 
   return {
@@ -662,7 +640,7 @@ export function createScene({ canvas, labels, gizmo, model, onSelect, onHover, r
     setColors,
     setRings,
     setVisibility,
-    setRelationTypes,
+    setRelationMask,
     setSelection,
     setLandmarks,
     setInset,

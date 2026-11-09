@@ -54,14 +54,7 @@ describe('v4 production output', () => {
       'fonts/LICENSE-SOURCE-SERIF-4.txt',
       'lab/index.html',
       'learning/index.html',
-      'learning/app.js',
-      'learning/graph.js',
-      'learning/curriculum.js',
-      'learning/labels.js',
-      'learning/projection.js',
-      'learning/styles.css',
-      'learning/data/atlas.public.json',
-      'learning/data/concepts.stats310a.public.json',
+      'learning/data/concepts.public.json',
       'learning/space/index.html',
       'about.html',
       'notes/index.html',
@@ -86,6 +79,22 @@ describe('v4 production output', () => {
       'papers/am-cvn-report.pdf',
       'papers/ligo-caltech-report.pdf',
     ].forEach((asset) => expect(files, asset).toContain(asset));
+
+    expect(files.filter((file) => file.startsWith('learning/')).sort()).toEqual([
+      'learning/data/concepts.public.json',
+      'learning/index.html',
+      'learning/space/index.html',
+    ]);
+    const conceptChunks = files.filter((file) =>
+      /(?:conceptSpace|layout-worker).*\.js$/.test(file),
+    );
+    expect(conceptChunks).toHaveLength(2);
+    for (const file of conceptChunks) {
+      const script = readFileSync(path.join(outputDir, file), 'utf8');
+      expect(script).not.toMatch(/sourceMappingURL|github_pat_|ghp_|sessions\/|api\.github\.com/);
+    }
+    const redirect = readFileSync(path.join(outputDir, 'learning/index.html'), 'utf8');
+    expect(redirect).toContain('url=./space/');
 
     const html = readFileSync(path.join(outputDir, 'index.html'), 'utf8');
     const about = readFileSync(path.join(outputDir, 'about.html'), 'utf8');
