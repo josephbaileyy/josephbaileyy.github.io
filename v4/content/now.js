@@ -85,6 +85,7 @@ export function renderNow(escape) {
           <path d="M48 8v8m-4-4h8M5 30v6m-3-3h6" stroke="#a63e67" stroke-width="1.6" stroke-linecap="round"/>
         </svg>
       </header>
+      <p class="now-feature"><span>Course project · In progress</span><a href="https://youtu.be/U6Q2LL9SDyU" target="_blank" rel="noopener noreferrer">CS 329Z Midpoint Demo</a></p>
       ${
         fresh
           ? `<div data-now-items data-expires="${expires}">${renderList(items, escape)}</div>`
