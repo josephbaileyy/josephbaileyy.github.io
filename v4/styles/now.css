@@ -99,8 +99,6 @@
 
 .now-done span.now-item-title {
   color: var(--now-green);
-  text-decoration: line-through;
-  text-decoration-color: #749578;
 }
 
 .now-list time {
