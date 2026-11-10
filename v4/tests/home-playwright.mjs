@@ -105,7 +105,10 @@ try {
     requests.some((url) => /(?:three-|rapier-|\/unfolding-|\/img\/unfolding\/)/.test(url)),
     false,
   );
-  const researchLinks = await page.locator('#research article > .entry-heading a').all();
+  assert.equal(await page.locator(':is(#research, #projects) .entry-heading h3 a').count(), 0);
+  const researchLinks = await page
+    .locator('#research article > .evidence-links li:first-child a')
+    .all();
   assert.equal(researchLinks.length, 5);
   for (const anchor of researchLinks) assert.equal(await anchor.isVisible(), true);
   assert.equal(await page.locator('#projects > .work-list article').count(), 4);
@@ -323,7 +326,10 @@ try {
   await failed.locator('#unfolding-explanation > summary').click();
   await failed.locator('[data-demo-retry]').waitFor({ state: 'visible' });
   assert.match(await failed.locator('[data-demo-status]').innerText(), /could not load/);
-  assert.equal(await failed.locator('#minerva-omnifold > .entry-heading a').isVisible(), true);
+  assert.equal(
+    await failed.getByRole('link', { name: 'Research write-up (PDF)', exact: true }).isVisible(),
+    true,
+  );
   await failed.unroute(replayPattern);
   await failed.locator('[data-demo-retry]').click();
   await failed.locator('[data-demo-view]').waitFor({ state: 'visible' });

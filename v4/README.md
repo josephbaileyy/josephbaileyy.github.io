@@ -18,7 +18,7 @@ npm run test:e2e:lab
 ```
 
 The homepage is rendered at build time by `content/home.js`. Each research item
-has a one-sentence summary and a linked title. Native “Details and links”
+has a one-sentence summary and labeled evidence links. Native “Details and links”
 disclosures preserve the full contribution, evidence, and supplementary figures.
 Four projects have visual previews, including the neutrino film; the remaining three are under “More projects.” Notes are temporarily hidden from the homepage and shared navigation; their existing URLs and Markdown sources remain available. Experience, coursework, and honors live on `/about.html`. Old experience and education anchors redirect there. All
 records and disclosures work without JavaScript. Hash links open any enclosing

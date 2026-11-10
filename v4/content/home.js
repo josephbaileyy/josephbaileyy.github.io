@@ -149,7 +149,7 @@ function researchList() {
         );
       }
       return `<li><article id="${id}">
-      <header class="entry-heading"><h3>${link({ ...evidence[0], label: copy.title })}</h3><p class="entry-date">${escape(item.period)}</p></header>
+      <header class="entry-heading"><h3>${escape(copy.title)}</h3><p class="entry-date">${escape(item.period)}</p></header>
       <p>${escape(copy.brief)}</p>
       ${copy.status ? `<p class="research-status">${escape(copy.status)}</p>` : ''}
       ${links(evidence)}
@@ -182,7 +182,7 @@ function projectList(items, featured = false) {
         item,
       ) => `<li><article id="${item.id}"${featured ? ` class="project-card${item.id === 'neutrino-video' ? ' video-project' : ''}"` : ''}>
     ${featured ? projectPreview(item) : ''}
-    <div class="project-copy"><header class="entry-heading"><h3>${item.links.length ? link({ ...item.links[0], label: item.title }) : escape(item.title)}</h3></header>
+    <div class="project-copy"><header class="entry-heading"><h3>${escape(item.title)}</h3></header>
     <p>${escape(descriptions[item.id])}</p>
     ${links(item.links)}</div>
   </article></li>`,
