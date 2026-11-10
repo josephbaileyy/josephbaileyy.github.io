@@ -53,25 +53,6 @@
   color: var(--now-green);
 }
 
-.now-feature {
-  display: grid;
-  gap: 3px;
-  max-width: none;
-  margin: 0;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--now-rule);
-}
-
-.now-feature span {
-  color: var(--home-secondary);
-  font-size: 0.82rem;
-}
-
-.now-feature a {
-  justify-self: start;
-  font-weight: 600;
-}
-
 .now-list {
   margin: 0;
   padding: 0;
@@ -80,7 +61,7 @@
 
 .now-list li {
   display: grid;
-  grid-template-columns: 1em minmax(0, 1fr) minmax(0, max-content);
+  grid-template-columns: 1em minmax(0, 1fr) min(38%, 13rem);
   gap: 3px 9px;
   align-items: baseline;
   padding: 8px 0;
@@ -116,15 +97,15 @@
   font-weight: 600;
 }
 
-.now-done .now-item-title {
+.now-done span.now-item-title {
   color: var(--now-green);
   text-decoration: line-through;
   text-decoration-color: #749578;
 }
 
 .now-list time {
-  max-width: 24ch;
   color: var(--home-secondary);
+  text-align: end;
   overflow-wrap: anywhere;
 }
 
@@ -168,6 +149,6 @@
 
   .now-list time {
     grid-column: 2;
-    max-width: none;
+    text-align: start;
   }
 }

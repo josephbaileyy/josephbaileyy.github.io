@@ -1,6 +1,17 @@
 import { readFileSync } from 'node:fs';
 
 const feedPath = new URL('../../data/now.json', import.meta.url);
+// Keep linked work in the checklist after Muse rotates completed tasks out.
+const pinnedTasks = [
+  {
+    title: 'CS 329Z Midway Demo Video',
+    course: 'CS 329Z',
+    status: 'completed',
+    due: '2026-11-06T23:59:00-08:00',
+    due_display: 'Fri Nov 6',
+    href: 'https://youtu.be/U6Q2LL9SDyU',
+  },
+];
 const dayMs = 24 * 60 * 60 * 1000;
 const pacificDate = new Intl.DateTimeFormat('en-US', {
   timeZone: 'America/Los_Angeles',
@@ -23,7 +34,11 @@ function validItems(items, status) {
     (item) =>
       item?.status === status &&
       [item.title, item.due_display].every((value) => typeof value === 'string' && value.trim()) &&
-      Number.isFinite(parseDate(item.due)),
+      Number.isFinite(parseDate(item.due)) &&
+      !pinnedTasks.some(
+        (task) =>
+          item.title.trim().toLowerCase() === task.title.toLowerCase() && byDue(item, task) === 0,
+      ),
   );
 }
 
@@ -40,15 +55,20 @@ function courseLabel(item) {
 }
 
 function renderList(items, escape) {
-  if (!items.length) return '<p class="now-empty">Nothing on the list right now.</p>';
+  if (!items.length)
+    return '<p class="now-empty" data-now-transient>Nothing on the list right now.</p>';
   return `<ul role="list" class="now-list">${items
     .map((item) => {
       const completed = item.status === 'completed';
       const course = courseLabel(item);
       const expected = item.source === 'predicted' && !/\(expected\)/i.test(item.due_display);
-      return `<li${completed ? ' class="now-done"' : ''}>
+      const pinned = pinnedTasks.includes(item);
+      const title = pinned
+        ? `<a class="now-item-title" href="${escape(item.href)}" target="_blank" rel="noopener noreferrer">${escape(item.title)}</a>`
+        : `<span class="now-item-title">${escape(item.title)}</span>`;
+      return `<li${completed ? ' class="now-done"' : ''}${pinned ? '' : ' data-now-transient'}>
         <span class="now-box" aria-hidden="true">${completed ? '✓' : ''}</span>
-        <span class="now-item"><span class="now-item-title">${escape(item.title)}</span>${completed ? '<span class="visually-hidden"> (completed)</span>' : ''}${course ? ` <span class="now-course">${escape(course)}</span>` : ''}</span>
+        <span class="now-item">${title}${completed ? '<span class="visually-hidden"> (completed)</span>' : ''}${course ? ` <span class="now-course">${escape(course)}</span>` : ''}</span>
         <time datetime="${escape(item.due)}">${escape(item.due_display)}${expected ? ' (expected)' : ''}</time>
       </li>`;
     })
@@ -68,7 +88,7 @@ export function renderNow(escape) {
     .filter(({ completed_at }) => Number.isFinite(parseDate(completed_at)))
     .sort((a, b) => Date.parse(b.completed_at) - Date.parse(a.completed_at))
     .slice(0, 3);
-  const items = [...done, ...doing].sort(byDue);
+  const items = fresh ? [...pinnedTasks, ...done, ...doing].sort(byDue) : pinnedTasks;
   const updatedDate = Number.isFinite(updated)
     ? `<time datetime="${escape(feed.updated_at)}">${pacificDate.format(updated)}</time>`
     : '';
@@ -85,12 +105,7 @@ export function renderNow(escape) {
           <path d="M48 8v8m-4-4h8M5 30v6m-3-3h6" stroke="#a63e67" stroke-width="1.6" stroke-linecap="round"/>
         </svg>
       </header>
-      <p class="now-feature"><span>Course project · In progress</span><a href="https://youtu.be/U6Q2LL9SDyU" target="_blank" rel="noopener noreferrer">CS 329Z Midpoint Demo</a></p>
-      ${
-        fresh
-          ? `<div data-now-items data-expires="${expires}">${renderList(items, escape)}</div>`
-          : ''
-      }
+      <div${fresh ? ` data-now-items data-expires="${expires}"` : ''}>${renderList(items, escape)}</div>
       <p class="now-fallback" data-now-fallback${fresh ? ' hidden' : ''}>${updatedDate ? `Currently doing list last updated ${updatedDate}.` : 'The list is waiting for its first update.'}</p>
       <p class="now-credit"><img src="./img/home/muse-jolly.jpg" alt="" width="32" height="32" loading="lazy"> powered by Muse</p>
     </div>

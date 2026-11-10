@@ -8,7 +8,7 @@ mountPianoRoll(document.querySelector('#music'));
 const nowItems = document.querySelector('[data-now-items]');
 if (nowItems) {
   const showStaleNotice = () => {
-    nowItems.hidden = true;
+    for (const task of nowItems.querySelectorAll('[data-now-transient]')) task.hidden = true;
     document.querySelector('[data-now-fallback]').hidden = false;
   };
   const remaining = Number(nowItems.dataset.expires) - Date.now();
