@@ -56,7 +56,7 @@ async function loadDemo() {
   } catch {
     disclosure.querySelector('[data-demo-view]').hidden = true;
     status.textContent =
-      'The interactive toy could not load. You can still read the explanation and the research write-up.';
+      'The interactive toy could not load. You can still read the explanation and the Physics 191 review.';
     retry.hidden = false;
   } finally {
     loading = false;

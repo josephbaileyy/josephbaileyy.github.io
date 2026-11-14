@@ -143,7 +143,6 @@ function researchList() {
       const copy = sentences[id];
       const evidence = [...item.links];
       if (id === 'minerva-omnifold') {
-        evidence[0] = { ...evidence[0], label: 'Research write-up (PDF)' };
         evidence.push(
           projects.find((project) => project.id === 'minerva-omnifold-pipeline').links[0],
         );

@@ -22,7 +22,7 @@ export const research = Object.freeze([
     ]),
     links: Object.freeze([
       Object.freeze({
-        label: 'Paper (PDF)',
+        label: 'Physics 191 review (PDF, March 2026)',
         href: './papers/neutrino-unfolding.pdf',
       }),
     ]),

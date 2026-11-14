@@ -327,7 +327,9 @@ try {
   await failed.locator('[data-demo-retry]').waitFor({ state: 'visible' });
   assert.match(await failed.locator('[data-demo-status]').innerText(), /could not load/);
   assert.equal(
-    await failed.getByRole('link', { name: 'Research write-up (PDF)', exact: true }).isVisible(),
+    await failed
+      .getByRole('link', { name: 'Physics 191 review (PDF, March 2026)', exact: true })
+      .isVisible(),
     true,
   );
   await failed.unroute(replayPattern);
