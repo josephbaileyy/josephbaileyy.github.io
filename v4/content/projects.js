@@ -21,7 +21,7 @@ export const projects = Object.freeze([
     summary: 'An unbinned machine-learning unfolding pipeline for neutrino cross sections.',
     work: 'Built an OmniFold workflow on MINERvA neutrino-scattering data and an evaluation programme spanning closure tests, generator stress tests, bootstrap resampling, and bias–variance analysis.',
     evidence:
-      'The reproducible pipeline compares machine-learning unfolding with iterative Bayesian unfolding under controlled uncertainty tests; whether the method reduces structural model bias remains under test.',
+      'The pipeline reproduces MINERvA’s published binned result before extending the unfolding to higher dimensions, with closure, uncertainty and generator studies recorded alongside the code.',
     stack: Object.freeze(['Python', 'PyTorch', 'OmniFold', 'MINERvA', 'ROOT']),
     links: Object.freeze([
       Object.freeze({
@@ -61,11 +61,10 @@ export const projects = Object.freeze([
   Object.freeze({
     id: 'lord',
     title: 'LoRD',
-    summary:
-      'Video person re-identification with DINOv2/v3 backbones, LoRA, BNNeck, and temporal attention.',
-    work: 'Engineered a video re-identification system using DINO vision transformers, LoRA adapters, a BNNeck layer, and temporal-attention pooling.',
+    summary: 'Video person re-identification with LoRA-adapted DINOv2/v3 backbones.',
+    work: 'In a three-person team, built LoRA-adapted DINO frame encoders with a BNNeck layer and compared mean pooling with a learned temporal-attention head.',
     evidence:
-      'Evaluated the system on the MARS video benchmark for cross-camera identity matching.',
+      'On the MARS benchmark, LoRA on DINOv2 with mean pooling raised mAP from 1.8 zero-shot to 76.7; the temporal-attention head did not beat mean pooling.',
     stack: Object.freeze(['Python', 'PyTorch', 'DINOv2/v3', 'LoRA', 'computer vision']),
     links: Object.freeze([
       Object.freeze({
@@ -109,11 +108,11 @@ export const projects = Object.freeze([
   Object.freeze({
     id: 'lol-match-prediction',
     title: 'Professional League of Legends match prediction',
-    summary: 'Calibrated win-probability models over draft, economy, and objective data.',
-    work: 'Built features from draft composition, gold economy, and objective control to predict professional match outcomes.',
+    summary: 'Pre-match outcome prediction from team drafts and players’ champion win rates.',
+    work: 'Encoded team drafts, players’ win rates on their picked champions, and Word2Vec team-composition embeddings as match vectors to predict professional match outcomes before play.',
     evidence:
-      'Benchmarked calibrated win-probability models against baseline methods and documented the study in a report and poster.',
-    stack: Object.freeze(['Python', 'scikit-learn', 'XGBoost', 'probability calibration']),
+      'Compared a logistic-regression baseline with gradient boosting, random forests and a neural network, and wrote up the study with Joshua Hsieh in a report and poster.',
+    stack: Object.freeze(['Python', 'scikit-learn', 'Word2Vec']),
     links: Object.freeze([
       Object.freeze({
         label: 'GitHub',

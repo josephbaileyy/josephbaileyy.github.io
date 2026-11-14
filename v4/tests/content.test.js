@@ -20,16 +20,20 @@ describe('v4 content integrity', () => {
     expect(profile.statement).not.toMatch(/\b(?:he|him|his)\b/i);
   });
 
-  it('keeps the MINERvA structural-bias claim under test', () => {
+  it('keeps MINERvA claims within what has been validated', () => {
     const claims = [
-      ...research.map((item) => item.result),
+      ...research.map((item) => [item.question, item.method, item.result].join(' ')),
       ...projects.map((item) => item.evidence),
-    ].filter((claim) => /structural model bias/i.test(claim));
+    ];
+    const fiveObservable = claims.filter((claim) => /five-observable/i.test(claim));
 
-    expect(claims.length).toBeGreaterThan(0);
+    expect(fiveObservable.length).toBeGreaterThan(0);
+    fiveObservable.forEach((claim) => {
+      expect(claim).toMatch(/before it can be quoted as a measurement/i);
+    });
     claims.forEach((claim) => {
-      expect(claim).toMatch(/under test/i);
       expect(claim).not.toMatch(/\b(?:reduced|lowered|eliminated) structural model bias\b/i);
+      expect(claim).not.toMatch(/five-(?:dimensional|observable) measurement\b/i);
     });
   });
 

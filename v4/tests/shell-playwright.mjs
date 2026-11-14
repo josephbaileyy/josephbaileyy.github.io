@@ -306,7 +306,10 @@ try {
   assert.equal(await noJavaScriptPage.locator('#research article').count(), 5);
   assert.equal(await noJavaScriptPage.locator('#projects article').count(), 7);
   assert.equal(await noJavaScriptPage.locator('#experience article').count(), 2);
-  assert.match(await noJavaScriptPage.locator('body').innerText(), /question under test/i);
+  assert.match(
+    await noJavaScriptPage.locator('body').innerText(),
+    /Reproduced the published double-differential cross section/i,
+  );
   assert.match(await noJavaScriptPage.locator('body').innerText(), /WisdomTree Connect/i);
   assert.match(await noJavaScriptPage.locator('body').innerText(), /MTAC Level 10/i);
 

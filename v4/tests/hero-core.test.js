@@ -158,11 +158,7 @@ describe('impact propagation', () => {
         const initial = initialPositions[index];
         const position = record.body.translation();
         return (
-          Math.hypot(
-            position.x - initial.x,
-            position.y - initial.y,
-            position.z - initial.z,
-          ) > 0.05
+          Math.hypot(position.x - initial.x, position.y - initial.y, position.z - initial.z) > 0.05
         );
       }).length;
 

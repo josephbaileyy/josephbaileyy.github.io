@@ -29,7 +29,7 @@ const sentences = {
   'minerva-omnifold': {
     title: 'Neutrino unfolding with machine learning',
     brief:
-      'With Prof. Benjamin Nachman, I’m applying OmniFold, a machine-learning unfolding method, to MINERvA neutrino-scattering data. I compare it with iterative Bayesian unfolding, the standard method, using closure tests, generator stress tests, and bootstrap resampling.',
+      'With Prof. Benjamin Nachman, I’m using OmniFold, a machine-learning unfolding method, to measure neutrino cross sections from MINERvA data without binning them. I reproduced MINERvA’s published double-differential cross section, then extended the unfolding to five observables at once and tested event-generator predictions against it. I presented the work at a MINERvA collaboration meeting, and a paper is in preparation.',
   },
   'x17-bump-hunting': {
     title: 'Searching for the hypothetical X17 particle',
@@ -46,10 +46,10 @@ const sentences = {
     brief:
       'For Stanford’s observational astrophysics course, from a single night’s 111-minute observation of 140 V-band CCD images, we recovered AM CVn’s known 1051-second (about 17.5-minute) superhump signal, caused by tidal interactions and the precession of its helium-rich accretion disc.',
   },
-  'ligo-suspensions': {
+  'ligo-interferometry': {
     title: 'Interferometry at Caltech LIGO',
     brief:
-      'At Caltech’s LIGO Laboratory, I helped with suspension simulation and testing for gravitational-wave detectors and ran laser-interferometry experiments, which I analyzed in Python. I wrote the work up in a technical note.',
+      'At Caltech’s LIGO Laboratory, I modeled the interference of Gaussian laser beams in a Michelson interferometer to infer a mirror’s focal length from a single photograph of the fringe pattern, building the analysis in Python. Tested on a known 100.0 mm lens, it recovered 98.3 mm. I wrote the work up as a LIGO technical note.',
   },
 };
 
@@ -135,7 +135,7 @@ function researchList() {
     'x17-bump-hunting',
     'collider-ml-slac',
     'am-cvn-photometry',
-    'ligo-suspensions',
+    'ligo-interferometry',
   ];
   return `<ul class="work-list">${order
     .map((id) => {
@@ -165,13 +165,13 @@ function projectList(items, featured = false) {
       'A five-minute animated film about how MINERvA measures the proton’s weak-force response inside a plastic detector. I narrated it and animated it in Manim, with AI help on the script and storyboard.',
     splora:
       'Fine-tuning GPT-2 with LoRA while training about 1% of its parameters. It reached 0.888 dev accuracy on paraphrase detection and 41.94 chrF on Shakespearean sonnet generation.',
-    lord: 'Matching the same person across video from different cameras, using DINO vision transformers with LoRA adapters and temporal attention. We evaluated it on the MARS benchmark.',
+    lord: 'Matching the same person across video from different cameras, using DINOv2 vision transformers with LoRA adapters. On the MARS benchmark, simple mean pooling over frames beat a learned temporal-attention head, pointing to per-frame features as the bottleneck.',
     'soccer-gnn':
       'Predicting the next action in a soccer match by treating each possession as a graph. We compared GraphSAGE with a Relational Graph Transformer and wrote a blog post about it.',
     'minerva-omnifold-pipeline':
       'The code behind my neutrino-unfolding research: OmniFold on MINERvA data, with closure tests, generator stress tests, bootstrap resampling, and bias–variance checks.',
     'lol-match-prediction':
-      'Predicting professional League of Legends match outcomes from draft, gold, and objective data, with calibrated win probabilities compared against baselines.',
+      'Predicting professional League of Legends match outcomes before the game starts, from each team’s draft and its players’ win rates on the champions they picked. With Joshua Hsieh, I compared logistic regression, gradient boosting, random forests and a neural network.',
     'systems-security':
       'A 2-of-3 multisig Ethereum wallet in Solidity, an end-to-end encrypted chat client using the Double Ratchet, and Pintos operating-system work on scheduling, system calls, and virtual memory.',
   };
@@ -361,15 +361,10 @@ export function renderHome() {
     <div class="intro-copy"><h1>Hi, I’m <em>Joseph.</em></h1>
       <p class="intro-lead">${escape(personal.introduction)}</p><p class="intro-personal">${escape(
         personal.outside,
-      )
-        .replace(
-          '{track}',
-          `<a class="personal-link track-link" href="${personal.trackUrl}" target="_blank" rel="noopener noreferrer">400m hurdler</a>`,
-        )
-        .replace(
-          '{sax}',
-          `<a class="personal-link music-link" href="${personal.saxUrl}" target="_blank" rel="noopener noreferrer" aria-label="Watch my sax solo in the Chino Hills HS 2023 indoor drumline show">variety of ensembles</a>`,
-        )}</p>
+      ).replace(
+        '{track}',
+        `<a class="personal-link track-link" href="${personal.trackUrl}" target="_blank" rel="noopener noreferrer">400m hurdler</a>`,
+      )}</p>
       <nav aria-label="Contact and profile links">${links([{ ...profile.links.find((item) => item.id === 'resume-link'), label: 'CV (PDF)' }, profile.links.find((item) => item.id === 'contact-link'), profile.links.find((item) => item.id === 'github-link')])}</nav>
     </div>
     ${instagramCarousel()}

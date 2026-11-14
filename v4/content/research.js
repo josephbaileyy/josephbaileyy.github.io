@@ -8,11 +8,11 @@ export const research = Object.freeze([
     grant: '2026 Stanford Major Grant',
     current: true,
     question:
-      'Can high-dimensional unbinned unfolding reduce structural model bias in the few-GeV neutrino-scattering regime?',
+      'Can unbinned machine-learning unfolding reproduce MINERvA’s published neutrino cross sections and extend them to more observables than binned methods can handle?',
     method:
-      'Implementing and evaluating OmniFold, an unbinned machine-learning unfolding framework, on MINERvA neutrino-scattering data; benchmarking against iterative Bayesian unfolding through closure tests, generator stress tests, bootstrap resampling, and bias–variance analysis.',
+      'Unfolding MINERvA inclusive charged-current data with OmniFold: reproducing the published double-differential muon-momentum cross section, then adding available energy, three-momentum transfer and hadronic invariant mass, with closure tests, systematic universes, bootstrap resampling and event-generator comparisons.',
     result:
-      'An OmniFold implementation and evaluation programme are in place; whether high-dimensional unbinned unfolding reduces structural model bias is the question under test.',
+      'Reproduced the published double-differential cross section (total-cross-section ratio 1.011; 95.6% of 205 bins within 10%), with a 6.87% median per-bin uncertainty built from 187 systematic universes plus statistical and machine-learning components. The five-observable unfolding passes closure checks, and its uncertainties are still being worked through before it can be quoted as a measurement. Presented at a MINERvA collaboration meeting in July 2026; a paper is in preparation.',
     tags: Object.freeze([
       'OmniFold',
       'MINERvA',
@@ -108,22 +108,22 @@ export const research = Object.freeze([
     ]),
   }),
   Object.freeze({
-    id: 'ligo-suspensions',
-    title: 'Interferometry and suspension systems for LIGO',
-    role: 'Researcher',
+    id: 'ligo-interferometry',
+    title: 'Gaussian-beam interferometry for focal-length measurement',
+    role: 'Research Intern',
     venue: 'Caltech LIGO Laboratory',
     period: '2023',
     current: false,
     question:
-      'How can suspension dynamics and laser-beam interferometry be modeled and tested for gravitational-wave detector development?',
+      'Can the interference pattern of two Gaussian laser beams be used to infer a mirror’s focal length?',
     method:
-      'Supported suspension simulation and testing and conducted laser-beam interferometry experiments with custom Python analysis.',
+      'Modeled a Michelson interferometer with one flat and one concave mirror in Python, using ABCD ray-transfer matrices, the complex beam parameter and Gouy phase, and detected fringe centroids in a single interference photograph.',
     result:
-      'Documented the suspension simulation, testing, and Python-analyzed interferometry work in a LIGO technical note.',
+      'Recovered 98.3 mm for a known 100.0 mm lens, and documented the method in LIGO technical note LIGO-T2300319.',
     tags: Object.freeze([
       'LIGO',
       'interferometry',
-      'suspensions',
+      'Gaussian beams',
       'gravitational waves',
       'Caltech',
     ]),

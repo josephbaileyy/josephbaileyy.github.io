@@ -32,7 +32,7 @@ const realBodies = [
     href: null,
   },
   {
-    id: 'ligo-suspensions',
+    id: 'ligo-interferometry',
     label: 'LIGO',
     massClass: 'heavy',
     slot: { x: -0.32, y: -0.58 },
