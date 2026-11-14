@@ -11,6 +11,14 @@ const pinnedTasks = [
     due_display: 'Fri Nov 6',
     href: 'https://youtu.be/U6Q2LL9SDyU',
   },
+  {
+    title: 'CS 329Z Paper Video',
+    course: 'CS 329Z',
+    status: 'completed',
+    due: '2026-11-13T23:59:00-08:00',
+    due_display: 'Fri Nov 13',
+    href: 'https://youtu.be/UleaaV9NMxU',
+  },
 ];
 const dayMs = 24 * 60 * 60 * 1000;
 const pacificDate = new Intl.DateTimeFormat('en-US', {
