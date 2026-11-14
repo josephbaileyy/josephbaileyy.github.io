@@ -35,9 +35,14 @@ try {
     './img/home/track-start.webp',
   );
   const trackLink = page.locator('.intro-personal .track-link');
+  const musicLink = page.locator('.intro-personal .music-link');
   assert.equal(await trackLink.innerText(), '400m hurdler');
-  assert.equal(await page.locator('.intro-personal .music-link').count(), 0);
-  for (const link of [trackLink]) {
+  assert.equal(await musicLink.innerText(), 'variety of ensembles');
+  assert.notEqual(
+    await trackLink.evaluate((link) => getComputedStyle(link).color),
+    await musicLink.evaluate((link) => getComputedStyle(link).color),
+  );
+  for (const link of [trackLink, musicLink]) {
     assert.equal(
       await link.evaluate((element) => getComputedStyle(element).textDecorationLine),
       'none',

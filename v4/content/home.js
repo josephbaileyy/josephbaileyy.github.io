@@ -361,10 +361,15 @@ export function renderHome() {
     <div class="intro-copy"><h1>Hi, I’m <em>Joseph.</em></h1>
       <p class="intro-lead">${escape(personal.introduction)}</p><p class="intro-personal">${escape(
         personal.outside,
-      ).replace(
-        '{track}',
-        `<a class="personal-link track-link" href="${personal.trackUrl}" target="_blank" rel="noopener noreferrer">400m hurdler</a>`,
-      )}</p>
+      )
+        .replace(
+          '{track}',
+          `<a class="personal-link track-link" href="${personal.trackUrl}" target="_blank" rel="noopener noreferrer">400m hurdler</a>`,
+        )
+        .replace(
+          '{sax}',
+          `<a class="personal-link music-link" href="${personal.saxUrl}" target="_blank" rel="noopener noreferrer" aria-label="Watch my sax solo in the Chino Hills HS 2023 indoor drumline show">variety of ensembles</a>`,
+        )}</p>
       <nav aria-label="Contact and profile links">${links([{ ...profile.links.find((item) => item.id === 'resume-link'), label: 'CV (PDF)' }, profile.links.find((item) => item.id === 'contact-link'), profile.links.find((item) => item.id === 'github-link')])}</nav>
     </div>
     ${instagramCarousel()}
