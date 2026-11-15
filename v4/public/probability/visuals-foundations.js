@@ -1,6 +1,6 @@
 // Chapter 1 models that replace text-only outlines: closure systems on a four-point space,
 // threshold sets of monotone and semicontinuous functions, jumps of a CDF, and interval masses from a CDF.
-import {frame,legend} from './visuals-transforms.js?v=transforms1';
+import {frame,legend,plot} from './visuals-transforms.js?v=transforms1';
 const green='#315e4e',gold='#a36b25',pale='#d8e8df',faint='#eeeee8',grey='#8a9189';
 const fmt=(x,d=2)=>Number(x).toFixed(d).replace(/\.?0+$/,'')||'0';
 const pick=(name,label,options,selected=0)=>`<label>${label}<select data-control="${name}" aria-label="${label}">${options.map((s,i)=>`<option value="${i}"${i===selected?' selected':''}>${s}</option>`).join('')}</select></label>`;
@@ -73,6 +73,44 @@ export const mixedCDF=x=>.7*Math.max(0,Math.min(1,(x+2)/4))+(x>=0?.3:0);
 export const mixedLeft=x=>.7*Math.max(0,Math.min(1,(x+2)/4))+(x>0?.3:0);
 export function intervalMasses(a,b){return {openClosed:mixedCDF(b)-mixedCDF(a),closed:mixedCDF(b)-mixedLeft(a),open:mixedLeft(b)-mixedCDF(a),point:mixedCDF(b)-mixedLeft(b)};}
 
+// ---------- 1.3.23: error events E_n on [0,1) as arcs of a circle, and the tail unions A_N.
+const GOLDEN=(Math.sqrt(5)-1)/2,LAST=400;
+const arc=(start,length)=>{const a=((start%1)+1)%1;return a+length<=1?[[a,a+length]]:[[a,1],[0,a+length-1]];};
+export const errorKinds=[
+ {label:'Lengths 2⁻ⁿ at scattered positions',length:n=>2**-n,set:n=>arc(n*GOLDEN,2**-n)},
+ {label:'Lengths 1/(n+1), each starting where the last ended',length:n=>1/(n+1),set:n=>{let start=0;for(let k=1;k<n;k++)start+=1/(k+1);return arc(start,1/(n+1));}}
+];
+export function unionMeasure(intervals){const sorted=[...intervals].sort((p,q)=>p[0]-q[0]);let total=0,end=-Infinity;for(const [lo,hi] of sorted){if(hi<=end)continue;total+=hi-Math.max(lo,end);end=hi;}return total;}
+export function mergeIntervals(intervals){const out=[];for(const [lo,hi] of [...intervals].sort((p,q)=>p[0]-q[0])){const last=out[out.length-1];if(last&&lo<=last[1])last[1]=Math.max(last[1],hi);else out.push([lo,hi]);}return out;}
+export const tailUnion=(kind,N)=>{const all=[];for(let n=N;n<=LAST;n++)all.push(...errorKinds[kind].set(n));return mergeIntervals(all);};
+
+// ---------- 1.2.3: a two-coordinate observation of ω∈[0,1] and the preimage of a rectangle.
+export const X1=w=>.5+.42*Math.cos(2*Math.PI*w),X2=w=>.5+.42*Math.sin(4*Math.PI*w);
+const HALF=.16,GRID=1200;
+export function preimages(c1,c2){const one=[],two=[],both=[];for(let j=0;j<GRID;j++){const w=(j+.5)/GRID,a=Math.abs(X1(w)-c1)<=HALF,b=Math.abs(X2(w)-c2)<=HALF;one.push(a);two.push(b);both.push(a&&b);}return {one,two,both};}
+const runs=flags=>{const out=[];let start=-1;flags.forEach((f,j)=>{if(f&&start<0)start=j;if(!f&&start>=0){out.push([start/GRID,j/GRID]);start=-1;}});if(start>=0)out.push([start/GRID,1]);return out;};
+
+// ---------- 1.2.15: a disk approximated by finite unions of dyadic squares.
+const DISK={x:.5,y:.5,r:.33},inDisk=(x,y)=>(x-DISK.x)**2+(y-DISK.y)**2<=DISK.r**2;
+export function dyadicApproximation(level){const n=2**level,chosen=[];for(let i=0;i<n;i++)for(let j=0;j<n;j++)if(inDisk((i+.5)/n,(j+.5)/n))chosen.push([i,j]);
+ const M=512,cell=M/n;let mismatch=0;const pick=new Set(chosen.map(([i,j])=>i*n+j));
+ for(let a=0;a<M;a++)for(let b=0;b<M;b++){const inB=pick.has(Math.floor(a/cell)*n+Math.floor(b/cell));if(inB!==inDisk((a+.5)/M,(b+.5)/M))mismatch++;}
+ return {n,chosen,mismatch:mismatch/(M*M),area:chosen.length/(n*n)};}
+
+// ---------- 1.2.28: local envelopes of a function with one jump and one isolated spike.
+export const SPIKE=-1,JUMP=.5;
+export const gEnvelope=x=>x===SPIKE?1.3:.5*Math.sin(1.5*x)+(x>=JUMP?.8:0);
+// Supremum and infimum of g over the open ball (x−δ,x+δ): a fine grid plus the two special points.
+export function envelopes(x,delta){let lo=Infinity,hi=-Infinity;const N=Math.max(40,Math.ceil(delta/.002));
+ for(let j=1;j<2*N;j++){const y=x-delta+j*delta/N;if(y===SPIKE)continue;const v=.5*Math.sin(1.5*y)+(y>=JUMP?.8:0);lo=Math.min(lo,v);hi=Math.max(hi,v);}
+ if(Math.abs(x-SPIKE)<delta)hi=Math.max(hi,1.3);
+ if(x-delta<JUMP&&JUMP<x+delta){lo=Math.min(lo,.5*Math.sin(1.5*JUMP));hi=Math.max(hi,.5*Math.sin(1.5*JUMP)+.8);}
+ return [lo,hi];}
+
+// ---------- 1.1.30: outer length of a set from covers by cells of a dyadic grid.
+export const TARGET=[[.13,.41],[.62,.71]];
+export function gridCover(level){const n=2**level,cells=[];for(let j=0;j<n;j++){const lo=j/n,hi=(j+1)/n;if(TARGET.some(([a,b])=>lo<b&&hi>a))cells.push(j);}return {n,cells,length:cells.length/n};}
+
 export function mountVisual(root,name,{setup,range}){
  if(!name.startsWith('fd-'))return false;
  const run=(controls,draw)=>{setup(root,controls,draw);return true;};
@@ -112,6 +150,35 @@ export function mountVisual(root,name,{setup,range}){
   return [legend('distribution function F: uniform mass 0.7 on [−2, 2] and an atom 0.3 at 0','the two thresholds')+frame(`<path d="M46 38V176H338" fill="none" stroke="#888"/><text x="40" y="43" text-anchor="end" font-size="13">1</text><text x="40" y="181" text-anchor="end" font-size="13">0</text>`
     +`<rect x="42" y="${y(mixedCDF(b)).toFixed(1)}" width="4" height="${Math.max(0,y(mixedCDF(a))-y(mixedCDF(b))).toFixed(1)}" fill="${gold}"/>`+seg(curve)+seg(curve2)+`<circle cx="${x(0)}" cy="${y(mixedLeft(0)).toFixed(1)}" r="4" fill="#fffefa" stroke="${green}" stroke-width="2"/><circle cx="${x(0)}" cy="${y(mixedCDF(0)).toFixed(1)}" r="4" fill="${green}"/>`+level(a,'a')+(b>a?level(b,'b'):''),'A distribution function with two thresholds and the rise between them',204),
    a===b?`a = b = ${fmt(b)}: the interval (a, b] is empty, and the single point has P({b}) = F(b) − F(b−) = ${fmt(m.point,4)}. Move one endpoint to open an interval.`:`P((a, b]) = F(b) − F(a) = ${fmt(mixedCDF(b),4)} − ${fmt(mixedCDF(a),4)} = ${fmt(m.openClosed,4)}. Left limits give the other shapes: P([a, b]) = F(b) − F(a−) = ${fmt(m.closed,4)}, P((a, b)) = F(b−) − F(a) = ${fmt(m.open,4)}, P({b}) = F(b) − F(b−) = ${fmt(m.point,4)}. The half-lines already fix the mass of every interval, and intervals generate the Borel sets.`];});
+ case 'fd-late-errors':return run(pick('kind','Error events Eₙ = {|Xₙ − X| > ε}',errorKinds.map(k=>k.label))+range('N','First index N',1,40,3),v=>{
+  const k=errorKinds[v.kind],rowsShown=Array.from({length:6},(_,j)=>v.N+j),tail=tailUnion(v.kind,v.N),mass=unionMeasure(tail),x=t=>70+t*270,row=22;
+  // A single event is always drawn at least 1.2 units wide; in the union, slivers too thin to see are left out so the drawn length stays honest.
+  const bars=(sets,i,color,floor=1.2)=>`<rect x="${x(0)}" y="${6+i*row}" width="270" height="14" fill="${faint}"/>`+sets.filter(([lo,hi])=>floor||(hi-lo)*270>=.3).map(([lo,hi])=>`<rect x="${x(lo).toFixed(2)}" y="${6+i*row}" width="${Math.max(floor,(hi-lo)*270).toFixed(2)}" height="14" fill="${color}"/>`).join('');
+  return [frame(rowsShown.map((n,i)=>`<text x="62" y="${18+i*row}" text-anchor="end" font-size="13">E${n}</text>`+bars(k.set(n),i,green)).join('')+`<text x="62" y="${18+6*row}" text-anchor="end" font-size="13">A${v.N}</text>`+bars(tail,6,gold,0),'Error events on the unit interval and the union of all later ones',162),
+   `P(E${v.N}) = ${fmt(k.length(v.N),4)}, while the gold set A${v.N}, where some error occurs at or after ${v.N}, has probability ${fmt(mass,4)}. ${v.kind===0?'Both tend to 0. An outcome outside every late A has all its late errors within tolerance: that is almost sure convergence, and P(E) ≤ P(A) then gives convergence in probability.':'The single errors become rare, yet the events keep sweeping across the whole interval, so A never shrinks. This sequence converges in probability but not almost surely: the implication in this exercise cannot be reversed.'}`];});
+ case 'fd-coordinates':return run(range('c1','Centre of B₁',.2,.8,.5,.05)+range('c2','Centre of B₂',.2,.8,.7,.05),v=>{
+  const p=preimages(v.c1,v.c2),X=t=>30+t*150,Y=t=>170-t*150,sx=t=>215+t*130;
+  const curve=Array.from({length:301},(_,j)=>`${X(X1(j/300)).toFixed(1)},${Y(X2(j/300)).toFixed(1)}`).join(' ');
+  const inside=runs(p.both).map(([a,b])=>`<polyline points="${Array.from({length:25},(_,j)=>{const w=a+(b-a)*j/24;return `${X(X1(w)).toFixed(1)},${Y(X2(w)).toFixed(1)}`}).join(' ')}" fill="none" stroke="${gold}" stroke-width="4"/>`).join('');
+  const strip=(flags,i,color,label)=>`<text x="${sx(0)}" y="${34+i*46}" font-size="12">${label}</text><rect x="${sx(0)}" y="${40+i*46}" width="130" height="12" fill="${faint}"/>`+runs(flags).map(([a,b])=>`<rect x="${sx(a).toFixed(1)}" y="${40+i*46}" width="${Math.max(1,(b-a)*130).toFixed(1)}" height="12" fill="${color}"/>`).join('');
+  const share=f=>fmt(f.filter(Boolean).length/GRID,3);
+  return [frame(`<rect x="30" y="20" width="150" height="150" fill="none" stroke="#888"/><rect x="${X(v.c1-HALF).toFixed(1)}" y="${Y(v.c2+HALF).toFixed(1)}" width="${(2*HALF*150).toFixed(1)}" height="${(2*HALF*150).toFixed(1)}" fill="${pale}" stroke="${green}"/><polyline points="${curve}" fill="none" stroke="${grey}" stroke-width="1.5"/>${inside}<text x="105" y="188" text-anchor="middle" font-size="12">(X₁, X₂) and B₁ × B₂</text>`
+    +strip(p.one,0,green,'X₁(ω) ∈ B₁')+strip(p.two,1,green,'X₂(ω) ∈ B₂')+strip(p.both,2,gold,'both tests pass')+`<text x="${sx(0)}" y="188" font-size="12">ω from 0 to 1</text>`,'A curve of values, a rectangle, and three sets of outcomes',196),
+   `The gold outcomes are exactly those in both green sets: X⁻¹(B₁ × B₂) = X₁⁻¹(B₁) ∩ X₂⁻¹(B₂). Their probabilities here are ${share(p.one)}, ${share(p.two)} and ${share(p.both)}. Measurable coordinates therefore make every rectangle question measurable, and rectangles generate the Borel sets of the plane.`];});
+ case 'fd-algebra-approx':return run(range('level','Dyadic level k (squares of side 2⁻ᵏ)',1,6,3),v=>{
+  const d=dyadicApproximation(v.level),X=t=>90+t*180,s=180/d.n;
+  return [legend(`union of ${d.chosen.length} dyadic squares, a set in the algebra`,'the event B, a disk')+frame(`<rect x="90" y="10" width="180" height="180" fill="${faint}"/>`+d.chosen.map(([i,j])=>`<rect x="${(X(0)+i*s).toFixed(2)}" y="${(10+j*s).toFixed(2)}" width="${s.toFixed(2)}" height="${s.toFixed(2)}" fill="${pale}" stroke="${green}" stroke-width=".6"/>`).join('')+`<circle cx="${X(DISK.x)}" cy="${10+DISK.y*180}" r="${DISK.r*180}" fill="none" stroke="${gold}" stroke-width="2.5"/>`,'A disk and its approximation by dyadic squares',200),
+   `Level ${v.level}: the squares cover probability ${fmt(d.area,4)}; the disk has ${fmt(Math.PI*DISK.r**2,4)}. The two sets disagree on probability ${fmt(d.mismatch,4)} (numerical area). No finite union of squares equals the disk, but the disagreement can be made as small as desired.`];});
+ case 'fd-envelopes':return run(range('delta','Radius δ of the neighbourhood',.02,.6,.3,.02),v=>{
+  const xs=Array.from({length:401},(_,j)=>-2+j/100),env=xs.map(x=>envelopes(x,v.delta));
+  const at=x=>{const [lo,hi]=envelopes(x,v.delta);return fmt(hi-lo,2);};
+  const left=xs.filter(x=>x<JUMP).map(x=>[x,gEnvelope(x===SPIKE?SPIKE+1e-9:x)]),right=xs.filter(x=>x>=JUMP).map(x=>[x,gEnvelope(x)]);
+  return [legend('g, with a jump at 0.5 and a single raised point at −1','upper and lower envelopes over (x − δ, x + δ)')+plot([{points:xs.map((x,j)=>[x,env[j][1]]),color:gold,dash:true,width:1.8},{points:xs.map((x,j)=>[x,env[j][0]]),color:gold,dash:true,width:1.8},{points:left},{points:right}],{xmin:-2,xmax:2,ymin:-.8,ymax:1.5,xlabel:'x',ylabel:'value',dots:[[SPIKE,1.3,3.5,green,1]]}),
+   `δ = ${fmt(v.delta,2)}: the gap between the envelopes is ${at(SPIKE)} at the raised point, ${at(JUMP)} at the jump, and ${at(1.5)} at x = 1.5. As δ shrinks, the gap closes wherever g is continuous and stays open at the two discontinuities, which is how the envelopes pick out D_g.`];});
+ case 'fd-covers':return run(range('level','Grid level k (cells of length 2⁻ᵏ)',1,9,3),v=>{
+  const c=gridCover(v.level),x=t=>30+t*300,w=300/c.n,exact=TARGET.reduce((s,[a,b])=>s+b-a,0);
+  return [legend('grid cells that meet the set','the set B = [0.13, 0.41] ∪ [0.62, 0.71]')+frame(`<rect x="30" y="20" width="300" height="26" fill="${faint}"/>`+c.cells.map(j=>`<rect x="${(x(0)+j*w).toFixed(2)}" y="20" width="${w.toFixed(2)}" height="26" fill="${pale}" stroke="${green}" stroke-width="${w>3?.8:0}"/>`).join('')+TARGET.map(([a,b])=>`<rect x="${x(a).toFixed(1)}" y="54" width="${((b-a)*300).toFixed(1)}" height="10" fill="${gold}"/>`).join('')+`<text x="30" y="84" font-size="13">0</text><text x="330" y="84" text-anchor="end" font-size="13">1</text>`,'A set on the unit interval and the grid cells covering it',92),
+   `Level ${v.level}: ${c.cells.length} cells of length 1/${c.n} cover B, with total length ${fmt(c.length,4)}. The length of B is ${fmt(exact,2)}, and the excess ${fmt(c.length-exact,4)} shrinks as the grid refines. The extension assigns to a general set the infimum of such cover totals, using only lengths already known on the algebra.`];});
  }
  return false;
 }

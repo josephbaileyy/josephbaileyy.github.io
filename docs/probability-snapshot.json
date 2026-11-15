@@ -1,10 +1,10 @@
 {
-  "sourceCommit": "439879ed36cd6efe216147d77ad35d981f3c3b03",
+  "sourceCommit": "385a365d30d190c00941eaa4a3e326dc4af38d17",
   "url": "https://josephrbailey.com/probability/",
   "files": [
     {
       "file": "app.js",
-      "sha256": "1b38560616d7eaa311ddb68f41d5e347fdf5b20eef7ebc9c148697575acc801e"
+      "sha256": "42f402ab7a06762a461bd001709abd89cfb44c50139438b086f3cb40e357ff39"
     },
     {
       "file": "appearance.css",
@@ -28,15 +28,15 @@
     },
     {
       "file": "content/section-1-1-3.js",
-      "sha256": "26eda473795d20a37562dc0e4d11d66e0f07ed9ede39e18bb274bc048d35fdcc"
+      "sha256": "f2d2e1b3a4ce9233b66df870ba98f8a271d94d8e8714ed8e1a30ebf4a628156e"
     },
     {
       "file": "content/section-1-2-1.js",
-      "sha256": "ac2c88a4b8227e30781bc129a74baf0131ab6d495fb6477db05899654b761801"
+      "sha256": "0adcc4d148c20acafe28ae725e0a9be5f506967eb6fdb16ec6f0da87b583d056"
     },
     {
       "file": "content/section-1-2-2.js",
-      "sha256": "bfa9236756297a27693cef0aff92fb59b99913ccf376c49be8c8175d3db8d462"
+      "sha256": "e55299098b89232f5bb1ae84f27d3e7385052246f00d55a7aa2872e64649d128"
     },
     {
       "file": "content/section-1-2-3.js",
@@ -52,7 +52,7 @@
     },
     {
       "file": "content/section-1-3-3.js",
-      "sha256": "04941af179acac49424a373a47261fe68202693a06534b23072fe02b394d506d"
+      "sha256": "600df8d5ac22fca3853a3418c210256e9ceeda3f80f3093f4c0272cfb0265c32"
     },
     {
       "file": "content/section-1-3-4.js",
@@ -152,7 +152,7 @@
     },
     {
       "file": "index.html",
-      "sha256": "c7dd58a073f9ab42d3af8b30938e51571c1803054d3ce8988559eb30c4437276"
+      "sha256": "306e386b05ff467a8323a7c1b8ad4c63992391fe265e2304578b14944a8e8883"
     },
     {
       "file": "intuition-models.js",
@@ -1484,7 +1484,7 @@
     },
     {
       "file": "visuals-foundations.js",
-      "sha256": "404c95bfb43f9ac2730db6a3fbb5b0432efb8cd6e1aeb97ea9e5f517bcfb58e0"
+      "sha256": "7c120e53cc2e35f1742f75f4c6bb2ae96b511256b9cddf4d7264d28b5e79d266"
     },
     {
       "file": "visuals-fubini.js",

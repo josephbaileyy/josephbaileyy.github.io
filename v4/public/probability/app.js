@@ -23,7 +23,7 @@ import {sum,mass,poisson,distance,almostMass} from './math.js';
 import {mountVisual as mountReasoning} from './visuals-reasoning.js';
 import {mountVisual as mountTransforms} from './visuals-transforms.js?v=transforms1';
 import {mountVisual as mountAsymptotics} from './visuals-asymptotics.js?v=asymptotics1';
-import {mountVisual as mountFoundations} from './visuals-foundations.js?v=foundations1';
+import {mountVisual as mountFoundations} from './visuals-foundations.js?v=foundations2';
 const $=(s,root=document)=>root.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const id=n=>'entry-'+n.replaceAll('.','-');
