@@ -52,7 +52,7 @@ statement:r`For i.i.d. $X_i$ with $x\mathbf P(|X_1|>x)\to0$ as $x\to\infty$, put
 plain:r`The mean can be undefined while a truncated mean still tracks the average. The tail condition makes an observation of order n unlikely among the first n samples.`,
 proof:r`Apply 2.1.11 with $b_n=n$. The discarded-event sum is $n\mathbf P(|X_1|>n)\to0$. For $Z_n=X_1\mathbf1_{\{|X_1|\le n\}}$, $$\frac{\operatorname{Var}(Z_n)}n\le\frac2n\int_0^n y\mathbf P(|X_1|>y)\,dy\to0.$$ The last limit is Cesàro averaging of a locally bounded function tending to zero.`,
 after:r`The source also notes that this tail condition is necessary for some nonrandom centering $\mu_n$ to give $S_n/n-\mu_n\to0$ in probability; that converse is quoted there, not proved. The centering need not converge.`},
-{n:'2.1.13',type:'Exercise',title:'A finite weak limit without an absolute mean',page:76,deps:['2.1.12'],
+{n:'2.1.13',solutionVisual:'as-signed-mean',solutionCaption:'Raise the truncation level. The signed truncated means converge because the signs alternate, while the absolute ones keep growing.',type:'Exercise',title:'A finite weak limit without an absolute mean',page:76,deps:['2.1.12'],
 statement:r`Let $X_i$ be i.i.d. with $$\mathbf P(X_1=(-1)^k k)=\frac1{c k^2\log k},\quad k\ge2,\qquad c=\sum_{k=2}^\infty\frac1{k^2\log k}.$$ Show $\mathbf E|X_1|=\infty$ but $S_n/n\to\mu$ in probability for a finite nonrandom $\mu$.`,
 plain:r`Absolute mass in the tail and cancellation of signed contributions answer different questions. Test both before assigning a mean.`,
 hints:[r`The absolute first moment is a constant times $\sum_{k\ge2}1/(k\log k)$.`,r`Bound $x\sum_{k>x}(k^2\log k)^{-1}$ and examine the alternating truncated first moment.`],

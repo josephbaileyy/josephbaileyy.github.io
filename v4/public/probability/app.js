@@ -6,7 +6,7 @@ import {mountVisual as mountIntegration} from './visuals-integration.js?v=pointw
 import {mountVisual as mountInequalities} from './visuals-inequalities.js?v=509c0e7b299c';
 import {mountVisual as mountConvergence} from './visuals-convergence.js?v=reader-fixes1';
 import {mountVisual as mountIntegrability} from './visuals-integrability.js?v=intuition1';
-import {initReader} from './reader.js?v=reader-fixes1';
+import {initReader} from './reader.js?v=welcome1';
 import {linkDefinitions} from './definitions.js?v=chapter3';
 import {createStudyCards} from './study-cards.js?v=chapter3';
 import {initStudy} from './study.js?v=chapter3';
@@ -21,6 +21,8 @@ import {mountVisual as mountRV} from './visuals-rv.js?v=pointwise1';
 import {mountVisual as mountLaws} from './visuals-distributions.js?v=intuition1';
 import {sum,mass,poisson,distance,almostMass} from './math.js';
 import {mountVisual as mountReasoning} from './visuals-reasoning.js';
+import {mountVisual as mountTransforms} from './visuals-transforms.js?v=transforms1';
+import {mountVisual as mountAsymptotics} from './visuals-asymptotics.js?v=asymptotics1';
 const $=(s,root=document)=>root.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const id=n=>'entry-'+n.replaceAll('.','-');
@@ -51,7 +53,7 @@ function pills(root,labels,initial,callback){root.innerHTML=labels.map((l,i)=>`<
 const helpers={svg,setup,range,bar,esc,renderMath};
 for(const root of document.querySelectorAll('[data-visual]')){const name=root.dataset.visual;
 if(name==='proof-map'){const e=entries.find(e=>e.n===root.closest('.entry').dataset.entry);root.innerHTML='<div class="proof-flow">'+(e.map||[]).map((step,i)=>`<div class="proof-step"><span class="step-number">${i+1}</span><div><b>${safeMath(step.title)}</b><div>${safeMath(step.body)}</div></div></div>`).join('')+'</div>';continue;}
-if([mountWeak,mountLLN,mountReasoning,mountProofs,mountIndependence,mountIntegration,mountInequalities,mountConvergence,mountIntegrability,mountGenerated,mountBorel,mountMeasures,mountRV,mountLaws,mountEventualBound].some(mount=>mount(root,name,helpers)))continue;
+if([mountAsymptotics,mountTransforms,mountWeak,mountLLN,mountReasoning,mountProofs,mountIndependence,mountIntegration,mountInequalities,mountConvergence,mountIntegrability,mountGenerated,mountBorel,mountMeasures,mountRV,mountLaws,mountEventualBound].some(mount=>mount(root,name,helpers)))continue;
 switch(name){
 case 'algebra':{root.innerHTML='<div class="small">Ω = {a, b, c, d} · Select blocks to form A.</div><div class="choices"></div><div class="drawing"></div><div class="result" aria-live="polite"></div>';pills($('.choices',root),['{a, b}','{c, d}'],1,m=>{const sets=['∅','{a,b}','{c,d}','Ω'];$('.drawing',root).innerHTML=svg([0,1].map(i=>`<rect x="${40+i*280}" y="20" width="240" height="80" rx="38" fill="${m&(1<<i)?'#d8e8df':'#f0eee7'}" stroke="#b9c8b7"/><text x="${160+i*280}" y="67" text-anchor="middle">${i?'c　　　　 d':'a　　　　 b'}</text>`).join(''));$('.result',root).textContent=`A = ${sets[m]}　 ·　 Aᶜ = ${sets[3^m]}　 ·　 A ∪ Aᶜ = Ω. Available events: ∅, {a,b}, {c,d}, Ω.`});break}
 case 'measure':{setup(root,range('total','Total mass',0,3,1,.1)+'<label>Event<select data-control="event" aria-label="Event"><option value="3">{a,b}</option><option value="12">{c,d}</option><option value="15">Ω</option><option value="0">∅</option></select></label>',v=>{let w=[.1,.2,.3,.4].map(x=>x*v.total);return [bar(w,['a','b','c','d'],w.map((_,i)=>v.event&(1<<i)?'#47795f':'#dfddd3')),`μ(A) = ${fmt(mass(v.event,w))}; μ(Ω) = ${fmt(v.total)}. ${v.total===1?'This is a probability measure.':'This is a measure; its total mass is not 1.'}`]});break}
@@ -76,6 +78,14 @@ linkDefinitions(document.getElementById('entries'),entries);
 renderMath(document.body);if(!storageOK)toast('Browser storage is unavailable. Export notes before leaving.');
 function revealLinkedSection(){const linkedEntry=entries.find(e=>'#'+id(e.n)===location.hash);const section=linkedEntry?.subsection||sections.find(s=>'#'+s.anchor===location.hash)?.n;if(section)document.querySelectorAll('.toc-group').forEach((g,i)=>g.open=sections[i].n===section);}revealLinkedSection();window.addEventListener('hashchange',revealLinkedSection);
 initReader({entries,sections,id,toast});
+// First-visit orientation: shown until dismissed or until the reader opens another entry; remembered per browser.
+{const welcome=$('#welcome'),welcomeKey='probability-notebook-welcome';let seen=false;try{seen=localStorage.getItem(welcomeKey)==='dismissed'}catch{}
+ if(welcome&&!seen&&!new URLSearchParams(location.search).has('print')){
+  welcome.hidden=false;const first=$('.entry.is-selected')?.dataset.entry;
+  const dismiss=()=>{welcome.hidden=true;watcher.disconnect();try{localStorage.setItem(welcomeKey,'dismissed')}catch{}};
+  const watcher=new MutationObserver(()=>{const now=$('.entry.is-selected')?.dataset.entry;if(now&&now!==first)dismiss()});
+  watcher.observe($('#entries'),{subtree:true,attributes:true,attributeFilter:['class']});
+  $('#welcome-dismiss').onclick=()=>{dismiss();$('#entry-next').focus()};}}
 initEntrySearch(entries);
 initStudy({cards:studyCards,sections,renderRich(root,html){root.innerHTML=safeMath(html);renderMath(root)}});
 if(location.hash&&!document.body.classList.contains('split-view'))setTimeout(()=>document.getElementById(location.hash.slice(1))?.scrollIntoView(),100);

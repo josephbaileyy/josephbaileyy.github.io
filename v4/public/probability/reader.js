@@ -6,6 +6,7 @@ export function initReader({entries,sections,id,toast}){
  const layout=$('.reader-layout'), source=$('.source-scroll'), companion=$('.companion-pane');
  const params=new URLSearchParams(location.search);
  let split=params.get('view')!=='continuous'&&!params.has('print');
+ const pages=entries.flatMap(e=>String(e.page).match(/\d+/g)?.map(Number)||[]),coverage=[Math.min(...pages),Math.max(...pages)];
  let active=entries[0], pageNumber=sourcePage(active), pdf, pdfLibrary, renderTask, textLayer, revision=0, zoom=1, resizeTimer, zoomTimer, zoomAnchor, renderedZoom=1, initialNavigation=true;
  const entryForHash=()=>entries.find(e=>'#'+id(e.n)===location.hash)||sections.find(s=>'#'+s.anchor===location.hash)?.entries[0];
  const stored=(key,fallback)=>{try{return localStorage.getItem(key)??fallback}catch{return fallback}};
@@ -80,7 +81,7 @@ export function initReader({entries,sections,id,toast}){
   $('.companion-empty').classList.toggle('is-visible',!active);
   const choices=entries.filter(e=>coversPage(e,pageNumber));
   $('#page-entries').replaceChildren();
-  const label=document.createElement('span');label.textContent=choices.length?'On this page':'No companion entries';$('#page-entries').append(label);
+  const label=document.createElement('span');const outside=pageNumber<coverage[0]||pageNumber>coverage[1];label.textContent=choices.length?'On this page':outside?`The companion covers pages ${coverage[0]}–${coverage[1]}`:'No companion entries';label.classList.toggle('coverage-note',outside);$('#page-entries').append(label);
   for(const e of choices){const b=document.createElement('button');b.className='entry-choice';b.textContent=e.n;b.title=`${e.type}: ${e.title}`;b.setAttribute('aria-label',`${e.type} ${e.n}: ${e.title}`);b.setAttribute('aria-pressed',String(e.n===active?.n));b.onclick=()=>select(e,{scrollSource:true});$('#page-entries').append(b)}
   highlightSource(scrollSource);
  }

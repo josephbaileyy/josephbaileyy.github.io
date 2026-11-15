@@ -1,0 +1,24 @@
+/* Index of interactive models. Layout only; colors come from the reading scheme. */
+.visuals-page{font-size:16px}
+.visuals-toolbar{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 22px;background:var(--paper);border-bottom:1px solid var(--line);font:13px/1.4 system-ui}
+.visuals-toolbar span{color:var(--muted)}
+.visuals-toolbar a{text-decoration:none}
+.visuals-main{max-width:1060px;margin:auto;padding:34px 24px 80px}
+.visuals-main h1{font-size:clamp(28px,4vw,40px);letter-spacing:-.6px;margin:0 0 10px}
+.visuals-lead{font:15px/1.7 system-ui;color:var(--muted);margin:0 0 22px;max-width:70ch}
+.visuals-filter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.visuals-filter button{min-height:38px}
+.visuals-page .visuals-filter button[aria-pressed=true]{background:var(--green);color:#fff;border-color:var(--green)}
+.visuals-search{display:block;font:600 12px/1.5 system-ui;color:var(--muted);max-width:360px}
+.visuals-search input{display:block;width:100%;margin-top:4px;padding:9px 10px;font:14px system-ui;border:1px solid var(--line);border-radius:4px;background:var(--surface,#fff);color:var(--ink)}
+#visuals-status{font:13px/1.5 system-ui;color:var(--muted);min-height:20px;margin:12px 0 0}
+.visuals-group{margin-top:34px}
+.visuals-group h2{font:600 12px/1.5 system-ui;letter-spacing:1px;text-transform:uppercase;color:var(--green);border-bottom:1px solid var(--line);padding-bottom:8px;margin:0 0 4px}
+.visuals-group ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:0 28px}
+.visuals-group li{border-bottom:1px solid var(--line);padding:13px 0}
+.visuals-group a{display:block;text-decoration:none;color:var(--ink)}
+.visuals-group a:hover strong{text-decoration:underline;text-underline-offset:3px}
+.visuals-group .kind{display:block;font:11px/1.5 system-ui;letter-spacing:.6px;color:var(--muted);font-variant-numeric:tabular-nums}
+.visuals-group strong{display:block;font-weight:400;font-size:17px;line-height:1.4;color:var(--green)}
+.visuals-group .what{display:block;font:13px/1.6 system-ui;color:var(--muted);margin-top:4px}
+@media(max-width:600px){.visuals-main{padding:24px 16px 60px}.visuals-toolbar{padding:12px 14px}}

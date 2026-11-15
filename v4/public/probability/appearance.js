@@ -2,21 +2,25 @@
 (() => {
   const key = 'probability-notebook-appearance-v1';
   const choices = {
-    theme: ['original', 'minimal', 'paper', 'studio'],
+    theme: ['original', 'minimal', 'paper', 'studio', 'night'],
     font: ['default', 'georgia', 'palatino', 'sans'],
     buttons: ['default', 'outlined', 'soft']
   };
   const defaults = { theme: 'original', font: 'default', buttons: 'default' };
   let settings = { ...defaults };
+  let chosen = false; // Without a saved choice, follow the system's light or dark setting.
   try {
     const saved = JSON.parse(localStorage.getItem(key));
     for (const name of Object.keys(choices)) {
-      if (choices[name].includes(saved?.[name])) settings[name] = saved[name];
+      if (choices[name].includes(saved?.[name])) { settings[name] = saved[name]; chosen = true; }
     }
   } catch { /* Appearance still works when storage is unavailable. */ }
+  const dark = window.matchMedia?.('(prefers-color-scheme: dark)');
+  if (!chosen && dark?.matches) settings.theme = 'night';
   // Explicit links preview a complete scheme, independently of saved preferences.
   const params = new URLSearchParams(location.search);
   if (choices.theme.includes(params.get('theme'))) {
+    chosen = true;
     settings = { ...defaults, theme: params.get('theme') };
     for (const name of ['font', 'buttons']) {
       if (choices[name].includes(params.get(name))) settings[name] = params.get(name);
@@ -28,6 +32,12 @@
     }
   }
   apply();
+  dark?.addEventListener?.('change', event => {
+    if (chosen) return;
+    settings.theme = event.matches ? 'night' : 'original';
+    apply();
+    document.querySelectorAll('#appearance-menu [name="theme"]').forEach(input => input.checked = input.value === settings.theme);
+  });
   document.addEventListener('DOMContentLoaded', () => {
     const menu = document.getElementById('appearance-menu');
     if (!menu) return; // Reading-only surfaces still inherit the saved appearance.
@@ -62,10 +72,12 @@
       // A preset starts with its intended font and controls; then fine-tune below.
       if (name === 'theme') settings = { ...defaults, theme: value };
       else settings[name] = value;
+      chosen = true;
       update();
     });
     document.getElementById('appearance-reset').addEventListener('click', () => {
       settings = { ...defaults };
+      chosen = true;
       update();
     });
     function close(returnFocus = false) {
