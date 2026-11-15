@@ -275,3 +275,4 @@ body:not(.split-view) .fubini-proof-actions{top:68px}
 .lq-panels>div{margin-bottom:18px}
 .lq-panels p{margin:6px 0}
 .tf-pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}@media(max-width:700px){.tf-pair{grid-template-columns:1fr}}
+.entry-outline{margin:0 0 22px}
