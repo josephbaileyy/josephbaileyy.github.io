@@ -111,6 +111,35 @@ export function envelopes(x,delta){let lo=Infinity,hi=-Infinity;const N=Math.max
 export const TARGET=[[.13,.41],[.62,.71]];
 export function gridCover(level){const n=2**level,cells=[];for(let j=0;j<n;j++){const lo=j/n,hi=(j+1)/n;if(TARGET.some(([a,b])=>lo<b&&hi>a))cells.push(j);}return {n,cells,length:cells.length/n};}
 
+// ---------- 1.1.31: (0,1] cut into the pieces (2^{-k}, 2^{-k+1}]; the remainder after n pieces is (0, 2^{-n}].
+export const pieceOf=k=>[2**-k,2**(1-k)];
+export const remainderLength=n=>2**-n;
+
+// ---------- 1.1.21: an open disk as a union of dyadic boxes lying inside it (largest boxes first).
+const OPEN={x:.5,y:.5,r:.42};
+const boxInside=(i,j,n)=>[[i,j],[i+1,j],[i,j+1],[i+1,j+1]].every(([a,b])=>(a/n-OPEN.x)**2+(b/n-OPEN.y)**2<OPEN.r**2);
+export function innerBoxes(maxLevel){const out=[];for(let level=1;level<=maxLevel;level++){const n=2**level;for(let i=0;i<n;i++)for(let j=0;j<n;j++)if(boxInside(i,j,n)&&!(level>1&&boxInside(i>>1,j>>1,n/2)))out.push({level,i,j,n});}return out;}
+export const boxesArea=boxes=>boxes.reduce((s,b)=>s+1/(b.n*b.n),0);
+export const openDiskArea=Math.PI*OPEN.r**2;
+
+// ---------- 1.2.9: threshold tests for one real observation of ω∈[0,1].
+export const observation=w=>.5+.33*Math.sin(2*Math.PI*w)+.12*Math.sin(6*Math.PI*w);
+const CELLS1=1000;
+export function thresholdSets(a,b){const lowA=[],lowB=[],band=[];for(let j=0;j<CELLS1;j++){const x=observation((j+.5)/CELLS1);lowA.push(x<=a);lowB.push(x<=b);band.push(x>a&&x<=b);}return {lowA,lowB,band};}
+const runs1=flags=>{const out=[];let start=-1;flags.forEach((f,j)=>{if(f&&start<0)start=j;if(!f&&start>=0){out.push([start/flags.length,j/flags.length]);start=-1;}});if(start>=0)out.push([start/flags.length,1]);return out;};
+
+// ---------- 1.1.28: finite and cofinite subsets of ℕ, shown on 1…40.
+export const SHOWN=40;
+export const natSets=[
+ {label:'{1, …, 5}',has:n=>n<=5,kind:'finite'},
+ {label:'{3, 10, 11, 27}',has:n=>[3,10,11,27].includes(n),kind:'finite'},
+ {label:'everything except {2, 9}',has:n=>n!==2&&n!==9,kind:'cofinite'},
+ {label:'everything from 30 on',has:n=>n>=30,kind:'cofinite'}
+];
+// Finite ∪ finite is finite; anything ∪ cofinite is cofinite; complements swap the two kinds.
+export const unionKind=(p,q)=>p==='cofinite'||q==='cofinite'?'cofinite':'finite';
+export const complementKind=p=>p==='finite'?'cofinite':'finite';
+
 export function mountVisual(root,name,{setup,range}){
  if(!name.startsWith('fd-'))return false;
  const run=(controls,draw)=>{setup(root,controls,draw);return true;};
@@ -179,6 +208,25 @@ export function mountVisual(root,name,{setup,range}){
   const c=gridCover(v.level),x=t=>30+t*300,w=300/c.n,exact=TARGET.reduce((s,[a,b])=>s+b-a,0);
   return [legend('grid cells that meet the set','the set B = [0.13, 0.41] ∪ [0.62, 0.71]')+frame(`<rect x="30" y="20" width="300" height="26" fill="${faint}"/>`+c.cells.map(j=>`<rect x="${(x(0)+j*w).toFixed(2)}" y="20" width="${w.toFixed(2)}" height="26" fill="${pale}" stroke="${green}" stroke-width="${w>3?.8:0}"/>`).join('')+TARGET.map(([a,b])=>`<rect x="${x(a).toFixed(1)}" y="54" width="${((b-a)*300).toFixed(1)}" height="10" fill="${gold}"/>`).join('')+`<text x="30" y="84" font-size="13">0</text><text x="330" y="84" text-anchor="end" font-size="13">1</text>`,'A set on the unit interval and the grid cells covering it',92),
    `Level ${v.level}: ${c.cells.length} cells of length 1/${c.n} cover B, with total length ${fmt(c.length,4)}. The length of B is ${fmt(exact,2)}, and the excess ${fmt(c.length-exact,4)} shrinks as the grid refines. The extension assigns to a general set the infimum of such cover totals, using only lengths already known on the algebra.`];});
+ case 'fd-remainder':return run(range('n','Pieces used, n',1,10,3),v=>{
+  const x=t=>30+t*300;
+  return [legend('the pieces Aₖ = (2⁻ᵏ, 2⁻ᵏ⁺¹] already counted','the remainder Hₙ = (0, 2⁻ⁿ]')+frame(Array.from({length:v.n},(_,j)=>{const [lo,hi]=pieceOf(j+1);return `<rect x="${x(lo).toFixed(2)}" y="20" width="${Math.max(.5,(hi-lo)*300-.6).toFixed(2)}" height="28" fill="${j%2?'#5f8a72':green}"/>${(hi-lo)*300>26?`<text x="${x((lo+hi)/2).toFixed(1)}" y="39" text-anchor="middle" font-size="12" style="fill:#fff">A${j+1}</text>`:''}`;}).join('')+`<rect x="${x(0)}" y="20" width="${Math.max(.8,remainderLength(v.n)*300).toFixed(2)}" height="28" fill="${gold}"/><circle cx="${x(0)}" cy="34" r="4" fill="#fffefa" stroke="${gold}" stroke-width="2"/><text x="30" y="70" font-size="13">0</text><text x="330" y="70" text-anchor="end" font-size="13">1</text>`,'The interval from 0 to 1 cut into halving pieces, with the uncounted remainder',78),
+   `After ${v.n} piece${v.n===1?'':'s'}: counted length ${fmt(1-remainderLength(v.n),4)}, remainder ${fmt(remainderLength(v.n),4)}. The remainders are nested and each is nonempty, yet no point lies in all of them, since 0 itself is excluded. Countable additivity is the statement that this leftover length tends to 0; the compactness argument rules out a leftover that keeps positive length while its points all disappear.`];});
+ case 'fd-open-boxes':return run(range('level','Smallest boxes allowed: side 2⁻ᵏ, k',1,7,4),v=>{
+  const boxes=innerBoxes(v.level),X=t=>90+t*180,area=boxesArea(boxes),shade=['','#315e4e','#47795f','#5f8a72','#7fa48e','#a3c0ae','#c4d8cb','#dfeae2'];
+  return [legend('dyadic boxes inside the disk, darker for larger','the open disk')+frame(`<rect x="90" y="10" width="180" height="180" fill="${faint}"/>`+boxes.map(b=>{const s=180/b.n;return `<rect x="${(X(0)+b.i*s).toFixed(2)}" y="${(10+b.j*s).toFixed(2)}" width="${s.toFixed(2)}" height="${s.toFixed(2)}" fill="${shade[b.level]}" stroke="#fffefa" stroke-width="${s>4?.5:0}"/>`}).join('')+`<circle cx="${X(OPEN.x)}" cy="${10+OPEN.y*180}" r="${OPEN.r*180}" fill="none" stroke="${gold}" stroke-width="2" stroke-dasharray="4 3"/>`,'An open disk filled from inside by dyadic boxes',200),
+   `Down to side 1/${2**v.level}: ${boxes.length} boxes lie inside the open disk and cover area ${fmt(area,4)} of its ${fmt(openDiskArea,4)}. Every point of an open set has room around it, so it is caught by some small enough box; the boundary circle is never reached. An open set is therefore a countable union of boxes, which puts it in the σ-algebra the boxes generate.`];});
+ case 'fd-generator-tests':return run(range('a','Lower threshold a',.05,.95,.35,.05)+range('b','Upper threshold b',.05,.95,.7,.05),v=>{
+  const a=Math.min(v.a,v.b),b=Math.max(v.a,v.b),t=thresholdSets(a,b),X=w=>74+w*256,Y=y=>120-y*104,share=f=>fmt(f.filter(Boolean).length/f.length,3);
+  const strip=(flags,i,color,label)=>`<text x="68" y="${151+i*22}" text-anchor="end" font-size="12">${label}</text><rect x="74" y="${141+i*22}" width="256" height="12" fill="${faint}"/>`+runs1(flags).map(([p,q])=>`<rect x="${X(p).toFixed(1)}" y="${141+i*22}" width="${Math.max(1,(q-p)*256).toFixed(1)}" height="12" fill="${color}"/>`).join('');
+  return [frame(`<rect x="74" y="${Y(b).toFixed(1)}" width="256" height="${(Y(a)-Y(b)).toFixed(1)}" fill="${pale}"/><path d="M74 16V120H330" fill="none" stroke="#888"/><text x="68" y="${Y(b)+4}" text-anchor="end" font-size="12" style="fill:${gold}">b</text><text x="68" y="${Y(a)+4}" text-anchor="end" font-size="12" style="fill:${gold}">a</text><polyline points="${Array.from({length:201},(_,j)=>`${X(j/200).toFixed(1)},${Y(observation(j/200)).toFixed(1)}`).join(' ')}" fill="none" stroke="${green}" stroke-width="2.5"/>`
+    +strip(t.lowB,0,green,'X ≤ b')+strip(t.lowA,1,green,'X ≤ a')+strip(t.band,2,gold,'a &lt; X ≤ b'),'One observation of outcomes with two thresholds, and the outcomes passing each test',212),
+   `The gold outcomes are those passing the test at b but not the test at a: X⁻¹((a, b]) = {X ≤ b} ∖ {X ≤ a}, with probabilities ${share(t.lowB)} − ${share(t.lowA)} = ${share(t.band)}. Preimages commute with complements and countable unions, so once every half-line test gives an event, every set built from half-lines does too.`];});
+ case 'fd-cofinite':return run(pick('a','Set A',natSets.map(s=>s.label),0)+pick('b','Set B',natSets.map(s=>s.label),2)+range('n','Even singletons united, n',1,20,4),v=>{
+  const A=natSets[v.a],B=natSets[v.b],w=7,cell=(on,j,i,color)=>`<rect x="${72+j*w}" y="${6+i*20}" width="${w-1}" height="13" fill="${on?color:faint}"/>`;
+  const rowsOut=[['A',n=>A.has(n),green],['Aᶜ',n=>!A.has(n),green],['A ∪ B',n=>A.has(n)||B.has(n),green],['n evens',n=>n%2===0&&n<=2*v.n,gold],['all evens',n=>n%2===0,gold]];
+  return [frame(rowsOut.map(([label,has,color],i)=>`<text x="66" y="${17+i*20}" text-anchor="end" font-size="12">${label}</text>`+Array.from({length:SHOWN},(_,j)=>cell(has(j+1),j,i,color)).join('')).join('')+`<text x="72" y="120" font-size="12">1</text><text x="${72+SHOWN*w}" y="120" text-anchor="end" font-size="12">${SHOWN} …</text>`,'Subsets of the natural numbers shown on the first forty',126),
+   `A is ${A.kind}, its complement is ${complementKind(A.kind)}, and A ∪ B is ${unionKind(A.kind,B.kind)}: finite and cofinite sets form an algebra. The union of the first ${v.n} even singletons is finite, so it stays in the algebra for every n. The union of all of them is the set of even numbers, which is neither finite nor cofinite: a countable union can leave an algebra.`];});
  }
  return false;
 }
