@@ -140,6 +140,31 @@ export const natSets=[
 export const unionKind=(p,q)=>p==='cofinite'||q==='cofinite'?'cofinite':'finite';
 export const complementKind=p=>p==='finite'?'cofinite':'finite';
 
+// ---------- 1.1.39: two measures on Ω={1,2,3,4}. μ is uniform; ν moves mass t from {2,4} to {1,3}.
+export const muMass=m=>bits(m)/4;
+export const nuMass=(m,t)=>[1,2,3,4].reduce((s,j)=>s+(m&(1<<(j-1))?(j%2?.25+t:.25-t):0),0);
+export const agreementClass=t=>new Set(Array.from({length:16},(_,m)=>m).filter(m=>Math.abs(muMass(m)-nuMass(m,t))<1e-12));
+
+// ---------- 1.2.47: a two-valued variable with P(X=0)=p, P(X=1)=1−p. Threshold events have probability 0, p or 1.
+export const twoPointCDF=(x,p)=>x<0?0:x<1?p:1;
+export const isTrivial=p=>p===0||p===1;
+
+// ---------- 1.3.12: X on four equally likely outcomes; every listed event is determined by X.
+export const signValues=[-2,-1,1,2];
+export const signEvents=[
+ {label:'Ω (every outcome)',has:x=>true},
+ {label:'{X > 0}',has:x=>x>0},
+ {label:'{X < 0}',has:x=>x<0},
+ {label:'{|X| = 2}',has:x=>Math.abs(x)===2},
+ {label:'{X = 1}',has:x=>x===1}
+];
+export const restrictedMean=k=>signValues.reduce((s,x)=>s+(signEvents[k].has(x)?x/4:0),0);
+
+// ---------- 1.3.44: on [0,1], h_n = 1 + c_n·1_{[0,1/n]}, g_n = −h_n and f_n = h_n·(1−x), with limits 1, −1 and 1−x.
+export const spikeHeights=[{label:'Height n / log(n + 1): bound integrals converge',c:n=>n/Math.log(n+1)},{label:'Height n: bound integrals do not converge',c:n=>n}];
+export const boundIntegral=(kind,n)=>1+spikeHeights[kind].c(n)/n;
+export const middleIntegral=(kind,n)=>.5+spikeHeights[kind].c(n)*(1/n-1/(2*n*n));
+
 export function mountVisual(root,name,{setup,range}){
  if(!name.startsWith('fd-'))return false;
  const run=(controls,draw)=>{setup(root,controls,draw);return true;};
@@ -227,6 +252,24 @@ export function mountVisual(root,name,{setup,range}){
   const rowsOut=[['A',n=>A.has(n),green],['Aᶜ',n=>!A.has(n),green],['A ∪ B',n=>A.has(n)||B.has(n),green],['n evens',n=>n%2===0&&n<=2*v.n,gold],['all evens',n=>n%2===0,gold]];
   return [frame(rowsOut.map(([label,has,color],i)=>`<text x="66" y="${17+i*20}" text-anchor="end" font-size="12">${label}</text>`+Array.from({length:SHOWN},(_,j)=>cell(has(j+1),j,i,color)).join('')).join('')+`<text x="72" y="120" font-size="12">1</text><text x="${72+SHOWN*w}" y="120" text-anchor="end" font-size="12">${SHOWN} …</text>`,'Subsets of the natural numbers shown on the first forty',126),
    `A is ${A.kind}, its complement is ${complementKind(A.kind)}, and A ∪ B is ${unionKind(A.kind,B.kind)}: finite and cofinite sets form an algebra. The union of the first ${v.n} even singletons is finite, so it stays in the algebra for every n. The union of all of them is the set of even numbers, which is neither finite nor cofinite: a countable union can leave an algebra.`];});
+ case 'fd-agreement':return run(pick('family','Sets where the measures are required to agree',families.slice(0,2).map(f=>f.label),0)+range('t','Mass moved from {2, 4} to {1, 3}, t',0,.2,.1,.05),v=>{
+  const P=families[v.family].sets,L=agreementClass(v.t),ok=P.every(m=>L.has(m)),bad=P.filter(m=>!L.has(m));
+  const style=m=>P.includes(m)?(L.has(m)?{fill:green,text:'#fff'}:{fill:'#fffefa',stroke:gold,dash:true}):L.has(m)?{fill:pale,stroke:green}:{fill:faint,text:grey};
+  return [`<p class="small"><span style="color:${green}">■ required set, measures agree</span> · <span style="color:${gold}">┄ required set, measures differ</span> · <span style="color:${green}">▢ other sets where they agree</span></p>`+subsetGrid(style,'The sixteen subsets of a four-point space, marked where two measures agree'),
+   `μ gives each point 1/4; ν gives ${fmt(.25+v.t)} to 1 and 3 and ${fmt(.25-v.t)} to 2 and 4. They agree on ${L.size} of the 16 sets. ${v.t===0?'With t = 0 the measures are equal.':ok?'They agree on both required sets, which are not closed under intersection, and still differ: the agreement class is a λ-system that stops at six sets and misses {2}.':`They differ on ${bad.map(setName).join(', ')}. Agreement on this π-system would force agreement on all sixteen sets, so only t = 0 satisfies the hypothesis.`}`];});
+ case 'fd-trivial':return run(range('p','P(X = 0) = p',0,1,.4,.1),v=>{
+  const x=t=>60+(t+.5)/2*250,y=t=>150-t*110,trivial=isTrivial(v.p);
+  const seg=(a,b,h)=>`<line x1="${x(a)}" x2="${x(b)}" y1="${y(h).toFixed(1)}" y2="${y(h).toFixed(1)}" stroke="${h>0&&h<1?gold:green}" stroke-width="${h>0&&h<1?4:2.5}"/>`;
+  return [legend('distribution function of X','a level strictly between 0 and 1')+frame(`<path d="M60 30V150H310" fill="none" stroke="#888"/><text x="54" y="${y(1)+4}" text-anchor="end" font-size="13">1</text><text x="54" y="${y(0)+4}" text-anchor="end" font-size="13">0</text><text x="${x(0)}" y="168" text-anchor="middle" font-size="13">0</text><text x="${x(1)}" y="168" text-anchor="middle" font-size="13">1</text>`+seg(-.5,0,0)+seg(0,1,v.p)+seg(1,1.5,1),'The distribution function of a variable taking the values 0 and 1',176),
+   `For thresholds between 0 and 1 the event {X ≤ α} has probability ${fmt(v.p,1)}. ${trivial?`Every threshold event now has probability 0 or 1, the distribution function jumps once, and X = ${v.p===1?0:1} almost surely.`:'That value is neither 0 nor 1, so X cannot be measurable with respect to a trivial σ-algebra. Only p = 0 or p = 1 removes the middle level, and then X is almost surely constant.'}`];});
+ case 'fd-sign-events':return run(pick('event','Event A in σ(X)',signEvents.map(e=>e.label),0),v=>{
+  const e=signEvents[v.event],mean=restrictedMean(v.event),x=j=>70+j*70,y=t=>90-t*30;
+  return [frame(`<line x1="40" x2="330" y1="90" y2="90" stroke="#888"/>`+signValues.map((val,j)=>`<rect x="${x(j)}" y="${Math.min(y(val),90).toFixed(1)}" width="44" height="${Math.abs(val*30)}" fill="${e.has(val)?(val>0?green:gold):faint}"/><text x="${x(j)+22}" y="${val>0?y(val)-6:y(val)+16}" text-anchor="middle" font-size="13">${val}</text>`).join(''),'The four values of X, with the outcomes in the chosen event highlighted',172),
+   `Four outcomes of probability 1/4 each; coloured bars are the outcomes in A. E[X; A] = ${fmt(mean,2)}. ${v.event===0?'Over the whole space the positive and negative values cancel, so a zero mean alone says nothing.':mean===0?'This event still balances positive against negative values.':'This event is determined by X and separates one sign, so nothing cancels. If every such restricted mean vanished, the positive part and the negative part would each have zero mean, forcing X = 0 almost surely.'}`];});
+ case 'fd-moving-bounds':return run(pick('kind','Spike in the bounds on [0, 1/n]',spikeHeights.map(k=>k.label),0)+range('n','Index n',1,200,8),v=>{
+  const c=spikeHeights[v.kind].c(v.n),top=1+c,cut=1/v.n,H=boundIntegral(v.kind,v.n),F=middleIntegral(v.kind,v.n),clip=t=>Math.min(t,6.2);
+  return [legend('fₙ = hₙ · (1 − x), squeezed between −hₙ and hₙ','upper bound hₙ (clipped at 6)')+plot([{points:[[0,clip(top)],[cut,clip(top)],[cut,1],[1,1]],color:gold,dash:true},{points:[[0,clip(top)],[cut,clip(top*(1-cut))],[cut,1-cut],[1,0]]}],{xmin:0,xmax:1,ymin:0,ymax:6,xlabel:'x',ylabel:'value'}),
+   `n = ${v.n}: spike height ${fmt(c,2)} on [0, ${fmt(cut,3)}]. ∫hₙ = ${fmt(H,4)} and ∫fₙ = ${fmt(F,4)}; the pointwise limits have integrals 1 and 0.5. ${v.kind===0?'The bound integrals converge to the integral of the limiting bound, so ∫fₙ → 0.5, although no single integrable function dominates every hₙ.':'Each spike carries area 1, so ∫hₙ stays near 2 instead of approaching 1, and ∫fₙ approaches 1.5, not 0.5. Without convergence of the bound integrals the conclusion fails.'}`];});
  }
  return false;
 }

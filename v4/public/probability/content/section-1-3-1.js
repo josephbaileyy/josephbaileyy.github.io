@@ -65,11 +65,11 @@ plain:'A falling factorial counts ordered lists of distinct fixed points. Each l
 caption:'The controls show exact finite counts (n)ₖ and (n−k)!/n!. Their product equals one for 1≤k≤n. A permutation picture is only one outcome; the displayed expectation averages over all n! permutations.',
 hints:[r`Expand $(X_n)_k$ as a sum of products $Z_{i_1}\cdots Z_{i_k}$ over ordered distinct indices.`,r`There are $(n)_k=n!/(n-k)!$ lists. For a fixed list, exactly $(n-k)!$ permutations fix all its indices.`],
 solution:r`For each permutation, $(X_n)_k=\sum_{i_1,\ldots,i_k\text{ distinct}}\prod_{j=1}^k Z_{i_j}$. Every product has expectation $(n-k)!/n!$. Linearity therefore gives $\mathbf E(X_n)_k=[n!/(n-k)!][(n-k)!/n!]=1$. In particular $\mathbf EX_n=1$ for every $n\geq1$.`},
-{n:'1.3.12',type:'Exercise',title:'Test the sign events to detect a variable',page:'35',deps:['1.3.8','1.2.12'],visual:'proof-map',
+{n:'1.3.12',outline:true,type:'Exercise',title:'Test the sign events to detect a variable',page:'35',deps:['1.3.8','1.2.12'],visual:'fd-sign-events',
 statement:r`If $X\in L^1$ and $\mathbf E[X\mathbf1_A]=0$ for every $A\in\sigma(X)$, prove $X=0$ almost surely.`,
 plain:'Zero overall mean allows cancellation. Requiring zero mean on every event observable from X lets you isolate each sign and eliminate that cancellation.',
 map:[{title:'Separate the positive part',body:r`$A_+=\{X>0\}\in\sigma(X)$.`},{title:'Separate the negative part',body:r`$A_-=\{X<0\}\in\sigma(X)$.`},{title:'Use nonnegativity',body:r`Apply the zero-integral lemma to $X_+$ and $X_-$.`}],
-caption:'The two event tests suffice although the hypothesis quantifies over all of σ(X). The visual presents the choice of tests; open the hints and solution for the proof.',
+caption:'Choose an event that X determines. The whole space hides the values by cancellation; the sign events do not.',
 hints:[r`The threshold events $\{X>0\}$ and $\{X<0\}$ belong to $\sigma(X)$.`,r`On these events, $X\mathbf1_{\{X>0\}}=X_+$ and $X\mathbf1_{\{X<0\}}=-X_-$.`],
 solution:r`The hypothesis gives $\mathbf EX_+=0$ and $\mathbf EX_-=0$. Both parts are nonnegative, so Lemma 1.3.8 makes each zero almost surely. Outside the union of those two null exceptional sets, $X=X_+-X_-=0$.`}
 ];
