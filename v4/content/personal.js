@@ -4,7 +4,7 @@ export const personal = {
   introduction:
     'I study physics and computer science at Stanford. Right now I’m working on neutrino physics, using machine learning to undo the distortions a detector adds to its measurements.',
   outside:
-    'I also compete as a {track} on Stanford’s Track & Field team. I play piano and saxophone, both classical and jazz, in a {sax}.',
+    'Outside of research, I compete as a {track} on Stanford’s Track & Field team. I also play piano and saxophone, both classical and jazz, in a {sax}.',
   music:
     'I play classical piano (I finished MTAC Level 10) and jazz on alto saxophone, plus some flute and clarinet. The recording below is me playing a Bach fugue.',
   trackUrl: 'https://gostanford.com/sports/track-field/roster/player/joseph-bailey',
