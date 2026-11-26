@@ -12,7 +12,7 @@ export const research = Object.freeze([
     method:
       'Unfolding MINERvA inclusive charged-current data with OmniFold: reproducing the published double-differential muon-momentum cross section, then adding available energy, three-momentum transfer and hadronic invariant mass, with closure tests, systematic universes, bootstrap resampling and event-generator comparisons.',
     result:
-      'Reproduced the published double-differential cross section (total-cross-section ratio 1.011; 95.6% of 205 bins within 10%), with a 6.87% median per-bin uncertainty built from 187 systematic universes plus statistical and machine-learning components. The five-observable unfolding passes closure checks, and its uncertainties are still being worked through before it can be quoted as a measurement. Presented at a MINERvA collaboration meeting in July 2026; a paper is in preparation.',
+      'Reproduced the published double-differential cross section (total-cross-section ratio 1.010; 95.1% of 205 bins within 10%), with an uncertainty budget built from 187 systematic universes plus statistical and machine-learning components. The five-observable unfolding passes closure checks, and its uncertainties are still being worked through before it can be quoted as a measurement. Presented at a MINERvA collaboration meeting in July 2026; a paper is in preparation.',
     tags: Object.freeze([
       'OmniFold',
       'MINERvA',

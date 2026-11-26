@@ -1750,16 +1750,10 @@ time,
   accent-color: var(--home-link);
   min-height: 24px;
 }
-.shared-method {
-  border-top: 1px solid var(--home-rule);
-  margin-top: 20px;
-  padding-top: 12px;
+.demo-note {
+  margin-top: 14px;
   color: var(--home-secondary);
   font-size: 12px;
-}
-.shared-method p {
-  font-size: 13px;
-  line-height: 1.65;
 }
 @media (max-width: 600px) {
   .shared-unfolding {

@@ -36,7 +36,7 @@ try {
   );
   const trackLink = page.locator('.intro-personal .track-link');
   const musicLink = page.locator('.intro-personal .music-link');
-  assert.equal(await trackLink.innerText(), '400m hurdler');
+  assert.equal(await trackLink.innerText(), '400-meter hurdler');
   assert.equal(await musicLink.innerText(), 'variety of ensembles');
   assert.notEqual(
     await trackLink.evaluate((link) => getComputedStyle(link).color),
@@ -167,7 +167,7 @@ try {
   );
   assert.equal(await page.locator('[data-shared-demo] select').count(), 1);
   assert.equal(await page.locator('[data-shared-demo] button:visible').count(), 1);
-  assert.equal(await page.locator('.shared-method').evaluate((element) => element.open), false);
+  assert.equal(await page.locator('.shared-method').count(), 0);
   const initialEstimate = await image('[data-shared-estimate]');
   const initialData = await image('[data-shared-data]');
   const reference = await image('[data-shared-reference]');
@@ -201,14 +201,6 @@ try {
   assert.notEqual(await image('[data-shared-estimate]'), portraitStart);
   assert.equal(await image('[data-shared-data]'), portraitData);
   assert.equal(await image('[data-shared-reference]'), portraitReference);
-  await page.locator('.shared-method > summary').click();
-  const estimateBeforeExplanation = await image('[data-shared-estimate]');
-  assert.match(
-    await page.locator('[data-shared-method-example]').innerText(),
-    /independent detector data/,
-  );
-  await page.locator('.shared-method > summary').click();
-  assert.equal(await image('[data-shared-estimate]'), estimateBeforeExplanation);
   for (const width of [320, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 1000 });
     assert.ok(

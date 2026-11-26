@@ -4,13 +4,9 @@ import { densityPixels } from './unfolding-density.js';
 const examples = {
   hurdler: {
     response: '040',
-    description:
-      'The hurdler starts with distorted shape and colors. The detector blurs positions and sometimes confuses color categories.',
   },
   'photo-intensity': {
     response: '015',
-    description:
-      'The portrait uses the original photos as red, green, and blue intensity distributions. Both position and color are learned. The detector adds mild blur and color confusion.',
   },
 };
 const blend = (a, b, t) => Float32Array.from(a, (value, i) => value + (b[i] - value) * t);
@@ -99,11 +95,6 @@ export default async function mountUnfolding(root) {
       completed === 0 ? 'Starting simulation' : `Iteration ${completed} of ${iterations()}`,
     );
     play.textContent = playing ? 'Pause' : position >= end() ? 'Replay' : 'Play';
-    q('method-example').textContent =
-      examples[activeExample].description +
-      (experiment.recommended_iteration
-        ? ` Playback stops at iteration ${iterations()}, selected using independent detector data. Later iterations can amplify fluctuations; reference truth does not choose the stopping point.`
-        : ` Playback shows ${iterations()} iterations.`);
   }
   function pause() {
     playing = false;

@@ -39,7 +39,7 @@ const sentences = {
   'collider-ml-slac': {
     title: 'Pileup at a proposed Higgs factory',
     brief:
-      'At SLAC, I was one of four people working on the XCC, a proposed photon–photon collider that would serve as a Higgs factory. I did most of the pileup study myself, characterizing pileup (overlapping collisions) in Delphes fast simulations of Higgs-boson pairs. I also explored machine-learning methods, but the main result was simpler: pileup subtraction plus removing all objects with |cos θ| > 0.8 worked best.',
+      'At SLAC National Accelerator Laboratory, I was one of four people working on a proposed photon–photon collider that would serve as a Higgs factory. I did most of the pileup study myself, characterizing pileup (overlapping collisions) in Delphes fast simulations of Higgs-boson pairs. I also explored machine-learning methods, but the main result was simpler: pileup subtraction plus removing all objects with |cos θ| > 0.8 worked best.',
   },
   'am-cvn-photometry': {
     title: 'Measuring the variability of AM CVn',
@@ -57,7 +57,7 @@ function interactiveUnfolding() {
   return `<div class="unfolding-demo" id="unfolding-interactive">
     <h4>Try the interactive demo</h4>
     <div>
-      <p>Press play to watch OmniFold adjust the simulation until it matches the measured data.</p>
+      <p>Press play. The algorithm sees only the blurry measurement (bottom right), never the original (top right). It adjusts its simulation until the blurred version (bottom left) matches. The top left is its estimate of the original.</p>
       <div data-demo-view hidden>
         <div class="shared-unfolding" data-shared-demo>
           <div class="shared-toolbar"><label>Example <select data-shared-prior><option value="hurdler">Hurdler</option><option value="photo-intensity">Portrait</option></select></label><output data-shared-stage>Starting simulation</output></div>
@@ -72,7 +72,7 @@ function interactiveUnfolding() {
           </div>
           <p class="demo-status" data-shared-loading role="status" hidden></p>
           <button type="button" class="text-button" data-shared-settings-retry hidden>Try again</button>
-          <details class="shared-method"><summary>How it works</summary><p>Only the event weights change. One classifier compares simulation with measured data after the detector. Its weights are carried to the simulated truth partners. A second classifier learns weights from the truth features, then sends them forward for the next iteration. The reference truth is shown only for comparison.</p><p data-shared-method-example></p><p>These are synthetic distributions, not photo restoration or MINERvA data. The browser replays trained neural-network weights. All four images share a fixed display scale and smoothing filter; the reference never alters the estimate. Acceptance losses, backgrounds, and uncertainties are omitted.</p></details>
+          <p class="demo-note">Synthetic images, not real detector data.</p>
         </div>
       </div>
       <p class="demo-status" role="status" data-demo-status>Loading the interactive example…</p>
@@ -121,9 +121,9 @@ function unfoldDisclosure() {
           )
           .join('')}</div>
       </figure>
-      <p>OmniFold changes how much each simulated event counts, using its paired descriptions before and after detection. Those weights are learned by comparing simulation with measured data.</p>
+      <p>OmniFold uses machine learning to adjust a simulation until it matches what the detector measured.</p>
       ${interactiveUnfolding()}
-      <p class="limitations">The starting simulation and detector model matter. The result is an estimate with uncertainties, and individual measured events don’t get their original values back.</p>
+      <p class="limitations">The result is an estimate, with uncertainties, and depends on how good the simulation is.</p>
       <p class="method-link">${link({ href: 'https://arxiv.org/abs/1911.09107', label: 'Read the OmniFold method' })}</p>
     </div>
   </details>`;
@@ -143,9 +143,10 @@ function researchList() {
       const copy = sentences[id];
       const evidence = [...item.links];
       if (id === 'minerva-omnifold') {
-        evidence.push(
-          projects.find((project) => project.id === 'minerva-omnifold-pipeline').links[0],
-        );
+        evidence.push({
+          ...projects.find((project) => project.id === 'minerva-omnifold-pipeline').links[0],
+          label: 'Analysis code (GitHub)',
+        });
       }
       return `<li><article id="${id}">
       <header class="entry-heading"><h3>${escape(copy.title)}</h3><p class="entry-date">${escape(item.period)}</p></header>
@@ -364,7 +365,7 @@ export function renderHome() {
       )
         .replace(
           '{track}',
-          `<a class="personal-link track-link" href="${personal.trackUrl}" target="_blank" rel="noopener noreferrer">400m hurdler</a>`,
+          `<a class="personal-link track-link" href="${personal.trackUrl}" target="_blank" rel="noopener noreferrer">400-meter hurdler</a>`,
         )
         .replace(
           '{sax}',
