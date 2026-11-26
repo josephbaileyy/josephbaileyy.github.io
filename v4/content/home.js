@@ -29,17 +29,17 @@ const sentences = {
   'minerva-omnifold': {
     title: 'Neutrino unfolding with machine learning',
     brief:
-      'With Prof. Benjamin Nachman, I’m using OmniFold, a machine-learning unfolding method, to measure neutrino cross sections from MINERvA data without binning them. I reproduced MINERvA’s published double-differential cross section, then extended the unfolding to five observables at once and tested event-generator predictions against it. I presented the work at a MINERvA collaboration meeting, and a paper is in preparation.',
+      'Experiments like DUNE measure how neutrinos change type, and their results depend on knowing how neutrinos hit atomic nuclei. With Prof. Benjamin Nachman, I measure that from MINERvA data using OmniFold, a machine-learning method that works without sorting the data into bins. I reproduced MINERvA’s published double-differential cross section, then extended the measurement to five observables at once and tested event-generator predictions against it. I presented the work at a MINERvA collaboration meeting, and a paper is in preparation.',
   },
   'x17-bump-hunting': {
     title: 'Searching for the hypothetical X17 particle',
     brief:
-      'In collaboration with Jefferson Lab’s X17 experiment, I developed a Gaussian-process bump-hunting package for its search, building on an existing implementation, ahead of the experiment’s 2026 run. It looks for a small excess from the X17 in invariant-mass spectra without assuming a fixed background shape, and I tested it on simulated spectra with injected signal. I presented the study at the APS Far West Section meeting at UC Santa Cruz.',
+      'A Hungarian experiment saw an unexplained excess in certain nuclear decays, which might be a new particle, the X17, carrying a fifth force. Jefferson Lab is building an experiment to check. I wrote software for it that looks for a small bump in the data without assuming the shape of the background, tested it on simulated data, and presented it at the APS Far West Section meeting.',
   },
   'collider-ml-slac': {
     title: 'Pileup at a proposed Higgs factory',
     brief:
-      'At SLAC National Accelerator Laboratory, I was one of four people working on a proposed photon–photon collider that would serve as a Higgs factory. I did most of the pileup study myself, characterizing pileup (overlapping collisions) in Delphes fast simulations of Higgs-boson pairs. I also explored machine-learning methods, but the main result was simpler: pileup subtraction plus removing all objects with |cos θ| > 0.8 worked best.',
+      'A Higgs factory would produce Higgs bosons in large numbers to measure how the Higgs interacts with itself. At SLAC National Accelerator Laboratory, I studied a proposed design where extra collisions happening at the same time (“pileup”) can hide the signal. I found that a simple rule, ignoring particles that fly out close to the beam line, removed most of the pileup while keeping the signal.',
   },
   'am-cvn-photometry': {
     title: 'Measuring the variability of AM CVn',
@@ -142,6 +142,12 @@ function researchList() {
       const item = research.find((record) => record.id === id);
       const copy = sentences[id];
       const evidence = [...item.links];
+      if (id === 'x17-bump-hunting') {
+        evidence.push({
+          href: 'https://en.wikipedia.org/wiki/X17_particle',
+          label: 'What is the X17? (Wikipedia)',
+        });
+      }
       if (id === 'minerva-omnifold') {
         evidence.push({
           ...projects.find((project) => project.id === 'minerva-omnifold-pipeline').links[0],
